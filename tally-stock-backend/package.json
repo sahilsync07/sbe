@@ -1,0 +1,19 @@
+{
+  "name": "tally-stock-backend",
+  "version": "1.0.0",
+  "description": "Backend for fetching and parsing Tally stock data",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "fast-xml-parser": "^5.2.5",
+    "xml2js": "^0.6.2"
+  }
+}

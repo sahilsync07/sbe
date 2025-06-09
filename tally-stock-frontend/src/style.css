@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-900 text-white font-sans;
+}
+
+.table-container {
+  @apply w-full overflow-x-auto;
+}
+
+table {
+  @apply w-full border-collapse text-sm;
+}
+
+th,
+td {
+  @apply border-b border-gray-600 px-4 py-6 text-left align-middle;
+}
+
+th {
+  @apply bg-gray-800 text-gray-300 font-semibold uppercase text-xs tracking-wide;
+}
+
+tr.group-row {
+  @apply bg-gray-700 font-medium hover:bg-gray-600 cursor-pointer;
+}
+
+tr.product-row {
+  @apply bg-gray-800 pl-4;
+}
+
+button {
+  @apply px-4 py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500 transition-colors w-full sm:w-auto;
+}
+
+input[type="file"] {
+  @apply text-sm text-gray-300 w-full;
+}
+
+.image-box {
+  @apply w-32 h-48 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center;
+}
