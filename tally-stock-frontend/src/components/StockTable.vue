@@ -37,7 +37,7 @@
             <tr class="group-row" @click="toggleGroup(index)">
               <td>{{ group.groupName }}</td>
               <td></td>
-              <td>-</td>
+              <td></td>
             </tr>
             <tr
               v-for="(product, pIndex) in group.products"
@@ -101,12 +101,13 @@
 <script>
 import axios from "axios";
 import { Cloudinary } from "@cloudinary/url-gen";
+import stockData from "../assets/stock-data.json";
 
 export default {
   name: "StockTable",
   data() {
     return {
-      stockData: [],
+      stockData: stockData,
       loading: false,
       error: null,
       lastRefresh: null,
@@ -119,7 +120,10 @@ export default {
     };
   },
   mounted() {
-    this.fetchStockData();
+    this.expandedGroups = this.stockData.reduce(
+      (acc, _, index) => ({ ...acc, [index]: true }),
+      {}
+    );
   },
   methods: {
     async fetchStockData() {
@@ -127,11 +131,24 @@ export default {
       this.error = null;
       try {
         const response = await axios.get("http://localhost:3000/api/stock");
-        this.stockData = response.data;
+        // Merge fetched data with existing image URLs
+        const newData = response.data.map((group) => ({
+          ...group,
+          products: group.products.map((product) => ({
+            ...product,
+            imageUrl: this.imageUrls[product.productName] || null,
+          })),
+        }));
+        this.stockData = newData;
         this.lastRefresh = new Date();
         this.expandedGroups = this.stockData.reduce(
           (acc, _, index) => ({ ...acc, [index]: true }),
           {}
+        );
+        // Save to stock-data.json (manual commit required)
+        console.log("Updated stock data:", JSON.stringify(newData, null, 2));
+        alert(
+          "Data refreshed! Please commit and push src/assets/stock-data.json to GitHub."
         );
       } catch (error) {
         this.error = "Failed to fetch stock data";
@@ -144,7 +161,13 @@ export default {
       this.expandedGroups[index] = !this.expandedGroups[index];
     },
     getImageUrl(productName) {
-      return this.imageUrls[productName] || null;
+      return (
+        this.stockData
+          .flatMap((group) => group.products)
+          .find((product) => product.productName === productName)?.imageUrl ||
+        this.imageUrls[productName] ||
+        null
+      );
     },
     handleFileChange(event, productName) {
       this.imageFiles[productName] = event.target.files[0];
@@ -169,6 +192,22 @@ export default {
         if (data.secure_url) {
           this.imageUrls[productName] = data.secure_url;
           localStorage.setItem("productImages", JSON.stringify(this.imageUrls));
+          // Update stockData with new image URL
+          this.stockData = this.stockData.map((group) => ({
+            ...group,
+            products: group.products.map((product) =>
+              product.productName === productName
+                ? { ...product, imageUrl: data.secure_url }
+                : product
+            ),
+          }));
+          console.log(
+            "Updated stock data with image:",
+            JSON.stringify(this.stockData, null, 2)
+          );
+          alert(
+            "Image uploaded! Please commit and push src/assets/stock-data.json to GitHub."
+          );
         } else {
           throw new Error("Upload failed");
         }
