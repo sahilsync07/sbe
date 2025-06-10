@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  base: "/sbe/tally-stock-frontend/",
   plugins: [vue()],
+  base: "/sbe/", // Set base path to repository root
 });
