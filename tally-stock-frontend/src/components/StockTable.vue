@@ -42,6 +42,7 @@
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
       <button
+        v-if="isLocal"
         @click="updateStockData"
         :disabled="loading"
         class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
@@ -98,7 +99,10 @@
                     alt="Product Image"
                     class="w-full h-full object-cover"
                   />
-                  <div v-else class="flex flex-col items-center gap-2">
+                  <div
+                    v-else-if="isLocal"
+                    class="flex flex-col items-center gap-2"
+                  >
                     <input
                       type="file"
                       accept="image/*"
@@ -126,6 +130,7 @@
                       {{ uploadErrors[product.productName] }}
                     </div>
                   </div>
+                  <div v-else class="text-gray-500 text-xs">No Image</div>
                 </div>
               </td>
             </tr>
@@ -162,6 +167,9 @@ export default {
       searchQuery: "",
       selectedGroup: "All",
       showGoToTop: false,
+      isLocal:
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1",
     };
   },
   computed: {
@@ -188,7 +196,7 @@ export default {
     },
   },
   async mounted() {
-    await this.fetchStockData();
+    await this.loadStockData();
     this.expandedGroups = this.stockData.reduce(
       (acc, _, index) => ({ ...acc, [index]: true }),
       {}
@@ -199,14 +207,21 @@ export default {
     window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
-    async fetchStockData() {
+    async loadStockData() {
       try {
-        const response = await axios.get("http://localhost:3000/api/stock");
-        this.stockData = response.data;
+        if (this.isLocal) {
+          const response = await axios.get("http://localhost:3000/api/stock");
+          this.stockData = response.data;
+        } else {
+          const response = await fetch("/sbe/assets/stock-data.json");
+          this.stockData = await response.json();
+        }
         this.error = null;
+        this.lastRefresh = new Date();
       } catch (error) {
-        this.error =
-          error.response?.data?.error || "Failed to fetch stock data";
+        this.error = this.isLocal
+          ? error.response?.data?.error || "Failed to fetch stock data"
+          : "Failed to load stock-data.json";
         this.stockData = [];
       }
     },
