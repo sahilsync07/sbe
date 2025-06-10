@@ -40,11 +40,11 @@ input[type="file"] {
 }
 
 .image-box {
-  @apply w-20 h-28 bg-gray-700 rounded-md overflow-hidden flex items-center justify-center mx-auto;
+  @apply w-20 h-28 bg-gray-700 rounded-md overflow-hidden mx-auto relative flex items-center justify-center;
 }
 
 .image-box img {
-  @apply w-full h-full object-cover;
+  @apply w-full h-full object-cover absolute inset-0;
 }
 
 .image-box div {

@@ -241,7 +241,7 @@ export default {
   methods: {
     async loadStockData() {
       try {
-        if (this.isLocal) {
+        if (false) {
           const response = await axios.get("http://localhost:3000/api/stock");
           this.stockData = response.data;
         } else {
