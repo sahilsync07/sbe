@@ -20,7 +20,7 @@ td {
 }
 
 th {
-  @apply bg-gray-800 text-gray-300 font-semibold uppercase text-xs tracking-wide text-center;
+  @apply bg-gray-500 text-gray-300 font-semibold uppercase text-xs tracking-wide text-center;
 }
 
 tr.group-row {
@@ -40,7 +40,7 @@ input[type="file"] {
 }
 
 .image-box {
-  @apply w-24 h-36 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center mx-auto;
+  @apply w-20 h-28 bg-gray-700 rounded-md overflow-hidden flex items-center justify-center mx-auto relative;
 }
 
 .go-to-top {
@@ -57,15 +57,15 @@ input[type="file"] {
   }
   th:first-child,
   td:first-child {
-    @apply w-28; /* Narrower Name column */
+    @apply w-28;
   }
   th:nth-child(2),
   td:nth-child(2) {
-    @apply w-16; /* Quantity column */
+    @apply w-16;
   }
   th:nth-child(3),
   td:nth-child(3) {
-    @apply w-28; /* Image column */
+    @apply w-28;
   }
   .image-box {
     @apply w-20 h-28;

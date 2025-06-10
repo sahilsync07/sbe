@@ -8,7 +8,11 @@ const path = require("path");
 const app = express();
 const port = 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://sahilsync07.github.io"],
+  })
+);
 app.use(express.json());
 
 const tallyUrl = "http://localhost:9000/";
@@ -16,7 +20,11 @@ const stockDataPath = path.resolve(
   __dirname,
   "../../tally-stock-frontend/src/assets/stock-data.json"
 );
-const tallyTimeout = 30000; // 30-second timeout
+const publicStockDataPath = path.resolve(
+  __dirname,
+  "../../tally-stock-frontend/public/assets/stock-data.json"
+);
+const tallyTimeout = 30000;
 
 const tallyRequestXML = `<?xml version="1.0"?>
 <ENVELOPE>
@@ -54,7 +62,6 @@ async function fetchTallyData() {
       "Data length:",
       response.data.length
     );
-    console.log("Raw Tally XML:", response.data);
     if (!response.data.trim()) {
       throw new Error("Empty Tally response");
     }
@@ -102,6 +109,7 @@ async function fetchTallyData() {
           quantity: qtyValue,
           rate,
           amount,
+          imageUrl: null,
         });
         stockGroups[currentGroup].totalAmount += amount;
       }
@@ -140,7 +148,6 @@ app.post("/api/updateStockData", async (req, res) => {
   try {
     console.log("Starting updateStockData, stockDataPath:", stockDataPath);
 
-    // Validate file path
     try {
       await fs.access(stockDataPath, fs.constants.R_OK | fs.constants.W_OK);
       console.log("stock-data.json is readable and writable");
@@ -149,7 +156,6 @@ app.post("/api/updateStockData", async (req, res) => {
       throw new Error(`Cannot access stock-data.json: ${err.message}`);
     }
 
-    // Load existing stock-data
     let existingData = [];
     try {
       const fileContent = await fs.readFile(stockDataPath, "utf-8");
@@ -159,15 +165,12 @@ app.post("/api/updateStockData", async (req, res) => {
           "Existing stock-data.json loaded, groups:",
           existingData.length
         );
-      } else {
-        console.warn("stock-data.json is empty");
       }
     } catch (err) {
       console.error("Error reading stock-data.json:", err.message, err.stack);
       existingData = [];
     }
 
-    // Preserve image URLs
     const imageUrls = {};
     existingData.forEach((group) => {
       if (group.products) {
@@ -180,19 +183,20 @@ app.post("/api/updateStockData", async (req, res) => {
     });
     console.log("Preserved image URLs:", Object.keys(imageUrls).length);
 
-    // Fetch Tally data
     const stockData = await fetchTallyData();
 
-    // Add image URLs
     stockData.forEach((group) => {
       group.products.forEach((product) => {
         product.imageUrl = imageUrls[product.productName] || null;
       });
     });
 
-    // Write to file
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      await fs.writeFile(
+        publicStockDataPath,
+        JSON.stringify(stockData, null, 2)
+      );
       console.log("Updated stock-data.json at:", stockDataPath);
     } catch (err) {
       console.error("Error writing stock-data.json:", err.message, err.stack);
@@ -218,14 +222,12 @@ app.post("/api/updateImage", async (req, res) => {
       throw new Error("Missing productName or imageUrl");
     }
 
-    // Validate file path
     try {
       await fs.access(stockDataPath, fs.constants.R_OK | fs.constants.W_OK);
     } catch (err) {
       throw new Error(`Cannot access stock-data.json: ${err.message}`);
     }
 
-    // Load existing stock-data
     let stockData = [];
     try {
       const fileContent = await fs.readFile(stockDataPath, "utf-8");
@@ -236,7 +238,6 @@ app.post("/api/updateImage", async (req, res) => {
       throw new Error(`Error reading stock-data.json: ${err.message}`);
     }
 
-    // Update imageUrl
     let updated = false;
     stockData.forEach((group) => {
       group.products.forEach((product) => {
@@ -251,9 +252,12 @@ app.post("/api/updateImage", async (req, res) => {
       throw new Error(`Product ${productName} not found`);
     }
 
-    // Write to file
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      await fs.writeFile(
+        publicStockDataPath,
+        JSON.stringify(stockData, null, 2)
+      );
       console.log(`Updated imageUrl for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
@@ -266,6 +270,61 @@ app.post("/api/updateImage", async (req, res) => {
   }
 });
 
+app.post("/api/removeImage", async (req, res) => {
+  try {
+    const { productName } = req.body;
+    if (!productName) {
+      throw new Error("Missing productName");
+    }
+
+    try {
+      await fs.access(stockDataPath, fs.constants.R_OK | fs.constants.W_OK);
+    } catch (err) {
+      throw new Error(`Cannot access stock-data.json: ${err.message}`);
+    }
+
+    let stockData = [];
+    try {
+      const fileContent = await fs.readFile(stockDataPath, "utf-8");
+      if (fileContent.trim()) {
+        stockData = JSON.parse(fileContent);
+      }
+    } catch (err) {
+      throw new Error(`Error reading stock-data.json: ${err.message}`);
+    }
+
+    let updated = false;
+    stockData.forEach((group) => {
+      group.products.forEach((product) => {
+        if (product.productName === productName && product.imageUrl) {
+          product.imageUrl = null;
+          updated = true;
+        }
+      });
+    });
+
+    if (!updated) {
+      throw new Error(`Product ${productName} not found or has no image`);
+    }
+
+    try {
+      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      await fs.writeFile(
+        publicStockDataPath,
+        JSON.stringify(stockData, null, 2)
+      );
+      console.log(`Removed image for ${productName} in stock-data.json`);
+    } catch (err) {
+      throw new Error(`Cannot write to stock-data.json: ${err.message}`);
+    }
+
+    res.json({ message: `Image removed for ${productName}` });
+  } catch (error) {
+    console.error("Error in removeImage:", error.message, error.stack);
+    res.status(500).json({ error: `Failed to remove image: ${error.message}` });
+  }
+});
+
 app.get("/api/tally-health", async (req, res) => {
   try {
     const response = await axios.post(tallyUrl, tallyRequestXML, {
@@ -273,7 +332,11 @@ app.get("/api/tally-health", async (req, res) => {
       headers: { "Content-Type": "text/xml" },
     });
     console.log("Tally health check success:", response.status);
-    res.json({ status: "Tally is reachable", code: response.status });
+    res.json({
+      status: "success",
+      data: "Tally is reachable",
+      code: response.status,
+    });
   } catch (error) {
     console.error("Tally health check failed:", error.message, error.stack);
     res.status(500).json({ error: `Tally unreachable: ${error.message}` });

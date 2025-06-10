@@ -91,13 +91,21 @@
               <td class="truncate">{{ product.productName }}</td>
               <td>{{ product.quantity }}</td>
               <td>
-                <div class="image-box">
+                <div class="image-box relative">
                   <img
                     v-if="product.imageUrl"
                     :src="product.imageUrl"
                     alt="Product Image"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover cursor-pointer"
+                    @click="openImagePopup(product.imageUrl)"
                   />
+                  <button
+                    v-if="product.imageUrl && isAdmin"
+                    @click="deleteImage(product.productName)"
+                    class="absolute top-0 right-0 bg-red-600 hover:bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                  >
+                    ×
+                  </button>
                   <div
                     v-else-if="isAdmin"
                     class="flex flex-col items-center gap-2"
@@ -145,11 +153,33 @@
     >
       ↑
     </button>
+    <!-- Image Zoom Popup -->
+    <div
+      v-if="showImagePopup"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click="closeImagePopup"
+    >
+      <div class="relative max-w-3xl max-h-[90vh] p-4">
+        <img
+          :src="imageUrl"
+          alt="Enlarged Image"
+          class="max-w-full max-h-auto object-contain"
+        />
+        <button
+          @click.stop="closeImagePopup"
+          class="absolute top-2 right-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
+        >
+          ×
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
 export default {
   name: "StockTable",
@@ -170,6 +200,8 @@ export default {
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1",
       isAdmin: false,
+      showImagePopup: false,
+      imageUrl: "",
     };
   },
   computed: {
@@ -223,6 +255,7 @@ export default {
           ? error.response?.data?.error || "Failed to fetch stock data"
           : "Failed to load stock-data.json";
         this.stockData = [];
+        toast.error(this.error, { autoClose: 3000 });
       }
     },
     async updateStockData() {
@@ -238,12 +271,16 @@ export default {
           (acc, _, index) => ({ ...acc, [index]: true }),
           {}
         );
-        alert(
-          "Stock data updated successfully! Please commit and push src/assets/stock-data.json to GitHub."
+        toast.success(
+          "Stock data updated successfully! Please commit and push src/assets/stock-data.json to GitHub.",
+          {
+            autoClose: 5000,
+          }
         );
       } catch (error) {
         this.error =
           error.response?.data?.error || "Failed to update stock data";
+        toast.error(this.error, { autoClose: 3000 });
       } finally {
         this.loading = false;
       }
@@ -253,7 +290,7 @@ export default {
       if (password === "admin123") {
         this.isAdmin = true;
       } else {
-        alert("Incorrect password");
+        toast.error("Incorrect password", { autoClose: 3000 });
       }
     },
     toggleGroup(index) {
@@ -299,16 +336,50 @@ export default {
           ),
         }));
 
-        alert(
-          "Image uploaded and stock-data.json updated! Please commit and push src/assets/stock-data.json to GitHub."
+        toast.success(
+          "Image uploaded and stock-data.json updated! Please commit and push src/assets/stock-data.json to GitHub.",
+          {
+            autoClose: 5000,
+          }
         );
       } catch (error) {
         this.uploadErrors[productName] = "Failed to upload image";
-        console.error(error);
+        toast.error(this.uploadErrors[productName], { autoClose: 3000 });
       } finally {
         this.uploading[productName] = false;
         this.imageFiles[productName] = null;
       }
+    },
+    async deleteImage(productName) {
+      try {
+        await axios.post("http://localhost:3000/api/removeImage", {
+          productName,
+        });
+        this.stockData = this.stockData.map((group) => ({
+          ...group,
+          products: group.products.map((product) =>
+            product.productName === productName
+              ? { ...product, imageUrl: null }
+              : product
+          ),
+        }));
+        toast.success(
+          `Image removed for ${productName}. Please commit and push src/assets/stock-data.json to GitHub.`,
+          {
+            autoClose: 5000,
+          }
+        );
+      } catch (error) {
+        toast.error("Failed to remove image", { autoClose: 3000 });
+      }
+    },
+    openImagePopup(url) {
+      this.imageUrl = url;
+      this.showImagePopup = true;
+    },
+    closeImagePopup() {
+      this.showImagePopup = false;
+      this.imageUrl = "";
     },
     selectGroup(groupName) {
       this.selectedGroup = groupName;
