@@ -1,6 +1,15 @@
 <template>
   <div class="max-w-4xl mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4 text-center">Tally Stock Summary</h1>
+    <!-- Admin Button -->
+    <div class="flex justify-end mb-4" v-if="!isAdmin">
+      <button
+        @click="promptAdminLogin"
+        class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm"
+      >
+        Admin
+      </button>
+    </div>
     <!-- Search Bar -->
     <div class="mb-4">
       <input
@@ -11,11 +20,11 @@
       />
     </div>
     <!-- Group Filter Buttons -->
-    <div class="flex flex-wrap gap-2 mb-4">
+    <div class="flex overflow-x-auto gap-2 mb-4 flex-wrap max-h-20">
       <button
         @click="selectGroup('All')"
         :class="[
-          'px-3 py-1 rounded-lg text-sm',
+          'px-3 py-1 rounded-lg text-sm flex-shrink-0',
           selectedGroup === 'All'
             ? 'bg-blue-600'
             : 'bg-gray-600 hover:bg-gray-500',
@@ -28,7 +37,7 @@
         :key="group.groupName"
         @click="selectGroup(group.groupName)"
         :class="[
-          'px-3 py-1 rounded-lg text-sm',
+          'px-3 py-1 rounded-lg text-sm flex-shrink-0',
           selectedGroup === group.groupName
             ? 'bg-blue-600'
             : 'bg-gray-600 hover:bg-gray-500',
@@ -42,7 +51,7 @@
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
       <button
-        v-if="isLocal"
+        v-if="isAdmin && isLocal"
         @click="updateStockData"
         :disabled="loading"
         class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
@@ -100,7 +109,7 @@
                     class="w-full h-full object-cover"
                   />
                   <div
-                    v-else-if="isLocal"
+                    v-else-if="isAdmin && isLocal"
                     class="flex flex-col items-center gap-2"
                   >
                     <input
@@ -170,6 +179,7 @@ export default {
       isLocal:
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1",
+      isAdmin: false,
     };
   },
   computed: {
@@ -246,6 +256,14 @@ export default {
           error.response?.data?.error || "Failed to update stock data";
       } finally {
         this.loading = false;
+      }
+    },
+    promptAdminLogin() {
+      const password = prompt("Enter admin password:");
+      if (password === "admin123") {
+        this.isAdmin = true;
+      } else {
+        alert("Incorrect password");
       }
     },
     toggleGroup(index) {

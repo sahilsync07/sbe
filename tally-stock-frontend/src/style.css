@@ -47,35 +47,29 @@ input[type="file"] {
   table {
     @apply table-fixed;
   }
-
   th,
   td {
     @apply px-1 py-2 text-xs;
   }
-
   th:first-child,
   td:first-child {
-    @apply w-28;
-    /* Narrower Name column */
+    @apply w-28; /* Narrower Name column */
   }
-
   th:nth-child(2),
   td:nth-child(2) {
-    @apply w-16;
-    /* Quantity column */
+    @apply w-16; /* Quantity column */
   }
-
   th:nth-child(3),
   td:nth-child(3) {
-    @apply w-28;
-    /* Image column */
+    @apply w-28; /* Image column */
   }
-
   .image-box {
     @apply w-20 h-28;
   }
-
   button {
     @apply w-full;
+  }
+  .flex.overflow-x-auto {
+    @apply scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800;
   }
 }
