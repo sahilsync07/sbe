@@ -40,7 +40,15 @@ input[type="file"] {
 }
 
 .image-box {
-  @apply w-20 h-28 bg-gray-700 rounded-md overflow-hidden flex items-center justify-center mx-auto relative;
+  @apply w-20 h-28 bg-gray-700 rounded-md overflow-hidden flex items-center justify-center mx-auto;
+}
+
+.image-box img {
+  @apply w-full h-full object-cover;
+}
+
+.image-box div {
+  @apply flex items-center justify-center w-full h-full text-center text-gray-500 text-xs;
 }
 
 .go-to-top {
@@ -51,28 +59,35 @@ input[type="file"] {
   table {
     @apply table-fixed;
   }
+
   th,
   td {
     @apply px-1 py-2 text-xs;
   }
+
   th:first-child,
   td:first-child {
     @apply w-28;
   }
+
   th:nth-child(2),
   td:nth-child(2) {
     @apply w-16;
   }
+
   th:nth-child(3),
   td:nth-child(3) {
     @apply w-28;
   }
+
   .image-box {
     @apply w-20 h-28;
   }
+
   button {
     @apply w-full;
   }
+
   .go-to-top {
     @apply p-1 w-8 h-8 text-xs;
   }
