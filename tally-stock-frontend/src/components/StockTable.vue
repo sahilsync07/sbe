@@ -41,7 +41,7 @@
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
       <button
-        v-if="isAdmin && isLocal"
+        v-if="isAdmin"
         @click="updateStockData"
         :disabled="loading"
         class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
@@ -99,7 +99,7 @@
                     class="w-full h-full object-cover"
                   />
                   <div
-                    v-else-if="isAdmin && isLocal"
+                    v-else-if="isAdmin"
                     class="flex flex-col items-center gap-2"
                   >
                     <input
