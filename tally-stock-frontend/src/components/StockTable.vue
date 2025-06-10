@@ -5,11 +5,11 @@
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
       <button
-        @click="fetchStockData"
+        @click="updateStockData"
         :disabled="loading"
         class="w-full sm:w-auto"
       >
-        {{ loading ? "Refreshing..." : "Refresh" }}
+        {{ loading ? "Updating..." : "Refresh" }}
       </button>
       <span class="text-sm text-center sm:text-left">
         Last Refreshed:
@@ -20,8 +20,9 @@
         }}
       </span>
     </div>
-    <div v-if="error" class="text-red-500 mb-4 text-center">
-      {{ error }} (Ensure Tally is running on localhost:9000)
+    <div v-if="error" class="text-red-600 mb-4 text-center">
+      {{ error }} (Ensure Tally is running on localhost:9000 and backend is
+      active)
     </div>
     <div class="table-container">
       <table>
@@ -36,8 +37,8 @@
           <template v-for="(group, index) in stockData" :key="index">
             <tr class="group-row" @click="toggleGroup(index)">
               <td>{{ group.groupName }}</td>
-              <td></td>
-              <td></td>
+              <td>-</td>
+              <td>-</td>
             </tr>
             <tr
               v-for="(product, pIndex) in group.products"
@@ -126,33 +127,30 @@ export default {
     );
   },
   methods: {
-    async fetchStockData() {
+    async updateStockData() {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get("http://localhost:3000/api/stock");
-        // Merge fetched data with existing image URLs
-        const newData = response.data.map((group) => ({
-          ...group,
-          products: group.products.map((product) => ({
-            ...product,
-            imageUrl: this.imageUrls[product.productName] || null,
-          })),
-        }));
-        this.stockData = newData;
-        this.lastRefresh = new Date();
-        this.expandedGroups = this.stockData.reduce(
-          (acc, _, index) => ({ ...acc, [index]: true }),
-          {}
+        const response = await axios.post(
+          "http://localhost:3000/api/updateStockData"
         );
-        // Save to stock-data.json (manual commit required)
-        console.log("Updated stock data:", JSON.stringify(newData, null, 2));
-        alert(
-          "Data refreshed! Please commit and push src/assets/stock-data.json to GitHub."
-        );
+        this.stockData = response.data.data;
+        if (response.data.error) {
+          this.error = response.data.error;
+        } else {
+          this.lastRefresh = new Date();
+          this.expandedGroups = this.stockData.reduce(
+            (acc, _, index) => ({ ...acc, [index]: true }),
+            {}
+          );
+          alert(
+            "Stock data updated successfully! Please commit and push src/assets/stock-data.json to GitHub."
+          );
+        }
       } catch (error) {
-        this.error = "Failed to fetch stock data";
-        console.error(error);
+        this.error =
+          error.response?.data?.error || "Failed to update stock data";
+        console.error("Update stock data error:", error);
       } finally {
         this.loading = false;
       }
@@ -192,7 +190,6 @@ export default {
         if (data.secure_url) {
           this.imageUrls[productName] = data.secure_url;
           localStorage.setItem("productImages", JSON.stringify(this.imageUrls));
-          // Update stockData with new image URL
           this.stockData = this.stockData.map((group) => ({
             ...group,
             products: group.products.map((product) =>
@@ -201,12 +198,9 @@ export default {
                 : product
             ),
           }));
-          console.log(
-            "Updated stock data with image:",
-            JSON.stringify(this.stockData, null, 2)
-          );
+          await axios.post("http://localhost:3000/api/updateStockData");
           alert(
-            "Image uploaded! Please commit and push src/assets/stock-data.json to GitHub."
+            "Image uploaded and stock data updated! Please commit and push src/assets/stock-data.json to GitHub."
           );
         } else {
           throw new Error("Upload failed");
