@@ -43,6 +43,10 @@ input[type="file"] {
   @apply w-24 h-36 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center mx-auto;
 }
 
+.go-to-top {
+  @apply p-2 text-sm;
+}
+
 @media (max-width: 640px) {
   table {
     @apply table-fixed;
@@ -69,7 +73,7 @@ input[type="file"] {
   button {
     @apply w-full;
   }
-  .flex.overflow-x-auto {
-    @apply scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800;
+  .go-to-top {
+    @apply p-1 w-8 h-8 text-xs;
   }
 }

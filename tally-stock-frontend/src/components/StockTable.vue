@@ -19,32 +19,22 @@
         class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
       />
     </div>
-    <!-- Group Filter Buttons -->
-    <div class="flex overflow-x-auto gap-2 mb-4 flex-wrap max-h-20">
-      <button
-        @click="selectGroup('All')"
-        :class="[
-          'px-3 py-1 rounded-lg text-sm flex-shrink-0',
-          selectedGroup === 'All'
-            ? 'bg-blue-600'
-            : 'bg-gray-600 hover:bg-gray-500',
-        ]"
+    <!-- Group Filter Dropdown -->
+    <div class="mb-4">
+      <select
+        v-model="selectedGroup"
+        @change="selectGroup($event.target.value)"
+        class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
       >
-        All
-      </button>
-      <button
-        v-for="group in stockData"
-        :key="group.groupName"
-        @click="selectGroup(group.groupName)"
-        :class="[
-          'px-3 py-1 rounded-lg text-sm flex-shrink-0',
-          selectedGroup === group.groupName
-            ? 'bg-blue-600'
-            : 'bg-gray-600 hover:bg-gray-500',
-        ]"
-      >
-        {{ group.groupName }}
-      </button>
+        <option value="All">All</option>
+        <option
+          v-for="group in stockData"
+          :key="group.groupName"
+          :value="group.groupName"
+        >
+          {{ group.groupName }}
+        </option>
+      </select>
     </div>
     <!-- Refresh and Last Refreshed -->
     <div
@@ -151,9 +141,9 @@
     <button
       v-if="showGoToTop"
       @click="scrollToTop"
-      class="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg"
+      class="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg go-to-top"
     >
-      ↑ Top
+      ↑
     </button>
   </div>
 </template>
