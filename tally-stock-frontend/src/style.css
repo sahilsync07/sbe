@@ -7,7 +7,7 @@ body {
 }
 
 .table-container {
-  @apply w-full overflow-x-auto;
+  @apply w-full;
 }
 
 table {
@@ -16,29 +16,66 @@ table {
 
 th,
 td {
-  @apply border-b border-gray-600 px-4 py-6 text-left align-middle;
+  @apply border-b border-gray-600 px-2 py-4 align-middle;
 }
 
 th {
-  @apply bg-gray-800 text-gray-300 font-semibold uppercase text-xs tracking-wide;
+  @apply bg-gray-800 text-gray-300 font-semibold uppercase text-xs tracking-wide text-center;
 }
 
 tr.group-row {
-  @apply bg-gray-700 font-medium hover:bg-gray-600 cursor-pointer;
+  @apply bg-blue-800 text-white font-bold cursor-pointer;
 }
 
 tr.product-row {
-  @apply bg-gray-800 pl-4;
+  @apply bg-gray-800;
 }
 
 button {
-  @apply px-4 py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500 transition-colors w-full sm:w-auto;
+  @apply px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500 transition-colors;
 }
 
 input[type="file"] {
-  @apply text-sm text-gray-300 w-full;
+  @apply text-sm text-gray-300;
 }
 
 .image-box {
-  @apply w-32 h-48 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center;
+  @apply w-24 h-36 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center mx-auto;
+}
+
+@media (max-width: 640px) {
+  table {
+    @apply table-fixed;
+  }
+
+  th,
+  td {
+    @apply px-1 py-2 text-xs;
+  }
+
+  th:first-child,
+  td:first-child {
+    @apply w-28;
+    /* Narrower Name column */
+  }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    @apply w-16;
+    /* Quantity column */
+  }
+
+  th:nth-child(3),
+  td:nth-child(3) {
+    @apply w-28;
+    /* Image column */
+  }
+
+  .image-box {
+    @apply w-20 h-28;
+  }
+
+  button {
+    @apply w-full;
+  }
 }

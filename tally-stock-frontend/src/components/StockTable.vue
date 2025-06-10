@@ -1,13 +1,50 @@
 <template>
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-4xl mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4 text-center">Tally Stock Summary</h1>
+    <!-- Search Bar -->
+    <div class="mb-4">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search products..."
+        class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+      />
+    </div>
+    <!-- Group Filter Buttons -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button
+        @click="selectGroup('All')"
+        :class="[
+          'px-3 py-1 rounded-lg text-sm',
+          selectedGroup === 'All'
+            ? 'bg-blue-600'
+            : 'bg-gray-600 hover:bg-gray-500',
+        ]"
+      >
+        All
+      </button>
+      <button
+        v-for="group in stockData"
+        :key="group.groupName"
+        @click="selectGroup(group.groupName)"
+        :class="[
+          'px-3 py-1 rounded-lg text-sm',
+          selectedGroup === group.groupName
+            ? 'bg-blue-600'
+            : 'bg-gray-600 hover:bg-gray-500',
+        ]"
+      >
+        {{ group.groupName }}
+      </button>
+    </div>
+    <!-- Refresh and Last Refreshed -->
     <div
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
       <button
         @click="updateStockData"
         :disabled="loading"
-        class="w-full sm:w-auto"
+        class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
       >
         {{ loading ? "Updating..." : "Refresh" }}
       </button>
@@ -20,25 +57,30 @@
         }}
       </span>
     </div>
+    <!-- Error Message -->
     <div v-if="error" class="text-red-600 mb-4 text-center">
       {{ error }} (Ensure Tally is running on localhost:9000 and backend is
       active)
     </div>
+    <!-- Stock Table -->
     <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Quantity</th>
-            <th>Image</th>
+            <th class="w-1/3">Name</th>
+            <th class="w-1/6">Quantity</th>
+            <th class="w-1/2">Image</th>
           </tr>
         </thead>
         <tbody>
-          <template v-for="(group, index) in stockData" :key="index">
+          <template v-for="(group, index) in filteredStockData" :key="index">
             <tr class="group-row" @click="toggleGroup(index)">
-              <td>{{ group.groupName }}</td>
-              <td>-</td>
-              <td>-</td>
+              <td
+                colspan="3"
+                class="text-center bg-blue-800 text-white font-bold"
+              >
+                {{ group.groupName }}
+              </td>
             </tr>
             <tr
               v-for="(product, pIndex) in group.products"
@@ -46,13 +88,13 @@
               v-show="expandedGroups[index]"
               class="product-row"
             >
-              <td>{{ product.productName }}</td>
+              <td class="truncate">{{ product.productName }}</td>
               <td>{{ product.quantity }}</td>
               <td>
                 <div class="image-box">
                   <img
-                    v-if="getImageUrl(product.productName)"
-                    :src="getImageUrl(product.productName)"
+                    v-if="product.imageUrl"
+                    :src="product.imageUrl"
                     alt="Product Image"
                     class="w-full h-full object-cover"
                   />
@@ -69,7 +111,7 @@
                         !imageFiles[product.productName] ||
                         uploading[product.productName]
                       "
-                      class="text-xs"
+                      class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded"
                     >
                       {{
                         uploading[product.productName]
@@ -91,24 +133,25 @@
         </tbody>
       </table>
     </div>
-    <router-link
-      to="/upload"
-      class="block text-center mt-4 text-blue-400 hover:underline"
-      >Upload General Images</router-link
+    <!-- Go to Top Button -->
+    <button
+      v-if="showGoToTop"
+      @click="scrollToTop"
+      class="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg"
     >
+      ↑ Top
+    </button>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import { Cloudinary } from "@cloudinary/url-gen";
-import stockData from "../assets/stock-data.json";
 
 export default {
   name: "StockTable",
   data() {
     return {
-      stockData: stockData,
+      stockData: [],
       loading: false,
       error: null,
       lastRefresh: null,
@@ -116,17 +159,57 @@ export default {
       imageFiles: {},
       uploading: {},
       uploadErrors: {},
-      imageUrls: JSON.parse(localStorage.getItem("productImages")) || {},
-      cloudinary: new Cloudinary({ cloud: { cloudName: "dg365ewal" } }),
+      searchQuery: "",
+      selectedGroup: "All",
+      showGoToTop: false,
     };
   },
-  mounted() {
+  computed: {
+    filteredStockData() {
+      let filtered = this.stockData;
+      if (this.searchQuery) {
+        filtered = filtered
+          .map((group) => ({
+            ...group,
+            products: group.products.filter((product) =>
+              product.productName
+                .toLowerCase()
+                .includes(this.searchQuery.toLowerCase())
+            ),
+          }))
+          .filter((group) => group.products.length > 0);
+      }
+      if (this.selectedGroup !== "All") {
+        filtered = filtered.filter(
+          (group) => group.groupName === this.selectedGroup
+        );
+      }
+      return filtered;
+    },
+  },
+  async mounted() {
+    await this.fetchStockData();
     this.expandedGroups = this.stockData.reduce(
       (acc, _, index) => ({ ...acc, [index]: true }),
       {}
     );
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
+    async fetchStockData() {
+      try {
+        const response = await axios.get("http://localhost:3000/api/stock");
+        this.stockData = response.data;
+        this.error = null;
+      } catch (error) {
+        this.error =
+          error.response?.data?.error || "Failed to fetch stock data";
+        this.stockData = [];
+      }
+    },
     async updateStockData() {
       this.loading = true;
       this.error = null;
@@ -135,37 +218,23 @@ export default {
           "http://localhost:3000/api/updateStockData"
         );
         this.stockData = response.data.data;
-        if (response.data.error) {
-          this.error = response.data.error;
-        } else {
-          this.lastRefresh = new Date();
-          this.expandedGroups = this.stockData.reduce(
-            (acc, _, index) => ({ ...acc, [index]: true }),
-            {}
-          );
-          alert(
-            "Stock data updated successfully! Please commit and push src/assets/stock-data.json to GitHub."
-          );
-        }
+        this.lastRefresh = new Date();
+        this.expandedGroups = this.stockData.reduce(
+          (acc, _, index) => ({ ...acc, [index]: true }),
+          {}
+        );
+        alert(
+          "Stock data updated successfully! Please commit and push src/assets/stock-data.json to GitHub."
+        );
       } catch (error) {
         this.error =
           error.response?.data?.error || "Failed to update stock data";
-        console.error("Update stock data error:", error);
       } finally {
         this.loading = false;
       }
     },
     toggleGroup(index) {
       this.expandedGroups[index] = !this.expandedGroups[index];
-    },
-    getImageUrl(productName) {
-      return (
-        this.stockData
-          .flatMap((group) => group.products)
-          .find((product) => product.productName === productName)?.imageUrl ||
-        this.imageUrls[productName] ||
-        null
-      );
     },
     handleFileChange(event, productName) {
       this.imageFiles[productName] = event.target.files[0];
@@ -187,24 +256,29 @@ export default {
           }
         );
         const data = await response.json();
-        if (data.secure_url) {
-          this.imageUrls[productName] = data.secure_url;
-          localStorage.setItem("productImages", JSON.stringify(this.imageUrls));
-          this.stockData = this.stockData.map((group) => ({
-            ...group,
-            products: group.products.map((product) =>
-              product.productName === productName
-                ? { ...product, imageUrl: data.secure_url }
-                : product
-            ),
-          }));
-          await axios.post("http://localhost:3000/api/updateStockData");
-          alert(
-            "Image uploaded and stock data updated! Please commit and push src/assets/stock-data.json to GitHub."
-          );
-        } else {
+        if (!data.secure_url) {
           throw new Error("Upload failed");
         }
+
+        // Update stock-data.json via backend
+        await axios.post("http://localhost:3000/api/updateImage", {
+          productName,
+          imageUrl: data.secure_url,
+        });
+
+        // Update local stockData
+        this.stockData = this.stockData.map((group) => ({
+          ...group,
+          products: group.products.map((product) =>
+            product.productName === productName
+              ? { ...product, imageUrl: data.secure_url }
+              : product
+          ),
+        }));
+
+        alert(
+          "Image uploaded and stock-data.json updated! Please commit and push src/assets/stock-data.json to GitHub."
+        );
       } catch (error) {
         this.uploadErrors[productName] = "Failed to upload image";
         console.error(error);
@@ -212,6 +286,15 @@ export default {
         this.uploading[productName] = false;
         this.imageFiles[productName] = null;
       }
+    },
+    selectGroup(groupName) {
+      this.selectedGroup = groupName;
+    },
+    handleScroll() {
+      this.showGoToTop = window.scrollY > 300;
+    },
+    scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
   },
 };

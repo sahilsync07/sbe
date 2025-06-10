@@ -196,7 +196,7 @@ app.post("/api/updateStockData", async (req, res) => {
       console.log("Updated stock-data.json at:", stockDataPath);
     } catch (err) {
       console.error("Error writing stock-data.json:", err.message, err.stack);
-      throw new Error("Cannot write to stock-data.json: ${err.message}");
+      throw new Error(`Cannot write to stock-data.json: ${err.message}`);
     }
 
     res.json({
@@ -207,7 +207,62 @@ app.post("/api/updateStockData", async (req, res) => {
     console.error("Error in updateStockData:", error.message, error.stack);
     res
       .status(500)
-      .json({ error: "Failed to update stock data: ${error.message }" });
+      .json({ error: `Failed to update stock data: ${error.message}` });
+  }
+});
+
+app.post("/api/updateImage", async (req, res) => {
+  try {
+    const { productName, imageUrl } = req.body;
+    if (!productName || !imageUrl) {
+      throw new Error("Missing productName or imageUrl");
+    }
+
+    // Validate file path
+    try {
+      await fs.access(stockDataPath, fs.constants.R_OK | fs.constants.W_OK);
+    } catch (err) {
+      throw new Error(`Cannot access stock-data.json: ${err.message}`);
+    }
+
+    // Load existing stock-data
+    let stockData = [];
+    try {
+      const fileContent = await fs.readFile(stockDataPath, "utf-8");
+      if (fileContent.trim()) {
+        stockData = JSON.parse(fileContent);
+      }
+    } catch (err) {
+      throw new Error(`Error reading stock-data.json: ${err.message}`);
+    }
+
+    // Update imageUrl
+    let updated = false;
+    stockData.forEach((group) => {
+      group.products.forEach((product) => {
+        if (product.productName === productName) {
+          product.imageUrl = imageUrl;
+          updated = true;
+        }
+      });
+    });
+
+    if (!updated) {
+      throw new Error(`Product ${productName} not found`);
+    }
+
+    // Write to file
+    try {
+      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      console.log(`Updated imageUrl for ${productName} in stock-data.json`);
+    } catch (err) {
+      throw new Error(`Cannot write to stock-data.json: ${err.message}`);
+    }
+
+    res.json({ message: `Image URL updated for ${productName}` });
+  } catch (error) {
+    console.error("Error in updateImage:", error.message, error.stack);
+    res.status(500).json({ error: `Failed to update image: ${error.message}` });
   }
 });
 
@@ -226,5 +281,5 @@ app.get("/api/tally-health", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("Server running at http://localhost:${port}");
+  console.log(`Server running at http://localhost:${port}`);
 });
