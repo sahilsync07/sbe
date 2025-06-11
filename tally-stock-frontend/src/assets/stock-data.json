@@ -3107,14 +3107,13 @@
         "rate": 308.04,
         "amount": -616.07,
         "imageUrl": null
-      },
-      {
-        "productName": "Hawai Chappal",
-        "quantity": 7268,
-        "rate": 73.9,
-        "amount": -537086.05,
-        "imageUrl": null
-      },
+      }
+    ],
+    "totalAmount": -4017.86
+  },
+  {
+    "groupName": "Hawai Chappal",
+    "products": [
       {
         "productName": "033 Acusole (2*5)@109",
         "quantity": 12,
@@ -3187,9 +3186,9 @@
       },
       {
         "productName": "CUSHION (1*3) MRP124/-",
-        "quantity": 548,
+        "quantity": 524,
         "rate": 77.34,
-        "amount": -42379.8,
+        "amount": -40523.75,
         "imageUrl": null
       },
       {
@@ -3201,9 +3200,9 @@
       },
       {
         "productName": "CUSHION (4*5) MRP138/-",
-        "quantity": 840,
+        "quantity": 792,
         "rate": 86.05,
-        "amount": -72279.94,
+        "amount": -68149.66,
         "imageUrl": null
       },
       {
@@ -3341,9 +3340,9 @@
       },
       {
         "productName": "Hawai Chappal Cushion (6*9) Mrp139/-",
-        "quantity": 1163,
+        "quantity": 1139,
         "rate": 86.7,
-        "amount": -100832.95,
+        "amount": -98752.13,
         "imageUrl": null
       },
       {
@@ -3417,7 +3416,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -1078189.96
+    "totalAmount": -1058037.8
   },
   {
     "groupName": "HITWAY",
@@ -4596,9 +4595,9 @@
       },
       {
         "productName": "Max",
-        "quantity": 931,
-        "rate": 328.59,
-        "amount": -305921.1,
+        "quantity": 919,
+        "rate": 329.16,
+        "amount": -302495.79,
         "imageUrl": null
       },
       {
@@ -5226,9 +5225,9 @@
       },
       {
         "productName": "PG MAX 9613 MRP504/-",
-        "quantity": 107,
+        "quantity": 95,
         "rate": 285.44,
-        "amount": -30542.36,
+        "amount": -27117.05,
         "imageUrl": null
       },
       {
@@ -5302,7 +5301,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -995700.5199999997
+    "totalAmount": -988849.8999999997
   },
   {
     "groupName": "NON BRAND",
@@ -5358,9 +5357,9 @@
       },
       {
         "productName": "R R POLYPLAST",
-        "quantity": 2220,
-        "rate": 84.58,
-        "amount": -187776.52,
+        "quantity": 2184,
+        "rate": 84.98,
+        "amount": -185596.18,
         "imageUrl": null
       },
       {
@@ -5389,20 +5388,6 @@
         "quantity": 2,
         "rate": 129.47,
         "amount": -258.94,
-        "imageUrl": null
-      },
-      {
-        "productName": "RESTO GRACY (4*8) RS.175/-",
-        "quantity": 9,
-        "rate": 120.54,
-        "amount": -1084.82,
-        "imageUrl": null
-      },
-      {
-        "productName": "RESTO LEXUS (4*8) RS.185/-",
-        "quantity": 5,
-        "rate": 129.46,
-        "amount": -647.32,
         "imageUrl": null
       },
       {
@@ -5504,7 +5489,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -2013935.4799999997
+    "totalAmount": -2006110.5199999996
   },
   {
     "groupName": "OTHERS",
@@ -5556,9 +5541,9 @@
       },
       {
         "productName": "Paragon Blot",
-        "quantity": 1255,
-        "rate": 316.08,
-        "amount": -396681.26,
+        "quantity": 1219,
+        "rate": 315.05,
+        "amount": -384047.64,
         "imageUrl": null
       },
       {
@@ -5836,16 +5821,16 @@
       },
       {
         "productName": "BLOT SANDAL 9085 MRP649.50/-",
-        "quantity": 118,
+        "quantity": 88,
         "rate": 365.75,
-        "amount": -43158.63,
+        "amount": -32186.1,
         "imageUrl": null
       },
       {
         "productName": "BLOT SANDAL 9139E PV 499/-",
-        "quantity": 23,
+        "quantity": 17,
         "rate": 276.85,
-        "amount": -6367.53,
+        "amount": -4706.44,
         "imageUrl": null
       },
       {
@@ -6221,9 +6206,9 @@
       },
       {
         "productName": "Paralite",
-        "quantity": 6180,
-        "rate": 121.52,
-        "amount": -750974.65,
+        "quantity": 6162,
+        "rate": 121.34,
+        "amount": -747682.69,
         "imageUrl": null
       },
       {
@@ -6977,16 +6962,16 @@
       },
       {
         "productName": "PARALITE 16048 GENTS (30 PAIR) MRP354/-",
-        "quantity": 521,
+        "quantity": 509,
         "rate": 182.86,
-        "amount": -95270.25,
+        "amount": -93075.93,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749480152/16048.jpg"
       },
       {
         "productName": "PARALITE 16049 GENTS (30 PAIRS) MRP354/-",
-        "quantity": 502,
+        "quantity": 496,
         "rate": 182.94,
-        "amount": -91835.42,
+        "amount": -90737.78,
         "imageUrl": null
       },
       {
@@ -8488,7 +8473,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749620940/P-TOES_6685.jpg"
       }
     ],
-    "totalAmount": -3394035.4999999995
+    "totalAmount": -3362184.3399999994
   },
   {
     "groupName": "PU-LION",
@@ -9936,9 +9921,9 @@
       },
       {
         "productName": "Solea & Meriva , Mascara",
-        "quantity": 4024,
-        "rate": 159.21,
-        "amount": -640645.18,
+        "quantity": 4012,
+        "rate": 159.14,
+        "amount": -638464.43,
         "imageUrl": null
       },
       {
@@ -10839,9 +10824,9 @@
       },
       {
         "productName": "SOELA 7097 LDS MRP324/-",
-        "quantity": 73,
+        "quantity": 61,
         "rate": 181.73,
-        "amount": -13266.23,
+        "amount": -11085.48,
         "imageUrl": null
       },
       {
@@ -12665,7 +12650,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -2703394.8199999966
+    "totalAmount": -2699033.319999996
   },
   {
     "groupName": "S S BANSAL",
@@ -12749,9 +12734,9 @@
       },
       {
         "productName": "Stimulus",
-        "quantity": 2670,
-        "rate": 189.31,
-        "amount": -505451.3,
+        "quantity": 2658,
+        "rate": 189.53,
+        "amount": -503760.72,
         "imageUrl": null
       },
       {
@@ -12784,9 +12769,9 @@
       },
       {
         "productName": "Paragon 1250 Gents Mrp.249/-",
-        "quantity": 375,
+        "quantity": 363,
         "rate": 140.88,
-        "amount": -52830.44,
+        "amount": -51139.86,
         "imageUrl": null
       },
       {
@@ -19734,7 +19719,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -4070943.0800000024
+    "totalAmount": -4067561.9200000023
   },
   {
     "groupName": "Xpania",
