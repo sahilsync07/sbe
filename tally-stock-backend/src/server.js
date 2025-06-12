@@ -86,6 +86,49 @@ async function fetchTallyData() {
     const stockGroups = {};
     let currentGroup = "Stock";
 
+    // Hardcoded list of group names (case-insensitive comparison)
+    const groupNames = [
+      "4WAY SPORT",
+      "ADDA",
+      "ADDOXY",
+      "AGRA",
+      "AIRSUN",
+      "Avon International (WOODS)",
+      "CUBIX",
+      "Eeken",
+      "Electrical & Electronic",
+      "Escoute",
+      "Fencer",
+      "Fender",
+      "Florex (Swastik)",
+      "GLAMIUM",
+      "Hawai Chappal",
+      "HITWAY",
+      "KHADIM",
+      "Kohinoor",
+      "LEO",
+      "Magnet",
+      "Max",
+      "NON BRAND",
+      "OTHERS",
+      "PARAGON",
+      "Paragon Blot",
+      "PARAGON COMFY",
+      "Paralite",
+      "P-TOES",
+      "PU-LION",
+      "RELIANCE FOOTWEAR",
+      "Safety",
+      "School",
+      "Solea & Meriva , Mascara",
+      "S S BANSAL",
+      "Stimulus",
+      "VERTEX, SLICKERS & FENDER",
+      "Walkaholic",
+      "Xpania",
+      "ZYF TEX",
+    ];
+
     dspAccNames.forEach((acc, index) => {
       const name = acc.DSPDISPNAME || `Unknown ${index}`;
       const stkCl = dspStkInfos[index]?.DSPSTKCL || {};
@@ -93,7 +136,12 @@ async function fetchTallyData() {
       const rate = parseFloat(stkCl.DSPCLRATE || "0");
       const amount = parseFloat(stkCl.DSPCLAMTA || "0");
 
-      if (!quantity.trim()) {
+      // Check if the name matches any hardcoded group name (case-insensitive)
+      const isGroup =
+        !quantity.trim() ||
+        groupNames.some((group) => name.toLowerCase() === group.toLowerCase());
+
+      if (isGroup) {
         currentGroup = name;
         if (!stockGroups[currentGroup]) {
           stockGroups[currentGroup] = { products: [], totalAmount: 0 };

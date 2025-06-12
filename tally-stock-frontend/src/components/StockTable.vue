@@ -1,13 +1,62 @@
 <template>
   <div class="max-w-4xl mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4 text-center">Tally Stock Summary</h1>
-    <!-- Admin Button -->
-    <div class="flex justify-end mb-4" v-if="!isAdmin">
-      <button
+    <!-- Header with SBE Rayagada, Refresh, and Admin -->
+    <div
+      class="flex items-center justify-between mb-4 bg-gray-800 py-2 px-4 rounded-lg"
+    >
+      <!-- Refresh Icon (Left) -->
+      <img
+        v-if="isAdmin"
+        @click="updateStockData"
+        src="https://res.cloudinary.com/dg365ewal/image/upload/v1749701539/cloud-sync_nznxzz.png"
+        alt="Refresh Icon"
+        class="w-10 h-10 object-contain cursor-pointer"
+        :class="{ 'animate-spin': loading }"
+      />
+      <!-- Placeholder to maintain centering when refresh is not visible -->
+      <div v-else class="w-10 h-10"></div>
+      <!-- SBE Rayagada (Center) -->
+      <div class="text-2xl font-bold text-center flex-1 text-white">
+        SBE Rayagada
+      </div>
+      <!-- Admin Icon (Right) -->
+      <img
+        v-if="!isAdmin"
         @click="promptAdminLogin"
-        class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm"
+        src="https://res.cloudinary.com/dg365ewal/image/upload/v1749669514/software-engineer_dek6dl.png"
+        alt="Admin Icon"
+        class="w-12 h-12 object-contain cursor-pointer"
+      />
+      <!-- Placeholder to maintain centering when admin is not visible -->
+      <div v-else class="w-12 h-12"></div>
+    </div>
+    <!-- Logo Row -->
+    <div class="flex flex-wrap justify-center items-center mb-4 gap-3">
+      <button
+        @click="selectGroup('All')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-gray-800 text-white font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'All' ? 'bg-blue-600' : 'hover:bg-gray-700',
+        ]"
       >
-        Admin
+        All
+      </button>
+      <button
+        v-for="brand in brands"
+        :key="brand.name"
+        @click="selectGroup(brand.name)"
+        :class="[
+          'h-10 rounded-lg bg-white border border-gray-300 w-[25%] sm:w-auto',
+          selectedGroup === brand.name
+            ? 'border-blue-500'
+            : 'hover:border-gray-500',
+        ]"
+      >
+        <img
+          :src="brand.logo"
+          :alt="`${brand.name} Logo`"
+          class="h-full w-auto object-contain"
+        />
       </button>
     </div>
     <!-- Search Bar -->
@@ -19,12 +68,12 @@
         class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
       />
     </div>
-    <!-- Group Filter Dropdown -->
-    <div class="mb-4">
+    <!-- Group Filter Dropdown and View Toggle -->
+    <div class="mb-4 flex flex-col sm:flex-row gap-2">
       <select
         v-model="selectedGroup"
         @change="selectGroup($event.target.value)"
-        class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+        class="w-full sm:w-1/2 px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
       >
         <option value="All">All</option>
         <option
@@ -35,19 +84,35 @@
           {{ group.groupName }}
         </option>
       </select>
+      <div class="w-full sm:w-1/2 flex gap-2">
+        <button
+          @click="viewMode = 'list'"
+          :class="[
+            'flex-1 py-2 rounded-lg text-sm',
+            viewMode === 'list'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-800 text-white hover:bg-gray-700',
+          ]"
+        >
+          List View
+        </button>
+        <button
+          @click="viewMode = 'image'"
+          :class="[
+            'flex-1 py-2 rounded-lg text-sm',
+            viewMode === 'image'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-800 text-white hover:bg-gray-700',
+          ]"
+        >
+          Image View
+        </button>
+      </div>
     </div>
     <!-- Refresh and Last Refreshed -->
     <div
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
-      <button
-        v-if="isAdmin"
-        @click="updateStockData"
-        :disabled="loading"
-        class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
-      >
-        {{ loading ? "Updating..." : "Refresh" }}
-      </button>
       <span class="text-sm text-center sm:text-left">
         Last Refreshed:
         {{
@@ -62,8 +127,8 @@
       {{ error }} (Ensure Tally is running on localhost:9000 and backend is
       active)
     </div>
-    <!-- Stock Table -->
-    <div class="table-container">
+    <!-- Stock Display -->
+    <div v-if="viewMode === 'list'" class="table-container">
       <table>
         <thead>
           <tr>
@@ -145,14 +210,106 @@
         </tbody>
       </table>
     </div>
+    <!-- Image Block View (Myntra Style) -->
+    <div v-else>
+      <div v-for="(group, index) in filteredStockData" :key="index">
+        <div
+          class="text-center bg-blue-800 text-white font-bold py-2 mb-2 rounded-lg"
+          @click="toggleGroup(index)"
+        >
+          {{ group.groupName }}
+        </div>
+        <div v-show="expandedGroups[index]" class="flex flex-wrap -mx-2">
+          <div
+            v-for="(product, pIndex) in group.products"
+            :key="`${index}-${pIndex}`"
+            class="w-1/2 sm:w-1/3 md:w-1/4 px-2 mb-4"
+          >
+            <div
+              class="bg-gray-800 rounded-lg p-2 flex flex-col h-[300px] sm:h-[350px]"
+            >
+              <!-- Image Section -->
+              <div
+                v-if="product.imageUrl"
+                class="relative w-full aspect-[3/4] flex-shrink-0"
+              >
+                <img
+                  :src="product.imageUrl"
+                  alt="Product Image"
+                  class="w-full h-full object-cover rounded-lg cursor-pointer"
+                  @click="openImagePopup(product.imageUrl)"
+                />
+                <button
+                  v-if="isAdmin"
+                  @click="deleteImage(product.productName)"
+                  class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+                >
+                  ×
+                </button>
+              </div>
+              <!-- Admin Upload Section -->
+              <div
+                v-else-if="isAdmin"
+                class="w-full aspect-[3/4] flex flex-col items-center justify-center gap-2 flex-shrink-0"
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="handleFileChange($event, product.productName)"
+                  class="text-xs text-white"
+                />
+                <button
+                  @click="uploadImage(product.productName)"
+                  :disabled="
+                    !imageFiles[product.productName] ||
+                    uploading[product.productName]
+                  "
+                  class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded"
+                >
+                  {{
+                    uploading[product.productName] ? "Uploading..." : "Upload"
+                  }}
+                </button>
+                <div
+                  v-if="uploadErrors[product.productName]"
+                  class="text-red-500 text-xs"
+                >
+                  {{ uploadErrors[product.productName] }}
+                </div>
+              </div>
+              <!-- No Image Placeholder -->
+              <div
+                v-else
+                class="w-full aspect-[3/4] flex items-center justify-center text-gray-500 text-sm rounded-lg bg-gray-700 flex-shrink-0"
+              >
+                No Image
+              </div>
+              <!-- Text Section -->
+              <div
+                class="mt-2 text-center flex flex-col flex-grow justify-between"
+              >
+                <p
+                  class="text-white text-base font-sans font-light tracking-wide line-clamp-2 leading-tight"
+                >
+                  {{ product.productName }}
+                </p>
+                <p class="text-gray-400 text-xs font-sans font-light mt-0.5">
+                  Qty: {{ product.quantity }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Go to Top Button -->
-    <button
+    <div
       v-if="showGoToTop"
       @click="scrollToTop"
-      class="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg go-to-top"
+      class="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg go-to-top flex items-center justify-center w-10 h-10 cursor-pointer"
     >
       ↑
-    </button>
+    </div>
     <!-- Image Zoom Popup -->
     <div
       v-if="showImagePopup"
@@ -202,6 +359,46 @@ export default {
       isAdmin: false,
       showImagePopup: false,
       imageUrl: "",
+      viewMode: "image", // Default to image view
+      brands: [
+        {
+          name: "Paragon",
+          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp",
+        },
+        {
+          name: "Reliance",
+          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png",
+        },
+        {
+          name: "Cubix",
+          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg",
+        },
+        {
+          name: "Florex",
+          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg",
+        },
+        {
+          name: "Eeken",
+          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
+        },
+        {
+          name: "Escoute",
+          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg",
+        },
+      ],
+      paragonSubgroups: [
+        "Walkaholic",
+        "VERTEX, SLICKERS & FENDER",
+        "Stimulus",
+        "Solea & Meriva , Mascara",
+        "P-TOES",
+        "Paralite",
+        "PARAGON COMFY",
+        "Paragon Blot",
+        "PARAGON",
+        "Max",
+        "Hawai Chappal",
+      ],
     };
   },
   computed: {
@@ -220,9 +417,25 @@ export default {
           .filter((group) => group.products.length > 0);
       }
       if (this.selectedGroup !== "All") {
-        filtered = filtered.filter(
-          (group) => group.groupName === this.selectedGroup
-        );
+        if (this.selectedGroup === "Paragon") {
+          filtered = filtered.filter((group) =>
+            this.paragonSubgroups.includes(group.groupName)
+          );
+        } else if (this.selectedGroup === "Reliance") {
+          filtered = filtered.filter(
+            (group) => group.groupName === "RELIANCE FOOTWEAR"
+          );
+        } else if (this.selectedGroup === "Florex") {
+          filtered = filtered.filter(
+            (group) => group.groupName === "Florex (Swastik)"
+          );
+        } else if (this.selectedGroup === "Cubix") {
+          filtered = filtered.filter((group) => group.groupName === "CUBIX");
+        } else {
+          filtered = filtered.filter(
+            (group) => group.groupName === this.selectedGroup
+          );
+        }
       }
       return filtered;
     },
