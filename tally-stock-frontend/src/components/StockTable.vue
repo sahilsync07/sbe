@@ -323,57 +323,59 @@
     <!-- Image Zoom Popup -->
     <div
       v-if="showImagePopup"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex flex-col z-50"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
-      <div class="relative w-full max-w-3xl max-h-[90vh] flex flex-col">
-        <!-- Group Name Bar (Top) -->
+      <!-- Group Name Bar (Top, Sticky) -->
+      <div
+        class="fixed top-0 left-0 right-0 backdrop-blur-md bg-white bg-opacity-10 text-white font-bold text-center py-2 z-50"
+      >
+        {{ currentGroupName }}
+      </div>
+      <!-- Image Section with Liquid Glass Effect -->
+      <div class="flex-grow flex items-center justify-center px-4 py-16">
         <div
-          class="bg-blue-800 text-white font-bold text-center py-2 rounded-t-lg"
+          class="relative w-full max-w-3xl backdrop-blur-md bg-white bg-opacity-10 rounded-lg shadow-lg"
         >
-          {{ currentGroupName }}
-        </div>
-        <!-- Image Section -->
-        <div class="relative flex-grow flex items-center justify-center">
           <img
             v-if="currentProduct.imageUrl"
             :src="currentProduct.imageUrl"
             alt="Enlarged Image"
-            class="max-w-full max-h-[70vh] object-contain"
+            class="w-full max-h-[70vh] object-contain rounded-lg"
           />
-          <div v-else class="text-gray-500 text-center">No Image</div>
+          <div v-else class="text-gray-500 text-center py-4">No Image</div>
           <!-- Navigation Arrows -->
           <button
             v-if="currentProductIndex > 0"
             @click="navigateImage(-1)"
-            class="absolute left-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
+            class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
           >
-            &larr;
+            ←
           </button>
           <button
             v-if="currentProductIndex < currentGroupProducts.length - 1"
             @click="navigateImage(1)"
-            class="absolute right-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
           >
-            &rarr;
+            →
           </button>
         </div>
-        <!-- Product Details Bar (Bottom) -->
-        <div
-          class="bg-gray-800 text-white text-center py-2 rounded-b-lg flex justify-between px-4"
-        >
-          <span class="text-sm truncate">{{ currentProduct.productName }}</span>
-          <span class="text-sm">Qty: {{ currentProduct.quantity }}</span>
-        </div>
-        <!-- Close Button -->
-        <button
-          @click="closeImagePopup"
-          class="absolute top-2 right-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
-        >
-          ×
-        </button>
       </div>
+      <!-- Product Details Bar (Bottom, Sticky) -->
+      <div
+        class="fixed bottom-0 left-0 right-0 backdrop-blur-md bg-white bg-opacity-10 text-white text-center py-2 flex justify-between px-4 z-50"
+      >
+        <span class="text-sm truncate">{{ currentProduct.productName }}</span>
+        <span class="text-sm">Qty: {{ currentProduct.quantity }}</span>
+      </div>
+      <!-- Close Button -->
+      <button
+        @click="closeImagePopup"
+        class="fixed top-2 right-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg z-50"
+      >
+        ×
+      </button>
     </div>
   </div>
 </template>
@@ -691,3 +693,12 @@ export default {
   },
 };
 </script>
+<style scoped>
+/* Ensure backdrop-blur is supported, with fallback for unsupported browsers */
+.backdrop-blur-md {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+</style>
