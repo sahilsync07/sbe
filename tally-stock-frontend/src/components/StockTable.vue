@@ -446,7 +446,9 @@ export default {
             .map((group) => ({
               ...group,
               products: group.products.filter((product) =>
-                product.productName.toLowerCase().match(/kid|toes|chu|1\*/)
+                product.productName
+                  .toLowerCase()
+                  .match(/kid|toes|boy|girl|chu|1\*/)
               ),
             }))
             .filter((group) => group.products.length > 0);
