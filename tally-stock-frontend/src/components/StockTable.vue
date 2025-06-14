@@ -58,6 +58,15 @@
           class="h-full w-auto object-contain"
         />
       </button>
+      <button
+        @click="selectGroup('Kids')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-gray-800 text-white font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Kids' ? 'bg-blue-600' : 'hover:bg-gray-700',
+        ]"
+      >
+        Kids
+      </button>
     </div>
     <!-- Search Bar -->
     <div class="mb-4">
@@ -76,6 +85,7 @@
         class="w-full sm:w-1/2 px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
       >
         <option value="All">All</option>
+        <option value="Kids">Kids</option>
         <option
           v-for="group in stockData"
           :key="group.groupName"
@@ -431,6 +441,15 @@ export default {
           );
         } else if (this.selectedGroup === "Cubix") {
           filtered = filtered.filter((group) => group.groupName === "CUBIX");
+        } else if (this.selectedGroup === "Kids") {
+          filtered = filtered
+            .map((group) => ({
+              ...group,
+              products: group.products.filter((product) =>
+                product.productName.toLowerCase().match(/kid|toes|chu|1\*/)
+              ),
+            }))
+            .filter((group) => group.products.length > 0);
         } else {
           filtered = filtered.filter(
             (group) => group.groupName === this.selectedGroup
