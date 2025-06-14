@@ -172,7 +172,7 @@
                     :src="product.imageUrl"
                     alt="Product Image"
                     class="w-full h-full object-cover cursor-pointer"
-                    @click="openImagePopup(product.imageUrl)"
+                    @click="openImagePopup(product, index)"
                   />
                   <button
                     v-if="product.imageUrl && isAdmin"
@@ -247,7 +247,7 @@
                   :src="product.imageUrl"
                   alt="Product Image"
                   class="w-full h-full object-cover rounded-lg cursor-pointer"
-                  @click="openImagePopup(product.imageUrl)"
+                  @click="openImagePopup(product, index)"
                 />
                 <button
                   v-if="isAdmin"
@@ -324,16 +324,51 @@
     <div
       v-if="showImagePopup"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click="closeImagePopup"
+      @touchstart="handleTouchStart"
+      @touchend="handleTouchEnd"
     >
-      <div class="relative max-w-3xl max-h-[90vh] p-4">
-        <img
-          :src="imageUrl"
-          alt="Enlarged Image"
-          class="max-w-full max-h-auto object-contain"
-        />
+      <div class="relative w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <!-- Group Name Bar (Top) -->
+        <div
+          class="bg-blue-800 text-white font-bold text-center py-2 rounded-t-lg"
+        >
+          {{ currentGroupName }}
+        </div>
+        <!-- Image Section -->
+        <div class="relative flex-grow flex items-center justify-center">
+          <img
+            v-if="currentProduct.imageUrl"
+            :src="currentProduct.imageUrl"
+            alt="Enlarged Image"
+            class="max-w-full max-h-[70vh] object-contain"
+          />
+          <div v-else class="text-gray-500 text-center">No Image</div>
+          <!-- Navigation Arrows -->
+          <button
+            v-if="currentProductIndex > 0"
+            @click="navigateImage(-1)"
+            class="absolute left-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
+          >
+            &larr;
+          </button>
+          <button
+            v-if="currentProductIndex < currentGroupProducts.length - 1"
+            @click="navigateImage(1)"
+            class="absolute right-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
+          >
+            &rarr;
+          </button>
+        </div>
+        <!-- Product Details Bar (Bottom) -->
+        <div
+          class="bg-gray-800 text-white text-center py-2 rounded-b-lg flex justify-between px-4"
+        >
+          <span class="text-sm truncate">{{ currentProduct.productName }}</span>
+          <span class="text-sm">Qty: {{ currentProduct.quantity }}</span>
+        </div>
+        <!-- Close Button -->
         <button
-          @click.stop="closeImagePopup"
+          @click="closeImagePopup"
           class="absolute top-2 right-2 bg-gray-800 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg"
         >
           ×
@@ -368,8 +403,12 @@ export default {
         window.location.hostname === "127.0.0.1",
       isAdmin: false,
       showImagePopup: false,
-      imageUrl: "",
-      viewMode: "image", // Default to image view
+      currentProduct: {},
+      currentGroupIndex: null,
+      currentProductIndex: 0,
+      currentGroupProducts: [],
+      currentGroupName: "",
+      touchStartX: 0,
       brands: [
         {
           name: "Paragon",
@@ -598,13 +637,47 @@ export default {
         toast.error("Failed to remove image", { autoClose: 3000 });
       }
     },
-    openImagePopup(url) {
-      this.imageUrl = url;
+    openImagePopup(product, groupIndex) {
+      this.currentProduct = product;
+      this.currentGroupIndex = groupIndex;
+      this.currentGroupProducts = this.filteredStockData[groupIndex].products;
+      this.currentGroupName = this.filteredStockData[groupIndex].groupName;
+      this.currentProductIndex = this.currentGroupProducts.findIndex(
+        (p) => p.productName === product.productName
+      );
       this.showImagePopup = true;
     },
     closeImagePopup() {
       this.showImagePopup = false;
-      this.imageUrl = "";
+      this.currentProduct = {};
+      this.currentGroupIndex = null;
+      this.currentGroupProducts = [];
+      this.currentGroupName = "";
+      this.currentProductIndex = 0;
+    },
+    navigateImage(direction) {
+      const newIndex = this.currentProductIndex + direction;
+      if (newIndex >= 0 && newIndex < this.currentGroupProducts.length) {
+        this.currentProductIndex = newIndex;
+        this.currentProduct = this.currentGroupProducts[newIndex];
+      }
+    },
+    handleTouchStart(event) {
+      this.touchStartX = event.touches[0].clientX;
+    },
+    handleTouchEnd(event) {
+      const touchEndX = event.changedTouches[0].clientX;
+      const diff = this.touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        // Threshold for swipe detection
+        if (diff > 0) {
+          // Swipe left
+          this.navigateImage(1);
+        } else {
+          // Swipe right
+          this.navigateImage(-1);
+        }
+      }
     },
     selectGroup(groupName) {
       this.selectedGroup = groupName;
