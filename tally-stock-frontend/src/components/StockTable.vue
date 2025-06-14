@@ -484,12 +484,9 @@ export default {
           (acc, _, index) => ({ ...acc, [index]: true }),
           {}
         );
-        toast.success(
-          "Stock data updated successfully! Please commit and push src/assets/stock-data.json to GitHub.",
-          {
-            autoClose: 5000,
-          }
-        );
+        toast.success("Stock data updated successfully!", {
+          autoClose: 2500,
+        });
       } catch (error) {
         this.error =
           error.response?.data?.error || "Failed to update stock data";
@@ -549,12 +546,9 @@ export default {
           ),
         }));
 
-        toast.success(
-          "Image uploaded and stock-data.json updated! Please commit and push src/assets/stock-data.json to GitHub.",
-          {
-            autoClose: 5000,
-          }
-        );
+        toast.success("Image uploaded and stock-data.json updated!", {
+          autoClose: 2500,
+        });
       } catch (error) {
         this.uploadErrors[productName] = "Failed to upload image";
         toast.error(this.uploadErrors[productName], { autoClose: 3000 });
@@ -576,12 +570,9 @@ export default {
               : product
           ),
         }));
-        toast.success(
-          `Image removed for ${productName}. Please commit and push src/assets/stock-data.json to GitHub.`,
-          {
-            autoClose: 5000,
-          }
-        );
+        toast.success(`Image removed for ${productName}.`, {
+          autoClose: 2500,
+        });
       } catch (error) {
         toast.error("Failed to remove image", { autoClose: 3000 });
       }
