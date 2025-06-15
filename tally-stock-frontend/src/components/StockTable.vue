@@ -67,6 +67,42 @@
       >
         Kids
       </button>
+      <button
+        @click="selectGroup('Hawai')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-gray-800 text-white font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Hawai' ? 'bg-blue-600' : 'hover:bg-gray-700',
+        ]"
+      >
+        Hawai
+      </button>
+      <button
+        @click="selectGroup('Loose')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-gray-800 text-white font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Loose' ? 'bg-blue-600' : 'hover:bg-gray-700',
+        ]"
+      >
+        Loose
+      </button>
+      <button
+        @click="selectGroup('Box')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-gray-800 text-white font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Box' ? 'bg-blue-600' : 'hover:bg-gray-700',
+        ]"
+      >
+        Box
+      </button>
+      <button
+        @click="selectGroup('Shoe')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-gray-800 text-white font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Shoe' ? 'bg-blue-600' : 'hover:bg-gray-700',
+        ]"
+      >
+        Shoe
+      </button>
     </div>
     <!-- Search Bar -->
     <div class="mb-4">
@@ -86,6 +122,10 @@
       >
         <option value="All">All</option>
         <option value="Kids">Kids</option>
+        <option value="Hawai">Hawai</option>
+        <option value="Loose">Loose</option>
+        <option value="Box">Box</option>
+        <option value="Shoe">Shoes</option>
         <option
           v-for="group in stockData"
           :key="group.groupName"
@@ -411,6 +451,7 @@ export default {
       currentGroupProducts: [],
       currentGroupName: "",
       touchStartX: 0,
+      viewMode: "image",
       brands: [
         {
           name: "Paragon",
@@ -489,7 +530,49 @@ export default {
               products: group.products.filter((product) =>
                 product.productName
                   .toLowerCase()
-                  .match(/kid|toes|boy|girl|chu|1\*/)
+                  .match(/kid|toes|boy|girl|chu|1\*|child/)
+              ),
+            }))
+            .filter((group) => group.products.length > 0);
+        } else if (this.selectedGroup === "Hawai") {
+          filtered = filtered
+            .map((group) => ({
+              ...group,
+              products: group.products.filter((product) =>
+                product.productName
+                  .toLowerCase()
+                  .match(/hawai|walkaholic|cushion/)
+              ),
+            }))
+            .filter((group) => group.products.length > 0);
+        } else if (this.selectedGroup === "Loose") {
+          filtered = filtered
+            .map((group) => ({
+              ...group,
+              products: group.products.filter((product) =>
+                product.productName
+                  .toLowerCase()
+                  .match(/loose|era ladies|bond|r.k|r k/)
+              ),
+            }))
+            .filter((group) => group.products.length > 0);
+        } else if (this.selectedGroup === "Box") {
+          filtered = filtered
+            .map((group) => ({
+              ...group,
+              products: group.products.filter((product) =>
+                product.productName
+                  .toLowerCase()
+                  .match(/seltos|airson|airsun|lion|fencer/)
+              ),
+            }))
+            .filter((group) => group.products.length > 0);
+        } else if (this.selectedGroup === "Shoe") {
+          filtered = filtered
+            .map((group) => ({
+              ...group,
+              products: group.products.filter((product) =>
+                product.productName.toLowerCase().match(/shoe/)
               ),
             }))
             .filter((group) => group.products.length > 0);
@@ -693,6 +776,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 /* Ensure backdrop-blur is supported, with fallback for unsupported browsers */
 .backdrop-blur-md {
