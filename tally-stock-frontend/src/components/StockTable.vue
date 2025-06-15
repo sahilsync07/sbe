@@ -269,29 +269,24 @@
         >
           {{ group.groupName }}
         </div>
-        <div
-          v-show="expandedGroups[index]"
-          class="flex flex-wrap -mx-2 row-container"
-          ref="rowContainers"
-        >
+        <div v-show="expandedGroups[index]" class="flex flex-wrap -mx-2">
           <div
             v-for="(product, pIndex) in group.products"
             :key="`${index}-${pIndex}`"
             class="w-1/2 sm:w-1/3 md:w-1/4 px-2 mb-4"
           >
             <div
-              class="bg-gray-800 rounded-lg p-2 flex flex-col card h-[300px] sm:h-[350px]"
+              class="bg-gray-800 rounded-lg p-2 flex flex-col h-[330px] sm:h-[380px]"
             >
               <!-- Image Section -->
               <div
                 v-if="product.imageUrl"
-                class="relative w-full aspect-[3/4] flex-shrink-0"
+                class="relative w-full h-[240px] sm:h-[290px] flex-shrink-0"
               >
                 <img
                   :src="product.imageUrl"
                   alt="Product Image"
                   class="w-full h-full object-cover rounded-lg cursor-pointer"
-                  @load="adjustCardHeights"
                   @click="openImagePopup(product, index)"
                 />
                 <button
@@ -305,7 +300,7 @@
               <!-- Admin Upload Section -->
               <div
                 v-else-if="isAdmin"
-                class="w-full aspect-[3/4] flex flex-col items-center justify-center gap-2 flex-shrink-0"
+                class="w-full h-[240px] sm:h-[290px] flex flex-col items-center justify-center gap-2 flex-shrink-0"
               >
                 <input
                   type="file"
@@ -335,7 +330,7 @@
               <!-- No Image Placeholder -->
               <div
                 v-else
-                class="w-full aspect-[3/4] flex items-center justify-center text-gray-500 text-sm rounded-lg bg-gray-700 flex-shrink-0"
+                class="w-full h-[240px] sm:h-[290px] flex items-center justify-center text-gray-500 text-sm rounded-lg bg-gray-700 flex-shrink-0"
               >
                 No Image
               </div>
@@ -597,11 +592,9 @@ export default {
       {}
     );
     window.addEventListener("scroll", this.handleScroll);
-    window.addEventListener("resize", this.adjustCardHeights);
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
-    window.removeEventListener("resize", this.adjustCardHeights);
   },
   methods: {
     async loadStockData() {
@@ -657,7 +650,6 @@ export default {
     },
     toggleGroup(index) {
       this.expandedGroups[index] = !this.expandedGroups[index];
-      this.$nextTick(() => this.adjustCardHeights());
     },
     handleFileChange(event, productName) {
       this.imageFiles[productName] = event.target.files[0];
@@ -702,7 +694,6 @@ export default {
         toast.success("Image uploaded and stock-data.json updated!", {
           autoClose: 2500,
         });
-        this.$nextTick(() => this.adjustCardHeights());
       } catch (error) {
         this.uploadErrors[productName] = "Failed to upload image";
         toast.error(this.uploadErrors[productName], { autoClose: 3000 });
@@ -727,7 +718,6 @@ export default {
         toast.success(`Image removed for ${productName}.`, {
           autoClose: 2500,
         });
-        this.$nextTick(() => this.adjustCardHeights());
       } catch (error) {
         toast.error("Failed to remove image", { autoClose: 3000 });
       }
@@ -776,112 +766,12 @@ export default {
     },
     selectGroup(groupName) {
       this.selectedGroup = groupName;
-      this.$nextTick(() => this.adjustCardHeights());
     },
     handleScroll() {
       this.showGoToTop = window.scrollY > 300;
     },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
-    },
-    adjustCardHeights() {
-      this.$nextTick(() => {
-        // Get all row containers
-        const rowContainers = this.$refs.rowContainers;
-        if (!rowContainers) return;
-
-        // Define minimum heights
-        const minCardHeight = window.innerWidth < 640 ? 300 : 350; // h-[300px] for mobile, h-[350px] for sm and up
-        const minImageHeight = minCardHeight - 56; // Subtract approximate text height (40px) and padding (2 * 8px = 16px)
-
-        // Handle each group (row container)
-        rowContainers.forEach((rowContainer) => {
-          if (!rowContainer) return;
-
-          // Get all cards in the row container
-          const cards = rowContainer.querySelectorAll(".card");
-          if (!cards.length) return;
-
-          // Reset heights to auto to get natural image heights
-          cards.forEach((card) => {
-            const imageContainer = card.querySelector(".aspect-\\3\\/4");
-            if (imageContainer) {
-              imageContainer.style.height = "auto";
-            }
-            card.style.height = "auto";
-          });
-
-          // Group cards into rows based on their offsetTop
-          const rows = [];
-          let currentRow = [];
-          let lastTop = null;
-
-          cards.forEach((card) => {
-            const top = card.offsetTop;
-            if (lastTop === null || top === lastTop) {
-              currentRow.push(card);
-            } else {
-              rows.push(currentRow);
-              currentRow = [card];
-            }
-            lastTop = top;
-          });
-          if (currentRow.length) rows.push(currentRow);
-
-          // Process each row
-          rows.forEach((rowCards) => {
-            // Get the maximum image height in the row
-            let maxImageHeight = 0;
-            rowCards.forEach((card) => {
-              const img = card.querySelector("img");
-              if (img) {
-                const height = img.getBoundingClientRect().height;
-                if (height > maxImageHeight) {
-                  maxImageHeight = height;
-                }
-              }
-            });
-
-            // If no images, use a default height for non-image cards
-            if (maxImageHeight === 0) {
-              rowCards.forEach((card) => {
-                const noImageContainer = card.querySelector(
-                  ".aspect-\\3\\/4:not(:has(img))"
-                );
-                if (noImageContainer) {
-                  const height =
-                    noImageContainer.getBoundingClientRect().height;
-                  if (height > maxImageHeight) {
-                    maxImageHeight = height;
-                  }
-                }
-              });
-            }
-
-            // Ensure minimum image height
-            maxImageHeight = Math.max(maxImageHeight, minImageHeight);
-
-            // Apply the max height to all image containers and cards in the row
-            rowCards.forEach((card) => {
-              const imageContainer = card.querySelector(".aspect-\\3\\/4");
-              if (imageContainer) {
-                imageContainer.style.height = `${maxImageHeight}px`;
-              }
-              // Calculate card height: image height + text height + padding
-              const textSection = card.querySelector(".mt-2");
-              const textHeight = textSection
-                ? textSection.getBoundingClientRect().height
-                : 40; // Fallback text height
-              const padding = 16; // 2 * 8px (p-2)
-              const totalCardHeight = maxImageHeight + textHeight + padding;
-              card.style.height = `${Math.max(
-                totalCardHeight,
-                minCardHeight
-              )}px`;
-            });
-          });
-        });
-      });
     },
   },
 };
@@ -896,9 +786,9 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Ensure images don't exceed container width */
-.aspect-\3\/4 img {
+/* Ensure images don't exceed container dimensions */
+img {
   max-width: 100%;
-  height: auto;
+  max-height: 100%;
 }
 </style>
