@@ -265,7 +265,7 @@
                 <div class="image-box relative">
                   <img
                     v-if="product.imageUrl"
-                    :src="getOptimizedUrl(product.imageUrl, true)"
+                    :src="getOptimizedUrl(product.imageUrl)"
                     alt="Product Image"
                     class="w-full h-full object-cover cursor-pointer"
                     @click="openImagePopup(product, index)"
@@ -338,7 +338,7 @@
                 class="relative w-full h-[200px] sm:h-[250px] flex-shrink-0"
               >
                 <img
-                  :src="getOptimizedUrl(product.imageUrl, true)"
+                  :src="getOptimizedUrl(product.imageUrl)"
                   alt="Product Image"
                   class="w-full h-full object-cover cursor-pointer"
                   @click="openImagePopup(product, index)"
@@ -427,7 +427,7 @@
         >
           <img
             v-if="currentProduct.imageUrl"
-            :src="getOptimizedUrl(currentProduct.imageUrl, false)"
+            :src="getOptimizedUrl(currentProduct.imageUrl)"
             alt="Enlarged Image"
             class="w-full max-h-[70vh] object-contain rounded-lg"
           />
@@ -452,11 +452,11 @@
         class="fixed bottom-0 left-0 right-0 bg-white py-4 border-4 border-white z-50"
       >
         <div class="flex flex-col px-4">
-          <span class="text-black font-bold text-lg truncate text-center">{{
-            currentProduct.productName
-          }}</span>
-          <span class="text-black font-bold text-lg text-center"
-            >Qty: {{ currentProduct.quantity }}</span
+          <span class="text-black font-bold text-lg truncate text-center">
+            {{ currentProduct.productName }}</span
+          >
+          <span class="text-black font-bold text-lg text-center">
+            Qty: {{ currentProduct.quantity }}</span
           >
         </div>
       </div>
@@ -674,14 +674,12 @@ export default {
     window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
-    getOptimizedUrl(imageUrl, isThumbnail = false) {
+    getOptimizedUrl(imageUrl) {
       if (!imageUrl) return null;
       try {
         const parts = imageUrl.split("/upload/");
         if (parts.length !== 2) return imageUrl;
-        const transformation = isThumbnail
-          ? "w_120,h_120,c_fill,q_auto,f_auto"
-          : "w_600,q_auto,f_auto";
+        const transformation = "w_1000,q_70,f_auto";
         return `${parts[0]}/upload/${transformation}/${parts[1]}`;
       } catch (e) {
         return imageUrl;
