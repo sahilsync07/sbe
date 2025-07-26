@@ -132,10 +132,10 @@
         Magnet
       </button>
       <button
-        @click="selectGroup('R.K.Traders')"
+        @click="selectGroup('rktraders')"
         :class="[
           'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'R.K.Traders'
+          selectedGroup === 'rktraders'
             ? 'bg-white text-gray-800'
             : 'hover:bg-gray-200',
         ]"
