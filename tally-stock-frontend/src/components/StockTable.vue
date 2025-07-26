@@ -4,7 +4,6 @@
     <div
       class="flex items-center justify-between mb-4 bg-white py-2 px-4 shadow"
     >
-      <!-- Refresh Icon (Left) -->
       <img
         v-if="isAdmin"
         @click="updateStockData"
@@ -14,11 +13,9 @@
         :class="{ 'animate-spin': loading }"
       />
       <div v-else class="w-10 h-10"></div>
-      <!-- SBE Rayagada (Center) -->
       <div class="text-2xl font-bold text-center flex-1 text-gray-800">
         SBE Rayagada
       </div>
-      <!-- Admin Icon (Right) -->
       <img
         v-if="!isAdmin"
         @click="promptAdminLogin"
@@ -28,7 +25,6 @@
       />
       <div v-else class="w-12 h-12"></div>
     </div>
-    <!-- Logo Row -->
     <div class="flex flex-wrap justify-center items-center mb-4 gap-3">
       <button
         @click="selectGroup('All')"
@@ -136,29 +132,39 @@
         Magnet
       </button>
       <button
-        @click="selectGroup('Bansal')"
+        @click="selectGroup('R.K.Traders')"
         :class="[
           'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Bansal'
+          selectedGroup === 'R.K.Traders'
             ? 'bg-white text-gray-800'
             : 'hover:bg-gray-200',
         ]"
       >
-        Bansal
+        R.K.Traders
       </button>
       <button
-        @click="selectGroup('Jalandar')"
+        @click="selectGroup('jkplastic')"
         :class="[
           'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Jalandar'
+          selectedGroup === 'jkplastic'
             ? 'bg-white text-gray-800'
             : 'hover:bg-gray-200',
         ]"
       >
-        Jalandar
+        J.K.Plastic
+      </button>
+      <button
+        @click="selectGroup('airson')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'airson'
+            ? 'bg-white text-gray-800'
+            : 'hover:bg-gray-200',
+        ]"
+      >
+        Airson
       </button>
     </div>
-    <!-- Search Bar -->
     <div class="mb-4">
       <input
         v-model="searchQuery"
@@ -167,7 +173,6 @@
         class="w-full px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500"
       />
     </div>
-    <!-- Group Filter Dropdown and View Toggle -->
     <div class="mb-4 flex flex-col sm:flex-row gap-2">
       <select
         v-model="selectedGroup"
@@ -213,7 +218,6 @@
         </button>
       </div>
     </div>
-    <!-- Refresh and Last Refreshed -->
     <div
       class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
     >
@@ -226,12 +230,10 @@
         }}
       </span>
     </div>
-    <!-- Error Message -->
     <div v-if="error" class="text-red-500 mb-4 text-center">
       {{ error }} (Ensure Tally is running on localhost:9000 and backend is
       active)
     </div>
-    <!-- Stock Display -->
     <div v-if="viewMode === 'list'" class="table-container">
       <table class="w-full">
         <thead>
@@ -263,7 +265,7 @@
                 <div class="image-box relative">
                   <img
                     v-if="product.imageUrl"
-                    :src="product.imageUrl"
+                    :src="getOptimizedUrl(product.imageUrl, true)"
                     alt="Product Image"
                     class="w-full h-full object-cover cursor-pointer"
                     @click="openImagePopup(product, index)"
@@ -314,7 +316,6 @@
         </tbody>
       </table>
     </div>
-    <!-- Image Block View -->
     <div v-else>
       <div v-for="(group, index) in filteredStockData" :key="index">
         <div
@@ -332,13 +333,12 @@
             <div
               class="bg-white border border-gray-200 p-2 flex flex-col h-[280px] sm:h-[330px]"
             >
-              <!-- Image Section -->
               <div
                 v-if="product.imageUrl"
                 class="relative w-full h-[200px] sm:h-[250px] flex-shrink-0"
               >
                 <img
-                  :src="product.imageUrl"
+                  :src="getOptimizedUrl(product.imageUrl, true)"
                   alt="Product Image"
                   class="w-full h-full object-cover cursor-pointer"
                   @click="openImagePopup(product, index)"
@@ -351,7 +351,6 @@
                   ×
                 </button>
               </div>
-              <!-- Admin Upload Section -->
               <div
                 v-else-if="isAdmin"
                 class="w-full h-[200px] sm:h-[250px] flex flex-col items-center justify-center gap-2 flex-shrink-0"
@@ -381,14 +380,12 @@
                   {{ uploadErrors[product.productName] }}
                 </div>
               </div>
-              <!-- No Image Placeholder -->
               <div
                 v-else
                 class="w-full h-[200px] sm:h-[250px] flex items-center justify-center text-gray-500 text-sm bg-gray-100 flex-shrink-0"
               >
                 No Image
               </div>
-              <!-- Text Section -->
               <div
                 class="mt-1 text-center flex flex-col flex-grow justify-between p-1"
               >
@@ -406,7 +403,6 @@
         </div>
       </div>
     </div>
-    <!-- Go to Top Button -->
     <div
       v-if="showGoToTop"
       @click="scrollToTop"
@@ -414,32 +410,28 @@
     >
       ↑
     </div>
-    <!-- Image Zoom Popup -->
     <div
       v-if="showImagePopup"
       class="fixed inset-0 bg-white bg-opacity-50 flex flex-col z-50"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
-      <!-- Group Name Bar (Top, Sticky) -->
       <div
         class="fixed top-0 left-0 right-0 bg-white py-4 border-4 border-white z-50 flex justify-center"
       >
         <span class="text-black font-bold text-lg">{{ currentGroupName }}</span>
       </div>
-      <!-- Image Section -->
       <div class="flex-grow flex items-center justify-center px-4 py-16">
         <div
           class="relative w-full max-w-3xl bg-white bg-opacity-90 rounded-lg shadow-lg"
         >
           <img
             v-if="currentProduct.imageUrl"
-            :src="currentProduct.imageUrl"
+            :src="getOptimizedUrl(currentProduct.imageUrl, false)"
             alt="Enlarged Image"
             class="w-full max-h-[70vh] object-contain rounded-lg"
           />
           <div v-else class="text-gray-500 text-center py-4">No Image</div>
-          <!-- Navigation Arrows -->
           <button
             v-if="currentProductIndex > 0"
             @click="navigateImage(-1)"
@@ -456,7 +448,6 @@
           </button>
         </div>
       </div>
-      <!-- Product Details Bar (Bottom, Sticky) -->
       <div
         class="fixed bottom-0 left-0 right-0 bg-white py-4 border-4 border-white z-50"
       >
@@ -469,7 +460,6 @@
           >
         </div>
       </div>
-      <!-- Close Button -->
       <button
         @click="closeImagePopup"
         class="fixed top-2 right-2 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl z-50 hover:bg-red-600"
@@ -553,14 +543,15 @@ export default {
       ],
       marutiSubgroups: ["MARUTI PLASTICS"],
       magnetSubgroups: ["Magnet"],
-      bansalSubgroups: [
+      rktradersSubgroups: [
         "SRG ENTERPRISES",
         "VARDHMAN PLASTICS",
         "VARDHMAN PLASTICS",
         "NAV DURGA ENTERPRISES",
         "AAGAM POLYMER",
       ],
-      jalandarSubgroups: ["J.K Plastic"],
+      jkplasticSubgroups: ["J.K Plastic"],
+      airson: ["Airsun"],
     };
   },
   computed: {
@@ -601,13 +592,13 @@ export default {
           filtered = filtered.filter((group) =>
             this.magnetSubgroups.includes(group.groupName)
           );
-        } else if (this.selectedGroup === "Bansal") {
+        } else if (this.selectedGroup === "rktraders") {
           filtered = filtered.filter((group) =>
-            this.bansalSubgroups.includes(group.groupName)
+            this.rktradersSubgroups.includes(group.groupName)
           );
-        } else if (this.selectedGroup === "Jalandar") {
+        } else if (this.selectedGroup === "jkplastic") {
           filtered = filtered.filter((group) =>
-            this.jalandarSubgroups.includes(group.groupName)
+            this.jkplasticSubgroups.includes(group.groupName)
           );
         } else if (this.selectedGroup === "Kids") {
           filtered = filtered
@@ -683,6 +674,19 @@ export default {
     window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
+    getOptimizedUrl(imageUrl, isThumbnail = false) {
+      if (!imageUrl) return null;
+      try {
+        const parts = imageUrl.split("/upload/");
+        if (parts.length !== 2) return imageUrl;
+        const transformation = isThumbnail
+          ? "w_120,h_120,c_fill,q_auto,f_auto"
+          : "w_600,q_auto,f_auto";
+        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
+      } catch (e) {
+        return imageUrl;
+      }
+    },
     async loadStockData() {
       try {
         if (false) {
@@ -760,14 +764,10 @@ export default {
         if (!data.secure_url) {
           throw new Error("Upload failed");
         }
-
-        // Update stock-data.json via backend
         await axios.post("http://localhost:3000/api/updateImage", {
           productName,
           imageUrl: data.secure_url,
         });
-
-        // Update local stockData
         this.stockData = this.stockData.map((group) => ({
           ...group,
           products: group.products.map((product) =>
@@ -776,7 +776,6 @@ export default {
               : product
           ),
         }));
-
         toast.success("Image uploaded and stock data updated!", {
           autoClose: 2500,
         });
