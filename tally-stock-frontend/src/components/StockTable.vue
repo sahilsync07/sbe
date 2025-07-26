@@ -113,6 +113,50 @@
       >
         Shoe
       </button>
+      <button
+        @click="selectGroup('Maruti')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Maruti'
+            ? 'bg-white text-gray-800'
+            : 'hover:bg-gray-200',
+        ]"
+      >
+        Maruti
+      </button>
+      <button
+        @click="selectGroup('Magnet')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Magnet'
+            ? 'bg-white text-gray-800'
+            : 'hover:bg-gray-200',
+        ]"
+      >
+        Magnet
+      </button>
+      <button
+        @click="selectGroup('Bansal')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Bansal'
+            ? 'bg-white text-gray-800'
+            : 'hover:bg-gray-200',
+        ]"
+      >
+        Bansal
+      </button>
+      <button
+        @click="selectGroup('Jalandar')"
+        :class="[
+          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+          selectedGroup === 'Jalandar'
+            ? 'bg-white text-gray-800'
+            : 'hover:bg-gray-200',
+        ]"
+      >
+        Jalandar
+      </button>
     </div>
     <!-- Search Bar -->
     <div class="mb-4">
@@ -507,6 +551,16 @@ export default {
         "Max",
         "Hawai Chappal",
       ],
+      marutiSubgroups: ["MARUTI PLASTICS"],
+      magnetSubgroups: ["Magnet"],
+      bansalSubgroups: [
+        "SRG ENTERPRISES",
+        "VARDHMAN PLASTICS",
+        "VARDHMAN PLASTICS",
+        "NAV DURGA ENTERPRISES",
+        "AAGAM POLYMER",
+      ],
+      jalandarSubgroups: ["J.K Plastic"],
     };
   },
   computed: {
@@ -539,6 +593,22 @@ export default {
           );
         } else if (this.selectedGroup === "Cubix") {
           filtered = filtered.filter((group) => group.groupName === "CUBIX");
+        } else if (this.selectedGroup === "Maruti") {
+          filtered = filtered.filter((group) =>
+            this.marutiSubgroups.includes(group.groupName)
+          );
+        } else if (this.selectedGroup === "Magnet") {
+          filtered = filtered.filter((group) =>
+            this.magnetSubgroups.includes(group.groupName)
+          );
+        } else if (this.selectedGroup === "Bansal") {
+          filtered = filtered.filter((group) =>
+            this.bansalSubgroups.includes(group.groupName)
+          );
+        } else if (this.selectedGroup === "Jalandar") {
+          filtered = filtered.filter((group) =>
+            this.jalandarSubgroups.includes(group.groupName)
+          );
         } else if (this.selectedGroup === "Kids") {
           filtered = filtered
             .map((group) => ({
