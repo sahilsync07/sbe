@@ -10,11 +10,22 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ensures full history for accurate visualization
       - name: Generate Diagram
         uses: githubocto/repo-visualizer@0.9.1
         with:
           output_file: "diagram.svg"
           excluded_paths: "node_modules,dist,build,.vscode,.github"
+          excluded_globs: "**/node_modules/**,**/*.min.js,**/*.map"
           should_push: true
           commit_message: "Update repository diagram [skip ci]"
           branch: "main"
+      - name: Commit Diagram
+        if: success() # Only run if diagram generation succeeds
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add diagram.svg
+          git commit -m "Update repository diagram [skip ci]" || echo "No changes to commit"
+          git push origin main
