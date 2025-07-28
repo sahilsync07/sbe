@@ -1,23 +1,32 @@
 <template>
   <div class="min-h-screen w-full p-4 bg-gray-100">
-    <!-- Header with SBE Rayagada, Refresh, and Admin -->
+    <!-- Header with SBE Rayagada, Refresh or Ledger, and Admin -->
     <div
       class="flex items-center justify-between mb-4 bg-white py-2 px-4 shadow"
     >
-      <img
-        v-if="isAdmin"
-        @click="updateStockData"
-        src="https://res.cloudinary.com/dg365ewal/image/upload/v1749701539/cloud-sync_nznxzz.png"
-        alt="Refresh Icon"
-        class="w-10 h-10 object-contain cursor-pointer"
-        :class="{ 'animate-spin': loading }"
-      />
-      <div v-else class="w-10 h-10"></div>
+      <div class="flex items-center space-x-2">
+        <img
+          v-if="isAdmin && !isSuperAdmin"
+          @click="updateStockData"
+          src="https://res.cloudinary.com/dg365ewal/image/upload/v1749701539/cloud-sync_nznxzz.png"
+          alt="Refresh Icon"
+          class="w-10 h-10 object-contain cursor-pointer"
+          :class="{ 'animate-spin': loading }"
+        />
+        <img
+          v-if="isSuperAdmin"
+          @click="toggleLedgerView"
+          src="https://res.cloudinary.com/dg365ewal/image/upload/v1753616091/accounting-book_vh3kg5.png"
+          alt="Ledger Icon"
+          class="w-10 h-10 object-contain cursor-pointer"
+        />
+        <div v-else-if="!isAdmin && !isSuperAdmin" class="w-10 h-10"></div>
+      </div>
       <div class="text-2xl font-bold text-center flex-1 text-gray-800">
         SBE Rayagada
       </div>
       <img
-        v-if="!isAdmin"
+        v-if="!isAdmin && !isSuperAdmin"
         @click="promptAdminLogin"
         src="https://res.cloudinary.com/dg365ewal/image/upload/v1749669514/software-engineer_dek6dl.png"
         alt="Admin Icon"
@@ -25,447 +34,463 @@
       />
       <div v-else class="w-12 h-12"></div>
     </div>
-    <div class="flex flex-wrap justify-center items-center mb-4 gap-3">
-      <button
-        @click="selectGroup('All')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'All'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        All
-      </button>
-      <button
-        v-for="brand in brands"
-        :key="brand.name"
-        @click="selectGroup(brand.name)"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === brand.name
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        <img
-          :src="brand.logo"
-          :alt="`${brand.name} Logo`"
-          class="w-full h-full object-contain"
-        />
-      </button>
-      <button
-        @click="selectGroup('Kids')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Kids'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Kids
-      </button>
-      <button
-        @click="selectGroup('Hawai')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Hawai'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Hawai
-      </button>
-      <button
-        @click="selectGroup('Loose')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Loose'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Loose
-      </button>
-      <button
-        @click="selectGroup('Box')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Box'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Box
-      </button>
-      <button
-        @click="selectGroup('Shoe')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Shoe'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Shoe
-      </button>
-      <button
-        @click="selectGroup('Maruti')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Maruti'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Maruti
-      </button>
-      <button
-        @click="selectGroup('Magnet')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'Magnet'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Magnet
-      </button>
-      <button
-        @click="selectGroup('rktraders')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'rktraders'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        R.K.Traders
-      </button>
-      <button
-        @click="selectGroup('jkplastic')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'jkplastic'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        J.K.Plastic
-      </button>
-      <button
-        @click="selectGroup('airson')"
-        :class="[
-          'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-          selectedGroup === 'airson'
-            ? 'bg-white text-gray-800'
-            : 'hover:bg-gray-200',
-        ]"
-      >
-        Airson
-      </button>
+
+    <!-- Ledger View -->
+    <div
+      v-if="showLedgerView"
+      class="text-center text-gray-800 font-bold text-lg mt-4"
+    >
+      Tally Ledger Work in Progress
     </div>
-    <div class="mb-4">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Search products..."
-        class="w-full px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500"
-      />
-    </div>
-    <div class="mb-4 flex flex-col sm:flex-row gap-2">
-      <select
-        v-model="selectedGroup"
-        @change="selectGroup($event.target.value)"
-        class="w-full sm:w-1/2 px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
-      >
-        <option value="All">All</option>
-        <option value="Kids">Kids</option>
-        <option value="Hawai">Hawai</option>
-        <option value="Loose">Loose</option>
-        <option value="Box">Box</option>
-        <option value="Shoe">Shoes</option>
-        <option
-          v-for="group in stockData"
-          :key="group.groupName"
-          :value="group.groupName"
-        >
-          {{ group.groupName }}
-        </option>
-      </select>
-      <div class="w-full sm:w-1/2 flex gap-2">
+
+    <!-- Existing Content (Hidden in Ledger View) -->
+    <div v-if="!showLedgerView">
+      <div class="flex flex-wrap justify-center items-center mb-4 gap-3">
         <button
-          @click="viewMode = 'list'"
+          @click="selectGroup('All')"
           :class="[
-            'flex-1 py-2 rounded-lg text-sm',
-            viewMode === 'list'
-              ? 'bg-blue-500 text-white'
-              : 'bg-white text-gray-800 hover:bg-gray-100',
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'All'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
           ]"
         >
-          List View
+          All
         </button>
         <button
-          @click="viewMode = 'image'"
+          v-for="brand in brands"
+          :key="brand.name"
+          @click="selectGroup(brand.name)"
           :class="[
-            'flex-1 py-2 rounded-lg text-sm',
-            viewMode === 'image'
-              ? 'bg-blue-500 text-white'
-              : 'bg-white text-gray-800 hover:bg-gray-100',
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === brand.name
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
           ]"
         >
-          Image View
+          <img
+            :src="brand.logo"
+            :alt="`${brand.name} Logo`"
+            class="w-full h-full object-contain"
+          />
+        </button>
+        <button
+          @click="selectGroup('Kids')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Kids'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Kids
+        </button>
+        <button
+          @click="selectGroup('Hawai')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Hawai'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Hawai
+        </button>
+        <button
+          @click="selectGroup('Loose')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Loose'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Loose
+        </button>
+        <button
+          @click="selectGroup('Box')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Box'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Box
+        </button>
+        <button
+          @click="selectGroup('Shoe')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Shoe'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Shoe
+        </button>
+        <button
+          @click="selectGroup('Maruti')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Maruti'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Maruti
+        </button>
+        <button
+          @click="selectGroup('Magnet')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'Magnet'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Magnet
+        </button>
+        <button
+          @click="selectGroup('rktraders')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'rktraders'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          R.K.Traders
+        </button>
+        <button
+          @click="selectGroup('jkplastic')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'jkplastic'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          J.K.Plastic
+        </button>
+        <button
+          @click="selectGroup('airson')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'airson'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          Airson
         </button>
       </div>
-    </div>
-    <div
-      class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
-    >
-      <span class="text-sm text-center sm:text-left text-gray-600">
-        Last Refreshed:
-        {{
-          lastRefresh
-            ? lastRefresh.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
-            : "Never"
-        }}
-      </span>
-    </div>
-    <div v-if="error" class="text-red-500 mb-4 text-center">
-      {{ error }} (Ensure Tally is running on localhost:9000 and backend is
-      active)
-    </div>
-    <div v-if="viewMode === 'list'" class="table-container">
-      <table class="w-full">
-        <thead>
-          <tr>
-            <th class="w-1/3">Name</th>
-            <th class="w-1/6">Quantity</th>
-            <th class="w-1/2">Image</th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-for="(group, index) in filteredStockData" :key="index">
-            <tr class="group-row" @click="toggleGroup(index)">
-              <td
-                colspan="3"
-                class="text-center bg-gray-100 text-gray-800 font-bold border-b border-gray-300"
-              >
-                {{ group.groupName }}
-              </td>
+      <div class="mb-4">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search products..."
+          class="w-full px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500"
+        />
+      </div>
+      <div class="mb-4 flex flex-col sm:flex-row gap-2">
+        <select
+          v-model="selectedGroup"
+          @change="selectGroup($event.target.value)"
+          class="w-full sm:w-1/2 px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+        >
+          <option value="All">All</option>
+          <option value="Kids">Kids</option>
+          <option value="Hawai">Hawai</option>
+          <option value="Loose">Loose</option>
+          <option value="Box">Box</option>
+          <option value="Shoe">Shoes</option>
+          <option
+            v-for="group in stockData"
+            :key="group.groupName"
+            :value="group.groupName"
+          >
+            {{ group.groupName }}
+          </option>
+        </select>
+        <div class="w-full sm:w-1/2 flex gap-2">
+          <button
+            @click="viewMode = 'list'"
+            :class="[
+              'flex-1 py-2 rounded-lg text-sm',
+              viewMode === 'list'
+                ? 'bg-blue-500 text-white'
+                : 'bg-white text-gray-800 hover:bg-gray-100',
+            ]"
+          >
+            List View
+          </button>
+          <button
+            @click="viewMode = 'image'"
+            :class="[
+              'flex-1 py-2 rounded-lg text-sm',
+              viewMode === 'image'
+                ? 'bg-blue-500 text-white'
+                : 'bg-white text-gray-800 hover:bg-gray-100',
+            ]"
+          >
+            Image View
+          </button>
+        </div>
+      </div>
+      <div
+        class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
+      >
+        <span class="text-sm text-center sm:text-left text-gray-600">
+          Last Refreshed:
+          {{
+            lastRefresh
+              ? lastRefresh.toLocaleString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                })
+              : "Never"
+          }}
+        </span>
+      </div>
+      <div v-if="error" class="text-red-500 mb-4 text-center">
+        {{ error }} (Ensure Tally is running on localhost:9000 and backend is
+        active)
+      </div>
+      <div v-if="viewMode === 'list'" class="table-container">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th class="w-1/3">Name</th>
+              <th class="w-1/6">Quantity</th>
+              <th class="w-1/2">Image</th>
             </tr>
-            <tr
+          </thead>
+          <tbody>
+            <template v-for="(group, index) in filteredStockData" :key="index">
+              <tr class="group-row" @click="toggleGroup(index)">
+                <td
+                  colspan="3"
+                  class="text-center bg-gray-100 text-gray-800 font-bold border-b border-gray-300"
+                >
+                  {{ group.groupName }}
+                </td>
+              </tr>
+              <tr
+                v-for="(product, pIndex) in group.products"
+                :key="`${index}-${pIndex}`"
+                v-show="expandedGroups[index]"
+                class="product-row"
+              >
+                <td class="truncate">{{ product.productName }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>
+                  <div class="image-box relative">
+                    <img
+                      v-if="product.imageUrl"
+                      :src="getOptimizedUrl(product.imageUrl)"
+                      alt="Product Image"
+                      class="w-full h-full object-cover cursor-pointer"
+                      @click="openImagePopup(product, index)"
+                    />
+                    <button
+                      v-if="product.imageUrl && (isAdmin || isSuperAdmin)"
+                      @click="deleteImage(product.productName)"
+                      class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                    <div
+                      v-else-if="isAdmin || isSuperAdmin"
+                      class="flex flex-col items-center gap-2"
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        @change="handleFileChange($event, product.productName)"
+                        class="text-xs text-gray-700"
+                      />
+                      <button
+                        @click="uploadImage(product.productName)"
+                        :disabled="
+                          !imageFiles[product.productName] ||
+                          uploading[product.productName]
+                        "
+                        class="text-xs bg-blue-500 text-white px-2 py-1 rounded"
+                      >
+                        {{
+                          uploading[product.productName]
+                            ? "Uploading..."
+                            : "Upload"
+                        }}
+                      </button>
+                      <div
+                        v-if="uploadErrors[product.productName]"
+                        class="text-red-500 text-xs"
+                      >
+                        {{ uploadErrors[product.productName] }}
+                      </div>
+                    </div>
+                    <div v-else class="text-gray-700 text-xs">No Image</div>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <div v-else>
+        <div v-for="(group, index) in filteredStockData" :key="index">
+          <div
+            class="text-center bg-gray-100 text-gray-800 font-bold py-2 mb-2 border shadow"
+            @click="toggleGroup(index)"
+          >
+            {{ group.groupName }}
+          </div>
+          <div v-show="expandedGroups[index]" class="flex flex-wrap -mx-2">
+            <div
               v-for="(product, pIndex) in group.products"
               :key="`${index}-${pIndex}`"
-              v-show="expandedGroups[index]"
-              class="product-row"
+              class="w-1/2 sm:w-1/3 md:w-1/4 px-2 mb-4"
             >
-              <td class="truncate">{{ product.productName }}</td>
-              <td>{{ product.quantity }}</td>
-              <td>
-                <div class="image-box relative">
+              <div
+                class="bg-white border border-gray-200 p-2 flex flex-col h-[280px] sm:h-[330px]"
+              >
+                <div
+                  v-if="product.imageUrl"
+                  class="relative w-full h-[200px] sm:h-[250px] flex-shrink-0"
+                >
                   <img
-                    v-if="product.imageUrl"
                     :src="getOptimizedUrl(product.imageUrl)"
                     alt="Product Image"
                     class="w-full h-full object-cover cursor-pointer"
                     @click="openImagePopup(product, index)"
                   />
                   <button
-                    v-if="product.imageUrl && isAdmin"
+                    v-if="isAdmin || isSuperAdmin"
                     @click="deleteImage(product.productName)"
-                    class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
                   >
                     ×
                   </button>
-                  <div
-                    v-else-if="isAdmin"
-                    class="flex flex-col items-center gap-2"
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      @change="handleFileChange($event, product.productName)"
-                      class="text-xs text-gray-700"
-                    />
-                    <button
-                      @click="uploadImage(product.productName)"
-                      :disabled="
-                        !imageFiles[product.productName] ||
-                        uploading[product.productName]
-                      "
-                      class="text-xs bg-blue-500 text-white px-2 py-1 rounded"
-                    >
-                      {{
-                        uploading[product.productName]
-                          ? "Uploading..."
-                          : "Upload"
-                      }}
-                    </button>
-                    <div
-                      v-if="uploadErrors[product.productName]"
-                      class="text-red-500 text-xs"
-                    >
-                      {{ uploadErrors[product.productName] }}
-                    </div>
-                  </div>
-                  <div v-else class="text-gray-700 text-xs">No Image</div>
                 </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
-    <div v-else>
-      <div v-for="(group, index) in filteredStockData" :key="index">
-        <div
-          class="text-center bg-gray-100 text-gray-800 font-bold py-2 mb-2 border shadow"
-          @click="toggleGroup(index)"
-        >
-          {{ group.groupName }}
-        </div>
-        <div v-show="expandedGroups[index]" class="flex flex-wrap -mx-2">
-          <div
-            v-for="(product, pIndex) in group.products"
-            :key="`${index}-${pIndex}`"
-            class="w-1/2 sm:w-1/3 md:w-1/4 px-2 mb-4"
-          >
-            <div
-              class="bg-white border border-gray-200 p-2 flex flex-col h-[280px] sm:h-[330px]"
-            >
-              <div
-                v-if="product.imageUrl"
-                class="relative w-full h-[200px] sm:h-[250px] flex-shrink-0"
-              >
-                <img
-                  :src="getOptimizedUrl(product.imageUrl)"
-                  alt="Product Image"
-                  class="w-full h-full object-cover cursor-pointer"
-                  @click="openImagePopup(product, index)"
-                />
-                <button
-                  v-if="isAdmin"
-                  @click="deleteImage(product.productName)"
-                  class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
-                >
-                  ×
-                </button>
-              </div>
-              <div
-                v-else-if="isAdmin"
-                class="w-full h-[200px] sm:h-[250px] flex flex-col items-center justify-center gap-2 flex-shrink-0"
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  @change="handleFileChange($event, product.productName)"
-                  class="text-xs text-gray-700"
-                />
-                <button
-                  @click="uploadImage(product.productName)"
-                  :disabled="
-                    !imageFiles[product.productName] ||
-                    uploading[product.productName]
-                  "
-                  class="text-xs bg-blue-500 text-white px-2 py-1 rounded"
-                >
-                  {{
-                    uploading[product.productName] ? "Uploading..." : "Upload"
-                  }}
-                </button>
                 <div
-                  v-if="uploadErrors[product.productName]"
-                  class="text-red-500 text-xs"
+                  v-else-if="isAdmin || isSuperAdmin"
+                  class="w-full h-[200px] sm:h-[250px] flex flex-col items-center justify-center gap-2 flex-shrink-0"
                 >
-                  {{ uploadErrors[product.productName] }}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    @change="handleFileChange($event, product.productName)"
+                    class="text-xs text-gray-700"
+                  />
+                  <button
+                    @click="uploadImage(product.productName)"
+                    :disabled="
+                      !imageFiles[product.productName] ||
+                      uploading[product.productName]
+                    "
+                    class="text-xs bg-blue-500 text-white px-2 py-1 rounded"
+                  >
+                    {{
+                      uploading[product.productName] ? "Uploading..." : "Upload"
+                    }}
+                  </button>
+                  <div
+                    v-if="uploadErrors[product.productName]"
+                    class="text-red-500 text-xs"
+                  >
+                    {{ uploadErrors[product.productName] }}
+                  </div>
                 </div>
-              </div>
-              <div
-                v-else
-                class="w-full h-[200px] sm:h-[250px] flex items-center justify-center text-gray-500 text-sm bg-gray-100 flex-shrink-0"
-              >
-                No Image
-              </div>
-              <div
-                class="mt-1 text-center flex flex-col flex-grow justify-between p-1"
-              >
-                <p
-                  class="text-gray-800 text-xs font-sans font-light tracking-wide line-clamp-2 leading-tight"
+                <div
+                  v-else
+                  class="w-full h-[200px] sm:h-[250px] flex items-center justify-center text-gray-500 text-sm bg-gray-100 flex-shrink-0"
                 >
-                  {{ product.productName }}
-                </p>
-                <p class="text-gray-600 text-xs font-sans font-light">
-                  Qty: {{ product.quantity }}
-                </p>
+                  No Image
+                </div>
+                <div
+                  class="mt-1 text-center flex flex-col flex-grow justify-between p-1"
+                >
+                  <p
+                    class="text-gray-800 text-xs font-sans font-light tracking-wide line-clamp-2 leading-tight"
+                  >
+                    {{ product.productName }}
+                  </p>
+                  <p class="text-gray-600 text-xs font-sans font-light">
+                    Qty: {{ product.quantity }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div
-      v-if="showGoToTop"
-      @click="scrollToTop"
-      class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full shadow-lg go-to-top flex items-center justify-center w-10 h-10 cursor-pointer"
-    >
-      ↑
-    </div>
-    <div
-      v-if="showImagePopup"
-      class="fixed inset-0 bg-white bg-opacity-50 flex flex-col z-50"
-      @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
-    >
       <div
-        class="fixed top-0 left-0 right-0 bg-white py-4 border-4 border-white z-50 flex justify-center"
+        v-if="showGoToTop"
+        @click="scrollToTop"
+        class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full shadow-lg go-to-top flex items-center justify-center w-10 h-10 cursor-pointer"
       >
-        <span class="text-black font-bold text-lg">{{ currentGroupName }}</span>
+        ↑
       </div>
-      <div class="flex-grow flex items-center justify-center px-4 py-16">
+      <div
+        v-if="showImagePopup"
+        class="fixed inset-0 bg-white bg-opacity-50 flex flex-col z-50"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+      >
         <div
-          class="relative w-full max-w-3xl bg-white bg-opacity-90 rounded-lg shadow-lg"
+          class="fixed top-0 left-0 right-0 bg-white py-4 border-4 border-white z-50 flex justify-center"
         >
-          <img
-            v-if="currentProduct.imageUrl"
-            :src="getOptimizedUrl(currentProduct.imageUrl)"
-            alt="Enlarged Image"
-            class="w-full max-h-[70vh] object-contain rounded-lg"
-          />
-          <div v-else class="text-gray-500 text-center py-4">No Image</div>
-          <button
-            v-if="currentProductIndex > 0"
-            @click="navigateImage(-1)"
-            class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center text-lg"
-          >
-            ←
-          </button>
-          <button
-            v-if="currentProductIndex < currentGroupProducts.length - 1"
-            @click="navigateImage(1)"
-            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center text-lg"
-          >
-            →
-          </button>
+          <span class="text-black font-bold text-lg">{{
+            currentGroupName
+          }}</span>
         </div>
-      </div>
-      <div
-        class="fixed bottom-0 left-0 right-0 bg-white py-4 border-4 border-white z-50"
-      >
-        <div class="flex flex-col px-4">
-          <span class="text-black font-bold text-lg truncate text-center">
-            {{ currentProduct.productName }}</span
+        <div class="flex-grow flex items-center justify-center px-4 py-16">
+          <div
+            class="relative w-full max-w-3xl bg-white bg-opacity-90 rounded-lg shadow-lg"
           >
-          <span class="text-black font-bold text-lg text-center">
-            Qty: {{ currentProduct.quantity }}</span
-          >
+            <img
+              v-if="currentProduct.imageUrl"
+              :src="getOptimizedUrl(currentProduct.imageUrl)"
+              alt="Enlarged Image"
+              class="w-full max-h-[70vh] object-contain rounded-lg"
+            />
+            <div v-else class="text-gray-500 text-center py-4">No Image</div>
+            <button
+              v-if="currentProductIndex > 0"
+              @click="navigateImage(-1)"
+              class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center text-lg"
+            >
+              ←
+            </button>
+            <button
+              v-if="currentProductIndex < currentGroupProducts.length - 1"
+              @click="navigateImage(1)"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center text-lg"
+            >
+              →
+            </button>
+          </div>
         </div>
+        <div
+          class="fixed bottom-0 left-0 right-0 bg-white py-4 border-4 border-white z-50"
+        >
+          <div class="flex flex-col px-4">
+            <span class="text-black font-bold text-lg truncate text-center">
+              {{ currentProduct.productName }}
+            </span>
+            <span class="text-black font-bold text-lg text-center">
+              Qty: {{ currentProduct.quantity }}
+            </span>
+          </div>
+        </div>
+        <button
+          @click="closeImagePopup"
+          class="fixed top-2 right-2 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl z-50 hover:bg-red-600"
+        >
+          ×
+        </button>
       </div>
-      <button
-        @click="closeImagePopup"
-        class="fixed top-2 right-2 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl z-50 hover:bg-red-600"
-      >
-        ×
-      </button>
     </div>
   </div>
 </template>
@@ -494,6 +519,7 @@ export default {
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1",
       isAdmin: false,
+      isSuperAdmin: false,
       showImagePopup: false,
       currentProduct: {},
       currentGroupIndex: null,
@@ -502,6 +528,7 @@ export default {
       currentGroupName: "",
       touchStartX: 0,
       viewMode: "image",
+      showLedgerView: false,
       brands: [
         {
           name: "Paragon",
@@ -674,6 +701,9 @@ export default {
     window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
+    toggleLedgerView() {
+      this.showLedgerView = !this.showLedgerView;
+    },
     getOptimizedUrl(imageUrl) {
       if (!imageUrl) return null;
       try {
@@ -717,9 +747,7 @@ export default {
           (acc, _, index) => ({ ...acc, [index]: true }),
           {}
         );
-        toast.success("Stock data updated successfully!", {
-          autoClose: 2500,
-        });
+        toast.success("Stock data updated successfully!", { autoClose: 2500 });
       } catch (error) {
         this.error =
           error.response?.data?.error || "Failed to update stock data";
@@ -732,6 +760,10 @@ export default {
       const password = prompt("Enter admin password:");
       if (password === "admin123") {
         this.isAdmin = true;
+        this.isSuperAdmin = false;
+      } else if (password === "superadmin") {
+        this.isAdmin = false;
+        this.isSuperAdmin = true;
       } else {
         toast.error("Incorrect password", { autoClose: 3000 });
       }
@@ -798,9 +830,7 @@ export default {
               : product
           ),
         }));
-        toast.success(`Image removed for ${productName}.`, {
-          autoClose: 2500,
-        });
+        toast.success(`Image removed for ${productName}.`, { autoClose: 2500 });
       } catch (error) {
         toast.error("Failed to remove image", { autoClose: 3000 });
       }
