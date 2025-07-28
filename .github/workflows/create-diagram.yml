@@ -11,16 +11,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Full history for accurate visualization
-      - name: Ensure Main Branch
-        run: git checkout main
+          fetch-depth: 0 # Full history for visualization
       - name: Generate Diagram
         uses: githubocto/repo-visualizer@0.9.1
         with:
           output_file: "diagram.svg"
           excluded_paths: "node_modules,dist,build,.vscode,.github"
           excluded_globs: "**/node_modules/**,**/*.min.js,**/*.map"
-          should_push: false # Disable internal push to avoid branch creation
+          should_push: false # Disable action's Git operations
           commit_message: "Update repository diagram [skip ci]"
           branch: "main"
       - name: Commit Diagram
