@@ -16,8 +16,8 @@ jobs:
         uses: githubocto/repo-visualizer@0.9.1
         with:
           output_file: "diagram.svg"
-          excluded_paths: "node_modules,dist,build,.vscode,.github"
-          excluded_globs: "**/node_modules/**,**/*.min.js,**/*.map"
+          excluded_paths: "node_modules,dist,build,.vscode,.github,public"
+          excluded_globs: "**/node_modules/**,**/*.min.js,**/*.map,**/*.json,*.bat"
           should_push: false # Disable action's Git operations
           commit_message: "Update repository diagram [skip ci]"
           branch: "main"
