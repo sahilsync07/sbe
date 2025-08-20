@@ -18,11 +18,11 @@ app.use(express.json());
 const tallyUrl = "http://localhost:9000/";
 const stockDataPath = path.resolve(
   __dirname,
-  "../../tally-stock-frontend/src/assets/stock-data.json"
+  "../../frontend/src/assets/stock-data.json"
 );
 const publicStockDataPath = path.resolve(
   __dirname,
-  "../../tally-stock-frontend/public/assets/stock-data.json"
+  "../../frontend/public/assets/stock-data.json"
 );
 const tallyTimeout = 30000;
 
