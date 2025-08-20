@@ -578,7 +578,7 @@ export default {
         "AAGAM POLYMER",
       ],
       jkplasticSubgroups: ["J.K Plastic"],
-      airson: ["Airsun"],
+      airson: ["AIRSON"],
     };
   },
   computed: {
