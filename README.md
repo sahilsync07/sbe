@@ -1,5 +1,1 @@
-# SBE Repository
-
-## Codebase Visualization
-
-![Visualization of the codebase](./diagram.svg)
+https://sahilsync07.github.io/sbe/
