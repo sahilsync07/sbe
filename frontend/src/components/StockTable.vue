@@ -579,6 +579,7 @@ export default {
         "A G ENTERPRISES",
         "NEXUS",
         "YESH FOOTWEAR",
+        "R K TRADERS",
       ],
       jkplasticSubgroups: ["J.K Plastic"],
       airsonSubgroups: [
