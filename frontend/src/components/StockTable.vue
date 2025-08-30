@@ -578,7 +578,12 @@ export default {
         "AAGAM POLYMER",
       ],
       jkplasticSubgroups: ["J.K Plastic"],
-      airson: ["AIRSON"],
+      airsonSubgroups: [
+        "AIRSON",
+        "AMBIKA FOOTWEAR",
+        "NEXGEN FOOTWEAR",
+        "GOKUL FOOTWEAR",
+      ],
     };
   },
   computed: {
@@ -626,6 +631,10 @@ export default {
         } else if (this.selectedGroup === "jkplastic") {
           filtered = filtered.filter((group) =>
             this.jkplasticSubgroups.includes(group.groupName)
+          );
+        } else if (this.selectedGroup === "airson") {
+          filtered = filtered.filter((group) =>
+            this.airsonSubgroups.includes(group.groupName)
           );
         } else if (this.selectedGroup === "Kids") {
           filtered = filtered
