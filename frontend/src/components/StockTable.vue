@@ -576,6 +576,9 @@ export default {
         "VARDHMAN PLASTICS",
         "NAV DURGA ENTERPRISES",
         "AAGAM POLYMER",
+        "A G ENTERPRISES",
+        "NEXUS",
+        "YESH FOOTWEAR",
       ],
       jkplasticSubgroups: ["J.K Plastic"],
       airsonSubgroups: [
