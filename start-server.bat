@@ -1,4 +1,7 @@
 @echo off
+echo Fetching latest code from git...
+
+git pull
 echo Starting Tally Stock Frontend and Backend...
 
 REM Get the folder where this batch file is located
