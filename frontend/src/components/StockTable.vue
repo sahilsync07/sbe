@@ -547,7 +547,7 @@ export default {
           logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg",
         },
         {
-          name: "Eeken",
+          name: "EEKEN",
           logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
         },
         {
@@ -620,6 +620,8 @@ export default {
           );
         } else if (this.selectedGroup === "Cubix") {
           filtered = filtered.filter((group) => group.groupName === "CUBIX");
+        } else if (this.selectedGroup === "EEKEN") {
+          filtered = filtered.filter((group) => group.groupName === "EEKEN");
         } else if (this.selectedGroup === "Maruti") {
           filtered = filtered.filter((group) =>
             this.marutiSubgroups.includes(group.groupName)
@@ -680,7 +682,7 @@ export default {
               products: group.products.filter((product) =>
                 product.productName
                   .toLowerCase()
-                  .match(/seltos|airson|airsun|lion|fencer/)
+                  .match(/seltos|airson|airsun|lion/)
               ),
             }))
             .filter((group) => group.products.length > 0);
