@@ -147,16 +147,16 @@
     "products": [
       {
         "productName": "A G 292 (6X9) RS.90/-",
-        "quantity": -4,
+        "quantity": 4,
         "rate": 62.5,
-        "amount": 250,
+        "amount": -250,
         "imageUrl": null
       },
       {
         "productName": "A G 293 (6X9) RS.90/-",
-        "quantity": 16,
+        "quantity": 8,
         "rate": 62.5,
-        "amount": -1000,
+        "amount": -500,
         "imageUrl": null
       },
       {
@@ -539,9 +539,9 @@
       },
       {
         "productName": "BRN 425 ANKLE",
-        "quantity": 3,
+        "quantity": 1,
         "rate": 260,
-        "amount": -780,
+        "amount": -260,
         "imageUrl": null
       },
       {
@@ -937,7 +937,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -113937.41999999998
+    "totalAmount": -112897.41999999998
   },
   {
     "groupName": "CUBIX",
@@ -1021,16 +1021,16 @@
       },
       {
         "productName": "CBX 15007 (5*9) F GRN MRP329/-",
-        "quantity": 42,
+        "quantity": 38,
         "rate": 172.96,
-        "amount": -7264.32,
+        "amount": -6572.48,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755691643/0ebf17b5-1524-44ac-a6f8-bc5312f02b9c.jpg"
       },
       {
         "productName": "CBX 15007 (5*9) GRAP MRP329/-",
-        "quantity": 63,
+        "quantity": 58,
         "rate": 172.96,
-        "amount": -10896.48,
+        "amount": -10031.68,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758640770/photo_6280816447341052449_y.jpg"
       },
       {
@@ -1160,10 +1160,10 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758640795/photo_6069004049170154230_y.jpg"
       },
       {
-        "productName": "CBX 21548 GRN (5X9) MRP324/-",
-        "quantity": 24,
+        "productName": "CBX 21548 GRN (5X9) MRP329/-",
+        "quantity": 14,
         "rate": 181.44,
-        "amount": -4354.56,
+        "amount": -2540.16,
         "imageUrl": null
       },
       {
@@ -1251,13 +1251,6 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749654723/photo_6298587123636355386_y.jpg"
       },
       {
-        "productName": "CBX 24079 TAN(5X8) MRP399/-",
-        "quantity": 1,
-        "rate": 209.62,
-        "amount": -209.62,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749645292/24079_TAN.jpg"
-      },
-      {
         "productName": "CBX 24080 TAN (5X8) MRP399/-",
         "quantity": 2,
         "rate": 209.62,
@@ -1272,24 +1265,31 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758640851/photo_6141161883449805780_y.jpg"
       },
       {
-        "productName": "CBX 24084 BLU (5X8) MRP329/-",
-        "quantity": 7,
-        "rate": 172.96,
-        "amount": -1210.72,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1753446974/24084_blu.jpg"
+        "productName": "CBX 24084 BLU (5X8) MRP324/-",
+        "quantity": 37,
+        "rate": 175.47,
+        "amount": -6492.27,
+        "imageUrl": null
       },
       {
         "productName": "CBX 24084 GRP(5X8) MRP329/-",
-        "quantity": 9,
+        "quantity": 5,
         "rate": 172.96,
-        "amount": -1556.64,
+        "amount": -864.8,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1753446986/24084_grp.jpg"
       },
       {
+        "productName": "CBX 24085 MRN (5X9) MRP384/-",
+        "quantity": 30,
+        "rate": 214.08,
+        "amount": -6422.4,
+        "imageUrl": null
+      },
+      {
         "productName": "CBX 24093 GRAP (4*8) MRP329/-",
-        "quantity": 7,
+        "quantity": 1,
         "rate": 172.96,
-        "amount": -1210.72,
+        "amount": -172.96,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755691854/59ce8e07-82a2-4df2-ab54-7d378e2f97ed.jpg"
       },
       {
@@ -1301,9 +1301,9 @@
       },
       {
         "productName": "CBX 24506 BRN (4X8) MRP399/-",
-        "quantity": 33,
+        "quantity": 29,
         "rate": 209.62,
-        "amount": -6917.46,
+        "amount": -6078.98,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758640902/photo_6298490302188601247_y.jpg"
       },
       {
@@ -1315,16 +1315,30 @@
       },
       {
         "productName": "CBX 24509 GRP (4*8) MRP389/-",
-        "quantity": 3,
-        "rate": 204.92,
-        "amount": -614.76,
+        "quantity": 27,
+        "rate": 208.06,
+        "amount": -5617.62,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755691874/2cade469-b8ce-4c06-86ba-2c8067782cc5.jpg"
+      },
+      {
+        "productName": "CBX 24511 (4*8) GRAPE MRP389/-",
+        "quantity": 24,
+        "rate": 205.75,
+        "amount": -4938.01,
+        "imageUrl": null
+      },
+      {
+        "productName": "CBX 24511 BLK (5X8) MRP389/-",
+        "quantity": 20,
+        "rate": 205.79,
+        "amount": -4115.84,
+        "imageUrl": null
       },
       {
         "productName": "CBX 24511 BLU (4X8) MRP379/-",
         "quantity": 29,
-        "rate": 206.54,
-        "amount": -5989.68,
+        "rate": 206.05,
+        "amount": -5975.31,
         "imageUrl": null
       },
       {
@@ -1335,17 +1349,10 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750160388/24511_brn.jpg"
       },
       {
-        "productName": "CBX 24511 GRP (4X8) MRP379/-",
-        "quantity": 24,
-        "rate": 211.2,
-        "amount": -5068.8,
-        "imageUrl": null
-      },
-      {
         "productName": "CBX 24511 TAN(5X9) MRP379/-",
-        "quantity": 30,
+        "quantity": 26,
         "rate": 211.2,
-        "amount": -6336,
+        "amount": -5491.2,
         "imageUrl": null
       },
       {
@@ -1392,9 +1399,9 @@
       },
       {
         "productName": "CBX 29506 (5X9) BRN MRP.339/-",
-        "quantity": 20,
+        "quantity": 17,
         "rate": 178.6,
-        "amount": -3572,
+        "amount": -3036.2,
         "imageUrl": null
       },
       {
@@ -1413,9 +1420,9 @@
       },
       {
         "productName": "CBX 29508 BLK (5X9) MRP.369/-",
-        "quantity": 23,
+        "quantity": 22,
         "rate": 194.58,
-        "amount": -4475.34,
+        "amount": -4280.76,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750160617/29508.jpg"
       },
       {
@@ -1448,9 +1455,9 @@
       },
       {
         "productName": "CBX 30086 GRAP (5X8) MRP319/-",
-        "quantity": 25,
+        "quantity": 21,
         "rate": 168.26,
-        "amount": -4206.5,
+        "amount": -3533.46,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749654678/photo_6138910083636119388_y.jpg"
       },
       {
@@ -1482,25 +1489,11 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749645674/30401_BRN.jpg"
       },
       {
-        "productName": "CBX 31031 GRY (5X10) MRP379/-",
-        "quantity": 3,
-        "rate": 199.28,
-        "amount": -597.84,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1753446555/31031.jpg"
-      },
-      {
         "productName": "CBX 31040 PNK (5X10) MRP339/-",
-        "quantity": 20,
+        "quantity": 16,
         "rate": 178.6,
-        "amount": -3572,
+        "amount": -2857.6,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758641038/photo_6134143662075002288_y.jpg"
-      },
-      {
-        "productName": "CBX 31051 CHERRY (5X10) MRP.339/-",
-        "quantity": 7,
-        "rate": 178.6,
-        "amount": -1250.2,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750160631/31051.jpg"
       },
       {
         "productName": "Cbx 35001 (5*10) Mrp279/-",
@@ -1651,9 +1644,9 @@
       },
       {
         "productName": "CBX 50411 COFFE (5X9) MRP319/-",
-        "quantity": 36,
+        "quantity": 31,
         "rate": 177.6,
-        "amount": -6393.6,
+        "amount": -5505.6,
         "imageUrl": null
       },
       {
@@ -1679,16 +1672,16 @@
       },
       {
         "productName": "CBX 50510 F GREEN (5X9) MRP.369/-",
-        "quantity": 31,
+        "quantity": 27,
         "rate": 194.58,
-        "amount": -6031.98,
+        "amount": -5253.66,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750160648/50510.jpg"
       },
       {
         "productName": "CBX 50513 GRP (5X9) MRP369/-",
-        "quantity": 28,
+        "quantity": 24,
         "rate": 194.58,
-        "amount": -5448.24,
+        "amount": -4669.92,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758641061/photo_6154200871584513788_y.jpg"
       },
       {
@@ -1832,11 +1825,11 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758641149/photo_6247013199295659424_y.jpg"
       },
       {
-        "productName": "CBX 60556(5*9) MRP319/-",
-        "quantity": 5,
-        "rate": 168.26,
-        "amount": -841.3,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749654023/60556_GRAPE.jpg"
+        "productName": "CBX 60551 (5*9) MRP299/-BISCUITE",
+        "quantity": 40,
+        "rate": 158.67,
+        "amount": -6346.78,
+        "imageUrl": null
       },
       {
         "productName": "CBX 60559 BLK(5X9) MRP319/-",
@@ -1844,6 +1837,20 @@
         "rate": 168.26,
         "amount": -3196.94,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1753446708/60559.jpg"
+      },
+      {
+        "productName": "CBX 60577 BLK (5X9) MRP289/-",
+        "quantity": 40,
+        "rate": 161.28,
+        "amount": -6451.2,
+        "imageUrl": null
+      },
+      {
+        "productName": "CBX 60577 CHIKKU (5X9) MRP289/-",
+        "quantity": 40,
+        "rate": 161.28,
+        "amount": -6451.2,
+        "imageUrl": null
       },
       {
         "productName": "Cbx 62201 (7*11) Mrp513/-",
@@ -1903,9 +1910,9 @@
       },
       {
         "productName": "CBX 65540 (5*8) MRP339/-",
-        "quantity": 12,
+        "quantity": 7,
         "rate": 178.6,
-        "amount": -2143.2,
+        "amount": -1250.2,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1751380431/65540.jpg"
       },
       {
@@ -1945,9 +1952,9 @@
       },
       {
         "productName": "CBX 67764 P-NUT (5X9) MRP359/-",
-        "quantity": 20,
+        "quantity": 16,
         "rate": 188.94,
-        "amount": -3778.8,
+        "amount": -3023.04,
         "imageUrl": null
       },
       {
@@ -2077,6 +2084,13 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749653242/photo_6201845180022240361_y.jpg"
       },
       {
+        "productName": "CBX 76502 BLK(5X9) MRP319/-",
+        "quantity": 30,
+        "rate": 166.08,
+        "amount": -4982.4,
+        "imageUrl": null
+      },
+      {
         "productName": "CBX 76519 (5*9) BLK MRP319/-",
         "quantity": 1,
         "rate": 168.26,
@@ -2105,10 +2119,10 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749653127/77016_D_GRN.jpg"
       },
       {
-        "productName": "CBX 77016 GRN (5X9) MRP374/-",
-        "quantity": 55,
+        "productName": "CBX 77016 GRN (5X9) MRP379/-",
+        "quantity": 49,
         "rate": 208.32,
-        "amount": -11457.6,
+        "amount": -10207.68,
         "imageUrl": null
       },
       {
@@ -2120,10 +2134,24 @@
       },
       {
         "productName": "CBX 77039 GRN (5X9) MRP369/-",
-        "quantity": 6,
-        "rate": 194.58,
-        "amount": -1167.48,
+        "quantity": 36,
+        "rate": 197.13,
+        "amount": -7096.68,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755692010/dad57fb3-53cf-4fb7-aa88-2fa54b89794d.jpg"
+      },
+      {
+        "productName": "CBX 77048 GRN (5X8) MRP349/-",
+        "quantity": 25,
+        "rate": 185.04,
+        "amount": -4626,
+        "imageUrl": null
+      },
+      {
+        "productName": "CBX 77048 GRP (5X9) MRP349/-",
+        "quantity": 30,
+        "rate": 192,
+        "amount": -5760,
+        "imageUrl": null
       },
       {
         "productName": "CBX 77048 TAN (5X9) MRP.349/-",
@@ -2131,13 +2159,6 @@
         "rate": 183.3,
         "amount": -183.3,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1751380512/77048_TAN.jpg"
-      },
-      {
-        "productName": "CBX 77050 (5*9) MRP399/-BLK",
-        "quantity": -1,
-        "rate": 209.62,
-        "amount": 209.62,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750140436/77050.jpg"
       },
       {
         "productName": "CBX 77050 BLK (5X9) MRP389/-",
@@ -2162,9 +2183,9 @@
       },
       {
         "productName": "CBX 77054 BRN (5*9) MRP379/-",
-        "quantity": 13,
+        "quantity": 8,
         "rate": 199.28,
-        "amount": -2590.64,
+        "amount": -1594.24,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1752565074/WhatsApp_Image_2025-07-15_at_1.07.39_PM.jpg"
       },
       {
@@ -2183,9 +2204,9 @@
       },
       {
         "productName": "CBX 77071 BEG (5X9) MRP359/-",
-        "quantity": 15,
+        "quantity": 11,
         "rate": 199.68,
-        "amount": -2995.2,
+        "amount": -2196.48,
         "imageUrl": null
       },
       {
@@ -2197,9 +2218,9 @@
       },
       {
         "productName": "CBX 77071 PNK(5X9) MRP359/-",
-        "quantity": 11,
+        "quantity": 6,
         "rate": 199.68,
-        "amount": -2196.48,
+        "amount": -1198.08,
         "imageUrl": null
       },
       {
@@ -2274,9 +2295,9 @@
       },
       {
         "productName": "CBX HAWAI CHAPAL C-21 (6*10) MRP149/-",
-        "quantity": 68,
+        "quantity": 57,
         "rate": 91.18,
-        "amount": -6200.24,
+        "amount": -5197.26,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749652609/C-21_2.jpg"
       },
       {
@@ -2455,13 +2476,6 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749652130/photo_6078065038595306927_y.jpg"
       },
       {
-        "productName": "CUBIX 67765 GRP(5X9) MRP299/-",
-        "quantity": 5,
-        "rate": 156.98,
-        "amount": -784.9,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758641295/photo_6278412498310906498_y.jpg"
-      },
-      {
         "productName": "CUBIX 68835 (5*9) MRP239/-",
         "quantity": 10,
         "rate": 125.96,
@@ -2477,9 +2491,9 @@
       },
       {
         "productName": "CUBIX C-60531 (5*9) MRP319/-",
-        "quantity": 30,
+        "quantity": 24,
         "rate": 168.26,
-        "amount": -5047.8,
+        "amount": -4038.24,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749647431/60539.jpg"
       },
       {
@@ -2560,7 +2574,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749652308/photo_6170453457329304680_y.jpg"
       }
     ],
-    "totalAmount": -1001227.3999999992
+    "totalAmount": -1078625.2199999993
   },
   {
     "groupName": "EEKEN",
@@ -2629,24 +2643,17 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749647560/2029_NVY.jpg"
       },
       {
-        "productName": "EEKEN 2102 LDS MRP324/-",
-        "quantity": 6,
-        "rate": 167,
-        "amount": -1002,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749564945/EEKEN_2102_GREY-NAVY_BLUE.jpg"
-      },
-      {
         "productName": "EEKEN 2137 BOYS (2*5)MRP354/-",
-        "quantity": 24,
+        "quantity": 20,
         "rate": 180.75,
-        "amount": -4338.01,
+        "amount": -3615.01,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749565018/2137.jpg"
       },
       {
         "productName": "Eeken 2137 Mrp399/-",
-        "quantity": 58,
+        "quantity": 52,
         "rate": 203.5,
-        "amount": -11802.97,
+        "amount": -10581.98,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749565018/2137.jpg"
       },
       {
@@ -2657,10 +2664,38 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749704579/2138.jpg"
       },
       {
+        "productName": "EEKEN 2141 GENTS GNY (6X10) MRP350/-",
+        "quantity": 18,
+        "rate": 190.4,
+        "amount": -3427.19,
+        "imageUrl": null
+      },
+      {
+        "productName": "EEKEN 2141 GENTS GRT (6X9) MRP350/-",
+        "quantity": 18,
+        "rate": 190.4,
+        "amount": -3427.19,
+        "imageUrl": null
+      },
+      {
+        "productName": "EEKEN 2141 GENTS MRP359/-BRT",
+        "quantity": 36,
+        "rate": 184.84,
+        "amount": -6654.07,
+        "imageUrl": null
+      },
+      {
+        "productName": "EEKEN 2145 GENT MRP464/-BRN",
+        "quantity": 18,
+        "rate": 238.76,
+        "amount": -4297.73,
+        "imageUrl": null
+      },
+      {
         "productName": "EEKEN 2153 GENTS OLV (6X10) MRP799/-",
-        "quantity": 12,
+        "quantity": 11,
         "rate": 407.5,
-        "amount": -4889.96,
+        "amount": -4482.46,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1758614803/photo_6217522630991397853_w.jpg"
       },
       {
@@ -2669,6 +2704,13 @@
         "rate": 418.88,
         "amount": -3351.04,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1759133304/photo_6208339612955427461_y_1.jpg"
+      },
+      {
+        "productName": "EEKEN 2180 LADIES GRY (4X7) MRP354/-",
+        "quantity": 43,
+        "rate": 187.68,
+        "amount": -8070.26,
+        "imageUrl": null
       },
       {
         "productName": "EEKEN 2180 LDS MRP354/-",
@@ -2868,9 +2910,16 @@
       },
       {
         "productName": "EEKEN 6151 GENTS BRN (6X10) MRP649/-",
+        "quantity": 36,
+        "rate": 331.84,
+        "amount": -11946.19,
+        "imageUrl": null
+      },
+      {
+        "productName": "EEKEN 6151 GENTS BRN(6X9) MRP649/-",
         "quantity": 18,
         "rate": 331.84,
-        "amount": -5973.07,
+        "amount": -5973.12,
         "imageUrl": null
       },
       {
@@ -2878,6 +2927,13 @@
         "quantity": 18,
         "rate": 306.43,
         "amount": -5515.77,
+        "imageUrl": null
+      },
+      {
+        "productName": "EEKEN 6152 GRNTS GRY (6X10) MRP599/-",
+        "quantity": 36,
+        "rate": 307.36,
+        "amount": -11064.92,
         "imageUrl": null
       },
       {
@@ -2945,16 +3001,16 @@
       },
       {
         "productName": "EEKEN EVA 2125 GENTS MRP464/-",
-        "quantity": 6,
-        "rate": 236.75,
-        "amount": -1420.51,
+        "quantity": 42,
+        "rate": 238.13,
+        "amount": -10001.49,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749648184/2125_BLK.jpg"
       },
       {
         "productName": "EEKEN EVA 2131 MRP449/-",
-        "quantity": 78,
+        "quantity": 64,
         "rate": 229,
-        "amount": -17862.02,
+        "amount": -14656.01,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749648226/2131_GRY.jpg"
       },
       {
@@ -3119,7 +3175,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749707714/500.jpg"
       }
     ],
-    "totalAmount": -949591.9200000002
+    "totalAmount": -1051410.08
   },
   {
     "groupName": "Electrical & Electronic",
@@ -4066,16 +4122,16 @@
       },
       {
         "productName": "AIRSUN ALL SPL (6*9) RS.115/-",
-        "quantity": 60,
+        "quantity": 49,
         "rate": 69.08,
-        "amount": -4144.7,
+        "amount": -3384.84,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750086087/WhatsApp_Image_2025-06-16_at_8.30.31_PM.jpg"
       },
       {
         "productName": "AIRSUN COMFORT-1 (6*7)/(6*8) RS.140/-",
-        "quantity": 21,
+        "quantity": 17,
         "rate": 98.21,
-        "amount": -2062.51,
+        "amount": -1669.65,
         "imageUrl": null
       },
       {
@@ -4087,9 +4143,9 @@
       },
       {
         "productName": "AIRSUN DOCTOR ORTHO (6*9)RS.130/-",
-        "quantity": 22,
+        "quantity": 20,
         "rate": 91,
-        "amount": -2001.94,
+        "amount": -1819.94,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750076021/WhatsApp_Image_2024-12-21_at_6.21.03_PM.jpg"
       },
       {
@@ -4122,9 +4178,9 @@
       },
       {
         "productName": "ASNLITE  ALL 5G (6*9)RS.110/-",
-        "quantity": 150,
+        "quantity": 146,
         "rate": 71.64,
-        "amount": -10746.45,
+        "amount": -10459.88,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750076035/WhatsApp_Image_2024-12-21_at_6.23.26_PM.jpg"
       },
       {
@@ -4135,7 +4191,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750074813/WhatsApp_Image_2025-02-22_at_11.45.37_AM.jpg"
       }
     ],
-    "totalAmount": -70111.68
+    "totalAmount": -66869.1
   },
   {
     "groupName": "Hawai Chappal",
@@ -4149,9 +4205,9 @@
       },
       {
         "productName": "Acusole 033 06*10 Mrp 144/-",
-        "quantity": 153,
+        "quantity": 137,
         "rate": 81.75,
-        "amount": -12507.03,
+        "amount": -11199.11,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749566648/ACUSOLE_145_BLUE-BLACK.jpg"
       },
       {
@@ -4212,9 +4268,9 @@
       },
       {
         "productName": "CUSHION (4*5) MRP138/-",
-        "quantity": 1305,
+        "quantity": 1285,
         "rate": 86.2,
-        "amount": -112488.57,
+        "amount": -110764.61,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750087553/Cushion_1.jpg"
       },
       {
@@ -4289,9 +4345,9 @@
       },
       {
         "productName": "CUSHION HAWAI BLU (9X13) MRP109/-",
-        "quantity": 189,
+        "quantity": 170,
         "rate": 68.14,
-        "amount": -12877.57,
+        "amount": -11583,
         "imageUrl": null
       },
       {
@@ -4324,16 +4380,9 @@
       },
       {
         "productName": "Flatlite Ladies @100",
-        "quantity": 73,
+        "quantity": 71,
         "rate": 61.13,
-        "amount": -4462.36,
-        "imageUrl": null
-      },
-      {
-        "productName": "Flatlite Ladies@98",
-        "quantity": 15,
-        "rate": 59.8,
-        "amount": -897.03,
+        "amount": -4340.1,
         "imageUrl": null
       },
       {
@@ -4345,9 +4394,9 @@
       },
       {
         "productName": "Flatlite Mrp144/-",
-        "quantity": 325,
+        "quantity": 273,
         "rate": 81.28,
-        "amount": -26414.51,
+        "amount": -22188.19,
         "imageUrl": null
       },
       {
@@ -4359,9 +4408,9 @@
       },
       {
         "productName": "Hawai Chappal Cushion (6*9) Mrp139/-",
-        "quantity": 763,
+        "quantity": 734,
         "rate": 86.82,
-        "amount": -66244.28,
+        "amount": -63726.47,
         "imageUrl": null
       },
       {
@@ -4414,7 +4463,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -988226.1599999995
+    "totalAmount": -964046.4199999995
   },
   {
     "groupName": "HITWAY",
@@ -5244,9 +5293,9 @@
       },
       {
         "productName": "Jackpot-02(6*8)Rs,130/-",
-        "quantity": 8,
+        "quantity": 7,
         "rate": 92.03,
-        "amount": -736.2,
+        "amount": -644.18,
         "imageUrl": null
       },
       {
@@ -5418,7 +5467,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -99143.96
+    "totalAmount": -98959.92
   },
   {
     "groupName": "LEO",
@@ -5446,16 +5495,16 @@
       },
       {
         "productName": "LEO KIDS CHOTTA BHEEM RS.205/-",
-        "quantity": 21,
+        "quantity": 17,
         "rate": 138,
-        "amount": -2898,
+        "amount": -2346,
         "imageUrl": null
       },
       {
         "productName": "LEO KOHINOOR RS.240/-",
-        "quantity": 12,
+        "quantity": 8,
         "rate": 156,
-        "amount": -1872,
+        "amount": -1248,
         "imageUrl": null
       },
       {
@@ -5474,9 +5523,9 @@
       },
       {
         "productName": "LEO SOCK REEBOOK/NIKE/ADDIDAS RS.95/-",
-        "quantity": 68,
+        "quantity": 48,
         "rate": 57,
-        "amount": -3876,
+        "amount": -2736,
         "imageUrl": null
       },
       {
@@ -5543,7 +5592,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -128131.72
+    "totalAmount": -123499.72
   },
   {
     "groupName": "Magnet",
@@ -5690,16 +5739,16 @@
       },
       {
         "productName": "MAGNET KIDS CROCODILE (2X3)RS.105/-",
-        "quantity": 6,
+        "quantity": 3,
         "rate": 71.43,
-        "amount": -428.58,
+        "amount": -214.29,
         "imageUrl": null
       },
       {
         "productName": "MAGNET KIDS CROSS(4X5)CROCODILE RS.110/-",
-        "quantity": 29,
+        "quantity": 27,
         "rate": 75.9,
-        "amount": -2200.98,
+        "amount": -2049.18,
         "imageUrl": null
       },
       {
@@ -5837,9 +5886,9 @@
       },
       {
         "productName": "Parkar Hawai Doriman Small (6X8) Rs.38/-",
-        "quantity": 173,
+        "quantity": 155,
         "rate": 26.41,
-        "amount": -4568.12,
+        "amount": -4092.82,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750425519/108.jpg"
       },
       {
@@ -5850,7 +5899,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -524835.34
+    "totalAmount": -523152.56000000006
   },
   {
     "groupName": "MARUTI PLASTICS",
@@ -6934,9 +6983,9 @@
       },
       {
         "productName": "PARAGON MAX 9613 GENTS BRN (6X10) MRP504/-",
-        "quantity": 43,
+        "quantity": 38,
         "rate": 285.66,
-        "amount": -12283.38,
+        "amount": -10855.08,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1759134942/photo_6183657784525047369_y_2.jpg"
       },
       {
@@ -7213,7 +7262,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749802589/PARAGON_MAX_9581.jpg"
       }
     ],
-    "totalAmount": -621675.2399999998
+    "totalAmount": -618818.6399999998
   },
   {
     "groupName": "Mini F/w",
@@ -7283,9 +7332,9 @@
       },
       {
         "productName": "PU MINI FLIP (5*8) RS.135/-",
-        "quantity": 206,
+        "quantity": 204,
         "rate": 93.75,
-        "amount": -19312.71,
+        "amount": -19125.21,
         "imageUrl": null
       },
       {
@@ -7443,7 +7492,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -540753.28
+    "totalAmount": -540378.28
   },
   {
     "groupName": "NAV DURGA ENTERPRISES",
@@ -7519,9 +7568,9 @@
       },
       {
         "productName": "AIRSON MAESTRO-1 (6*8/6*9) RS.190/-",
-        "quantity": 13,
-        "rate": 129.46,
-        "amount": -1683.04,
+        "quantity": 12,
+        "rate": 129.47,
+        "amount": -1553.58,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750074314/WhatsApp_Image_2025-06-01_at_11.08.26_1.jpg"
       },
       {
@@ -7547,9 +7596,9 @@
       },
       {
         "productName": "AIRSON SIKANDAR-1 (6X9)RS.185/-",
-        "quantity": 15,
+        "quantity": 13,
         "rate": 133.93,
-        "amount": -2008.93,
+        "amount": -1741.08,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750074211/WhatsApp_Image_2025-06-01_at_12.38.54.jpg"
       },
       {
@@ -7574,7 +7623,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750085882/WhatsApp_Image_2025-06-16_at_7.38.19_PM.jpg"
       }
     ],
-    "totalAmount": -127750.42
+    "totalAmount": -126955.80000000002
   },
   {
     "groupName": "NEXUS",
@@ -8453,13 +8502,6 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750481959/PARALITE_1748_PINK.jpg"
       },
       {
-        "productName": "PARAGON EVA V-STRAP 1489 MRP219/-",
-        "quantity": 9,
-        "rate": 123.81,
-        "amount": -1114.31,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1753506432/1489.jpg"
-      },
-      {
         "productName": "Paralite 1110 Gents Mrp 179/-",
         "quantity": 4,
         "rate": 106.87,
@@ -8537,11 +8579,32 @@
         "imageUrl": null
       },
       {
+        "productName": "PARALITE 1129 GENTS (6) NBO MRP177/-",
+        "quantity": 30,
+        "rate": 106.91,
+        "amount": -3207.28,
+        "imageUrl": null
+      },
+      {
+        "productName": "PARALITE 1129 GENTS (6X9) NBO MRP177/-",
+        "quantity": 90,
+        "rate": 106.91,
+        "amount": -9621.84,
+        "imageUrl": null
+      },
+      {
         "productName": "Paralite 1129 Gents Mrp184/-",
         "quantity": 47,
         "rate": 101.35,
         "amount": -4763.63,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750140167/PARALITE_1129.jpg"
+      },
+      {
+        "productName": "PARALITE 1129 GENTS TRQ(6X10) MRP177/-",
+        "quantity": 60,
+        "rate": 106.91,
+        "amount": -6414.6,
+        "imageUrl": null
       },
       {
         "productName": "PARALITE 1136 GENTS BLK (6X9) MRP169/-",
@@ -8692,9 +8755,9 @@
       },
       {
         "productName": "PARALITE 1190 GENTS BLK (6X8) MRP179/-",
-        "quantity": 25,
+        "quantity": 19,
         "rate": 110.83,
-        "amount": -2770.67,
+        "amount": -2105.71,
         "imageUrl": null
       },
       {
@@ -8727,9 +8790,9 @@
       },
       {
         "productName": "PARALITE 1210 GENTS (6X9) MRP169/-",
-        "quantity": 275,
-        "rate": 103.87,
-        "amount": -28563.52,
+        "quantity": 419,
+        "rate": 103.96,
+        "amount": -43557.51,
         "imageUrl": null
       },
       {
@@ -8888,9 +8951,9 @@
       },
       {
         "productName": "PARALITE 1251 GENTS BKR (6X9) MRP249/-",
-        "quantity": 8,
+        "quantity": 2,
         "rate": 141,
-        "amount": -1127.96,
+        "amount": -281.99,
         "imageUrl": null
       },
       {
@@ -9217,30 +9280,30 @@
       },
       {
         "productName": "PARALITE 16063 GENTS BLK (6X9) MRP364/-",
-        "quantity": 36,
+        "quantity": 30,
         "rate": 189.32,
-        "amount": -6815.55,
+        "amount": -5679.62,
         "imageUrl": null
       },
       {
         "productName": "PARALITE 16063 GENTS MIG (6X10) MRP364/-",
-        "quantity": 32,
+        "quantity": 26,
         "rate": 191.2,
-        "amount": -6118.5,
+        "amount": -4971.28,
         "imageUrl": null
       },
       {
         "productName": "PARALITE 16064 GENTS BLK (6X10) MRP364/-",
-        "quantity": 12,
+        "quantity": 6,
         "rate": 192.35,
-        "amount": -2308.14,
+        "amount": -1154.07,
         "imageUrl": null
       },
       {
         "productName": "PARALITE 16064 GENTS RYB (6X9) MRP354/-",
-        "quantity": 38,
+        "quantity": 32,
         "rate": 189.36,
-        "amount": -7195.57,
+        "amount": -6059.43,
         "imageUrl": null
       },
       {
@@ -9350,9 +9413,9 @@
       },
       {
         "productName": "Paralite 1758 Mp299/-",
-        "quantity": 14,
+        "quantity": 10,
         "rate": 169.38,
-        "amount": -2371.32,
+        "amount": -1693.8,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750487110/1758.jpg"
       },
       {
@@ -9440,6 +9503,20 @@
         "imageUrl": null
       },
       {
+        "productName": "PARALITE 54 GENTS (6X9) GRN MRP187/-",
+        "quantity": 288,
+        "rate": 112.95,
+        "amount": -32529.7,
+        "imageUrl": null
+      },
+      {
+        "productName": "PARALITE 54 GENTS (6X9) YLW MRP187/-",
+        "quantity": 816,
+        "rate": 112.95,
+        "amount": -92167.49,
+        "imageUrl": null
+      },
+      {
         "productName": "PARALITE 54 MRP194/-",
         "quantity": 9,
         "rate": 109.9,
@@ -9496,7 +9573,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -1283759.5400000003
+    "totalAmount": -1585877.1000000003
   },
   {
     "groupName": "Pareek Soucks",
@@ -9510,9 +9587,9 @@
       },
       {
         "productName": "Prk 052 Ankel Towel Socks",
-        "quantity": 2,
+        "quantity": 1,
         "rate": 496,
-        "amount": -992,
+        "amount": -496,
         "imageUrl": null
       },
       {
@@ -9537,7 +9614,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -13072
+    "totalAmount": -12080
   },
   {
     "groupName": "PARIS",
@@ -10061,9 +10138,9 @@
       },
       {
         "productName": "P-Toes 16048 (2*5) Mrp314/-",
-        "quantity": 18,
-        "rate": 177.57,
-        "amount": -3196.3,
+        "quantity": 138,
+        "rate": 178.21,
+        "amount": -24592.58,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749480152/16048.jpg"
       },
       {
@@ -10830,7 +10907,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749620940/P-TOES_6685.jpg"
       }
     ],
-    "totalAmount": -835174.1200000003
+    "totalAmount": -877966.6800000003
   },
   {
     "groupName": "PU-LION",
@@ -11206,13 +11283,6 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1752557675/3000.jpg"
       },
       {
-        "productName": "RELIANCE JS-1102 (6*9) BLK MRP359/-",
-        "quantity": 5,
-        "rate": 195,
-        "amount": -975.01,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1752557710/1102.jpg"
-      },
-      {
         "productName": "RELIANCE JS-1105 (6*9)TAN MRP359/-",
         "quantity": 6,
         "rate": 195,
@@ -11515,16 +11585,9 @@
       },
       {
         "productName": "RELIANCE XMS-9028 (6*9) OLIVE MRP529/-",
-        "quantity": -5,
+        "quantity": 1,
         "rate": 288.29,
-        "amount": 1441.47,
-        "imageUrl": null
-      },
-      {
-        "productName": "RELIANCE XMS-9028 MRP529/-TEAL",
-        "quantity": -6,
-        "rate": 286.98,
-        "amount": 1721.86,
+        "amount": -288.29,
         "imageUrl": null
       },
       {
@@ -11543,16 +11606,16 @@
       },
       {
         "productName": "RELIANCE XMS-9034 (6*9) BLK MRP499/-",
-        "quantity": 10,
+        "quantity": 3,
         "rate": 271.05,
-        "amount": -2710.47,
+        "amount": -813.14,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1752559731/9034.jpg"
       },
       {
         "productName": "RELIANCE XMS-9034 (6*9) NVY MRP499/-",
-        "quantity": 3,
+        "quantity": -2,
         "rate": 268.92,
-        "amount": -806.76,
+        "amount": 537.84,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1752559731/9034.jpg"
       },
       {
@@ -11591,7 +11654,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1752559854/2107.jpg"
       }
     ],
-    "totalAmount": -540868.0999999997
+    "totalAmount": -539337.4599999996
   },
   {
     "groupName": "R K TRADERS",
@@ -11876,13 +11939,6 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755666300/WhatsApp_Image_2025-08-16_at_7.15.44_PM.jpg"
       },
       {
-        "productName": "PU-VLK TAISOR SMILE 501 (11X1) MRP229/-",
-        "quantity": 1,
-        "rate": 113.36,
-        "amount": -113.36,
-        "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755666307/WhatsApp_Image_2025-08-16_at_7.15.46_PM.jpg"
-      },
-      {
         "productName": "Red - 17 Blu(11*1)Rs.120/-",
         "quantity": 3,
         "rate": 76.91,
@@ -11954,23 +12010,23 @@
       },
       {
         "productName": "VKG RIDE SELTOS-7 RED (5X8) RS.100/-",
-        "quantity": 71,
+        "quantity": 65,
         "rate": 66.97,
-        "amount": -4754.69,
+        "amount": -4352.89,
         "imageUrl": null
       },
       {
         "productName": "VKG RIDE SELTOS-8 BLU (4X7) RS.100/-",
-        "quantity": 76,
+        "quantity": 69,
         "rate": 66.97,
-        "amount": -5089.53,
+        "amount": -4620.76,
         "imageUrl": null
       },
       {
         "productName": "VKG RIDE SELTOS-8 CHRY (5X8) RS.100/-",
-        "quantity": 133,
+        "quantity": 125,
         "rate": 66.97,
-        "amount": -8906.68,
+        "amount": -8370.94,
         "imageUrl": null
       },
       {
@@ -11981,7 +12037,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -345750.54
+    "totalAmount": -342711.2
   },
   {
     "groupName": "Ruban F/w",
@@ -12077,6 +12133,13 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755346518/Gum_Boot_700_Black.jpg"
       },
       {
+        "productName": "Pvc Gum Boot 700 Gents MRP659/-",
+        "quantity": 48,
+        "rate": 377.41,
+        "amount": -18115.79,
+        "imageUrl": null
+      },
+      {
         "productName": "Pvc Gum Boot 700 Mrp539/-",
         "quantity": 9,
         "rate": 305.34,
@@ -12126,7 +12189,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -37462.18000000001
+    "totalAmount": -73693.76000000001
   },
   {
     "groupName": "School",
@@ -12683,9 +12746,9 @@
     "products": [
       {
         "productName": "SHYAM GENTS RAMP (6X10) RS.90/-",
-        "quantity": 52,
+        "quantity": 48,
         "rate": 48.57,
-        "amount": -2525.71,
+        "amount": -2331.43,
         "imageUrl": null
       },
       {
@@ -12724,7 +12787,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -32876.159999999996
+    "totalAmount": -32487.599999999995
   },
   {
     "groupName": "Solea & Meriva , Mascara",
@@ -13956,9 +14019,9 @@
       },
       {
         "productName": "Solea 7097 Extra Large (15 Pairs) Mrp.394/-",
-        "quantity": 40,
+        "quantity": 39,
         "rate": 220.07,
-        "amount": -8802.84,
+        "amount": -8582.77,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750086190/7097_LARGE.jpg"
       },
       {
@@ -14449,6 +14512,13 @@
         "quantity": 7,
         "rate": 164.78,
         "amount": -1153.45,
+        "imageUrl": null
+      },
+      {
+        "productName": "SOLEA 7289 LADIES MAR (5X8) MRP319/-",
+        "quantity": 1,
+        "rate": 171.13,
+        "amount": -171.13,
         "imageUrl": null
       },
       {
@@ -15006,9 +15076,9 @@
       },
       {
         "productName": "SOLEA 7860 LDS MAR (5X8) MRP329/-",
-        "quantity": 36,
+        "quantity": 35,
         "rate": 178.8,
-        "amount": -6436.8,
+        "amount": -6258,
         "imageUrl": null
       },
       {
@@ -15565,7 +15635,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -1408945.2199999983
+    "totalAmount": -1408489.7399999981
   },
   {
     "groupName": "SRG ENTERPRISES",
@@ -15675,9 +15745,9 @@
       },
       {
         "productName": "Paragon 16060 Gents Mrp269/-",
-        "quantity": 20,
+        "quantity": 14,
         "rate": 139.18,
-        "amount": -2783.6,
+        "amount": -1948.52,
         "imageUrl": null
       },
       {
@@ -15710,9 +15780,9 @@
       },
       {
         "productName": "Paragon 1738 Gents Mrp239/-",
-        "quantity": 22,
+        "quantity": 16,
         "rate": 135.39,
-        "amount": -2978.58,
+        "amount": -2166.24,
         "imageUrl": null
       },
       {
@@ -17200,7 +17270,7 @@
         "imageUrl": null
       }
     ],
-    "totalAmount": -785451.3200000002
+    "totalAmount": -782156.4800000002
   },
   {
     "groupName": "TEUZ",
@@ -18373,9 +18443,9 @@
       },
       {
         "productName": "SOLEA 7251 LDS MRP339/-",
-        "quantity": 52,
+        "quantity": 51,
         "rate": 192.04,
-        "amount": -9986.07,
+        "amount": -9794.03,
         "imageUrl": null
       },
       {
@@ -18597,9 +18667,9 @@
       },
       {
         "productName": "VERTEX 6174 GENTS NVY (6X10) MRP334/-",
-        "quantity": 24,
+        "quantity": 18,
         "rate": 190.26,
-        "amount": -4566.24,
+        "amount": -3424.68,
         "imageUrl": null
       },
       {
@@ -18793,9 +18863,9 @@
       },
       {
         "productName": "VERTEX 6210 E PV GENTS MRP414/-LRG (11X12)",
-        "quantity": 12,
+        "quantity": 10,
         "rate": 232.46,
-        "amount": -2789.53,
+        "amount": -2324.61,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1755691153/4937fce4-8df8-4a00-9059-f75b127144b9.jpg"
       },
       {
@@ -19185,9 +19255,23 @@
       },
       {
         "productName": "VERTEX 650006 GENTS BRN (6X10) MRP269/-",
-        "quantity": 6,
-        "rate": 152.3,
-        "amount": -913.82,
+        "quantity": 24,
+        "rate": 152.35,
+        "amount": -3656.43,
+        "imageUrl": null
+      },
+      {
+        "productName": "VERTEX 650006 GENTS BRT (6X10) MRP269/-",
+        "quantity": 18,
+        "rate": 153.21,
+        "amount": -2757.69,
+        "imageUrl": null
+      },
+      {
+        "productName": "VERTEX 650006 GENTS TAN (6X10) MRP269/-",
+        "quantity": 24,
+        "rate": 152.72,
+        "amount": -3665.19,
         "imageUrl": null
       },
       {
@@ -19255,9 +19339,9 @@
       },
       {
         "productName": "VERTEX 650022 MRP379/-",
-        "quantity": 3,
+        "quantity": 2,
         "rate": 214.82,
-        "amount": -644.47,
+        "amount": -429.64,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749741859/photo_6262354453109785071_y.jpg"
       },
       {
@@ -20423,6 +20507,20 @@
         "imageUrl": null
       },
       {
+        "productName": "VERTEX 6767 GENTS BRN(6X9) MRP299/-",
+        "quantity": 48,
+        "rate": 169.12,
+        "amount": -8117.84,
+        "imageUrl": null
+      },
+      {
+        "productName": "VERTEX 6767 GENTS TAN (6X9) MRP299/-",
+        "quantity": 48,
+        "rate": 169.12,
+        "amount": -8117.84,
+        "imageUrl": null
+      },
+      {
         "productName": "Vertex 6767 Mrp299/-",
         "quantity": 111,
         "rate": 168.96,
@@ -20459,9 +20557,9 @@
       },
       {
         "productName": "Vertex 6775 Gents@279",
-        "quantity": 11,
+        "quantity": 5,
         "rate": 169.08,
-        "amount": -1859.87,
+        "amount": -845.4,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749805753/6775_TAN.jpg"
       },
       {
@@ -20970,9 +21068,9 @@
       },
       {
         "productName": "Vertex 6860 Gents@239",
-        "quantity": 8,
+        "quantity": 2,
         "rate": 142.25,
-        "amount": -1138,
+        "amount": -284.5,
         "imageUrl": null
       },
       {
@@ -21607,9 +21705,9 @@
       },
       {
         "productName": "VERTEX 6983 PV GENTS MRP254/-",
-        "quantity": 33,
+        "quantity": 27,
         "rate": 143.84,
-        "amount": -4746.86,
+        "amount": -3883.79,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749806008/6983_TAN.jpg"
       },
       {
@@ -21684,9 +21782,9 @@
       },
       {
         "productName": "Vertex Gents 6775 Mrp.329/-",
-        "quantity": 229,
+        "quantity": 220,
         "rate": 186.28,
-        "amount": -42658.1,
+        "amount": -40981.58,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749805753/6775_TAN.jpg"
       },
       {
@@ -21865,7 +21963,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749807472/VERTEX_6789.jpg"
       }
     ],
-    "totalAmount": -2376760.9000000027
+    "totalAmount": -2414721.420000003
   },
   {
     "groupName": "Walkaholic",
@@ -22733,9 +22831,9 @@
       },
       {
         "productName": "Walkholic 1732 Gents Mrp189/-",
-        "quantity": 27,
+        "quantity": 23,
         "rate": 85.62,
-        "amount": -2311.74,
+        "amount": -1969.26,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749898300/PARAGON_1732.jpg"
       },
       {
@@ -22879,7 +22977,7 @@
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749896002/WALKAHOLIC_1909.jpg"
       }
     ],
-    "totalAmount": -391391
+    "totalAmount": -390706.04000000004
   },
   {
     "groupName": "Xpania",
