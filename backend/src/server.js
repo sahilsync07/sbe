@@ -192,10 +192,13 @@ app.get("/api/stock", async (req, res) => {
   }
 });
 
+// ... (all imports, constants, fetchTallyData, other routes unchanged)
+
 app.post("/api/updateStockData", async (req, res) => {
   try {
     console.log("Starting updateStockData, stockDataPath:", stockDataPath);
 
+    // ---- 1. Verify file access ------------------------------------------------
     try {
       await fs.access(stockDataPath, fs.constants.R_OK | fs.constants.W_OK);
       console.log("stock-data.json is readable and writable");
@@ -204,47 +207,66 @@ app.post("/api/updateStockData", async (req, res) => {
       throw new Error(`Cannot access stock-data.json: ${err.message}`);
     }
 
+    // ---- 2. Load existing JSON ------------------------------------------------
     let existingData = [];
     try {
       const fileContent = await fs.readFile(stockDataPath, "utf-8");
       if (fileContent.trim()) {
         existingData = JSON.parse(fileContent);
-        console.log(
-          "Existing stock-data.json loaded, groups:",
-          existingData.length
-        );
+        console.log("Existing stock-data.json loaded, groups:", existingData.length);
       }
     } catch (err) {
       console.error("Error reading stock-data.json:", err.message, err.stack);
       existingData = [];
     }
 
-    const imageUrls = {};
+    // ---- 3. Preserve images + zero-stock products that have images ----------
+    const imageUrls = {};               // productName → imageUrl
+    const zeroStockProducts = {};       // groupName → [product,…]
+
     existingData.forEach((group) => {
-      if (group.products) {
-        group.products.forEach((product) => {
-          if (product.imageUrl) {
-            imageUrls[product.productName] = product.imageUrl;
-          }
-        });
-      }
+      if (!group.products) return;
+
+      group.products.forEach((product) => {
+        if (product.imageUrl) {
+          imageUrls[product.productName] = product.imageUrl;
+        }
+        if (product.quantity === 0 && product.imageUrl) {
+          (zeroStockProducts[group.groupName] ??= []).push({ ...product });
+        }
+      });
     });
     console.log("Preserved image URLs:", Object.keys(imageUrls).length);
+    console.log("Preserved zero-stock products with images:", Object.keys(zeroStockProducts).length);
 
+    // ---- 4. Fetch fresh data from Tally --------------------------------------
     const stockData = await fetchTallyData();
 
+    // ---- 5. Re-attach images & re-inject zero-stock items --------------------
     stockData.forEach((group) => {
-      group.products.forEach((product) => {
-        product.imageUrl = imageUrls[product.productName] || null;
+      // attach saved images to live products
+      group.products.forEach((p) => {
+        p.imageUrl = imageUrls[p.productName] ?? null;
+      });
+
+      // bring back zero-stock items that had an image
+      if (zeroStockProducts[group.groupName]) {
+        group.products.push(...zeroStockProducts[group.groupName]);
+      }
+
+      // ---- 6. De-duplicate by productName ------------------------------------
+      const seen = new Set();
+      group.products = group.products.filter((p) => {
+        if (seen.has(p.productName)) return false;
+        seen.add(p.productName);
+        return true;
       });
     });
 
+    // ---- 7. Write updated files ------------------------------------------------
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
-      await fs.writeFile(
-        publicStockDataPath,
-        JSON.stringify(stockData, null, 2)
-      );
+      await fs.writeFile(publicStockDataPath, JSON.stringify(stockData, null, 2));
       console.log("Updated stock-data.json at:", stockDataPath);
     } catch (err) {
       console.error("Error writing stock-data.json:", err.message, err.stack);
@@ -262,6 +284,8 @@ app.post("/api/updateStockData", async (req, res) => {
       .json({ error: `Failed to update stock data: ${error.message}` });
   }
 });
+
+// ... (all other routes unchanged)
 
 app.post("/api/updateImage", async (req, res) => {
   try {
