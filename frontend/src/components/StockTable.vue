@@ -578,7 +578,7 @@ export default {
         "AAGAM POLYMER",
         "A G ENTERPRISES",
         "NEXUS",
-        "YESH FOOTWEAR",
+        "YASH FOOTWEAR",
         "R K TRADERS",
       ],
       jkplasticSubgroups: ["J.K Plastic"],
