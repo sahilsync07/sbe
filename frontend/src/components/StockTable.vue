@@ -184,6 +184,17 @@
         >
           Airson
         </button>
+        <button
+          @click="selectGroup('GeneralItems')"
+          :class="[
+            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
+            selectedGroup === 'GeneralItems'
+              ? 'bg-white text-gray-800'
+              : 'hover:bg-gray-200',
+          ]"
+        >
+          General Items
+        </button>
       </div>
       <div class="mb-4">
         <input
@@ -650,7 +661,7 @@ export default {
           );
         }
         // NEW: General Items Filter
-        else if (this.selectedGroup === "General Items") {
+        else if (this.selectedGroup === "GeneralItems") {
           filtered = filtered.filter(g => this.generalItemsSubgroups.includes(g.groupName));
         }
         else if (this.selectedGroup === "Kids") {
