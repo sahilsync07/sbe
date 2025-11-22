@@ -49,47 +49,84 @@ const parser = new XMLParser({
   attributeNamePrefix: "@_",
 });
 
-// File: server.js (only the changed part inside fetchTallyData + small update in updateStockData)
-
 async function fetchTallyData() {
   try {
-    // ... existing code until building stockGroups ...
+    console.log("Fetching data from Tally:", tallyUrl);
+    const response = await axios.post(tallyUrl, tallyRequestXML, {
+      headers: { "Content-Type": "text/xml" },
+      timeout: tallyTimeout,
+    });
+    console.log(
+      "Tally response status:",
+      response.status,
+      "Data length:",
+      response.data.length
+    );
+    if (!response.data.trim()) {
+      throw new Error("Empty Tally response");
+    }
+
+    const parsedData = parser.parse(response.data);
+    const envelope = parsedData.ENVELOPE;
+    if (!envelope || !envelope.DSPACCNAME || !envelope.DSPSTKINFO) {
+      throw new Error("Invalid or empty Tally response");
+    }
+
+    const dspAccNames = Array.isArray(envelope.DSPACCNAME)
+      ? envelope.DSPACCNAME
+      : [envelope.DSPACCNAME].filter(Boolean);
+    const dspStkInfos = Array.isArray(envelope.DSPSTKINFO)
+      ? envelope.DSPSTKINFO
+      : [envelope.DSPSTKINFO].filter(Boolean);
+
+    if (dspAccNames.length !== dspStkInfos.length) {
+      throw new Error("Mismatched DSPACCNAME and DSPSTKINFO counts");
+    }
 
     const stockGroups = {};
     let currentGroup = "Stock";
 
-    // Define which Tally groups should be merged into "General Items"
-    const generalItemsGroups = new Set([
-      "AIRFAX",
-      "Airsun",
-      "J.K Plastic",
-      "SRG ENTERPRISES",
-      "VARDHMAN PLASTICS",
-      "NAV DURGA ENTERPRISES",
-      "AAGAM POLYMER",
-      "Magnet",
-      "MARUTI PLASTICS",
-      "Fencer",
-      "PANKAJ PLASTIC",
-      "PARIS",
-      "PU-LION",
-      "SHYAM",
-      "TEUZ",
-      "UAM FOOTWEAR",
-      "Xpania"
-    ]);
-
-    // Hardcoded known groups (kept for backward compatibility)
+    // Hardcoded list of group names (case-insensitive comparison)
     const groupNames = [
-      "4WAY SPORT", "ADDA", "ADDOXY", "AGRA", "AIRSUN",
-      "Avon International (WOODS)", "CUBIX", "Eeken", "Escoute",
-      "Fencer", "Fender", "Florex (Swastik)", "GLAMIUM",
-      "Hawai Chappal", "HITWAY", "KHADIM", "Kohinoor", "LEO",
-      "Magnet", "Max", "NON BRAND", "OTHERS", "PARAGON",
-      "Paragon Blot", "PARAGON COMFY", "Paralite", "P-TOES",
-      "PU-LION", "RELIANCE FOOTWEAR", "Safety", "School",
-      "Solea & Meriva , Mascara", "S S BANSAL", "Stimulus",
-      "VERTEX, SLICKERS & FENDER", "Walkaholic", "Xpania", "ZYF TEX"
+      "4WAY SPORT",
+      "ADDA",
+      "ADDOXY",
+      "AGRA",
+      "AIRSUN",
+      "Avon International (WOODS)",
+      "CUBIX",
+      "Eeken",
+      "Electrical & Electronic",
+      "Escoute",
+      "Fencer",
+      "Fender",
+      "Florex (Swastik)",
+      "GLAMIUM",
+      "Hawai Chappal",
+      "HITWAY",
+      "KHADIM",
+      "Kohinoor",
+      "LEO",
+      "Magnet",
+      "Max",
+      "NON BRAND",
+      "OTHERS",
+      "PARAGON",
+      "Paragon Blot",
+      "PARAGON COMFY",
+      "Paralite",
+      "P-TOES",
+      "PU-LION",
+      "RELIANCE FOOTWEAR",
+      "Safety",
+      "School",
+      "Solea & Meriva , Mascara",
+      "S S BANSAL",
+      "Stimulus",
+      "VERTEX, SLICKERS & FENDER",
+      "Walkaholic",
+      "Xpania",
+      "ZYF TEX",
     ];
 
     dspAccNames.forEach((acc, index) => {
@@ -99,56 +136,32 @@ async function fetchTallyData() {
       const rate = parseFloat(stkCl.DSPCLRATE || "0");
       const amount = parseFloat(stkCl.DSPCLAMTA || "0");
 
-      const isGroupHeader =
+      // Check if the name matches any hardcoded group name (case-insensitive)
+      const isGroup =
         !quantity.trim() ||
-        groupNames.some((g) => name.toLowerCase() === g.toLowerCase());
+        groupNames.some((group) => name.toLowerCase() === group.toLowerCase());
 
-      let targetGroup = currentGroup;
-
-      // If this is a group header
-      if (isGroupHeader) {
+      if (isGroup) {
         currentGroup = name;
-
-        // Force merge into "General Items" if in the list
-        if (generalItemsGroups.has(name)) {
-          targetGroup = "General Items";
-        } else {
-          targetGroup = name;
+        if (!stockGroups[currentGroup]) {
+          stockGroups[currentGroup] = { products: [], totalAmount: 0 };
         }
-
-        if (!stockGroups[targetGroup]) {
-          stockGroups[targetGroup] = { products: [], totalAmount: 0 };
-        }
-        stockGroups[targetGroup].totalAmount += amount;
+        stockGroups[currentGroup].totalAmount += amount;
       } else {
-        // It's a product → assign to correct group
-        if (generalItemsGroups.has(currentGroup)) {
-          targetGroup = "General Items";
-        } else {
-          targetGroup = currentGroup;
-        }
-
-        if (!stockGroups[targetGroup]) {
-          stockGroups[targetGroup] = { products: [], totalAmount: 0 };
-        }
-
         const qtyValue = parseFloat(quantity.replace(/[^0-9.-]/g, "") || "0");
-
-        stockGroups[targetGroup].products.push({
+        if (!stockGroups[currentGroup]) {
+          stockGroups[currentGroup] = { products: [], totalAmount: 0 };
+        }
+        stockGroups[currentGroup].products.push({
           productName: name,
           quantity: qtyValue,
           rate,
           amount,
           imageUrl: null,
         });
-        stockGroups[targetGroup].totalAmount += amount;
+        stockGroups[currentGroup].totalAmount += amount;
       }
     });
-
-    // Ensure "General Items" exists even if no items (optional)
-    if (!stockGroups["General Items"]) {
-      stockGroups["General Items"] = { products: [], totalAmount: 0 };
-    }
 
     const stockData = Object.entries(stockGroups).map(([groupName, value]) => ({
       groupName,
@@ -156,9 +169,13 @@ async function fetchTallyData() {
       totalAmount: value.totalAmount,
     }));
 
+    if (!stockData.length) {
+      throw new Error("No valid stock data processed from Tally");
+    }
+
     return stockData;
   } catch (error) {
-    console.error("Error fetching Tally data:", error.message);
+    console.error("Error fetching Tally data:", error.message, error.stack);
     throw error;
   }
 }
