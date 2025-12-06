@@ -581,7 +581,7 @@ export default {
       ],
       marutiSubgroups: ["MARUTI PLASTICS"],
       magnetSubgroups: ["Magnet"],
-      rktradersSubgroups: ["SRG ENTERPRISES", "VARDHMAN PLASTICS", "NAV DURGA ENTERPRISES", "AAGAM POLYMER"],
+      rktradersSubgroups: ["SRG ENTERPRISES", "VARDHMAN PLASTICS", "NAV DURGA ENTERPRISES", "AAGAM POLYMER", "NEXUS", "SRG ENTERPRISES", "A G ENTERPRISES", "R K TRADERS"],
       jkplasticSubgroups: ["J.K Plastic"],
       airsonSubgroups: ["Airsun"],
 
