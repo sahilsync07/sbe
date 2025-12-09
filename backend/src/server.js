@@ -279,6 +279,7 @@ app.post("/api/updateStockData", async (req, res) => {
     const stockData = await fetchTallyData();
 
     // ---- 5. Re-attach images & re-inject zero-stock items --------------------
+    // ---- 6. De-duplicate by productName ------------------------------------
     stockData.forEach((group) => {
       // attach saved images to live products
       group.products.forEach((p) => {
@@ -290,7 +291,6 @@ app.post("/api/updateStockData", async (req, res) => {
         group.products.push(...zeroStockProducts[group.groupName]);
       }
 
-      // ---- 6. De-duplicate by productName ------------------------------------
       const seen = new Set();
       group.products = group.products.filter((p) => {
         if (seen.has(p.productName)) return false;
@@ -299,7 +299,16 @@ app.post("/api/updateStockData", async (req, res) => {
       });
     });
 
-    // ---- 7. Write updated files ------------------------------------------------
+    // ---- 7. Inject Last Sync Metadata ---------------------------------------
+    // Add metadata at the start of the array or as a special entry
+    const lastSyncTime = new Date().toISOString();
+    stockData.unshift({
+      groupName: "_META_DATA_",
+      lastSync: lastSyncTime,
+      products: [],
+    });
+
+    // ---- 8. Write updated files ------------------------------------------------
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
       await fs.writeFile(publicStockDataPath, JSON.stringify(stockData, null, 2));

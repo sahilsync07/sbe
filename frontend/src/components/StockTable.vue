@@ -754,15 +754,31 @@ export default {
     },
     async loadStockData() {
       try {
+        let data = [];
         if (false) {
           const response = await axios.get("http://localhost:3000/api/stock");
-          this.stockData = response.data;
+          data = response.data;
         } else {
           const response = await fetch("/sbe/assets/stock-data.json");
-          this.stockData = await response.json();
+          data = await response.json();
         }
+
+        // Check for Metadata
+        const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+        if (metaIndex !== -1) {
+          const meta = data[metaIndex];
+          if (meta.lastSync) {
+            this.lastRefresh = new Date(meta.lastSync);
+          }
+          // Remove metadata from display list
+          data.splice(metaIndex, 1);
+        } else {
+           // Fallback if no meta found
+           this.lastRefresh = null; 
+        }
+
+        this.stockData = data;
         this.error = null;
-        this.lastRefresh = new Date();
       } catch (error) {
         this.error = this.isLocal
           ? error.response?.data?.error || "Failed to fetch stock data"
@@ -778,8 +794,21 @@ export default {
         const response = await axios.post(
           "http://localhost:3000/api/updateStockData"
         );
-        this.stockData = response.data.data;
-        this.lastRefresh = new Date();
+        let data = response.data.data;
+
+        // Check for Metadata
+        const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+        if (metaIndex !== -1) {
+          const meta = data[metaIndex];
+          if (meta.lastSync) {
+            this.lastRefresh = new Date(meta.lastSync);
+          }
+          data.splice(metaIndex, 1);
+        } else {
+           this.lastRefresh = new Date(); 
+        }
+
+        this.stockData = data;
         this.expandedGroups = this.stockData.reduce(
           (acc, _, index) => ({ ...acc, [index]: true }),
           {}
