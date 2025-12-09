@@ -361,14 +361,14 @@
             <div
               v-for="(product, pIndex) in group.products"
               :key="`${index}-${pIndex}`"
-              class="w-1/2 sm:w-1/3 md:w-1/4 px-2 mb-4"
+              class="w-1/2 sm:w-1/3 md:w-1/4 px-1 mb-2"
             >
               <div
-                class="bg-white border border-gray-200 p-2 flex flex-col h-[280px] sm:h-[330px]"
+                class="bg-white border border-gray-200 p-0 flex flex-col h-full shadow-sm rounded-lg overflow-hidden"
               >
                 <div
                   v-if="product.imageUrl"
-                  class="relative w-full h-[200px] sm:h-[250px] flex-shrink-0"
+                  class="relative w-full aspect-[4/3] bg-gray-100"
                 >
                   <img
                     :src="getOptimizedUrl(product.imageUrl)"
@@ -379,20 +379,20 @@
                   <button
                     v-if="isAdmin || isSuperAdmin"
                     @click="deleteImage(product.productName)"
-                    class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+                    class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-sm"
                   >
                     ×
                   </button>
                 </div>
                 <div
                   v-else-if="isAdmin || isSuperAdmin"
-                  class="w-full h-[200px] sm:h-[250px] flex flex-col items-center justify-center gap-2 flex-shrink-0"
+                  class="w-full aspect-[4/3] flex flex-col items-center justify-center gap-2 bg-gray-50 border-b border-gray-100"
                 >
                   <input
                     type="file"
                     accept="image/*"
                     @change="handleFileChange($event, product.productName)"
-                    class="text-xs text-gray-700"
+                    class="text-[10px] w-3/4 text-gray-700 mx-auto"
                   />
                   <button
                     @click="uploadImage(product.productName)"
@@ -400,34 +400,34 @@
                       !imageFiles[product.productName] ||
                       uploading[product.productName]
                     "
-                    class="text-xs bg-blue-500 text-white px-2 py-1 rounded"
+                    class="text-[10px] bg-blue-500 text-white px-2 py-1 rounded shadow-sm hover:bg-blue-600 transition-colors"
                   >
                     {{
-                      uploading[product.productName] ? "Uploading..." : "Upload"
+                      uploading[product.productName] ? "..." : "Upload"
                     }}
                   </button>
                   <div
                     v-if="uploadErrors[product.productName]"
-                    class="text-red-500 text-xs"
+                    class="text-red-500 text-[10px] px-1 text-center leading-tight"
                   >
                     {{ uploadErrors[product.productName] }}
                   </div>
                 </div>
                 <div
                   v-else
-                  class="w-full h-[200px] sm:h-[250px] flex items-center justify-center text-gray-500 text-sm bg-gray-100 flex-shrink-0"
+                  class="w-full aspect-[4/3] flex items-center justify-center text-gray-400 text-xs bg-gray-100"
                 >
                   No Image
                 </div>
                 <div
-                  class="mt-1 text-center flex flex-col flex-grow justify-between p-1"
+                  class="flex flex-col flex-grow justify-between p-2 text-center bg-white"
                 >
                   <p
-                    class="text-gray-800 text-xs font-sans font-light tracking-wide line-clamp-2 leading-tight"
+                    class="text-gray-800 text-xs font-medium tracking-tight line-clamp-2 leading-snug mb-1"
                   >
                     {{ product.productName }}
                   </p>
-                  <p class="text-gray-600 text-xs font-sans font-light">
+                  <p class="text-blue-600 text-xs font-bold">
                     Qty: {{ product.quantity }}
                   </p>
                 </div>
@@ -754,15 +754,31 @@ export default {
     },
     async loadStockData() {
       try {
+        let data = [];
         if (false) {
           const response = await axios.get("http://localhost:3000/api/stock");
-          this.stockData = response.data;
+          data = response.data;
         } else {
           const response = await fetch("/sbe/assets/stock-data.json");
-          this.stockData = await response.json();
+          data = await response.json();
         }
+
+        // Check for Metadata
+        const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+        if (metaIndex !== -1) {
+          const meta = data[metaIndex];
+          if (meta.lastSync) {
+            this.lastRefresh = new Date(meta.lastSync);
+          }
+          // Remove metadata from display list
+          data.splice(metaIndex, 1);
+        } else {
+           // Fallback if no meta found
+           this.lastRefresh = null; 
+        }
+
+        this.stockData = data;
         this.error = null;
-        this.lastRefresh = new Date();
       } catch (error) {
         this.error = this.isLocal
           ? error.response?.data?.error || "Failed to fetch stock data"
@@ -778,8 +794,21 @@ export default {
         const response = await axios.post(
           "http://localhost:3000/api/updateStockData"
         );
-        this.stockData = response.data.data;
-        this.lastRefresh = new Date();
+        let data = response.data.data;
+
+        // Check for Metadata
+        const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+        if (metaIndex !== -1) {
+          const meta = data[metaIndex];
+          if (meta.lastSync) {
+            this.lastRefresh = new Date(meta.lastSync);
+          }
+          data.splice(metaIndex, 1);
+        } else {
+           this.lastRefresh = new Date(); 
+        }
+
+        this.stockData = data;
         this.expandedGroups = this.stockData.reduce(
           (acc, _, index) => ({ ...acc, [index]: true }),
           {}
