@@ -4,14 +4,14 @@
     <header
       class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300"
     >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <!-- Left: Sync/Ledger Actions -->
           <div class="flex items-center gap-3">
             <button
               v-if="isAdmin && !isSuperAdmin"
               @click="updateStockData"
-              class="p-2 rounded-full hover:bg-slate-100 transition-colors relative group"
+              class="p-2 rounded-full bg-transparent hover:bg-gray-100 transition-colors relative group"
               title="Sync Data"
             >
               <img
@@ -64,7 +64,7 @@
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <main class="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
       <!-- Ledger View Placeholder -->
       <div
@@ -218,15 +218,15 @@
                   v-show="expandedGroups[index]"
                   class="group/row hover:bg-blue-50/30 transition-colors"
                 >
-                  <td class="px-6 py-3">
+                  <td class="px-6 py-6">
                     <p class="text-sm font-medium text-slate-800 line-clamp-1 group-hover/row:text-blue-600 transition-colors">{{ product.productName }}</p>
                   </td>
-                  <td class="px-6 py-3">
+                  <td class="px-6 py-6">
                      <span class="inline-block px-2 py-1 text-xs font-bold text-blue-700 bg-blue-50 rounded-md">
                        {{ product.quantity }} pcs
                      </span>
                   </td>
-                  <td class="px-6 py-3 text-center">
+                  <td class="px-6 py-6 text-center">
                     <div class="relative w-12 h-12 mx-auto rounded-lg bg-slate-100 border border-slate-200 overflow-hidden">
                        <img v-if="product.imageUrl" :src="getOptimizedUrl(product.imageUrl)" class="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="openImagePopup(product, index)" />
                        <span v-else class="flex items-center justify-center w-full h-full text-[9px] text-slate-400">N/A</span>
@@ -345,7 +345,7 @@
       <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-6 right-6 p-4 bg-slate-900/90 text-white rounded-full shadow-2xl hover:bg-black transition-all hover:-translate-y-1 hover:shadow-black/20 backdrop-blur-sm z-30"
+        class="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-slate-900/90 text-white rounded-full shadow-2xl hover:bg-black transition-all hover:-translate-y-1 hover:shadow-black/20 backdrop-blur-sm z-30"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
       </button>
