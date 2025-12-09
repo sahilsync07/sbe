@@ -355,62 +355,91 @@
     <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div
         v-if="showImagePopup"
-        class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-8"
         role="dialog"
       >
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeImagePopup"></div>
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="closeImagePopup"></div>
 
         <!-- content -->
         <div
-          class="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-transparent rounded-2xl overflow-hidden shadow-2xl"
+          class="relative w-full max-w-6xl max-h-[85vh] flex flex-col md:flex-row bg-slate-900 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10"
           @touchstart="handleTouchStart"
           @touchend="handleTouchEnd"
         >
-          <!-- Modal Header -->
-          <div class="bg-black/50 backdrop-blur-md text-white px-6 py-4 flex items-center justify-between border-b border-white/10 z-10">
-             <div class="flex flex-col">
-                <span class="text-xs uppercase tracking-widest opacity-70">{{ currentGroupName }}</span>
-                <span class="text-lg font-bold truncate max-w-[200px] sm:max-w-md">{{ currentProduct.productName }}</span>
-             </div>
-             <button @click="closeImagePopup" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-             </button>
-          </div>
-
-          <!-- Main Image Area -->
-          <div class="flex-1 relative flex items-center justify-center bg-black/90 p-4">
+          
+          <!-- Image Section (Left/Top) -->
+          <div class="flex-1 relative bg-black flex items-center justify-center p-4 min-h-[40vh] md:min-h-0 overflow-hidden">
              <img
                v-if="currentProduct.imageUrl"
                :src="getOptimizedUrl(currentProduct.imageUrl)"
-               class="max-w-full max-h-[70vh] object-contain drop-shadow-2xl rounded-lg"
+               class="w-full h-full object-contain drop-shadow-2xl"
                draggable="false"
              />
              <div v-else class="text-white/50">No High-Res Image Available</div>
 
-             <!-- Nav Buttons -->
+             <!-- Desktop Nav Buttons (Floating) -->
              <button
                v-if="currentProductIndex > 0"
                @click="navigateImage(-1)"
-               class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all sm:flex hidden"
+               class="absolute left-6 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all hidden md:flex hover:scale-110"
+               title="Previous"
              >
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
              </button>
              <button
                v-if="currentProductIndex < currentGroupProducts.length - 1"
                @click="navigateImage(1)"
-               class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all sm:flex hidden"
+               class="absolute right-6 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all hidden md:flex hover:scale-110"
+               title="Next"
              >
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
              </button>
           </div>
 
-          <!-- Bottom Bar -->
-          <div class="bg-black/80 backdrop-blur-md p-4 text-center border-t border-white/10">
-             <div class="inline-block px-4 py-1.5 bg-blue-600 rounded-full text-white font-bold text-sm shadow-lg shadow-blue-500/30">
-                Current Stock: {{ currentProduct.quantity }} units
+          <!-- Details Section (Right/Bottom) -->
+          <div class="w-full md:w-[320px] lg:w-[380px] flex flex-col bg-slate-800 border-l border-white/5 z-20 shrink-0">
+             
+             <!-- Header / Close -->
+             <div class="p-6 flex justify-between items-start">
+                <div class="flex-1 pr-4">
+                  <span class="block text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">{{ currentGroupName }}</span>
+                  <h2 class="text-lg md:text-xl font-bold text-white leading-snug break-words">
+                    {{ currentProduct.productName }}
+                  </h2>
+                </div>
+                <button @click="closeImagePopup" class="p-2 -mr-2 -mt-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-full transition-colors flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+             </div>
+
+             <!-- Info Content -->
+             <div class="px-6 flex-1 overflow-y-auto">
+                <div class="p-4 bg-slate-700/30 rounded-xl border border-white/5 space-y-2 mb-4">
+                   <div class="text-sm text-slate-400 font-medium">Available Stock</div>
+                   <div class="text-3xl font-bold text-blue-400 tracking-tight">{{ currentProduct.quantity }} <span class="text-sm font-normal text-slate-500 ml-1">pairs/pcs</span></div>
+                </div>
+             </div>
+
+             <!-- Mobile Nav Controls (Footer) -->
+             <div class="p-4 flex gap-3 md:hidden bg-slate-900 border-t border-white/5 mt-auto">
+                <button 
+                  @click="navigateImage(-1)" 
+                  class="flex-1 py-3 px-4 bg-slate-800 text-white text-sm font-bold rounded-xl disabled:opacity-30 active:scale-95 transition-all"
+                  :disabled="currentProductIndex <= 0"
+                >
+                  Previous
+                </button>
+                <button 
+                  @click="navigateImage(1)" 
+                  class="flex-1 py-3 px-4 bg-blue-600 text-white text-sm font-bold rounded-xl disabled:opacity-30 active:scale-95 transition-all shadow-lg shadow-blue-900/20"
+                  :disabled="currentProductIndex >= currentGroupProducts.length - 1"
+                >
+                  Next Product
+                </button>
              </div>
           </div>
+
         </div>
       </div>
     </transition>
