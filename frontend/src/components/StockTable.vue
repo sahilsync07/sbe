@@ -1,531 +1,419 @@
 <template>
-  <div class="min-h-screen w-full p-4 bg-gray-100">
-    <!-- Header with SBE Rayagada, Refresh or Ledger, and Admin -->
-    <div
-      class="flex items-center justify-between mb-4 bg-white py-2 px-4 shadow"
+  <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800">
+    <!-- Sticky Header with Glassmorphism -->
+    <header
+      class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300"
     >
-      <div class="flex items-center space-x-2">
-        <img
-          v-if="isAdmin && !isSuperAdmin"
-          @click="updateStockData"
-          src="https://res.cloudinary.com/dg365ewal/image/upload/v1749701539/cloud-sync_nznxzz.png"
-          alt="Refresh Icon"
-          class="w-10 h-10 object-contain cursor-pointer"
-          :class="{ 'animate-spin': loading }"
-        />
-        <img
-          v-if="isSuperAdmin"
-          @click="toggleLedgerView"
-          src="https://res.cloudinary.com/dg365ewal/image/upload/v1753616091/accounting-book_vh3kg5.png"
-          alt="Ledger Icon"
-          class="w-10 h-10 object-contain cursor-pointer"
-        />
-        <div v-else-if="!isAdmin && !isSuperAdmin" class="w-10 h-10"></div>
-      </div>
-      <div class="text-2xl font-bold text-center flex-1 text-gray-800">
-        SBE Rayagada
-      </div>
-      <img
-        v-if="!isAdmin && !isSuperAdmin"
-        @click="promptAdminLogin"
-        src="https://res.cloudinary.com/dg365ewal/image/upload/v1749669514/software-engineer_dek6dl.png"
-        alt="Admin Icon"
-        class="w-12 h-12 object-contain cursor-pointer"
-      />
-      <div v-else class="w-12 h-12"></div>
-    </div>
-
-    <!-- Ledger View -->
-    <div
-      v-if="showLedgerView"
-      class="text-center text-gray-800 font-bold text-lg mt-4"
-    >
-      Tally Ledger Work in Progress
-    </div>
-
-    <!-- Existing Content (Hidden in Ledger View) -->
-    <div v-if="!showLedgerView">
-      <div class="flex flex-wrap justify-center items-center mb-4 gap-3">
-        <button
-          @click="selectGroup('All')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'All'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          All
-        </button>
-        <button
-          v-for="brand in brands"
-          :key="brand.name"
-          @click="selectGroup(brand.name)"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === brand.name
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          <img
-            :src="brand.logo"
-            :alt="`${brand.name} Logo`"
-            class="w-full h-full object-contain"
-          />
-        </button>
-        <button
-          @click="selectGroup('Kids')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Kids'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Kids
-        </button>
-        <button
-          @click="selectGroup('Hawai')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Hawai'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Hawai
-        </button>
-        <button
-          @click="selectGroup('Loose')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Loose'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Loose
-        </button>
-        <button
-          @click="selectGroup('Box')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Box'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Box
-        </button>
-        <button
-          @click="selectGroup('Shoe')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Shoe'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Shoe
-        </button>
-        <button
-          @click="selectGroup('Maruti')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Maruti'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Maruti
-        </button>
-        <button
-          @click="selectGroup('Magnet')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'Magnet'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Magnet
-        </button>
-        <button
-          @click="selectGroup('rktraders')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'rktraders'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          R.K.Traders
-        </button>
-        <button
-          @click="selectGroup('jkplastic')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'jkplastic'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          J.K.Plastic
-        </button>
-        <button
-          @click="selectGroup('airson')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'airson'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          Airson
-        </button>
-        <button
-          @click="selectGroup('GeneralItems')"
-          :class="[
-            'flex items-center justify-center h-10 rounded-lg bg-white text-gray-800 font-bold text-sm w-[25%] sm:w-auto px-3',
-            selectedGroup === 'GeneralItems'
-              ? 'bg-white text-gray-800'
-              : 'hover:bg-gray-200',
-          ]"
-        >
-          General Items
-        </button>
-      </div>
-      <div class="mb-4">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search products..."
-          class="w-full px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500"
-        />
-      </div>
-      <div class="mb-4 flex flex-col sm:flex-row gap-2">
-        <select
-          v-model="selectedGroup"
-          @change="selectGroup($event.target.value)"
-          class="w-full sm:w-1/2 px-4 py-2 rounded-lg bg-white text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
-        >
-          <option value="All">All</option>
-          <option value="Kids">Kids</option>
-          <option value="Hawai">Hawai</option>
-          <option value="Loose">Loose</option>
-          <option value="Box">Box</option>
-          <option value="Shoe">Shoes</option>
-          <option
-            v-for="group in sortedStockDataForDropdown"
-            :key="group.groupName"
-            :value="group.groupName"
-          >
-            {{ group.groupName }}
-          </option>
-        </select>
-        <div class="w-full sm:w-1/2 flex gap-2 items-center">
-          <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-300 select-none hover:bg-gray-50 flex-1 justify-center">
-            <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-            <span>Images Only</span>
-          </label>
-          <div class="flex flex-1 gap-1">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Left: Sync/Ledger Actions -->
+          <div class="flex items-center gap-3">
             <button
-              @click="viewMode = 'list'"
-              :class="[
-                'flex-1 py-2 rounded-lg text-sm transition-colors',
-                viewMode === 'list'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-              ]"
+              v-if="isAdmin && !isSuperAdmin"
+              @click="updateStockData"
+              class="p-2 rounded-full hover:bg-slate-100 transition-colors relative group"
+              title="Sync Data"
             >
-              List
+              <img
+                src="https://res.cloudinary.com/dg365ewal/image/upload/v1749701539/cloud-sync_nznxzz.png"
+                alt="Refresh"
+                class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                :class="{ 'animate-spin': loading }"
+              />
             </button>
             <button
-              @click="viewMode = 'image'"
-              :class="[
-                'flex-1 py-2 rounded-lg text-sm transition-colors',
-                viewMode === 'image'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-              ]"
+              v-if="isSuperAdmin"
+              @click="toggleLedgerView"
+              class="p-2 rounded-full hover:bg-slate-100 transition-colors group"
+              title="Ledger View"
             >
-              Image
+              <img
+                src="https://res.cloudinary.com/dg365ewal/image/upload/v1753616091/accounting-book_vh3kg5.png"
+                alt="Ledger"
+                class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+              />
             </button>
+            <!-- Spacer for non-admin layout balance -->
+            <div v-if="!isAdmin && !isSuperAdmin" class="w-10"></div>
+          </div>
+
+          <!-- Center: Title -->
+          <div class="flex-1 text-center">
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+              <span class="text-blue-600">SBE</span> Rayagada
+            </h1>
+          </div>
+
+          <!-- Right: Admin Login -->
+          <div class="flex items-center justify-end">
+            <button
+              v-if="!isAdmin && !isSuperAdmin"
+              @click="promptAdminLogin"
+              class="p-2 rounded-full hover:bg-slate-100 transition-colors opacity-70 hover:opacity-100"
+              title="Admin Login"
+            >
+              <img
+                src="https://res.cloudinary.com/dg365ewal/image/upload/v1749669514/software-engineer_dek6dl.png"
+                alt="Admin"
+                class="w-8 h-8 object-contain"
+              />
+            </button>
+            <div v-else class="w-10"></div>
           </div>
         </div>
       </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      
+      <!-- Ledger View Placeholder -->
       <div
-        class="flex justify-between items-center mb-6 flex-col sm:flex-row gap-2"
+        v-if="showLedgerView"
+        class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-slate-300"
       >
-        <span class="text-sm text-center sm:text-left text-gray-600">
-          Last Refreshed:
-          {{
-            lastRefresh
-              ? lastRefresh.toLocaleString("en-IN", {
-                  timeZone: "Asia/Kolkata",
-                })
-              : "Never"
-          }}
-        </span>
+        <div class="text-xl font-semibold text-slate-500">Tally Ledger Work in Progress</div>
       </div>
-      <div v-if="error" class="text-red-500 mb-4 text-center">
-        {{ error }} (Ensure Tally is running on localhost:9000 and backend is
-        active)
-      </div>
-      <div v-if="viewMode === 'list'" class="table-container">
-        <table class="w-full">
-          <thead>
-            <tr>
-              <th class="w-1/3">Name</th>
-              <th class="w-1/6">Quantity</th>
-              <th class="w-1/2">Image</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-for="(group, index) in filteredStockData" :key="index">
-              <tr class="group-row" @click="toggleGroup(index)">
-                <td
-                  colspan="3"
-                  class="text-center bg-gray-100 text-gray-800 font-bold border-b border-gray-300"
-                >
-                  {{ group.groupName }}
-                </td>
+
+      <!-- Main Content -->
+      <div v-else class="space-y-6">
+        
+        <!-- Brand Filters (Scrollable Horizontal List) -->
+        <div class="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 no-scrollbar">
+          <button
+            @click="selectGroup('All')"
+            class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border"
+            :class="selectedGroup === 'All' ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+          >
+            All Items
+          </button>
+
+          <!-- Dynamic Brands -->
+          <button
+            v-for="brand in brands"
+            :key="brand.name"
+            @click="selectGroup(brand.name)"
+            class="flex items-center justify-center px-4 py-1.5 rounded-full border transition-all duration-200 min-w-[80px]"
+            :class="selectedGroup === brand.name ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+          >
+            <img :src="brand.logo" :alt="brand.name" class="h-6 object-contain" />
+          </button>
+
+          <!-- Static Filters (Capsule Style) -->
+          <button
+             v-for="filter in ['Kids', 'Hawai', 'Loose', 'Box', 'Shoe', 'Maruti', 'Magnet', 'rktraders', 'jkplastic', 'airson', 'GeneralItems']"
+             :key="filter"
+             @click="selectGroup(filter)"
+             class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border capitalize"
+             :class="selectedGroup === filter ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+          >
+            {{ filter === 'rktraders' ? 'R.K.Traders' : filter === 'jkplastic' ? 'J.K.Plastic' : filter === 'airson' ? 'Airson' : filter === 'GeneralItems' ? 'General Items' : filter }}
+          </button>
+        </div>
+
+        <!-- Toolbar: Search, Filter, View Toggle -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+          
+          <!-- Search -->
+          <div class="md:col-span-12 lg:col-span-5 relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </span>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search products..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+            />
+          </div>
+
+          <!-- Group Select Dropdown -->
+          <div class="md:col-span-6 lg:col-span-3">
+             <div class="relative">
+               <select
+                 v-model="selectedGroup"
+                 @change="selectGroup($event.target.value)"
+                 class="w-full appearance-none px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
+               >
+                 <option value="All">All Categories</option>
+                 <option value="Kids">Kids Only</option>
+                 <option value="Hawai">Hawai Only</option>
+                 <option value="Loose">Loose Items</option>
+                 <option value="Box">Box Items</option>
+                 <option value="Shoe">Shoes</option>
+                 <option disabled>──────────</option>
+                 <option
+                   v-for="group in sortedStockDataForDropdown"
+                   :key="group.groupName"
+                   :value="group.groupName"
+                 >
+                   {{ group.groupName }}
+                 </option>
+               </select>
+               <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+               </span>
+             </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="md:col-span-6 lg:col-span-4 flex items-center justify-between gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2.5 rounded-xl border border-slate-200 transition-colors flex-1 justify-center">
+              <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+              <span class="text-sm font-medium text-slate-700">Images Only</span>
+            </label>
+
+            <div class="flex bg-slate-100 p-1 rounded-xl">
+               <button
+                 @click="viewMode = 'list'"
+                 class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                 :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                 title="List View"
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+               </button>
+               <button
+                 @click="viewMode = 'image'"
+                 class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                 :class="viewMode === 'image' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                 title="Grid View"
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Bar -->
+        <div class="flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 px-2">
+          <span>
+            Last Synced: 
+            <span class="font-semibold text-slate-700">
+               {{ lastRefresh ? lastRefresh.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never" }}
+            </span>
+          </span>
+          <span v-if="error" class="text-red-500 font-medium mt-1 sm:mt-0">{{ error }}</span>
+        </div>
+
+        <!-- View: List -->
+        <div v-if="viewMode === 'list'" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 border-b border-slate-200 uppercase text-xs font-semibold text-slate-500">
+              <tr>
+                <th class="px-6 py-4 w-1/3">Product Name</th>
+                <th class="px-6 py-4 w-1/6">Stock</th>
+                <th class="px-6 py-4 w-1/2 text-center">Preview</th>
               </tr>
-              <tr
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <template v-for="(group, index) in filteredStockData" :key="index">
+                <tr class="bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer" @click="toggleGroup(index)">
+                  <td colspan="3" class="px-6 py-3 font-bold text-slate-700 text-sm flex items-center gap-2">
+                    <span class="transform transition-transform text-slate-400" :class="{ 'rotate-90': expandedGroups[index] }">▸</span>
+                    {{ group.groupName }}
+                  </td>
+                </tr>
+                <tr
+                  v-for="(product, pIndex) in group.products"
+                  :key="`${index}-${pIndex}`"
+                  v-show="expandedGroups[index]"
+                  class="group/row hover:bg-blue-50/30 transition-colors"
+                >
+                  <td class="px-6 py-3">
+                    <p class="text-sm font-medium text-slate-800 line-clamp-1 group-hover/row:text-blue-600 transition-colors">{{ product.productName }}</p>
+                  </td>
+                  <td class="px-6 py-3">
+                     <span class="inline-block px-2 py-1 text-xs font-bold text-blue-700 bg-blue-50 rounded-md">
+                       {{ product.quantity }} pcs
+                     </span>
+                  </td>
+                  <td class="px-6 py-3 text-center">
+                    <div class="relative w-12 h-12 mx-auto rounded-lg bg-slate-100 border border-slate-200 overflow-hidden">
+                       <img v-if="product.imageUrl" :src="getOptimizedUrl(product.imageUrl)" class="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="openImagePopup(product, index)" />
+                       <span v-else class="flex items-center justify-center w-full h-full text-[9px] text-slate-400">N/A</span>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- View: Image Grid -->
+        <div v-else class="space-y-8">
+          <div v-for="(group, index) in filteredStockData" :key="index" class="space-y-4">
+            <!-- Group Header -->
+            <div
+               class="flex items-center gap-3 cursor-pointer group select-none"
+               @click="toggleGroup(index)"
+            >
+               <h2 class="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ group.groupName }}</h2>
+               <div class="h-px flex-1 bg-slate-200 group-hover:bg-blue-100 transition-colors"></div>
+               <span class="text-slate-400 transform transition-transform duration-300" :class="{ 'rotate-180': expandedGroups[index] }">▼</span>
+            </div>
+
+            <!-- Grid Content -->
+            <div v-show="expandedGroups[index]" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div
                 v-for="(product, pIndex) in group.products"
                 :key="`${index}-${pIndex}`"
-                v-show="expandedGroups[index]"
-                class="product-row"
               >
-                <td class="truncate">{{ product.productName }}</td>
-                <td>{{ product.quantity }}</td>
-                <td>
-                  <div class="image-box relative">
+                <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-slate-100 overflow-hidden h-full flex flex-col group/card relative">
+                  
+                  <!-- Image Area (Portrait 3:4) -->
+                  <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
                     <img
                       v-if="product.imageUrl"
                       :src="getOptimizedUrl(product.imageUrl)"
-                      alt="Product Image"
-                      class="w-full h-full object-cover cursor-pointer"
+                      alt="Product"
+                      class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover/card:scale-105"
                       @click="openImagePopup(product, index)"
                     />
-                    <button
-                      v-if="product.imageUrl && (isAdmin || isSuperAdmin)"
-                      @click="deleteImage(product.productName)"
-                      class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                    >
-                      ×
-                    </button>
-                    <div
-                      v-else-if="isAdmin || isSuperAdmin"
-                      class="flex flex-col items-center gap-2"
-                    >
-                      <input
-                        type="file"
-                        accept="image/*"
-                        @change="handleFileChange($event, product.productName)"
-                        class="text-xs text-gray-700"
-                      />
-                      <button
-                        @click="uploadImage(product.productName)"
-                        :disabled="
-                          !imageFiles[product.productName] ||
-                          uploading[product.productName]
-                        "
-                        class="text-xs bg-blue-500 text-white px-2 py-1 rounded"
-                      >
-                        {{
-                          uploading[product.productName]
-                            ? "Uploading..."
-                            : "Upload"
-                        }}
-                      </button>
-                      <div
-                        v-if="uploadErrors[product.productName]"
-                        class="text-red-500 text-xs"
-                      >
-                        {{ uploadErrors[product.productName] }}
-                      </div>
-                    </div>
-                    <div v-else class="text-gray-700 text-xs">No Image</div>
-                  </div>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
-      <div v-else>
-        <div v-for="(group, index) in filteredStockData" :key="index">
-          <div
-            class="text-center bg-gray-100 text-gray-800 font-bold py-2 mb-2 border shadow"
-            @click="toggleGroup(index)"
-          >
-            {{ group.groupName }}
-          </div>
-          <div v-show="expandedGroups[index]" class="flex flex-wrap -mx-2">
-            <div
-              v-for="(product, pIndex) in group.products"
-              :key="`${index}-${pIndex}`"
-              class="w-1/2 sm:w-1/3 md:w-1/4 px-1 mb-2"
-            >
-              <div
-                class="bg-white border border-gray-200 flex flex-col h-full shadow-sm rounded-lg relative"
-              >
-                <!-- Image Container with Fixed Ratio -->
-                <div class="relative w-full aspect-[3/4] bg-gray-100 group rounded-t-lg overflow-hidden">
-                  <img
-                    v-if="product.imageUrl"
-                    :src="getOptimizedUrl(product.imageUrl)"
-                    alt="Product Image"
-                    class="w-full h-full object-cover cursor-pointer transition-opacity hover:opacity-90"
-                    @click="openImagePopup(product, index)"
-                  />
-                  
-                  <!-- Admin Image Controls -->
-                  <div
-                    v-if="isAdmin || isSuperAdmin"
-                    class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <button
-                      v-if="product.imageUrl"
-                      @click="deleteImage(product.productName)"
-                      class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md hover:bg-red-600"
-                    >
-                      ×
-                    </button>
                     
-                    <label class="cursor-pointer bg-white text-gray-800 text-[10px] px-2 py-1 rounded shadow hover:bg-gray-100 mt-2">
-                      <span>{{ uploading[product.productName] ? 'Uploading...' : 'Change Image' }}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        @change="handleFileChange($event, product.productName)"
-                        class="hidden"
-                        :disabled="uploading[product.productName]"
-                      />
-                    </label>
-                    <button
-                       v-if="imageFiles[product.productName]"
-                       @click="uploadImage(product.productName)"
-                       class="mt-1 bg-blue-500 text-white text-[10px] px-2 py-1 rounded shadow hover:bg-blue-600"
+                    <!-- Admin Controls Overlay -->
+                    <div
+                      v-if="isAdmin || isSuperAdmin"
+                      class="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4"
                     >
-                       Confirm Upload
-                    </button>
+                       <button
+                         v-if="product.imageUrl"
+                         @click.stop="deleteImage(product.productName)"
+                         class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors"
+                         title="Delete Image"
+                       >
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                       </button>
+
+                       <label class="px-3 py-1.5 bg-white/90 text-xs font-bold text-slate-800 rounded-lg cursor-pointer hover:bg-white transition-colors shadow-lg">
+                          {{ uploading[product.productName] ? 'Wait...' : 'Update Img' }}
+                          <input type="file" accept="image/*" @change="handleFileChange($event, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
+                       </label>
+                       
+                       <button
+                         v-if="imageFiles[product.productName]"
+                         @click="uploadImage(product.productName)"
+                         class="px-3 py-1.5 bg-blue-600 text-xs font-bold text-white rounded-lg hover:bg-blue-500 shadow-lg"
+                       >
+                         Upload Now
+                       </button>
+                    </div>
+
+                    <!-- Empty State Placeholder -->
+                    <div
+                       v-else-if="!isAdmin && !isSuperAdmin"
+                       class="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2"
+                    >
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+
+                    <!-- Admin Empty State -->
+                    <div v-else class="absolute inset-0 flex items-center justify-center bg-slate-50 group-hover/card:bg-slate-100 transition-colors">
+                        <label class="cursor-pointer flex flex-col items-center justify-center h-full w-full">
+                           <span class="text-xs font-medium text-slate-400 mb-1">+ Add</span>
+                           <input type="file" accept="image/*" @change="handleFileChange($event, product.productName); uploadImage(product.productName)" class="hidden" />
+                        </label>
+                    </div>
                   </div>
 
-                  <!-- Placeholder for No Image -->
-                  <div
-                    v-else
-                    class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-gray-100 transition-colors"
-                  >
-                     <img 
-                       src="https://res.cloudinary.com/dg365ewal/image/upload/v1769616091/placeholder_image_icon.png" 
-                       class="w-8 h-8 opacity-20 mb-1" 
-                       alt="No Image"
-                     />
-                     <span class="text-[10px] font-medium">No Image</span>
-                     
-                     <!-- Admin Upload Trigger for Empty State -->
-                     <label v-if="isAdmin || isSuperAdmin" class="absolute inset-0 cursor-pointer flex items-center justify-center">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          @change="handleFileChange($event, product.productName); uploadImage(product.productName)"
-                          class="hidden"
-                        />
-                     </label>
+                  <!-- Card Footer -->
+                  <div class="p-3 flex flex-col justify-between flex-grow bg-white">
+                    <h3 class="text-xs font-semibold text-slate-700 leading-tight line-clamp-2 mb-2 h-8" :title="product.productName">
+                      {{ product.productName }}
+                    </h3>
+                    <div class="flex items-end justify-between border-t border-slate-50 pt-2">
+                       <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Stock</div>
+                       <div class="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                         {{ product.quantity }}
+                       </div>
+                    </div>
                   </div>
-                  
-                  <!-- Error Message Overlay -->
-                  <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 w-full bg-red-500/90 text-white text-[9px] text-center py-0.5">
-                    {{ uploadErrors[product.productName] }}
-                  </div>
-                </div>
 
-                <!-- Text Content Area (Flex Grow to fill height, content aligned) -->
-                <div class="flex flex-col flex-grow p-2 text-center justify-between min-h-[70px]">
-                  <p class="text-gray-800 text-xs font-medium tracking-tight line-clamp-2 leading-snug break-words">
-                    {{ product.productName }}
-                  </p>
-                  <div class="mt-1 pt-1 border-t border-gray-100 w-full">
-                    <p class="text-blue-600 text-xs font-bold bg-blue-50 rounded px-1 inline-block">
-                       {{ product.quantity }} pcs
-                    </p>
+                  <!-- Upload Error Toast embedded in card -->
+                  <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 inset-x-0 bg-red-500 text-white text-[10px] py-1 text-center z-20">
+                    Failed
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
-      <div
+    </main>
+
+    <!-- Floating To Top Button -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full shadow-lg go-to-top flex items-center justify-center w-10 h-10 cursor-pointer"
+        class="fixed bottom-6 right-6 p-4 bg-slate-900/90 text-white rounded-full shadow-2xl hover:bg-black transition-all hover:-translate-y-1 hover:shadow-black/20 backdrop-blur-sm z-30"
       >
-        ↑
-      </div>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+      </button>
+    </transition>
+
+    <!-- Modern Image Modal -->
+    <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div
         v-if="showImagePopup"
-        class="fixed inset-0 bg-white bg-opacity-50 flex flex-col z-50"
-        @touchstart="handleTouchStart"
-        @touchend="handleTouchEnd"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
+        role="dialog"
       >
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeImagePopup"></div>
+
+        <!-- content -->
         <div
-          class="fixed top-0 left-0 right-0 bg-white py-4 border-4 border-white z-50 flex justify-center"
+          class="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-transparent rounded-2xl overflow-hidden shadow-2xl"
+          @touchstart="handleTouchStart"
+          @touchend="handleTouchEnd"
         >
-          <span class="text-black font-bold text-lg">{{
-            currentGroupName
-          }}</span>
-        </div>
-        <div class="flex-grow flex items-center justify-center px-4 py-16">
-          <div
-            class="relative w-full max-w-3xl bg-white bg-opacity-90 rounded-lg shadow-lg"
-          >
-            <img
-              v-if="currentProduct.imageUrl"
-              :src="getOptimizedUrl(currentProduct.imageUrl)"
-              alt="Enlarged Image"
-              class="w-full max-h-[70vh] object-contain rounded-lg"
-            />
-            <div v-else class="text-gray-500 text-center py-4">No Image</div>
-            <button
-              v-if="currentProductIndex > 0"
-              @click="navigateImage(-1)"
-              class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center text-lg"
-            >
-              ←
-            </button>
-            <button
-              v-if="currentProductIndex < currentGroupProducts.length - 1"
-              @click="navigateImage(1)"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center text-lg"
-            >
-              →
-            </button>
+          <!-- Modal Header -->
+          <div class="bg-black/50 backdrop-blur-md text-white px-6 py-4 flex items-center justify-between border-b border-white/10 z-10">
+             <div class="flex flex-col">
+                <span class="text-xs uppercase tracking-widest opacity-70">{{ currentGroupName }}</span>
+                <span class="text-lg font-bold truncate max-w-[200px] sm:max-w-md">{{ currentProduct.productName }}</span>
+             </div>
+             <button @click="closeImagePopup" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+             </button>
+          </div>
+
+          <!-- Main Image Area -->
+          <div class="flex-1 relative flex items-center justify-center bg-black/90 p-4">
+             <img
+               v-if="currentProduct.imageUrl"
+               :src="getOptimizedUrl(currentProduct.imageUrl)"
+               class="max-w-full max-h-[70vh] object-contain drop-shadow-2xl rounded-lg"
+               draggable="false"
+             />
+             <div v-else class="text-white/50">No High-Res Image Available</div>
+
+             <!-- Nav Buttons -->
+             <button
+               v-if="currentProductIndex > 0"
+               @click="navigateImage(-1)"
+               class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all sm:flex hidden"
+             >
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+             </button>
+             <button
+               v-if="currentProductIndex < currentGroupProducts.length - 1"
+               @click="navigateImage(1)"
+               class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all sm:flex hidden"
+             >
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+             </button>
+          </div>
+
+          <!-- Bottom Bar -->
+          <div class="bg-black/80 backdrop-blur-md p-4 text-center border-t border-white/10">
+             <div class="inline-block px-4 py-1.5 bg-blue-600 rounded-full text-white font-bold text-sm shadow-lg shadow-blue-500/30">
+                Current Stock: {{ currentProduct.quantity }} units
+             </div>
           </div>
         </div>
-        <div
-          class="fixed bottom-0 left-0 right-0 bg-white py-4 border-4 border-white z-50"
-        >
-          <div class="flex flex-col px-4">
-            <span class="text-black font-bold text-lg truncate text-center">
-              {{ currentProduct.productName }}
-            </span>
-            <span class="text-black font-bold text-lg text-center">
-              Qty: {{ currentProduct.quantity }}
-            </span>
-          </div>
-        </div>
-        <button
-          @click="closeImagePopup"
-          class="fixed top-2 right-2 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl z-50 hover:bg-red-600"
-        >
-          ×
-        </button>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
