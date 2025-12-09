@@ -373,7 +373,7 @@
                 class="bg-white border border-gray-200 flex flex-col h-full shadow-sm rounded-lg relative"
               >
                 <!-- Image Container with Fixed Ratio -->
-                <div class="relative w-full aspect-[4/3] bg-gray-100 group rounded-t-lg overflow-hidden">
+                <div class="relative w-full aspect-[3/4] bg-gray-100 group rounded-t-lg overflow-hidden">
                   <img
                     v-if="product.imageUrl"
                     :src="getOptimizedUrl(product.imageUrl)"
