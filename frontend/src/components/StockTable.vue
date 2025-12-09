@@ -217,7 +217,7 @@
           <option value="Box">Box</option>
           <option value="Shoe">Shoes</option>
           <option
-            v-for="group in stockData"
+            v-for="group in sortedStockDataForDropdown"
             :key="group.groupName"
             :value="group.groupName"
           >
@@ -604,11 +604,11 @@ export default {
       ],
       marutiSubgroups: ["MARUTI PLASTICS"],
       magnetSubgroups: ["Magnet"],
-      rktradersSubgroups: ["SRG ENTERPRISES", "VARDHMAN PLASTICS", "NAV DURGA ENTERPRISES", "AAGAM POLYMER", "NEXUS", "SRG ENTERPRISES", "A G ENTERPRISES", "R K TRADERS"],
+      rktradersSubgroups: ["R K TRADERS"], // Kept for safety, though moved to general
       jkplasticSubgroups: ["J.K Plastic"],
       airsonSubgroups: ["Airsun"],
 
-      // NEW: General Items Group
+      // NEW: General Items Group (Updated Order)
       generalItemsSubgroups: [
         "AIRFAX",
         "Airsun",
@@ -626,7 +626,12 @@ export default {
         "SHYAM",
         "TEUZ",
         "UAM FOOTWEAR",
-        "Xpania"
+        "Xpania",
+        "R K TRADERS",
+        "Maruti",
+        "rktraders",
+        "jkplastic",
+        "airson"
       ],
       showImagesOnly: true, // Default to true
     };
@@ -756,8 +761,81 @@ export default {
           );
         }
       }
-      return filtered;
+      
+      // --- Sorting Logic Implementation ---
+      // Order: Cubix -> Florex -> Paragon (Ordered) -> General Items (Ordered) -> Others
+      
+      const normalize = (name) => name ? name.toLowerCase().trim() : '';
+      
+      const sorted = filtered.sort((a, b) => {
+          const nameA = normalize(a.groupName);
+          const nameB = normalize(b.groupName);
+          
+          // 1. Cubix
+          const isCubixA = nameA.includes('cubix');
+          const isCubixB = nameB.includes('cubix');
+          if (isCubixA && !isCubixB) return -1;
+          if (!isCubixA && isCubixB) return 1;
+          
+          // 2. Florex
+          const isFlorexA = nameA.includes('florex');
+          const isFlorexB = nameB.includes('florex');
+          if (isFlorexA && !isFlorexB) return -1;
+          if (!isFlorexA && isFlorexB) return 1;
+          
+          // 3. Paragon Subgroups (Explicit Order)
+          const pIndexA = this.paragonSubgroups.findIndex(p => normalize(p) === nameA);
+          const pIndexB = this.paragonSubgroups.findIndex(p => normalize(p) === nameB);
+          
+          if (pIndexA !== -1 && pIndexB !== -1) return pIndexA - pIndexB;
+          if (pIndexA !== -1) return -1;
+          if (pIndexB !== -1) return 1;
+          
+          // 4. General Items Subgroups (Explicit Order)
+          const gIndexA = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameA);
+          const gIndexB = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameB);
+          
+          if (gIndexA !== -1 && gIndexB !== -1) return gIndexA - gIndexB;
+          if (gIndexA !== -1) return -1;
+          if (gIndexB !== -1) return 1;
+          
+          return 0;
+      });
+
+      return sorted;
     },
+    sortedStockDataForDropdown() {
+      // Create a sorted list of all groups for the dropdown to match the display order preference
+      const normalize = (name) => name ? name.toLowerCase().trim() : '';
+      return [...this.stockData].sort((a, b) => {
+          const nameA = normalize(a.groupName);
+          const nameB = normalize(b.groupName);
+          
+          const isCubixA = nameA.includes('cubix');
+          const isCubixB = nameB.includes('cubix');
+          if (isCubixA && !isCubixB) return -1;
+          if (!isCubixA && isCubixB) return 1;
+          
+          const isFlorexA = nameA.includes('florex');
+          const isFlorexB = nameB.includes('florex');
+          if (isFlorexA && !isFlorexB) return -1;
+          if (!isFlorexA && isFlorexB) return 1;
+          
+          const pIndexA = this.paragonSubgroups.findIndex(p => normalize(p) === nameA);
+          const pIndexB = this.paragonSubgroups.findIndex(p => normalize(p) === nameB);
+          if (pIndexA !== -1 && pIndexB !== -1) return pIndexA - pIndexB;
+          if (pIndexA !== -1) return -1;
+          if (pIndexB !== -1) return 1;
+          
+          const gIndexA = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameA);
+          const gIndexB = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameB);
+          if (gIndexA !== -1 && gIndexB !== -1) return gIndexA - gIndexB;
+          if (gIndexA !== -1) return -1;
+          if (gIndexB !== -1) return 1;
+          
+          return 0;
+      });
+    }
   },
   async mounted() {
     await this.loadStockData();
