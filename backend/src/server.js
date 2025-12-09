@@ -155,8 +155,7 @@ async function fetchTallyData() {
         stockGroups[currentGroup].products.push({
           productName: name,
           quantity: qtyValue,
-          rate,
-          amount,
+          // rate and amount removed for privacy
           imageUrl: null,
         });
         stockGroups[currentGroup].totalAmount += amount;
@@ -166,7 +165,7 @@ async function fetchTallyData() {
     const stockData = Object.entries(stockGroups).map(([groupName, value]) => ({
       groupName,
       products: value.products,
-      totalAmount: value.totalAmount,
+      // totalAmount removed for privacy
     }));
 
     if (!stockData.length) {
@@ -232,7 +231,8 @@ app.post("/api/updateStockData", async (req, res) => {
           imageUrls[product.productName] = product.imageUrl;
         }
         if (product.quantity === 0 && product.imageUrl) {
-          (zeroStockProducts[group.groupName] ??= []).push({ ...product });
+          const { rate, amount, ...cleanProduct } = product; // Remove sensitive data
+          (zeroStockProducts[group.groupName] ??= []).push(cleanProduct);
         }
       });
     });
@@ -312,7 +312,11 @@ app.post("/api/updateImage", async (req, res) => {
 
     let updated = false;
     stockData.forEach((group) => {
+      if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
       group.products.forEach((product) => {
+        if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
+        if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
+
         if (product.productName === productName) {
           product.imageUrl = imageUrl;
           updated = true;
@@ -367,7 +371,11 @@ app.post("/api/removeImage", async (req, res) => {
 
     let updated = false;
     stockData.forEach((group) => {
+      if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
       group.products.forEach((product) => {
+        if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
+        if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
+
         if (product.productName === productName && product.imageUrl) {
           product.imageUrl = null;
           updated = true;
