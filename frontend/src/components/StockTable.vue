@@ -224,29 +224,35 @@
             {{ group.groupName }}
           </option>
         </select>
-        <div class="w-full sm:w-1/2 flex gap-2">
-          <button
-            @click="viewMode = 'list'"
-            :class="[
-              'flex-1 py-2 rounded-lg text-sm',
-              viewMode === 'list'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-800 hover:bg-gray-100',
-            ]"
-          >
-            List View
-          </button>
-          <button
-            @click="viewMode = 'image'"
-            :class="[
-              'flex-1 py-2 rounded-lg text-sm',
-              viewMode === 'image'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-800 hover:bg-gray-100',
-            ]"
-          >
-            Image View
-          </button>
+        <div class="w-full sm:w-1/2 flex gap-2 items-center">
+          <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-300 select-none hover:bg-gray-50 flex-1 justify-center">
+            <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+            <span>Images Only</span>
+          </label>
+          <div class="flex flex-1 gap-1">
+            <button
+              @click="viewMode = 'list'"
+              :class="[
+                'flex-1 py-2 rounded-lg text-sm transition-colors',
+                viewMode === 'list'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
+              ]"
+            >
+              List
+            </button>
+            <button
+              @click="viewMode = 'image'"
+              :class="[
+                'flex-1 py-2 rounded-lg text-sm transition-colors',
+                viewMode === 'image'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
+              ]"
+            >
+              Image
+            </button>
+          </div>
         </div>
       </div>
       <div
@@ -364,72 +370,89 @@
               class="w-1/2 sm:w-1/3 md:w-1/4 px-1 mb-2"
             >
               <div
-                class="bg-white border border-gray-200 p-0 flex flex-col h-full shadow-sm rounded-lg overflow-hidden"
+                class="bg-white border border-gray-200 flex flex-col h-full shadow-sm rounded-lg overflow-hidden relative"
               >
-                <div
-                  v-if="product.imageUrl"
-                  class="relative w-full aspect-[4/3] bg-gray-100"
-                >
+                <!-- Image Container with Fixed Ratio -->
+                <div class="relative w-full aspect-[4/3] bg-gray-100 group">
                   <img
+                    v-if="product.imageUrl"
                     :src="getOptimizedUrl(product.imageUrl)"
                     alt="Product Image"
-                    class="w-full h-full object-cover cursor-pointer"
+                    class="w-full h-full object-cover cursor-pointer transition-opacity hover:opacity-90"
                     @click="openImagePopup(product, index)"
                   />
-                  <button
-                    v-if="isAdmin || isSuperAdmin"
-                    @click="deleteImage(product.productName)"
-                    class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-sm"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div
-                  v-else-if="isAdmin || isSuperAdmin"
-                  class="w-full aspect-[4/3] flex flex-col items-center justify-center gap-2 bg-gray-50 border-b border-gray-100"
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    @change="handleFileChange($event, product.productName)"
-                    class="text-[10px] w-3/4 text-gray-700 mx-auto"
-                  />
-                  <button
-                    @click="uploadImage(product.productName)"
-                    :disabled="
-                      !imageFiles[product.productName] ||
-                      uploading[product.productName]
-                    "
-                    class="text-[10px] bg-blue-500 text-white px-2 py-1 rounded shadow-sm hover:bg-blue-600 transition-colors"
-                  >
-                    {{
-                      uploading[product.productName] ? "..." : "Upload"
-                    }}
-                  </button>
+                  
+                  <!-- Admin Image Controls -->
                   <div
-                    v-if="uploadErrors[product.productName]"
-                    class="text-red-500 text-[10px] px-1 text-center leading-tight"
+                    v-if="isAdmin || isSuperAdmin"
+                    class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
+                    <button
+                      v-if="product.imageUrl"
+                      @click="deleteImage(product.productName)"
+                      class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                    
+                    <label class="cursor-pointer bg-white text-gray-800 text-[10px] px-2 py-1 rounded shadow hover:bg-gray-100 mt-2">
+                      <span>{{ uploading[product.productName] ? 'Uploading...' : 'Change Image' }}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        @change="handleFileChange($event, product.productName)"
+                        class="hidden"
+                        :disabled="uploading[product.productName]"
+                      />
+                    </label>
+                    <button
+                       v-if="imageFiles[product.productName]"
+                       @click="uploadImage(product.productName)"
+                       class="mt-1 bg-blue-500 text-white text-[10px] px-2 py-1 rounded shadow hover:bg-blue-600"
+                    >
+                       Confirm Upload
+                    </button>
+                  </div>
+
+                  <!-- Placeholder for No Image -->
+                  <div
+                    v-else
+                    class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-gray-100 transition-colors"
+                  >
+                     <img 
+                       src="https://res.cloudinary.com/dg365ewal/image/upload/v1769616091/placeholder_image_icon.png" 
+                       class="w-8 h-8 opacity-20 mb-1" 
+                       alt="No Image"
+                     />
+                     <span class="text-[10px] font-medium">No Image</span>
+                     
+                     <!-- Admin Upload Trigger for Empty State -->
+                     <label v-if="isAdmin || isSuperAdmin" class="absolute inset-0 cursor-pointer flex items-center justify-center">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          @change="handleFileChange($event, product.productName); uploadImage(product.productName)"
+                          class="hidden"
+                        />
+                     </label>
+                  </div>
+                  
+                  <!-- Error Message Overlay -->
+                  <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 w-full bg-red-500/90 text-white text-[9px] text-center py-0.5">
                     {{ uploadErrors[product.productName] }}
                   </div>
                 </div>
-                <div
-                  v-else
-                  class="w-full aspect-[4/3] flex items-center justify-center text-gray-400 text-xs bg-gray-100"
-                >
-                  No Image
-                </div>
-                <div
-                  class="flex flex-col flex-grow justify-between p-2 text-center bg-white"
-                >
-                  <p
-                    class="text-gray-800 text-xs font-medium tracking-tight line-clamp-2 leading-snug mb-1"
-                  >
+
+                <!-- Text Content Area (Flex Grow to fill height, content aligned) -->
+                <div class="flex flex-col flex-grow p-2 text-center justify-between min-h-[70px]">
+                  <p class="text-gray-800 text-xs font-medium tracking-tight line-clamp-2 leading-snug break-words">
                     {{ product.productName }}
                   </p>
-                  <p class="text-blue-600 text-xs font-bold">
-                    Qty: {{ product.quantity }}
-                  </p>
+                  <div class="mt-1 pt-1 border-t border-gray-100 w-full">
+                    <p class="text-blue-600 text-xs font-bold bg-blue-50 rounded px-1 inline-block">
+                       {{ product.quantity }} pcs
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -605,6 +628,7 @@ export default {
         "UAM FOOTWEAR",
         "Xpania"
       ],
+      showImagesOnly: true, // Default to true
     };
   },
   computed: {
@@ -622,6 +646,15 @@ export default {
           }))
           .filter((group) => group.products.length > 0);
       }
+      
+      // Filter by Images Only (if enabled)
+      if (this.showImagesOnly) {
+         filtered = filtered.map(group => ({
+            ...group,
+            products: group.products.filter(p => !!p.imageUrl)
+         })).filter(group => group.products.length > 0);
+      }
+      
       if (this.selectedGroup !== "All") {
         if (this.selectedGroup === "Paragon") {
           filtered = filtered.filter((group) =>
