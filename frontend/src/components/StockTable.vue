@@ -450,7 +450,10 @@
                       {{ product.productName }}
                     </h3>
                     <div class="flex items-end justify-between border-t border-slate-50 pt-2 h-10">
-                       <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Stock</div>
+                       <div class="flex flex-col justify-end pb-0.5">
+                          <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-1">Stock</span>
+                          <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
+                       </div>
                        
                        <!-- Conditional Cart Control -->
                        <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-md overflow-hidden shadow-md h-8">
@@ -749,7 +752,7 @@ export default {
       showNoImagesOnly: false,
       showSidePanel: false,
       activeScrollGroup: '',
-      hideOldArticles: false,
+      hideOldArticles: true,
       showCart: false,
       cart: [],
       showOrderDetailsModal: false,
@@ -957,9 +960,10 @@ export default {
       {}
     );
     // Default open sidebar on large screens
-    if (window.innerWidth >= 1024) {
-      this.showSidePanel = true;
-    }
+    // Default open sidebar logic removed as per user request
+    // if (window.innerWidth >= 1024) {
+    //   this.showSidePanel = true;
+    // }
     window.addEventListener("scroll", this.handleScroll);
   },
   beforeUnmount() {
