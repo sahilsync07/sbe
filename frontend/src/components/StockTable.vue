@@ -2,12 +2,19 @@
   <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800">
     <!-- Sticky Header with Glassmorphism -->
     <header
-      class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300"
+      class="sticky top-0 z-[50] w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300"
     >
       <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
-          <!-- Left: Sync/Ledger Actions -->
+          <!-- Left: Sidebar Toggle & Sync -->
           <div class="flex items-center gap-3">
+             <button
+              @click="showSidePanel = !showSidePanel"
+              class="p-2 rounded-full hover:bg-slate-100 lg:hidden text-slate-600"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+
             <button
               v-if="isAdmin && !isSuperAdmin"
               @click="updateStockData"
@@ -34,7 +41,7 @@
               />
             </button>
             <!-- Spacer for non-admin layout balance -->
-            <div v-if="!isAdmin && !isSuperAdmin" class="w-10"></div>
+            <div v-if="!isAdmin && !isSuperAdmin" class="hidden sm:block w-10"></div>
           </div>
 
           <!-- Center: Title -->
@@ -64,7 +71,43 @@
       </div>
     </header>
 
-    <main class="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div class="flex w-full">
+      <!-- Side Panel (Bird Eye View) -->
+      <aside
+        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-[calc(100vh-64px)] lg:sticky lg:top-16 overflow-y-auto"
+        :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
+      >
+        <div class="p-4">
+           <div class="flex items-center justify-between mb-4 lg:hidden">
+             <h2 class="text-lg font-bold text-slate-800">Brands</h2>
+             <button @click="showSidePanel = false" class="p-1 rounded-full hover:bg-slate-100">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+             </button>
+           </div>
+           <nav class="space-y-1">
+             <template v-for="(group, index) in filteredStockData" :key="group.groupName">
+                <a
+                  href="#"
+                  @click.prevent="scrollToGroup(group.groupName)"
+                  class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50 hover:text-blue-600 group"
+                  :class="activeScrollGroup === group.groupName ? 'bg-blue-50 text-blue-600' : 'text-slate-600'"
+                >
+                   <span class="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-blue-400" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
+                   <span class="truncate">{{ group.groupName }}</span>
+                </a>
+             </template>
+           </nav>
+        </div>
+      </aside>
+
+      <!-- Overlay for mobile sidebar -->
+      <div 
+        v-if="showSidePanel" 
+        class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+        @click="showSidePanel = false"
+      ></div>
+
+      <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 min-w-0">
       
       <!-- Ledger View Placeholder -->
       <div
@@ -76,6 +119,12 @@
 
       <!-- Main Content -->
       <div v-else class="space-y-6">
+        <!-- New Breadcrumb / Sidebar Toggle for Mobile -->
+        <div class="lg:hidden flex items-center justify-between">
+           <span class="text-sm font-semibold text-slate-500">
+             Showing {{ activeScrollGroup || 'All Brands' }}
+           </span>
+        </div>
         
         <!-- Brand Filters (Scrollable Horizontal List) -->
         <div class="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 no-scrollbar">
@@ -157,10 +206,16 @@
 
           <!-- Toggles -->
           <div class="md:col-span-6 lg:col-span-4 flex items-center justify-between gap-3">
-            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2.5 rounded-xl border border-slate-200 transition-colors flex-1 justify-center">
-              <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-              <span class="text-sm font-medium text-slate-700">Images Only</span>
-            </label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 transition-colors flex-1 justify-center">
+                <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                <span class="text-sm font-medium text-slate-700 whitespace-nowrap">Images Only</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 transition-colors flex-1 justify-center">
+                <input type="checkbox" v-model="showNoImagesOnly" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
+                <span class="text-sm font-medium text-slate-700 whitespace-nowrap">No Images Only</span>
+              </label>
+            </div>
 
             <div class="flex bg-slate-100 p-1 rounded-xl">
                <button
@@ -206,7 +261,7 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template v-for="(group, index) in filteredStockData" :key="index">
-                <tr class="bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer" @click="toggleGroup(index)">
+                <tr :id="'group-row-' + index" class="bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer" @click="toggleGroup(index)">
                   <td colspan="3" class="px-6 py-3 font-bold text-slate-700 text-sm flex items-center gap-2">
                     <span class="transform transition-transform text-slate-400" :class="{ 'rotate-90': expandedGroups[index] }">▸</span>
                     {{ group.groupName }}
@@ -243,7 +298,8 @@
           <div v-for="(group, index) in filteredStockData" :key="index" class="space-y-4">
             <!-- Group Header -->
             <div
-               class="flex items-center gap-3 cursor-pointer group select-none"
+               :id="'group-grid-' + normalizeId(group.groupName)"
+               class="flex items-center gap-3 cursor-pointer group select-none scroll-mt-24"
                @click="toggleGroup(index)"
             >
                <h2 class="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ group.groupName }}</h2>
@@ -339,6 +395,7 @@
 
       </div>
     </main>
+    </div>
 
     <!-- Floating To Top Button -->
     <transition enter-active-class="transition duration-300 ease-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
@@ -551,7 +608,18 @@ export default {
         "airson"
       ],
       showImagesOnly: true, // Default to true
+      showNoImagesOnly: false,
+      showSidePanel: false,
+      activeScrollGroup: '',
     };
+  },
+  watch: {
+    showImagesOnly(val) {
+      if (val) this.showNoImagesOnly = false;
+    },
+    showNoImagesOnly(val) {
+      if (val) this.showImagesOnly = false;
+    }
   },
   computed: {
     filteredStockData() {
@@ -574,6 +642,14 @@ export default {
          filtered = filtered.map(group => ({
             ...group,
             products: group.products.filter(p => !!p.imageUrl)
+         })).filter(group => group.products.length > 0);
+      }
+
+      // Filter by No Images Only (if enabled)
+      if (this.showNoImagesOnly) {
+         filtered = filtered.map(group => ({
+            ...group,
+            products: group.products.filter(p => !p.imageUrl)
          })).filter(group => group.products.length > 0);
       }
       
@@ -684,75 +760,27 @@ export default {
       
       const normalize = (name) => name ? name.toLowerCase().trim() : '';
       
-      const sorted = filtered.sort((a, b) => {
-          const nameA = normalize(a.groupName);
-          const nameB = normalize(b.groupName);
-          
-          // 1. Cubix
-          const isCubixA = nameA.includes('cubix');
-          const isCubixB = nameB.includes('cubix');
-          if (isCubixA && !isCubixB) return -1;
-          if (!isCubixA && isCubixB) return 1;
-          
-          // 2. Florex
-          const isFlorexA = nameA.includes('florex');
-          const isFlorexB = nameB.includes('florex');
-          if (isFlorexA && !isFlorexB) return -1;
-          if (!isFlorexA && isFlorexB) return 1;
-          
-          // 3. Paragon Subgroups (Explicit Order)
-          const pIndexA = this.paragonSubgroups.findIndex(p => normalize(p) === nameA);
-          const pIndexB = this.paragonSubgroups.findIndex(p => normalize(p) === nameB);
-          
-          if (pIndexA !== -1 && pIndexB !== -1) return pIndexA - pIndexB;
-          if (pIndexA !== -1) return -1;
-          if (pIndexB !== -1) return 1;
-          
-          // 4. General Items Subgroups (Explicit Order)
-          const gIndexA = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameA);
-          const gIndexB = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameB);
-          
-          if (gIndexA !== -1 && gIndexB !== -1) return gIndexA - gIndexB;
-          if (gIndexA !== -1) return -1;
-          if (gIndexB !== -1) return 1;
-          
-          return 0;
-      });
-
-      return sorted;
+      return filtered.sort(this.compareGroups);
     },
     sortedStockDataForDropdown() {
-      // Create a sorted list of all groups for the dropdown to match the display order preference
-      const normalize = (name) => name ? name.toLowerCase().trim() : '';
-      return [...this.stockData].sort((a, b) => {
-          const nameA = normalize(a.groupName);
-          const nameB = normalize(b.groupName);
-          
-          const isCubixA = nameA.includes('cubix');
-          const isCubixB = nameB.includes('cubix');
-          if (isCubixA && !isCubixB) return -1;
-          if (!isCubixA && isCubixB) return 1;
-          
-          const isFlorexA = nameA.includes('florex');
-          const isFlorexB = nameB.includes('florex');
-          if (isFlorexA && !isFlorexB) return -1;
-          if (!isFlorexA && isFlorexB) return 1;
-          
-          const pIndexA = this.paragonSubgroups.findIndex(p => normalize(p) === nameA);
-          const pIndexB = this.paragonSubgroups.findIndex(p => normalize(p) === nameB);
-          if (pIndexA !== -1 && pIndexB !== -1) return pIndexA - pIndexB;
-          if (pIndexA !== -1) return -1;
-          if (pIndexB !== -1) return 1;
-          
-          const gIndexA = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameA);
-          const gIndexB = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameB);
-          if (gIndexA !== -1 && gIndexB !== -1) return gIndexA - gIndexB;
-          if (gIndexA !== -1) return -1;
-          if (gIndexB !== -1) return 1;
-          
-          return 0;
-      });
-    }
+      // Create a sorted list of all groups using the same logic, but on the FULL (non-filtered) stock data
+      // EXCEPT we do want to reflect the "Images Only" filtering if we want the sidebar to be accurate to what's shown? 
+      // Usually sidebar shows all available categories.
+      // However, if we filter by Images Only, some groups might become empty.
+      // Use filteredStockData for sidebar to assume consistency with view?
+      // User said "bird eye view... navigate to any brand... order... same".
+      // If I use filteredStockData, the sidebar items disappear if they have no items matching filter. This is usually desired.
+      
+      // But the dropdown code used `[...this.stockData]`. Let's stick to using the `filteredStockData` for the sidebar list 
+      // to ensure 1:1 mapping with the main view content.
+      // But wait, the dropdown in the toolbar uses `sortedStockDataForDropdown`. If I change this, I change that too.
+      // The toolbar dropdown probably should show all categories? Or only visible ones?
+      // Usually specific group filter dropdown should show all.
+      
+      // Let's keep `sortedStockDataForDropdown` sorting ALL stock data, but with the new sort logic.
+      return [...this.stockData].sort(this.compareGroups);
+    },
+
   },
   async mounted() {
     await this.loadStockData();
@@ -976,6 +1004,68 @@ export default {
     },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    scrollToGroup(groupName) {
+      const id = 'group-grid-' + this.normalizeId(groupName);
+      const element = document.getElementById(id);
+      if (element) {
+        // Adjust for sticky header
+        const y = element.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        
+        this.activeScrollGroup = groupName;
+        // Close sidebar on mobile after selection
+        if (window.innerWidth < 1024) {
+            this.showSidePanel = false;
+        }
+      }
+    },
+    normalizeId(name) {
+      if (!name) return '';
+      return name.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase();
+    },
+    // New Reusable Sort Logic
+    compareGroups(a, b) {
+      const normalize = (name) => name ? name.toLowerCase().trim() : '';
+      const nameA = normalize(a.groupName);
+      const nameB = normalize(b.groupName);
+      
+      // 0. "Old" Check - Force to bottom
+      const isOldA = nameA.includes('old');
+      const isOldB = nameB.includes('old');
+      if (isOldA && !isOldB) return 1;
+      if (!isOldA && isOldB) return -1;
+
+      // 1. Cubix
+      const isCubixA = nameA.includes('cubix');
+      const isCubixB = nameB.includes('cubix');
+      if (isCubixA && !isCubixB) return -1;
+      if (!isCubixA && isCubixB) return 1;
+      
+      // 2. Florex
+      const isFlorexA = nameA.includes('florex');
+      const isFlorexB = nameB.includes('florex');
+      if (isFlorexA && !isFlorexB) return -1;
+      if (!isFlorexA && isFlorexB) return 1;
+      
+      // 3. Paragon Subgroups (Explicit Order)
+      const pIndexA = this.paragonSubgroups.findIndex(p => normalize(p) === nameA);
+      const pIndexB = this.paragonSubgroups.findIndex(p => normalize(p) === nameB);
+      
+      if (pIndexA !== -1 && pIndexB !== -1) return pIndexA - pIndexB;
+      if (pIndexA !== -1) return -1; // Paragon first
+      if (pIndexB !== -1) return 1;
+      
+      // 4. General Items Subgroups (Explicit Order)
+      const gIndexA = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameA);
+      const gIndexB = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameB);
+      
+      if (gIndexA !== -1 && gIndexB !== -1) return gIndexA - gIndexB;
+      if (gIndexA !== -1) return -1; // General items before others
+      if (gIndexB !== -1) return 1;
+      
+      // 5. Default: Alphabetical
+      return nameA.localeCompare(nameB);
     },
   },
 };
