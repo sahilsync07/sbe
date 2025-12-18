@@ -10,7 +10,7 @@
           <div class="flex items-center gap-3">
              <button
               @click="showSidePanel = !showSidePanel"
-              class="p-2 rounded-full hover:bg-slate-100 lg:hidden text-slate-600"
+              class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
@@ -46,26 +46,25 @@
 
           <!-- Center: Title -->
           <div class="flex-1 text-center">
-            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+            <h1 
+              class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer"
+              @click="promptAdminLogin"
+              title="SBE Rayagada"
+            >
               <span class="text-blue-600">SBE</span> Rayagada
             </h1>
           </div>
 
-          <!-- Right: Admin Login -->
-          <div class="flex items-center justify-end">
-            <button
-              v-if="!isAdmin && !isSuperAdmin"
-              @click="promptAdminLogin"
-              class="p-2 rounded-full hover:bg-slate-100 transition-colors opacity-70 hover:opacity-100"
-              title="Admin Login"
+          <!-- Right: Cart & Sync -->
+          <div class="flex items-center justify-end gap-2">
+             <button
+              @click="showCart = !showCart"
+              class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95"
+              title="Toggle Cart"
             >
-              <img
-                src="https://res.cloudinary.com/dg365ewal/image/upload/v1749669514/software-engineer_dek6dl.png"
-                alt="Admin"
-                class="w-8 h-8 object-contain"
-              />
+              <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             </button>
-            <div v-else class="w-10"></div>
           </div>
         </div>
       </div>
@@ -74,10 +73,10 @@
     <div class="flex w-full">
       <!-- Side Panel (Bird Eye View) -->
       <aside
-        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-[calc(100vh-64px)] lg:sticky lg:top-16 overflow-y-auto"
+        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-40 transform transition-transform duration-300 ease-in-out pt-16"
         :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
       >
-        <div class="p-4">
+        <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
              <button @click="showSidePanel = false" class="p-1 rounded-full hover:bg-slate-100">
@@ -107,7 +106,71 @@
         @click="showSidePanel = false"
       ></div>
 
-      <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 min-w-0">
+      <!-- Cart Sidebar (Right Side - Push Layout) -->
+      <aside
+        class="fixed inset-y-0 right-0 bg-white border-l border-slate-200 w-80 z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col"
+        :class="showCart ? 'translate-x-0' : 'translate-x-full'"
+        style="height: 100vh; top: 0;" 
+      >
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+           <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+             Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
+           </h2>
+           <button @click="showCart = false" class="p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+           </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+           <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-64 text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              <p class="text-sm font-medium">Your cart is empty</p>
+              <button @click="showCart = false" class="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">Start Browsing</button>
+           </div>
+           
+           <div v-for="(item, index) in cart" :key="index" class="flex gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm relative group hover:border-blue-200 transition-colors">
+              <!-- Mini Thumbnail -->
+              <div class="w-16 h-16 bg-slate-50 rounded-lg border border-slate-100 shrink-0 overflow-hidden">
+                 <img v-if="item.product.imageUrl" :src="getOptimizedUrl(item.product.imageUrl)" class="w-full h-full object-cover" />
+                 <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400 text-center p-1">No Image</div>
+              </div>
+              
+               <div class="flex-1 min-w-0">
+                 <h4 class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ item.product.productName }}</h4>
+                 <div class="flex items-center justify-between mt-2">
+                    <div class="flex items-center gap-2">
+                       <button @click="updateCartQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">-</button>
+                       <span class="text-xs font-bold text-slate-800 min-w-[3rem] text-center">{{ item.quantity }} {{ item.quantity > 1 ? 'Sets' : 'Set' }}</span>
+                       <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
+                    </div>
+                     <button @click="removeFromCart(index)" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                     </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+        
+        <div class="p-4 border-t border-slate-100 bg-slate-50">
+            <div class="flex justify-between items-center mb-4">
+               <span class="text-slate-600 font-medium text-sm">Total Quantity</span>
+               <span class="text-xl font-extrabold text-blue-600">{{ cartTotalItems }} Sets</span>
+            </div>
+            <button 
+              @click="sendOrderToWhatsapp"
+              class="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl shadow-lg shadow-green-900/10 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              Send Order via WhatsApp
+            </button>
+        </div>
+      </aside>
+
+      <main 
+         class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 min-w-0 transition-all duration-300"
+         :class="{'mr-0 lg:mr-80': showCart, 'ml-0 lg:ml-64': showSidePanel}"
+      >
       
       <!-- Ledger View Placeholder -->
       <div
@@ -160,81 +223,85 @@
         </div>
 
         <!-- Toolbar: Search, Filter, View Toggle -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl shadow-sm border border-slate-100 transition-all">
           
-          <!-- Search -->
-          <div class="md:col-span-12 lg:col-span-5 relative">
+          <!-- Search (Grows to fill space, wraps if < 240px space) -->
+          <div class="relative flex-grow basis-[240px] min-w-[240px]">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </span>
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search products..."
+              placeholder="Search..."
               class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
             />
           </div>
 
-          <!-- Group Select Dropdown -->
-          <div class="md:col-span-6 lg:col-span-3">
-             <div class="relative">
-               <select
-                 v-model="selectedGroup"
-                 @change="selectGroup($event.target.value)"
-                 class="w-full appearance-none px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
+          <!-- Group Select Dropdown (Grows, wraps if < 200px) -->
+          <div class="relative flex-grow basis-[200px] min-w-[200px]">
+             <select
+               v-model="selectedGroup"
+               @change="selectGroup($event.target.value)"
+               class="w-full appearance-none px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
+             >
+               <option value="All">All Categories</option>
+               <option value="Kids">Kids Only</option>
+               <option value="Hawai">Hawai Only</option>
+               <option value="Loose">Loose Items</option>
+               <option value="Box">Box Items</option>
+               <option value="Shoe">Shoes</option>
+               <option disabled>──────────</option>
+               <option
+                 v-for="group in sortedStockDataForDropdown"
+                 :key="group.groupName"
+                 :value="group.groupName"
                >
-                 <option value="All">All Categories</option>
-                 <option value="Kids">Kids Only</option>
-                 <option value="Hawai">Hawai Only</option>
-                 <option value="Loose">Loose Items</option>
-                 <option value="Box">Box Items</option>
-                 <option value="Shoe">Shoes</option>
-                 <option disabled>──────────</option>
-                 <option
-                   v-for="group in sortedStockDataForDropdown"
-                   :key="group.groupName"
-                   :value="group.groupName"
-                 >
-                   {{ group.groupName }}
-                 </option>
-               </select>
-               <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-               </span>
-             </div>
+                 {{ group.groupName }}
+               </option>
+             </select>
+             <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+             </span>
           </div>
 
-          <!-- Toggles -->
-          <div class="md:col-span-6 lg:col-span-4 flex items-center justify-between gap-3">
-            <div class="flex flex-col sm:flex-row gap-3">
-              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 transition-colors flex-1 justify-center">
-                <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                <span class="text-sm font-medium text-slate-700 whitespace-nowrap">Images Only</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 transition-colors flex-1 justify-center">
-                <input type="checkbox" v-model="showNoImagesOnly" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
-                <span class="text-sm font-medium text-slate-700 whitespace-nowrap">No Images Only</span>
-              </label>
-            </div>
+          <!-- Toggles & View Options (Wraps independently) -->
+          <div class="flex flex-wrap items-center gap-2 flex-grow basis-auto justify-between sm:justify-end">
+             <!-- Filter Checkboxes -->
+             <div class="flex flex-wrap gap-2 flex-grow sm:flex-grow-0 justify-center">
+               <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 transition-colors select-none">
+                 <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                 <span class="text-sm font-medium text-slate-700 whitespace-nowrap">Images</span>
+               </label>
+               <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 transition-colors select-none">
+                 <input type="checkbox" v-model="showNoImagesOnly" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
+                 <span class="text-sm font-medium text-slate-700 whitespace-nowrap">No Images</span>
+               </label>
+               <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 transition-colors select-none">
+                 <input type="checkbox" v-model="hideOldArticles" class="w-4 h-4 text-slate-600 rounded border-gray-300 focus:ring-slate-500">
+                 <span class="text-sm font-medium text-slate-700 whitespace-nowrap">Hide Old</span>
+               </label>
+             </div>
 
-            <div class="flex bg-slate-100 p-1 rounded-xl">
-               <button
-                 @click="viewMode = 'list'"
-                 class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                 :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                 title="List View"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-               </button>
-               <button
-                 @click="viewMode = 'image'"
-                 class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                 :class="viewMode === 'image' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                 title="Grid View"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-               </button>
-            </div>
+             <!-- View Mode Switcher -->
+             <div class="flex bg-slate-100 p-1 rounded-xl shrink-0">
+                <button
+                  @click="viewMode = 'list'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                  :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                  title="List View"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <button
+                  @click="viewMode = 'image'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                  :class="viewMode === 'image' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                  title="Grid View"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                </button>
+             </div>
           </div>
         </div>
 
@@ -280,6 +347,13 @@
                      <span class="inline-block px-2 py-1 text-xs font-bold text-blue-700 bg-blue-50 rounded-md">
                        {{ product.quantity }} pcs
                      </span>
+                     <button 
+                       @click.stop="addToCart(product)"
+                       class="ml-2 w-7 h-7 inline-flex items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all shadow-md"
+                       title="Add to Cart"
+                     >
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                     </button>
                   </td>
                   <td class="px-6 py-6 text-center">
                     <div class="relative w-12 h-12 mx-auto rounded-lg bg-slate-100 border border-slate-200 overflow-hidden">
@@ -308,7 +382,7 @@
             </div>
 
             <!-- Grid Content -->
-            <div v-show="expandedGroups[index]" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div v-show="expandedGroups[index]" class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
               <div
                 v-for="(product, pIndex) in group.products"
                 :key="`${index}-${pIndex}`"
@@ -375,11 +449,26 @@
                     <h3 class="text-xs font-semibold text-slate-700 leading-tight line-clamp-2 mb-2 h-8" :title="product.productName">
                       {{ product.productName }}
                     </h3>
-                    <div class="flex items-end justify-between border-t border-slate-50 pt-2">
+                    <div class="flex items-end justify-between border-t border-slate-50 pt-2 h-10">
                        <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Stock</div>
-                       <div class="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                         {{ product.quantity }}
+                       
+                       <!-- Conditional Cart Control -->
+                       <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-md overflow-hidden shadow-md h-8">
+                          <button @click.stop="updateCart(product, -1)" class="px-3 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">-</button>
+                          <span class="px-2 h-full flex items-center justify-center text-[10px] font-bold text-white min-w-[max-content] whitespace-nowrap bg-blue-600 border-x border-blue-500/30">
+                            {{ getCartQty(product) }} {{ getCartQty(product) > 1 ? 'Sets' : 'Set' }}
+                          </span>
+                          <button @click.stop="updateCart(product, 1)" class="px-3 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">+</button>
                        </div>
+                       
+                       <button 
+                         v-else
+                         @click.stop="addToCart(product)"
+                         class="h-8 px-4 flex items-center justify-center rounded-md bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-bold text-xs transition-colors shadow-sm uppercase tracking-wide"
+                         title="Add"
+                       >
+                         ADD
+                       </button>
                     </div>
                   </div>
 
@@ -611,6 +700,9 @@ export default {
       showNoImagesOnly: false,
       showSidePanel: false,
       activeScrollGroup: '',
+      hideOldArticles: false,
+      showCart: false,
+      cart: [],
     };
   },
   watch: {
@@ -619,9 +711,19 @@ export default {
     },
     showNoImagesOnly(val) {
       if (val) this.showImagesOnly = false;
+    },
+    // Persist cart
+    cart: {
+      handler(val) {
+        localStorage.setItem('sbe_cart', JSON.stringify(val));
+      },
+      deep: true
     }
   },
   computed: {
+    cartTotalItems() {
+      return this.cart.reduce((total, item) => total + item.quantity, 0);
+    },
     filteredStockData() {
       let filtered = this.stockData;
       if (this.searchQuery) {
@@ -651,6 +753,11 @@ export default {
             ...group,
             products: group.products.filter(p => !p.imageUrl)
          })).filter(group => group.products.length > 0);
+      }
+
+      // Filter by Hide Old Articles
+      if (this.hideOldArticles) {
+        filtered = filtered.filter(group => !group.groupName.toLowerCase().includes('old'));
       }
       
       if (this.selectedGroup !== "All") {
@@ -784,16 +891,93 @@ export default {
   },
   async mounted() {
     await this.loadStockData();
+    // Load Cart
+    const savedCart = localStorage.getItem('sbe_cart');
+    if (savedCart) {
+      try {
+        this.cart = JSON.parse(savedCart);
+      } catch (e) {
+        console.error("Failed to load cart");
+      }
+    }
     this.expandedGroups = this.stockData.reduce(
       (acc, _, index) => ({ ...acc, [index]: true }),
       {}
     );
+    // Default open sidebar on large screens
+    if (window.innerWidth >= 1024) {
+      this.showSidePanel = true;
+    }
     window.addEventListener("scroll", this.handleScroll);
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
+    getCartQty(product) {
+       const item = this.cart.find(i => i.product.productName === product.productName);
+       return item ? item.quantity : 0;
+    },
+    updateCart(product, change) {
+       const index = this.cart.findIndex(i => i.product.productName === product.productName);
+       if (index !== -1) {
+          const newQty = this.cart[index].quantity + change;
+          if (newQty <= 0) {
+             this.cart.splice(index, 1);
+          } else {
+             this.cart[index].quantity = newQty;
+          }
+       } else if (change > 0) {
+          this.addToCart(product);
+       }
+    },
+    sendOrderToWhatsapp() {
+      if (this.cart.length === 0) return;
+
+      const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      
+      let message = `🛒 *ORDER REQUEST FROM SBE RAYAGADA*\n`;
+      message += `📅 _${date} at ${time}_\n\n`;
+      message += `-------------------------------------------\n`;
+      message += `*ORDER DETAILS:*\n`;
+      
+      this.cart.forEach((item, index) => {
+        const qtyLabel = item.quantity > 1 ? 'Sets' : 'Set';
+        message += `\n📦 *${item.product.productName}*\n`;
+        message += `     └ 🛍️ Quantity: *${item.quantity} ${qtyLabel}*\n`;
+      });
+      
+      message += `\n-------------------------------------------\n`;
+      message += `📊 *TOTAL ITEMS: ${this.cartTotalItems} Sets*\n`;
+      message += `-------------------------------------------`;
+      
+      const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    },
+    addToCart(product) {
+      const existingItem = this.cart.find(item => item.product.productName === product.productName);
+      if (existingItem) {
+        existingItem.quantity++;
+        toast.success("Increased quantity in cart", { autoClose: 1000 });
+      } else {
+        this.cart.push({ product, quantity: 1 });
+        toast.success("Added to cart", { autoClose: 1500 });
+      }
+      this.showCart = true; // Auto open cart on add? Maybe better user feedback than just toast
+    },
+    removeFromCart(index) {
+      this.cart.splice(index, 1);
+    },
+    updateCartQuantity(index, diff) {
+      const item = this.cart[index];
+      const newQty = item.quantity + diff;
+      if (newQty <= 0) {
+        this.removeFromCart(index);
+      } else {
+        item.quantity = newQty;
+      }
+    },
     toggleLedgerView() {
       this.showLedgerView = !this.showLedgerView;
     },
@@ -880,12 +1064,16 @@ export default {
     },
     promptAdminLogin() {
       const password = prompt("Enter admin password:");
+      if (!password) return; // User cancelled or entered empty
+      
       if (password === "admin123") {
         this.isAdmin = true;
         this.isSuperAdmin = false;
+        toast.success("Admin Mode Enabled", { autoClose: 2000 });
       } else if (password === "superadmin") {
         this.isAdmin = false;
         this.isSuperAdmin = true;
+        toast.success("Super Admin Mode Enabled", { autoClose: 2000 });
       } else {
         toast.error("Incorrect password", { autoClose: 3000 });
       }
