@@ -382,7 +382,7 @@
             </div>
 
             <!-- Grid Content -->
-            <div v-show="expandedGroups[index]" class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+            <div v-show="expandedGroups[index]" class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-4">
               <div
                 v-for="(product, pIndex) in group.products"
                 :key="`${index}-${pIndex}`"
