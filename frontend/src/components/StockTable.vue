@@ -809,7 +809,7 @@ export default {
     async loadConfig() {
       try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
-        const response = await fetch(`/config/${configFile}`);
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}`);
         const config = await response.json();
         
         this.config = config;
@@ -918,7 +918,7 @@ export default {
           const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/stock`);
           data = response.data;
         } else {
-          const response = await fetch("/sbe/assets/stock-data.json");
+          const response = await fetch(`${import.meta.env.BASE_URL}assets/stock-data.json`);
           data = await response.json();
         }
 
