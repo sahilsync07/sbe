@@ -79,8 +79,8 @@
         <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
-             <button @click="showSidePanel = false" class="p-1 rounded-full hover:bg-slate-100 shrink-0">
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+             <button @click="showSidePanel = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 shrink-0">
+               <i class="fa-solid fa-xmark text-xl text-slate-500"></i>
              </button>
            </div>
            <nav class="space-y-1">
@@ -117,8 +117,8 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button @click="showCart = false" class="p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
-             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+           <button @click="showCart = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+             <i class="fa-solid fa-xmark text-xl"></i>
            </button>
         </div>
         
@@ -145,7 +145,7 @@
                        <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
                     </div>
                      <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <i class="fa-solid fa-trash"></i>
                      </button>
                  </div>
               </div>
@@ -459,24 +459,31 @@
                           <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
                        </div>
                        
-                       <!-- Conditional Cart Control (Stacked) -->
+                       <!-- Conditional Cart Control (Side by Side) -->
                        <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
-                          <span class="text-[10px] font-bold text-blue-600">{{ getCartQty(product) }}</span>
-                          <div class="flex items-center gap-1">
-                             <button @click.stop="updateCart(product, -1)" class="w-6 h-6 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md font-bold text-sm active:scale-90">-</button>
-                             <button @click.stop="updateCart(product, 1)" class="w-6 h-6 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-sm active:scale-90">+</button>
+                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Stock: {{ product.quantity }}</span> 
+                          <div class="flex items-center gap-2">
+                             <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-bold active:scale-90 transition-all">
+                                <i class="fa-solid fa-minus text-xs"></i>
+                             </button>
+                             <span class="text-sm font-extrabold text-slate-800 min-w-[1.2rem] text-center">{{ getCartQty(product) }}</span>
+                             <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold active:scale-90 transition-all shadow-md shadow-blue-200">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                             </button>
                           </div>
                        </div>
                        
                        <!-- Initial Add Button (Grey Squircle) -->
-                       <button 
-                         v-else
-                         @click.stop="addToCart(product)"
-                         class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200 transition-all shadow-sm active:scale-90"
-                         title="Add to Cart"
-                       >
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                       </button>
+                       <div v-else class="flex flex-col items-end gap-1">
+                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Stock: {{ product.quantity }}</span>
+                           <button 
+                             @click.stop="addToCart(product)"
+                             class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200 transition-all active:scale-90"
+                             title="Add to Cart"
+                           >
+                             <i class="fa-solid fa-plus"></i>
+                           </button>
+                       </div>
                     </div>
                   </div>
 
@@ -863,6 +870,12 @@ export default {
 
   },
   async mounted() {
+    // Inject FontAwesome
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+    document.head.appendChild(link);
+
     await this.loadConfig();
     await this.loadStockData();
     
