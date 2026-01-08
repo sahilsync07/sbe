@@ -707,6 +707,16 @@ export default {
         localStorage.setItem('sbe_cart', JSON.stringify(val));
       },
       deep: true
+    },
+    // Update URL when group changes
+    selectedGroup(newVal) {
+      const url = new URL(window.location);
+      if (newVal && newVal !== 'All') {
+        url.searchParams.set('brand', newVal);
+      } else {
+        url.searchParams.delete('brand');
+      }
+      window.history.replaceState(null, '', url);
     }
   },
   computed: {
@@ -787,6 +797,27 @@ export default {
   async mounted() {
     await this.loadConfig();
     await this.loadStockData();
+    
+    // Check for URL param "brand"
+    const params = new URLSearchParams(window.location.search);
+    const brandParam = params.get('brand');
+    
+    if (brandParam) {
+      const paramLower = brandParam.toLowerCase();
+      
+      // 1. Check Toolbar Filters
+      const filterMatch = this.toolbarFilters.find(f => f.id.toLowerCase() === paramLower);
+      if (filterMatch) {
+         this.selectedGroup = filterMatch.id;
+      } else {
+         // 2. Check Actual Groups (Stock Data)
+         const groupMatch = this.stockData.find(g => g.groupName.toLowerCase() === paramLower);
+         if (groupMatch) {
+            this.selectedGroup = groupMatch.groupName;
+         }
+      }
+    }
+
     // Load Cart
     const savedCart = localStorage.getItem('sbe_cart');
     if (savedCart) {
