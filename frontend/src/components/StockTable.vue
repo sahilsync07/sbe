@@ -2,10 +2,10 @@
   <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800">
     <!-- Sticky Header with Glassmorphism -->
     <header
-      class="sticky top-0 z-[50] w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300"
+      class="sticky top-0 z-[50] w-full bg-white border-b border-slate-200 transition-all duration-300 py-2"
     >
       <div class="w-full px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between gap-4">
           <!-- Left: Sidebar Toggle & Sync -->
           <div class="flex items-center gap-3">
              <button
@@ -44,27 +44,50 @@
             <div v-if="!isAdmin && !isSuperAdmin" class="hidden sm:block w-10"></div>
           </div>
 
-          <!-- Center: Title -->
-          <div class="flex-1 text-center">
+          <!-- Center: Title & Search -->
+          <div class="flex-1 flex flex-col items-center justify-center px-2">
             <h1 
-              class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer"
+              class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer leading-none"
               @click="promptAdminLogin"
               title="Admin Login"
             >
               <span class="text-blue-600">{{ companyName.split(' ')[0] }}</span> {{ companyName.split(' ').slice(1).join(' ') }}
             </h1>
+            <span class="text-[10px] text-slate-400 font-medium mt-0.5 mb-2">
+               Last Synced: {{ lastRefresh ? lastRefresh.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never" }}
+            </span>
+            
+            <!-- Integrated Search Bar -->
+            <div class="relative w-full max-w-md">
+               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+               </span>
+               <input
+                 v-model="searchQuery"
+                 type="text"
+                 placeholder="Search items..."
+                 class="w-full pl-9 pr-4 py-1.5 rounded-full bg-slate-100/50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+               />
+            </div>
           </div>
 
           <!-- Right: Cart & Sync -->
           <div class="flex items-center justify-end gap-2">
+             <!-- Compact Image Toggle -->
+             <label class="hidden sm:flex items-center cursor-pointer select-none" title="Show Images Only">
+                 <input type="checkbox" v-model="showImagesOnly" class="sr-only peer">
+                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 relative"></div>
+                 <i class="fa-solid fa-image text-slate-400 ml-2 text-sm peer-checked:text-blue-600"></i>
+             </label>
+
              <button
-              @click="showCart = !showCart"
-              class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95"
-              title="Toggle Cart"
-            >
-              <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            </button>
+               @click="showCart = !showCart"
+               class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0"
+               title="Toggle Cart"
+             >
+               <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
+               <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
+             </button>
           </div>
         </div>
       </div>
@@ -190,73 +213,10 @@
         </div>
         
         <!-- Brand Filters (Scrollable Horizontal List) -->
-        <!-- Brand Filters (Hidden) -->
-        <div class="hidden overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 no-scrollbar">
-          <!-- ... brand carousel content preserved but hidden ... -->
-        </div>
+        <!-- Toolbar Removed -->
 
-        <!-- Toolbar: Search, Filter, View Toggle -->
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl shadow-sm border border-slate-100 transition-all">
-          
-          <!-- Search (Grows to fill space, wraps if < 240px space) -->
-          <div class="relative flex-grow basis-[240px] min-w-[240px]">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            </span>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search..."
-              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
-            />
-          </div>
-
-          <!-- Group Select Dropdown (Grows, wraps if < 200px) -->
-          <div class="relative flex-grow basis-[200px] min-w-[200px]">
-             <select
-               v-model="selectedGroup"
-               @change="selectGroup($event.target.value)"
-               class="w-full appearance-none px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
-             >
-               <option value="All">All Categories</option>
-               <option v-for="filter in toolbarFilters.filter(f => !['All', 'Brands'].includes(f.id))" :key="filter.id" :value="filter.id">
-                 {{ filter.label }}
-               </option>
-               <option disabled>──────────</option>
-               <option
-                 v-for="group in sortedStockDataForDropdown"
-                 :key="group.groupName"
-                 :value="group.groupName"
-               >
-                 {{ group.groupName }}
-               </option>
-             </select>
-             <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-             </span>
-          </div>
-
-           <!-- Toggles & View Options -->
-          <div class="flex flex-wrap items-center gap-2 flex-grow basis-auto justify-between sm:justify-end">
-             <!-- Filter Checkboxes -->
-             <div class="flex flex-wrap gap-2 flex-grow sm:flex-grow-0 justify-center">
-               <label class="relative inline-flex items-center cursor-pointer select-none">
-                 <input type="checkbox" v-model="showImagesOnly" class="sr-only peer">
-                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                 <span class="ml-3 text-sm font-medium text-slate-700">Only with Images</span>
-               </label>
-             </div>
-          </div>
-        </div>
-
-        <!-- Info Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 px-2">
-          <span>
-            Last Synced: 
-            <span class="font-semibold text-slate-700">
-               {{ lastRefresh ? lastRefresh.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never" }}
-            </span>
-          </span>
+        <!-- Info Bar Removed -->
+        <div class="flex flex-col sm:flex-row justify-end items-center text-xs text-slate-500 px-2">
           <span v-if="error" class="text-red-500 font-medium mt-1 sm:mt-0">{{ error }}</span>
         </div>
 
