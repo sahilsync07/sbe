@@ -5,95 +5,99 @@
       class="sticky top-0 z-[60] w-full bg-white border-b border-slate-200 transition-all duration-300 py-2"
     >
       <div class="w-full px-2 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between gap-4">
-          <!-- Left: Sidebar Toggle & Sync -->
-          <div class="flex items-center gap-3">
-             <button
-              @click="toggleSidebar"
-              class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95 w-10 h-10 flex items-center justify-center border border-white/20"
-              :class="{ 'opacity-0 pointer-events-none': showCart }"
-            >
-              <i v-if="showSidePanel" class="fa-solid fa-house text-lg animate-fade-in"></i>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-fade-in" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
-
-            <button
-              v-if="isAdmin && !isSuperAdmin"
-              @click="updateStockData"
-              class="p-2 rounded-full bg-transparent hover:bg-gray-100 transition-colors relative group"
-              title="Sync Data"
-            >
-              <img
-                :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1749701539/cloud-sync_nznxzz.png`"
-                alt="Refresh"
-                class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                :class="{ 'animate-spin': loading }"
-              />
-            </button>
-            <button
-              v-if="isSuperAdmin"
-              @click="toggleLedgerView"
-              class="p-2 rounded-full hover:bg-slate-100 transition-colors group"
-              title="Ledger View"
-            >
-              <img
-                :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1753616091/accounting-book_vh3kg5.png`"
-                alt="Ledger"
-                class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-              />
-            </button>
-            <!-- Spacer for non-admin layout balance -->
-            <div v-if="!isAdmin && !isSuperAdmin" class="hidden sm:block w-10"></div>
-          </div>
-
-          <!-- Center: Title & Search -->
-          <div class="flex-1 flex flex-col items-center justify-center px-2">
-            <h1 
-              class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer leading-none"
-              @click="promptAdminLogin"
-              title="Admin Login"
-            >
-              <span class="text-blue-600">{{ companyName.split(' ')[0] }}</span> {{ companyName.split(' ').slice(1).join(' ') }}
-            </h1>
-            <span class="text-[10px] text-slate-400 font-medium mt-0.5 mb-2">
-               Last Synced: {{ lastRefresh ? lastRefresh.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never" }}
-            </span>
-            
-            <!-- Integrated Search Bar -->
-            <div class="relative w-full max-w-md">
-               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-               </span>
-               <input
-                 v-model="searchQuery"
-                 type="text"
-                 placeholder="Search items..."
-                 class="w-full pl-9 pr-4 py-1.5 rounded-full bg-slate-100/50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
-               />
+        <div class="flex flex-col gap-2">
+          <!-- Top Row: Buttons & Title -->
+          <div class="flex items-center justify-between">
+            <!-- Left: Sidebar Toggle & Sync -->
+            <div class="flex items-center gap-3">
+               <button
+                @click="toggleSidebar"
+                class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95 w-10 h-10 flex items-center justify-center border border-white/20"
+                :class="{ 'opacity-0 pointer-events-none': showCart }"
+              >
+                <i v-if="showSidePanel" class="fa-solid fa-house text-lg animate-fade-in"></i>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-fade-in" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+  
+              <button
+                v-if="isAdmin && !isSuperAdmin"
+                @click="updateStockData"
+                class="p-2 rounded-full bg-transparent hover:bg-gray-100 transition-colors relative group"
+                title="Sync Data"
+              >
+                <img
+                  :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1749701539/cloud-sync_nznxzz.png`"
+                  alt="Refresh"
+                  class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                  :class="{ 'animate-spin': loading }"
+                />
+              </button>
+              <button
+                v-if="isSuperAdmin"
+                @click="toggleLedgerView"
+                class="p-2 rounded-full hover:bg-slate-100 transition-colors group"
+                title="Ledger View"
+              >
+                <img
+                  :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1753616091/accounting-book_vh3kg5.png`"
+                  alt="Ledger"
+                  class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+              </button>
+            </div>
+  
+            <!-- Center: Title -->
+            <div class="flex flex-col items-center justify-center px-2">
+              <h1 
+                class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer leading-none"
+                @click="promptAdminLogin"
+                title="Admin Login"
+              >
+                <span class="text-blue-600">{{ companyName.split(' ')[0] }}</span> {{ companyName.split(' ').slice(1).join(' ') }}
+              </h1>
+              <span class="text-[10px] text-slate-400 font-medium mt-0.5">
+                 Last Synced: {{ lastRefresh ? lastRefresh.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never" }}
+              </span>
+            </div>
+  
+            <!-- Right: Cart -->
+            <div class="flex items-center justify-end gap-2">
+               <button
+                 @click="toggleCart"
+                 class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0 w-10 h-10 flex items-center justify-center border border-white/20"
+                 :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
+                 title="Toggle Cart"
+               >
+                 <i v-if="showCart" class="fa-solid fa-house text-white text-lg animate-fade-in"></i>
+                 <div v-else class="flex items-center justify-center w-full h-full animate-fade-in">
+                    <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
+                    <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
+                 </div>
+               </button>
             </div>
           </div>
-
-          <!-- Right: Cart & Sync -->
-          <div class="flex items-center justify-end gap-2">
-             <!-- Compact Image Toggle -->
-             <label class="hidden sm:flex items-center cursor-pointer select-none" title="Show Images Only">
+  
+          <!-- Bottom Row: Search & Filters -->
+          <div class="flex items-center gap-2">
+             <!-- Integrated Search Bar -->
+             <div class="relative flex-1">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                   <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search items..."
+                  class="w-full pl-9 pr-4 py-2 rounded-full bg-slate-100/50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                />
+             </div>
+             
+             <!-- Image Toggle -->
+             <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px]" title="Show Images Only">
                  <input type="checkbox" v-model="showImagesOnly" class="sr-only peer">
-                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 relative"></div>
-                 <i class="fa-solid fa-image text-slate-400 ml-2 text-sm peer-checked:text-blue-600"></i>
+                 <i class="fa-solid fa-image text-slate-400 text-sm peer-checked:text-blue-600 mr-2 transition-colors"></i>
+                 <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
              </label>
-
-             <button
-               @click="toggleCart"
-               class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0 w-10 h-10 flex items-center justify-center border border-white/20"
-               :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
-               title="Toggle Cart"
-             >
-               <i v-if="showCart" class="fa-solid fa-house text-white text-lg animate-fade-in"></i>
-               <div v-else class="flex items-center justify-center w-full h-full animate-fade-in">
-                  <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
-                  <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
-               </div>
-             </button>
           </div>
         </div>
       </div>
@@ -450,17 +454,7 @@
     </transition>
 
     <!-- Floating Image Toggle (Mobile, Left) - Disappears on Scroll -->
-    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <button
-        v-if="!isScrolled" 
-        @click="showImagesOnly = !showImagesOnly"
-        class="fixed bottom-6 left-6 h-12 px-5 inline-flex w-auto items-center gap-2 rounded-full shadow-2xl transition-all z-[40] md:hidden border"
-        :class="showImagesOnly ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-slate-600 border-slate-200'"
-      >
-        <i class="fa-solid fa-image text-lg"></i>
-        <span class="text-xs font-bold">{{ showImagesOnly ? 'Images' : 'All' }}</span>
-      </button>
-    </transition>
+
 
     <!-- Full Screen Product Page -->
     <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
@@ -470,9 +464,9 @@
       >
         <!-- Sticky Navbar -->
         <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
-           <button @click="closeImagePopup" class="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-bold transition-colors px-2 py-1 rounded-lg hover:bg-slate-100">
+           <button @click="closeImagePopup" class="flex items-center gap-2 text-blue-600 font-bold transition-colors px-0 py-1 hover:opacity-80 bg-transparent hover:bg-transparent shadow-none border-none">
               <i class="fa-solid fa-arrow-left"></i>
-              <span>Back to Browse</span>
+              <span>Back to Home</span>
            </button>
            
            <div class="flex items-center gap-4">
@@ -502,11 +496,11 @@
         <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row p-4 md:p-8 gap-6 md:gap-12">
             
             <!-- Image Section (Left) -->
-            <div class="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden min-h-[40vh] md:min-h-[60vh]">
+            <div class="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center p-4 relative overflow-hidden h-[35vh] md:h-auto md:min-h-[60vh]">
                <img
                  v-if="currentProduct.imageUrl"
                  :src="getOptimizedUrl(currentProduct.imageUrl)"
-                 class="w-full h-full object-contain max-h-[70vh] drop-shadow-xl transition-all duration-300"
+                 class="w-full h-full object-contain drop-shadow-xl transition-all duration-300"
                  :key="currentProduct.imageUrl" 
                />
                <div v-else class="flex flex-col items-center gap-4 text-slate-300">
@@ -516,7 +510,7 @@
             </div>
 
             <!-- Details Section (Right) -->
-            <div class="w-full md:w-[400px] lg:w-[480px] flex flex-col gap-8 py-4">
+            <div class="w-full md:w-[400px] lg:w-[480px] flex flex-col gap-3 py-4">
                
                <div>
                   <div class="flex items-center gap-2 mb-3">
@@ -527,12 +521,8 @@
                     {{ currentProduct.productName }}
                   </h1>
                   
-                  <div class="flex items-center gap-3">
-                     <div class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg flex items-center gap-2 border border-blue-100">
-                        <i class="fa-solid fa-cubes"></i>
-                        <span class="font-bold text-lg">{{ currentProduct.quantity }}</span> 
-                        <span class="text-xs uppercase font-bold tracking-wider opacity-70">Stock</span>
-                     </div>
+                  <div class="text-blue-600 font-bold text-sm mb-2">
+                     Stock: {{ currentProduct.quantity }} Sets
                   </div>
                </div>
 
@@ -556,7 +546,7 @@
                   <button 
                     v-else
                     @click="addToCart(currentProduct)"
-                    class="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 shadow-xl shadow-slate-900/10 hover:shadow-blue-600/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
+                    class="w-full py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 shadow-xl shadow-slate-900/10 hover:shadow-blue-600/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
                   >
                     <i class="fa-solid fa-cart-shopping"></i>
                     Add to Cart
@@ -568,17 +558,17 @@
                </div>
                
                <!-- Mobile Only Nav (Fixed Bottom relative to this col, or standard flow) -->
-               <div class="md:hidden grid grid-cols-2 gap-4 mt-auto pt-8">
+               <div class="md:hidden grid grid-cols-2 gap-4 mt-2 pt-0">
                    <button 
                      @click="navigateImage(-1)" 
-                     class="py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
+                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
                      :disabled="currentProductIndex <= 0"
                    >
                      Previous
                    </button>
                    <button 
                      @click="navigateImage(1)" 
-                     class="py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
+                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
                      :disabled="currentProductIndex >= currentGroupProducts.length - 1"
                    >
                      Next
@@ -819,6 +809,12 @@ export default {
          this.stockData.forEach(g => {
             g.products.forEach(p => {
                if (!p.imageUrl) return;
+                
+                // Respect Search Query
+                if (this.searchQuery && !p.productName.toLowerCase().includes(this.searchQuery.toLowerCase())) {
+                    return;
+                }
+
                 const uploadDate = p.imageUploadedAt ? new Date(p.imageUploadedAt) : minDate;
                 if (uploadDate > cutoff) {
                    // Avoid duplicates if multiple groups share products? (Usually not case here)
@@ -1254,8 +1250,11 @@ export default {
       this.currentProductIndex = 0;
       
       // Navigate Back (undo pushState)
+      // Navigate Back (undo pushState)
       if (!isPop) {
-         window.history.back();
+         const url = new URL(window.location);
+         url.searchParams.delete('product');
+         window.history.replaceState(null, '', url);
       }
     },
     navigateImage(direction) {
