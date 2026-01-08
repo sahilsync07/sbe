@@ -22,7 +22,7 @@
               title="Sync Data"
             >
               <img
-                src="https://res.cloudinary.com/dg365ewal/image/upload/v1749701539/cloud-sync_nznxzz.png"
+                :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1749701539/cloud-sync_nznxzz.png`"
                 alt="Refresh"
                 class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
                 :class="{ 'animate-spin': loading }"
@@ -35,7 +35,7 @@
               title="Ledger View"
             >
               <img
-                src="https://res.cloudinary.com/dg365ewal/image/upload/v1753616091/accounting-book_vh3kg5.png"
+                :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1753616091/accounting-book_vh3kg5.png`"
                 alt="Ledger"
                 class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
               />
@@ -657,6 +657,7 @@ export default {
       loading: false,
       error: null,
       lastRefresh: null,
+      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
       expandedGroups: {},
       imageFiles: {},
       uploading: {},
@@ -681,27 +682,27 @@ export default {
       brands: [
         {
           name: "Paragon",
-          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp",
+          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/paragonLogo_rqk3hu.webp`,
         },
         {
           name: "Reliance",
-          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png",
+          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/relianceLogo_bvgwwz.png`,
         },
         {
           name: "Cubix",
-          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg",
+          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667073/cubixLogo_bwawj3.jpg`,
         },
         {
           name: "Florex",
-          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg",
+          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/florexLogo_wn50tj.jpg`,
         },
         {
           name: "EEKEN",
-          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
+          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749668232/eekenLogo_rg5xwa.webp`,
         },
         {
           name: "Escoute",
-          logo: "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg",
+          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/escouteLogo_maieji.jpg`,
         },
       ],
       paragonSubgroups: [
@@ -1061,7 +1062,7 @@ export default {
       try {
         let data = [];
         if (false) {
-          const response = await axios.get("http://localhost:3000/api/stock");
+          const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/stock`);
           data = response.data;
         } else {
           const response = await fetch("/sbe/assets/stock-data.json");
@@ -1097,7 +1098,7 @@ export default {
       this.error = null;
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/updateStockData"
+          `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`
         );
         let data = response.data.data;
 
@@ -1157,9 +1158,10 @@ export default {
       try {
         const formData = new FormData();
         formData.append("file", this.imageFiles[productName]);
-        formData.append("upload_preset", "sbe-stock");
+        formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
         const response = await fetch(
-          "https://api.cloudinary.com/v1_1/dg365ewal/image/upload",
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           {
             method: "POST",
             body: formData,
@@ -1169,7 +1171,7 @@ export default {
         if (!data.secure_url) {
           throw new Error("Upload failed");
         }
-        await axios.post("http://localhost:3000/api/updateImage", {
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/updateImage`, {
           productName,
           imageUrl: data.secure_url,
         });
@@ -1194,7 +1196,7 @@ export default {
     },
     async deleteImage(productName) {
       try {
-        await axios.post("http://localhost:3000/api/removeImage", {
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/removeImage`, {
           productName,
         });
         this.stockData = this.stockData.map((group) => ({
