@@ -285,12 +285,12 @@
             v-for="(group, index) in filteredStockData"
             :key="group.groupName"
             :id="'group-grid-' + normalizeId(group.groupName)"
-            class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-6"
+            class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-6 relative"
           >
             <!-- Group Header -->
             <div
               @click="toggleGroup(index)"
-              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl"
+              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[88px] bg-white z-30 rounded-t-2xl"
               :class="expandedGroups[index] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
             >
               <div class="flex items-center gap-3 overflow-hidden">
