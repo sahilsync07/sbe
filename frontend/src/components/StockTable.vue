@@ -115,7 +115,7 @@
              <button class="hidden"></button>
            </div>
            <nav class="space-y-1">
-              <template v-for="(group, index) in filteredStockData" :key="group.groupName">
+              <template v-for="(group, index) in sidebarGroups" :key="group.groupName">
                  <div 
                    class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand mb-0.5"
                    :class="activeScrollGroup === group.groupName ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'"
@@ -168,24 +168,26 @@
               <button @click="showCart = false" class="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">Start Browsing</button>
            </div>
            
-           <div v-for="(item, index) in cart" :key="index" class="flex gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm relative group hover:border-blue-200 transition-colors">
-              <!-- Mini Thumbnail -->
-              <div class="w-16 h-16 bg-slate-50 rounded-lg border border-slate-100 shrink-0 overflow-hidden">
-                 <img v-if="item.product.imageUrl" :src="getOptimizedUrl(item.product.imageUrl)" class="w-full h-full object-cover" />
-                 <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400 text-center p-1">No Image</div>
-              </div>
-              
-               <div class="flex-1 min-w-0">
-                 <h4 class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ item.product.productName }}</h4>
-                 <div class="flex items-center justify-between mt-2">
-                    <div class="flex items-center gap-2">
-                       <button @click="updateCartQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">-</button>
-                       <span class="text-xs font-bold text-slate-800 min-w-[3rem] text-center">{{ item.quantity }} {{ item.quantity > 1 ? 'Sets' : 'Set' }}</span>
-                       <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
+           <div v-else class="space-y-4">
+              <div v-for="(item, index) in filteredCart" :key="item.product.productName + index" class="flex gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm relative group hover:border-blue-200 transition-colors">
+                 <!-- Mini Thumbnail -->
+                 <div class="w-16 h-16 bg-slate-50 rounded-lg border border-slate-100 shrink-0 overflow-hidden">
+                    <img v-if="item.product.imageUrl" :src="getOptimizedUrl(item.product.imageUrl)" class="w-full h-full object-cover" />
+                    <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400 text-center p-1">No Image</div>
+                 </div>
+                 
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ item.product.productName }}</h4>
+                    <div class="flex items-center justify-between mt-2">
+                       <div class="flex items-center gap-2">
+                          <button @click="updateCartQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">-</button>
+                          <span class="text-xs font-bold text-slate-800 min-w-[3rem] text-center">{{ item.quantity }} {{ item.quantity > 1 ? 'Sets' : 'Set' }}</span>
+                          <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
+                       </div>
+                        <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
+                           <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
-                     <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
-                        <i class="fa-solid fa-trash"></i>
-                     </button>
                  </div>
               </div>
            </div>
@@ -718,8 +720,9 @@ export default {
     // ... data properties updated below ...
     filteredStockData() {
       let filtered = this.stockData;
-      if (this.searchQuery) {
-        filtered = filtered
+       // Only filter main grid if no pane is open
+       if (this.searchQuery && !this.showSidePanel && !this.showCart) {
+         filtered = filtered
           .map((group) => ({
             ...group,
             products: group.products.filter((product) =>
@@ -848,6 +851,26 @@ export default {
     sortedStockDataForDropdown() {
       // Exclude "New Arrivals" from dropdown list
       return [...this.stockData].sort(this.compareGroups);
+    },
+    sidebarGroups() {
+       let groups = this.filteredStockData;
+       if (this.searchQuery && this.showSidePanel) {
+          const q = this.searchQuery.toLowerCase();
+          return groups.filter(g => g.groupName.toLowerCase().includes(q));
+       }
+       return groups;
+    },
+    filteredCart() {
+       if (this.searchQuery && this.showCart) {
+          const q = this.searchQuery.toLowerCase();
+          return this.cart.filter(item => item.product.productName.toLowerCase().includes(q));
+       }
+       return this.cart;
+    },
+    searchPlaceholder() {
+       if (this.showSidePanel) return "Search brands...";
+       if (this.showCart) return "Search cart...";
+       return "Search items...";
     },
 
   },
@@ -1297,14 +1320,17 @@ export default {
       else this.openCart();
     },
     openSidebar() {
+       this.searchQuery = '';
        this.showSidePanel = true;
        window.history.pushState({ pane: 'side' }, '');
     },
     openCart() {
+       this.searchQuery = '';
        this.showCart = true;
        window.history.pushState({ pane: 'cart' }, '');
     },
     closePane() {
+       this.searchQuery = '';
        window.history.back();
     },
     handlePopState(event) {
