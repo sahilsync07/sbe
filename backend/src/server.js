@@ -18,10 +18,6 @@ app.use(express.json());
 const tallyUrl = "http://localhost:9000/";
 const stockDataPath = path.resolve(
   __dirname,
-  "../../frontend/src/assets/stock-data.json"
-);
-const publicStockDataPath = path.resolve(
-  __dirname,
   "../../frontend/public/assets/stock-data.json"
 );
 const tallyTimeout = 30000;
@@ -311,7 +307,6 @@ app.post("/api/updateStockData", async (req, res) => {
     // ---- 8. Write updated files ------------------------------------------------
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
-      await fs.writeFile(publicStockDataPath, JSON.stringify(stockData, null, 2));
       console.log("Updated stock-data.json at:", stockDataPath);
     } catch (err) {
       console.error("Error writing stock-data.json:", err.message, err.stack);
@@ -375,10 +370,6 @@ app.post("/api/updateImage", async (req, res) => {
 
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
-      await fs.writeFile(
-        publicStockDataPath,
-        JSON.stringify(stockData, null, 2)
-      );
       console.log(`Updated imageUrl for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
@@ -434,10 +425,6 @@ app.post("/api/removeImage", async (req, res) => {
 
     try {
       await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
-      await fs.writeFile(
-        publicStockDataPath,
-        JSON.stringify(stockData, null, 2)
-      );
       console.log(`Removed image for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
