@@ -1,16 +1,49 @@
 @echo off
-echo Fetching latest code from git...
+setlocal
 
-git pull
-echo Starting Tally Stock Frontend and Backend...
+REM Get the script directory
+set "SCRIPT_DIR=%~dp0"
+cd /d "%SCRIPT_DIR%"
 
-REM Get the folder where this batch file is located
-set SCRIPT_DIR=%~dp0
+echo ===================================================
+echo      Starting Tally Stock App (SBE)
+echo ===================================================
 
-REM Start Frontend
-start "Frontend" cmd /k "cd /d %SCRIPT_DIR%frontend && npm run dev"
+echo.
+echo [1/3] Checking for updates...
+call git pull
+if %ERRORLEVEL% NEQ 0 (
+    echo Warning: Git pull failed or not a git repository. Continuing...
+)
 
-REM Start Backend
-start "Backend" cmd /k "cd /d %SCRIPT_DIR%backend && npm start"
+echo.
+echo [2/3] Checking Backend...
+if not exist "backend\node_modules" (
+    echo Installing backend dependencies...
+    cd backend
+    call npm install
+    cd ..
+)
 
-echo Both processes started in separate terminals.
+echo Starting Backend Server...
+start "SBE Backend (Port 3000)" cmd /k "cd /d "%SCRIPT_DIR%backend" && npm start"
+
+echo.
+echo [3/3] Checking Frontend...
+if not exist "frontend\node_modules" (
+    echo Installing frontend dependencies...
+    cd frontend
+    call npm install
+    cd ..
+)
+
+echo Starting Frontend Dev Server...
+start "SBE Frontend" cmd /k "cd /d "%SCRIPT_DIR%frontend" && npm run dev"
+
+echo.
+echo ===================================================
+echo      App started!
+echo      Backend: http://localhost:3000
+echo      Frontend: Check the Vite terminal
+echo ===================================================
+echo.
