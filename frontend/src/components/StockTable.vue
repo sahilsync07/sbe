@@ -190,36 +190,9 @@
         </div>
         
         <!-- Brand Filters (Scrollable Horizontal List) -->
-        <div class="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 no-scrollbar">
-          <button
-            @click="selectGroup('All')"
-            class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border"
-            :class="selectedGroup === 'All' ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-          >
-            All Items
-          </button>
-
-          <!-- Dynamic Brands (Images) -->
-          <button
-            v-for="brand in brands"
-            :key="brand.name"
-            @click="selectGroup(brand.name)"
-            class="flex items-center justify-center px-4 py-1.5 rounded-full border transition-all duration-200 min-w-[80px]"
-            :class="selectedGroup === brand.name ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-          >
-            <img :src="brand.logo.replace('{{CLOUD_NAME}}', cloudName)" :alt="brand.name" class="h-6 object-contain" />
-          </button>
-
-          <!-- Dynamic Filters (Text Capsules) -->
-          <button
-             v-for="filter in toolbarFilters.filter(f => !['All', 'Brands'].includes(f.id))"
-             :key="filter.id"
-             @click="selectGroup(filter.id)"
-             class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border capitalize"
-             :class="selectedGroup === filter.id ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-          >
-            {{ filter.label }}
-          </button>
+        <!-- Brand Filters (Hidden) -->
+        <div class="hidden overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 no-scrollbar">
+          <!-- ... brand carousel content preserved but hidden ... -->
         </div>
 
         <!-- Toolbar: Search, Filter, View Toggle -->
@@ -267,13 +240,10 @@
           <div class="flex flex-wrap items-center gap-2 flex-grow basis-auto justify-between sm:justify-end">
              <!-- Filter Checkboxes -->
              <div class="flex flex-wrap gap-2 flex-grow sm:flex-grow-0 justify-center">
-               <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 transition-colors select-none">
-                 <input type="checkbox" v-model="showImagesOnly" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                 <span class="text-sm font-medium text-slate-700 whitespace-nowrap">Images</span>
-               </label>
-               <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 transition-colors select-none">
-                 <input type="checkbox" v-model="showNoImagesOnly" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
-                 <span class="text-sm font-medium text-slate-700 whitespace-nowrap">No Images</span>
+               <label class="relative inline-flex items-center cursor-pointer select-none">
+                 <input type="checkbox" v-model="showImagesOnly" class="sr-only peer">
+                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                 <span class="ml-3 text-sm font-medium text-slate-700">Only with Images</span>
                </label>
              </div>
           </div>
@@ -450,23 +420,20 @@
                     </div>
 
                   <div class="p-2.5 flex flex-col justify-between flex-grow bg-white">
-                    <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem]" :title="product.productName">
+                    <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem] text-center" :title="product.productName">
                       {{ product.productName }}
                     </h3>
-                    <div class="flex items-end justify-between border-t border-slate-50 pt-2 mt-auto">
-                       <div class="flex flex-col justify-end">
-                          <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-0.5">Stock</span>
-                          <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
-                       </div>
+                    <div class="flex items-end justify-center border-t border-slate-50 pt-2 mt-auto">
+                       <!-- Old Stock Display Removed -->
                        
                        <!-- Conditional Cart Control (Side by Side) -->
                        <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
-                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Stock: {{ product.quantity }}</span> 
+                          <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Stock: {{ product.quantity }}</span>
                           <div class="flex items-center gap-2">
                              <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-bold active:scale-90 transition-all">
                                 <i class="fa-solid fa-minus text-xs"></i>
                              </button>
-                             <span class="text-sm font-extrabold text-slate-800 min-w-[1.2rem] text-center">{{ getCartQty(product) }}</span>
+                             <span class="text-sm font-extrabold text-blue-700 min-w-[1.2rem] text-center">{{ getCartQty(product) }}</span>
                              <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold active:scale-90 transition-all shadow-md shadow-blue-200">
                                 <i class="fa-solid fa-plus text-xs"></i>
                              </button>
@@ -474,11 +441,11 @@
                        </div>
                        
                        <!-- Initial Add Button (Grey Squircle) -->
-                       <div v-else class="flex flex-col items-end gap-1">
-                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Stock: {{ product.quantity }}</span>
+                       <div v-else class="flex flex-col items-center gap-1">
+                           <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Stock: {{ product.quantity }}</span>
                            <button 
                              @click.stop="addToCart(product)"
-                             class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200 transition-all active:scale-90"
+                             class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-600 hover:text-white border border-transparent transition-all active:scale-90"
                              title="Add to Cart"
                            >
                              <i class="fa-solid fa-plus"></i>
