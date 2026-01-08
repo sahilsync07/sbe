@@ -381,7 +381,7 @@
             >
               <div class="flex items-center gap-3 overflow-hidden">
                 <!-- Special Rainbow Header for New Arrivals -->
-                <h2 v-if="group.isSpecial" class="text-2xl sm:text-3xl font-black tracking-tight rainbow-text truncate">
+                <h2 v-if="group.isSpecial" class="text-2xl sm:text-3xl font-black tracking-tight holographic-text truncate">
                    ✨ {{ group.groupName }}
                 </h2>
                 <!-- Standard Header -->
@@ -420,111 +420,97 @@
             >
               <div v-show="expandedGroups[index]">
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-px bg-slate-100 border-b border-slate-100">
-                   <!-- Only show Images for New Arrivals (Logic already handled in filter) -->
-                   <div
+                  <div
                     v-for="(product, pIndex) in group.products"
                     :key="product.productName"
                     class="bg-white p-3 sm:p-4 relative group flex flex-col h-full"
                   >
-                  
-                  <!-- Image Area (Portrait 3:4) -->
-                  <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden mb-3 rounded-xl border border-slate-100 shadow-inner">
-                    <img
-                      v-if="product.imageUrl"
-                      :src="getOptimizedUrl(product.imageUrl)"
-                      alt="Product"
-                      class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover:scale-105"
-                      @click="openImagePopup(product, index)"
-                    />
                     
-                    <span v-else class="flex items-center justify-center w-full h-full text-slate-300 bg-slate-50">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </span>
-                  </div>
-                    
-                    <!-- Admin Controls Overlay -->
-                    <div
-                      v-if="isAdmin || isSuperAdmin"
-                      class="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4"
-                    >
-                       <button
-                         v-if="product.imageUrl"
-                         @click.stop="deleteImage(product.productName)"
-                         class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors"
-                         title="Delete Image"
-                       >
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                       </button>
-
-                       <label class="px-3 py-1.5 bg-white/90 text-xs font-bold text-slate-800 rounded-lg cursor-pointer hover:bg-white transition-colors shadow-lg">
-                          {{ uploading[product.productName] ? 'Wait...' : 'Update Img' }}
-                          <input type="file" accept="image/*" @change="handleFileChange($event, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
-                       </label>
-                       
-                       <button
-                         v-if="imageFiles[product.productName]"
-                         @click="uploadImage(product.productName)"
-                         class="px-3 py-1.5 bg-blue-600 text-xs font-bold text-white rounded-lg hover:bg-blue-500 shadow-lg"
-                       >
-                         Upload Now
-                       </button>
-                    </div>
-
-                    <!-- Empty State Placeholder -->
-                    <div
-                       v-else-if="!isAdmin && !isSuperAdmin"
-                       class="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2"
-                    >
-                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-
-                    <!-- Admin Empty State -->
-                    <div v-else class="absolute inset-0 flex items-center justify-center bg-slate-50 group-hover/card:bg-slate-100 transition-colors">
-                        <label class="cursor-pointer flex flex-col items-center justify-center h-full w-full">
-                           <span class="text-xs font-medium text-slate-400 mb-1">+ Add</span>
-                           <input type="file" accept="image/*" @change="handleFileChange($event, product.productName); uploadImage(product.productName)" class="hidden" />
-                        </label>
-                    </div>
-
-
-                  <!-- Card Footer -->
-                  <div class="p-3 flex flex-col justify-between flex-grow bg-white">
-                    <h3 class="text-xs font-semibold text-slate-700 leading-tight line-clamp-2 mb-2 h-8" :title="product.productName">
-                      {{ product.productName }}
-                    </h3>
-                    <div class="flex items-end justify-between border-t border-slate-50 pt-2 h-10">
-                       <div class="flex flex-col justify-end pb-0.5">
-                          <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-1">Stock</span>
-                          <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
-                       </div>
-                       
-                       <!-- Conditional Cart Control -->
-                       <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-md overflow-hidden shadow-md h-8">
-                          <button @click.stop="updateCart(product, -1)" class="px-3 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">-</button>
-                          <span class="px-2 h-full flex items-center justify-center text-[10px] font-bold text-white min-w-[max-content] whitespace-nowrap bg-blue-600 border-x border-blue-500/30">
-                            {{ getCartQty(product) }} {{ getCartQty(product) > 1 ? 'Sets' : 'Set' }}
-                          </span>
-                          <button @click.stop="updateCart(product, 1)" class="px-3 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">+</button>
-                       </div>
-                       
-                       <button 
+                    <!-- Image Area (Portrait 3:4) -->
+                    <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden mb-3 rounded-xl border border-slate-100 shadow-inner group-hover:shadow-md transition-shadow">
+                      <img
+                        v-if="product.imageUrl"
+                        :src="getOptimizedUrl(product.imageUrl)"
+                        alt="Product"
+                        class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover:scale-105"
+                        @click="openImagePopup(product, index)"
+                      />
+                      
+                      <!-- Empty State (No Image) -->
+                      <div
                          v-else
-                         @click.stop="addToCart(product)"
-                         class="h-8 px-4 flex items-center justify-center rounded-md bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-bold text-xs transition-colors shadow-sm uppercase tracking-wide"
-                         title="Add"
-                       >
-                         ADD
-                       </button>
-                    </div>
-                  </div>
+                         class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50"
+                      >
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      </div>
 
-                  <!-- Upload Error Toast embedded in card -->
-                  <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 inset-x-0 bg-red-500 text-white text-[10px] py-1 text-center z-20">
-                    Failed
+                      <!-- Admin Controls Overlay -->
+                      <div
+                        v-if="isAdmin || isSuperAdmin"
+                        class="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4 z-10"
+                      >
+                         <button
+                           v-if="product.imageUrl"
+                           @click.stop="deleteImage(product.productName)"
+                           class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors"
+                           title="Delete Image"
+                         >
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                         </button>
+
+                         <label class="px-3 py-1.5 bg-white/90 text-xs font-bold text-slate-800 rounded-lg cursor-pointer hover:bg-white transition-colors shadow-lg">
+                            {{ uploading[product.productName] ? 'Wait...' : (product.imageUrl ? 'Replace' : 'Upload') }}
+                            <input type="file" accept="image/*" @change="handleFileChange($event, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
+                         </label>
+                         
+                         <button
+                           v-if="imageFiles[product.productName]"
+                           @click="uploadImage(product.productName)"
+                           class="px-3 py-1.5 bg-blue-600 text-xs font-bold text-white rounded-lg hover:bg-blue-500 shadow-lg"
+                         >
+                           Confirm
+                         </button>
+                      </div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="flex flex-col justify-between flex-grow">
+                      <h3 class="text-xs font-semibold text-slate-700 leading-tight line-clamp-2 mb-2 h-8" :title="product.productName">
+                        {{ product.productName }}
+                      </h3>
+                      <div class="flex items-end justify-between border-t border-slate-50 pt-2 h-8">
+                         <div class="flex flex-col justify-end pb-0.5">
+                            <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-1">Stock</span>
+                            <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
+                         </div>
+                         
+                         <!-- Conditional Cart Control -->
+                         <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-md overflow-hidden shadow-md h-7">
+                            <button @click.stop="updateCart(product, -1)" class="px-2 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">-</button>
+                            <span class="px-1.5 h-full flex items-center justify-center text-[10px] font-bold text-white min-w-[max-content] whitespace-nowrap bg-blue-600 border-x border-blue-500/30">
+                              {{ getCartQty(product) }}
+                            </span>
+                            <button @click.stop="updateCart(product, 1)" class="px-2 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">+</button>
+                         </div>
+                         
+                         <button 
+                           v-else
+                           @click.stop="addToCart(product)"
+                           class="h-7 px-3 flex items-center justify-center rounded-md bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-bold text-[10px] transition-colors shadow-sm uppercase tracking-wide"
+                           title="Add"
+                         >
+                           ADD
+                         </button>
+                      </div>
+                    </div>
+
+                    <!-- Upload Error Toast embedded in card -->
+                    <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 inset-x-0 bg-red-500 text-white text-[10px] py-1 text-center z-20">
+                      Failed
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
           </transition>
         </div>
       </div>
@@ -1338,19 +1324,29 @@ export default {
          .text-blue-500 { color: ${c[500]} !important; }
          .border-blue-500 { border-color: ${c[500]} !important; }
          
-         /* Rainbow Text Class */
-         .rainbow-text {
-            background: linear-gradient(to right, #ff0000, #ff7f00, #cccc00, #00ba00, #0000ff, #4b0082, #9400d3);
+        /* Holographic Text Effect */
+        .holographic-text {
+            background-image: linear-gradient(
+                135deg, 
+                #ff00cc 0%, 
+                #3333ff 25%, 
+                #00dbde 50%, 
+                #9900ff 75%, 
+                #ff00cc 100%
+            );
+            background-size: 200% auto;
+            color: transparent;
             -webkit-background-clip: text;
             background-clip: text;
-            color: transparent;
-            animation: rainbow 5s linear infinite;
-            background-size: 200% auto;
-         }
-         @keyframes rainbow {
+            animation: holographic-shimmer 3s linear infinite;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+        }
+
+        @keyframes holographic-shimmer {
             0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-         }
+            100% { background-position: 200% 50%; }
+        }
        `;
     }
   },
