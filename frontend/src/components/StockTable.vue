@@ -366,36 +366,81 @@
         </div>
 
         <!-- View: Image Grid -->
-        <div v-else class="space-y-8">
-          <div v-for="(group, index) in filteredStockData" :key="index" class="space-y-4">
+        <div class="space-y-6 sm:space-y-10">
+          <div
+            v-for="(group, index) in filteredStockData"
+            :key="group.groupName"
+            :id="normalizeId(group.groupName)"
+            class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
+          >
             <!-- Group Header -->
             <div
-               :id="'group-grid-' + normalizeId(group.groupName)"
-               class="flex items-center gap-3 cursor-pointer group select-none scroll-mt-24"
-               @click="toggleGroup(index)"
+              @click="toggleGroup(index)"
+              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-10"
+              :class="expandedGroups[index] ? 'bg-white' : 'hover:bg-slate-50'"
             >
-               <h2 class="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ group.groupName }}</h2>
-               <div class="h-px flex-1 bg-slate-200 group-hover:bg-blue-100 transition-colors"></div>
-               <span class="text-slate-400 transform transition-transform duration-300" :class="{ 'rotate-180': expandedGroups[index] }">▼</span>
+              <div class="flex items-center gap-3 overflow-hidden">
+                <!-- Special Rainbow Header for New Arrivals -->
+                <h2 v-if="group.isSpecial" class="text-2xl sm:text-3xl font-black tracking-tight rainbow-text truncate">
+                   ✨ {{ group.groupName }}
+                </h2>
+                <!-- Standard Header -->
+                <h2 v-else class="text-lg sm:text-xl font-bold text-slate-800 truncate">
+                  {{ group.groupName }}
+                  <span class="ml-2 text-sm font-medium text-slate-400">
+                    ({{ group.products.length }})
+                  </span>
+                </h2>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                 <!-- No Sort/Filter buttons for New Arrivals -->
+                 <span v-if="!group.isSpecial" class="text-slate-300">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5 transform transition-transform duration-300"
+                      :class="expandedGroups[index] ? 'rotate-180' : ''"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                 </span>
+              </div>
             </div>
 
-            <!-- Grid Content -->
-            <div v-show="expandedGroups[index]" class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-4">
-              <div
-                v-for="(product, pIndex) in group.products"
-                :key="`${index}-${pIndex}`"
-              >
-                <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-slate-100 overflow-hidden h-full flex flex-col group/card relative">
+            <!-- Group Content -->
+            <transition
+              enter-active-class="transition-all duration-300 ease-out"
+              enter-from-class="opacity-0 max-h-0"
+              enter-to-class="opacity-100 max-h-[5000px]"
+              leave-active-class="transition-all duration-200 ease-in"
+              leave-from-class="opacity-100 max-h-[5000px]"
+              leave-to-class="opacity-0 max-h-0"
+            >
+              <div v-show="expandedGroups[index]">
+                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-px bg-slate-100 border-b border-slate-100">
+                   <!-- Only show Images for New Arrivals (Logic already handled in filter) -->
+                   <div
+                    v-for="(product, pIndex) in group.products"
+                    :key="product.productName"
+                    class="bg-white p-3 sm:p-4 relative group flex flex-col h-full"
+                  >
                   
                   <!-- Image Area (Portrait 3:4) -->
-                  <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
+                  <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden mb-3 rounded-xl border border-slate-100 shadow-inner">
                     <img
                       v-if="product.imageUrl"
                       :src="getOptimizedUrl(product.imageUrl)"
                       alt="Product"
-                      class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover/card:scale-105"
+                      class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover:scale-105"
                       @click="openImagePopup(product, index)"
                     />
+                    
+                    <span v-else class="flex items-center justify-center w-full h-full text-slate-300 bg-slate-50">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </span>
+                  </div>
                     
                     <!-- Admin Controls Overlay -->
                     <div
@@ -440,7 +485,7 @@
                            <input type="file" accept="image/*" @change="handleFileChange($event, product.productName); uploadImage(product.productName)" class="hidden" />
                         </label>
                     </div>
-                  </div>
+
 
                   <!-- Card Footer -->
                   <div class="p-3 flex flex-col justify-between flex-grow bg-white">
@@ -480,8 +525,9 @@
                 </div>
               </div>
             </div>
-          </div>
+          </transition>
         </div>
+      </div>
 
       </div>
     </main>
@@ -802,9 +848,54 @@ export default {
         }
       }
       
-      return filtered.sort(this.compareGroups);
+      
+      // Sort the standard groups
+      filtered.sort(this.compareGroups);
+      
+      // Inject "New Arrivals" at the top if viewing "All"
+      if (this.selectedGroup === 'All') {
+         const cutoff = new Date();
+         cutoff.setMonth(cutoff.getMonth() - 1);
+         const minDate = new Date('2025-11-01'); // Treat undated as old
+
+         const newProducts = [];
+         
+         // Iterate all groups to find new products
+         this.stockData.forEach(g => {
+            g.products.forEach(p => {
+               if (!p.imageUrl) return;
+                const uploadDate = p.imageUploadedAt ? new Date(p.imageUploadedAt) : minDate;
+                if (uploadDate > cutoff) {
+                   // Avoid duplicates if multiple groups share products? (Usually not case here)
+                   newProducts.push(p);
+                }
+            });
+         });
+
+         if (newProducts.length > 0) {
+            // Flatten/Dedup if needed, assume unique productName
+            // Sort new products by date desc?
+            newProducts.sort((a,b) => {
+                const dA = a.imageUploadedAt ? new Date(a.imageUploadedAt) : minDate;
+                const dB = b.imageUploadedAt ? new Date(b.imageUploadedAt) : minDate;
+                return dB - dA;
+            });
+            
+            filtered.unshift({
+               groupName: "New Arrivals",
+               products: newProducts,
+               isSpecial: true
+            });
+            
+            // Should we collapse 'New Arrivals' by default? Maybe not.
+            // Check expandedGroups default.
+         }
+      }
+
+      return filtered;
     },
     sortedStockDataForDropdown() {
+      // Exclude "New Arrivals" from dropdown list
       return [...this.stockData].sort(this.compareGroups);
     },
 
@@ -842,10 +933,18 @@ export default {
         console.error("Failed to load cart");
       }
     }
+    this.applyTheme();
     this.expandedGroups = this.stockData.reduce(
       (acc, _, index) => ({ ...acc, [index]: true }),
       {}
     );
+    // Expand New Arrivals (index 0) by default if it exists
+    this.$nextTick(() => {
+       if (this.filteredStockData.length > 0 && this.filteredStockData[0].isSpecial) {
+           this.expandedGroups[0] = true;
+       }
+    });
+    
     window.addEventListener("scroll", this.handleScroll);
   },
   beforeUnmount() {
@@ -1209,6 +1308,51 @@ export default {
       // Default: Alphabetical
       return nameA.localeCompare(nameB);
     },
+    applyTheme() {
+       const theme = this.config.theme || 'blue';
+       const colors = {
+          blue: { 600: '#2563eb', 500: '#3b82f6', 50: '#eff6ff', 100: '#dbeafe' },
+          green: { 600: '#16a34a', 500: '#22c55e', 50: '#f0fdf4', 100: '#dcfce7' },
+          orange: { 600: '#ea580c', 500: '#f97316', 50: '#fff7ed', 100: '#ffedd5' },
+       };
+       
+       const c = colors[theme] || colors.blue;
+       
+       const styleId = 'sbe-theme-styles';
+       let styleEl = document.getElementById(styleId);
+       if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = styleId;
+          document.head.appendChild(styleEl);
+       }
+       
+       styleEl.innerHTML = `
+         /* Override Blue Utils with Request Theme */
+         .text-blue-600 { color: ${c[600]} !important; }
+         .bg-blue-600 { background-color: ${c[600]} !important; }
+         .border-blue-600 { border-color: ${c[600]} !important; }
+         
+         .bg-blue-50 { background-color: ${c[50]} !important; }
+         .hover\\:bg-blue-50:hover { background-color: ${c[50]} !important; }
+         
+         .text-blue-500 { color: ${c[500]} !important; }
+         .border-blue-500 { border-color: ${c[500]} !important; }
+         
+         /* Rainbow Text Class */
+         .rainbow-text {
+            background: linear-gradient(to right, #ff0000, #ff7f00, #cccc00, #00ba00, #0000ff, #4b0082, #9400d3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: rainbow 5s linear infinite;
+            background-size: 200% auto;
+         }
+         @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+         }
+       `;
+    }
   },
 };
 </script>
