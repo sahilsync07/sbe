@@ -473,36 +473,37 @@
                       </div>
                     </div>
 
-                    <!-- Card Footer -->
-                    <div class="flex flex-col justify-between flex-grow">
-                      <h3 class="text-xs font-semibold text-slate-700 leading-tight line-clamp-2 mb-2 h-8" :title="product.productName">
-                        {{ product.productName }}
-                      </h3>
-                      <div class="flex items-end justify-between border-t border-slate-50 pt-2 h-8">
-                         <div class="flex flex-col justify-end pb-0.5">
-                            <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-1">Stock</span>
-                            <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
-                         </div>
-                         
-                         <!-- Conditional Cart Control -->
-                         <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-md overflow-hidden shadow-md h-7">
-                            <button @click.stop="updateCart(product, -1)" class="px-2 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">-</button>
-                            <span class="px-1.5 h-full flex items-center justify-center text-[10px] font-bold text-white min-w-[max-content] whitespace-nowrap bg-blue-600 border-x border-blue-500/30">
-                              {{ getCartQty(product) }}
-                            </span>
-                            <button @click.stop="updateCart(product, 1)" class="px-2 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-sm">+</button>
-                         </div>
-                         
-                         <button 
-                           v-else
-                           @click.stop="addToCart(product)"
-                           class="h-7 px-3 flex items-center justify-center rounded-md bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-bold text-[10px] transition-colors shadow-sm uppercase tracking-wide"
-                           title="Add"
-                         >
-                           ADD
-                         </button>
-                      </div>
+                  <!-- Card Footer -->
+                  <div class="p-2.5 flex flex-col justify-between flex-grow bg-white">
+                    <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem]" :title="product.productName">
+                      {{ product.productName }}
+                    </h3>
+                    <div class="flex items-end justify-between border-t border-slate-50 pt-2 mt-auto">
+                       <div class="flex flex-col justify-end">
+                          <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-0.5">Stock</span>
+                          <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
+                       </div>
+                       
+                       <!-- Conditional Cart Control -->
+                       <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-lg overflow-hidden shadow-md h-8">
+                          <button @click.stop="updateCart(product, -1)" class="w-8 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-lg active:scale-90">-</button>
+                          <span class="min-w-[1.5rem] h-full flex items-center justify-center text-[11px] font-bold text-white bg-blue-600 border-x border-blue-500/30">
+                            {{ getCartQty(product) }}
+                          </span>
+                          <button @click.stop="updateCart(product, 1)" class="w-8 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-lg active:scale-90">+</button>
+                       </div>
+                       
+                       <!-- Add Button (+) -->
+                       <button 
+                         v-else
+                         @click.stop="addToCart(product)"
+                         class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-100 hover:border-blue-600 transition-all shadow-sm active:scale-90 group/btn"
+                         title="Add to Cart"
+                       >
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                       </button>
                     </div>
+                  </div>
 
                     <!-- Upload Error Toast embedded in card -->
                     <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 inset-x-0 bg-red-500 text-white text-[10px] py-1 text-center z-20">
