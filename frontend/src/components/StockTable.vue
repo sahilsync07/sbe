@@ -191,7 +191,7 @@
       </aside>
 
       <main 
-         class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 min-w-0 transition-all duration-300"
+         class="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6 min-w-0 transition-all duration-300"
          :class="{'mr-0 lg:mr-80': showCart, 'ml-0 lg:ml-64': showSidePanel}"
       >
       
@@ -205,19 +205,15 @@
 
       <!-- Main Content -->
       <div v-else class="space-y-6">
-        <!-- New Breadcrumb / Sidebar Toggle for Mobile -->
-        <div class="lg:hidden flex items-center justify-between">
-           <span class="text-sm font-semibold text-slate-500">
-             Showing {{ activeScrollGroup || 'All Brands' }}
-           </span>
-        </div>
+        <!-- Breadcrumb Removed -->
         
         <!-- Brand Filters (Scrollable Horizontal List) -->
         <!-- Toolbar Removed -->
 
         <!-- Info Bar Removed -->
-        <div class="flex flex-col sm:flex-row justify-end items-center text-xs text-slate-500 px-2">
-          <span v-if="error" class="text-red-500 font-medium mt-1 sm:mt-0">{{ error }}</span>
+        <!-- Error Bar -->
+        <div v-if="error" class="flex flex-col sm:flex-row justify-end items-center text-xs text-slate-500 px-2">
+          <span class="text-red-500 font-medium mt-1 sm:mt-0">{{ error }}</span>
         </div>
 
         <!-- View: List -->
@@ -430,6 +426,7 @@
     </div>
 
     <!-- Floating To Top Button -->
+    <!-- Floating To Top Button -->
     <transition enter-active-class="transition duration-300 ease-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <button
         v-if="showGoToTop"
@@ -437,6 +434,19 @@
         class="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-slate-900/90 text-white rounded-full shadow-2xl hover:bg-black transition-all hover:-translate-y-1 hover:shadow-black/20 backdrop-blur-sm z-30"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+      </button>
+    </transition>
+
+    <!-- Floating Image Toggle (Mobile, Left) - Disappears on Scroll -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <button
+        v-if="!isScrolled" 
+        @click="showImagesOnly = !showImagesOnly"
+        class="fixed bottom-6 left-6 h-12 px-5 inline-flex w-auto items-center gap-2 rounded-full shadow-2xl transition-all z-[40] md:hidden border"
+        :class="showImagesOnly ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-slate-600 border-slate-200'"
+      >
+        <i class="fa-solid fa-image text-lg"></i>
+        <span class="text-xs font-bold">{{ showImagesOnly ? 'Images' : 'All' }}</span>
       </button>
     </transition>
 
@@ -639,7 +649,9 @@ export default {
       uploadErrors: {},
       searchQuery: "",
       selectedGroup: "All",
+      selectedGroup: "All",
       showGoToTop: false,
+      isScrolled: false,
       isLocal:
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1",
@@ -1238,6 +1250,7 @@ export default {
     },
     handleScroll() {
       this.showGoToTop = window.scrollY > 300;
+      this.isScrolled = window.scrollY > 20;
     },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
