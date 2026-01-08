@@ -142,7 +142,7 @@
 
       <!-- Cart Sidebar (Right Side - Push Layout) -->
       <aside
-        class="fixed inset-y-0 right-0 bg-white border-l border-slate-200 w-80 z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col"
+        class="fixed inset-y-0 right-0 bg-white border-l border-slate-200 w-full sm:w-80 z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col"
         :class="showCart ? 'translate-x-0' : 'translate-x-full'"
         style="height: 100vh; top: 0;" 
       >
@@ -151,8 +151,8 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button @click="closePane" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
-             <i class="fa-solid fa-xmark text-xl"></i>
+           <button @click="closePane" class="w-auto p-2 shrink-0 transition-transform active:scale-90 bg-transparent hover:bg-transparent shadow-none border-none inline-flex items-center justify-center">
+             <i class="fa-solid fa-xmark text-2xl text-blue-600"></i>
            </button>
         </div>
         
