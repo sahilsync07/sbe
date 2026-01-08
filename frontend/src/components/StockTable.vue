@@ -480,95 +480,130 @@
       </button>
     </transition>
 
-    <!-- Modern Image Modal -->
-    <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+    <!-- Full Screen Product Page -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
       <div
         v-if="showImagePopup"
-        class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-8"
-        role="dialog"
+        class="fixed inset-0 z-[100] bg-slate-50 overflow-y-auto overflow-x-hidden flex flex-col"
       >
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="closeImagePopup"></div>
+        <!-- Sticky Navbar -->
+        <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
+           <button @click="closeImagePopup" class="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-bold transition-colors px-2 py-1 rounded-lg hover:bg-slate-100">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Back to Browse</span>
+           </button>
+           
+           <div class="flex items-center gap-4">
+             <!-- Desktop Nav -->
+             <div class="hidden md:flex items-center gap-2">
+                 <button 
+                   @click="navigateImage(-1)" 
+                   class="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                   :disabled="currentProductIndex <= 0"
+                   title="Previous Product"
+                 >
+                   <i class="fa-solid fa-chevron-left"></i>
+                 </button>
+                 <button 
+                   @click="navigateImage(1)" 
+                   class="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                   :disabled="currentProductIndex >= currentGroupProducts.length - 1"
+                   title="Next Product"
+                 >
+                    <i class="fa-solid fa-chevron-right"></i>
+                 </button>
+             </div>
+           </div>
+        </div>
 
-        <!-- content -->
-        <div
-          class="relative w-full max-w-6xl max-h-[85vh] flex flex-col md:flex-row bg-slate-900 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10"
-          @touchstart="handleTouchStart"
-          @touchend="handleTouchEnd"
-        >
-          
-          <!-- Image Section (Left/Top) -->
-          <div class="flex-1 relative bg-black flex items-center justify-center p-4 min-h-[40vh] md:min-h-0 overflow-hidden">
-             <img
-               v-if="currentProduct.imageUrl"
-               :src="getOptimizedUrl(currentProduct.imageUrl)"
-               class="w-full h-full object-contain drop-shadow-2xl"
-               draggable="false"
-             />
-             <div v-else class="text-white/50">No High-Res Image Available</div>
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row p-4 md:p-8 gap-6 md:gap-12">
+            
+            <!-- Image Section (Left) -->
+            <div class="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden min-h-[40vh] md:min-h-[60vh]">
+               <img
+                 v-if="currentProduct.imageUrl"
+                 :src="getOptimizedUrl(currentProduct.imageUrl)"
+                 class="w-full h-full object-contain max-h-[70vh] drop-shadow-xl transition-all duration-300"
+                 :key="currentProduct.imageUrl" 
+               />
+               <div v-else class="flex flex-col items-center gap-4 text-slate-300">
+                  <i class="fa-solid fa-image text-6xl opacity-20"></i>
+                  <span class="font-medium">No Image Available</span>
+               </div>
+            </div>
 
-             <!-- Desktop Nav Buttons (Floating) -->
-             <button
-               v-if="currentProductIndex > 0"
-               @click="navigateImage(-1)"
-               class="absolute left-6 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all hidden md:flex hover:scale-110"
-               title="Previous"
-             >
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-             </button>
-             <button
-               v-if="currentProductIndex < currentGroupProducts.length - 1"
-               @click="navigateImage(1)"
-               class="absolute right-6 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all hidden md:flex hover:scale-110"
-               title="Next"
-             >
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-             </button>
-          </div>
-
-          <!-- Details Section (Right/Bottom) -->
-          <div class="w-full md:w-[320px] lg:w-[380px] flex flex-col bg-slate-800 border-l border-white/5 z-20 shrink-0">
-             
-             <!-- Header / Close -->
-             <div class="p-6 flex justify-between items-start">
-                <div class="flex-1 pr-4">
-                  <span class="block text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">{{ currentGroupName }}</span>
-                  <h2 class="text-lg md:text-xl font-bold text-white leading-snug break-words">
+            <!-- Details Section (Right) -->
+            <div class="w-full md:w-[400px] lg:w-[480px] flex flex-col gap-8 py-4">
+               
+               <div>
+                  <div class="flex items-center gap-2 mb-3">
+                     <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
+                     <span v-if="currentProduct.imageUploadedAt" class="px-2.5 py-1 rounded-md bg-green-50 text-green-600 text-xs font-bold uppercase tracking-wider">New Arrival</span>
+                  </div>
+                  <h1 class="text-2xl md:text-4xl font-black text-slate-800 leading-tight mb-4">
                     {{ currentProduct.productName }}
-                  </h2>
-                </div>
-                <button @click="closeImagePopup" class="p-2 -mr-2 -mt-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-full transition-colors flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-             </div>
+                  </h1>
+                  
+                  <div class="flex items-center gap-3">
+                     <div class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg flex items-center gap-2 border border-blue-100">
+                        <i class="fa-solid fa-cubes"></i>
+                        <span class="font-bold text-lg">{{ currentProduct.quantity }}</span> 
+                        <span class="text-xs uppercase font-bold tracking-wider opacity-70">Stock</span>
+                     </div>
+                  </div>
+               </div>
 
-             <!-- Info Content -->
-             <div class="px-6 flex-1 overflow-y-auto">
-                <div class="p-4 bg-slate-700/30 rounded-xl border border-white/5 space-y-2 mb-4">
-                   <div class="text-sm text-slate-400 font-medium">Available Stock</div>
-                   <div class="text-3xl font-bold text-blue-400 tracking-tight">{{ currentProduct.quantity }} <span class="text-sm font-normal text-slate-500 ml-1">pairs/pcs</span></div>
-                </div>
-             </div>
+               <hr class="border-slate-100" />
 
-             <!-- Mobile Nav Controls (Footer) -->
-             <div class="p-4 flex gap-3 md:hidden bg-slate-900 border-t border-white/5 mt-auto">
-                <button 
-                  @click="navigateImage(-1)" 
-                  class="flex-1 py-3 px-4 bg-slate-800 text-white text-sm font-bold rounded-xl disabled:opacity-30 active:scale-95 transition-all"
-                  :disabled="currentProductIndex <= 0"
-                >
-                  Previous
-                </button>
-                <button 
-                  @click="navigateImage(1)" 
-                  class="flex-1 py-3 px-4 bg-blue-600 text-white text-sm font-bold rounded-xl disabled:opacity-30 active:scale-95 transition-all shadow-lg shadow-blue-900/20"
-                  :disabled="currentProductIndex >= currentGroupProducts.length - 1"
-                >
-                  Next Product
-                </button>
-             </div>
-          </div>
+               <!-- Action Area -->
+               <div class="space-y-4">
+                  <div v-if="getCartQty(currentProduct) > 0" class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center justify-between">
+                      <span class="font-bold text-slate-700">In your cart</span>
+                      <div class="flex items-center gap-3">
+                         <button @click="updateCart(currentProduct, -1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
+                           <i class="fa-solid fa-minus"></i>
+                         </button>
+                         <span class="text-xl font-black text-blue-700 min-w-[2rem] text-center">{{ getCartQty(currentProduct) }}</span>
+                         <button @click="updateCart(currentProduct, 1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
+                           <i class="fa-solid fa-plus"></i>
+                         </button>
+                      </div>
+                  </div>
 
+                  <button 
+                    v-else
+                    @click="addToCart(currentProduct)"
+                    class="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 shadow-xl shadow-slate-900/10 hover:shadow-blue-600/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
+                  >
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    Add to Cart
+                  </button>
+                  
+                  <p class="text-xs text-center text-slate-400 mt-2">
+                     Tap 'Add to Cart' to include this in your order list.
+                  </p>
+               </div>
+               
+               <!-- Mobile Only Nav (Fixed Bottom relative to this col, or standard flow) -->
+               <div class="md:hidden grid grid-cols-2 gap-4 mt-auto pt-8">
+                   <button 
+                     @click="navigateImage(-1)" 
+                     class="py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
+                     :disabled="currentProductIndex <= 0"
+                   >
+                     Previous
+                   </button>
+                   <button 
+                     @click="navigateImage(1)" 
+                     class="py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
+                     :disabled="currentProductIndex >= currentGroupProducts.length - 1"
+                   >
+                     Next
+                   </button>
+               </div>
+
+            </div>
         </div>
       </div>
     </transition>
@@ -864,6 +899,31 @@ export default {
             this.selectedGroup = groupMatch.groupName;
          }
       }
+    }
+
+    // Check for URL param "product" (Deep Linking)
+    const productParam = params.get('product');
+    if (productParam) {
+       // Search for product across all groups (including filtered/hidden ones)
+       // We should search in `this.stockData` to be safe, but `filteredStockData` drives the UI groups.
+       // However, `filteredStockData` might be empty if filters are weird? No, usually it has "All".
+       // Let's search `this.stockData` to find the Group Index and Product.
+       
+       let found = false;
+       for (let gIndex = 0; gIndex < this.stockData.length; gIndex++) {
+          const group = this.stockData[gIndex];
+          const pIndex = group.products.findIndex(p => p.productName === productParam);
+          if (pIndex !== -1) {
+             // Found it!
+             this.openImagePopup(group.products[pIndex], gIndex);
+             found = true;
+             break;
+          }
+       }
+       if (!found) {
+          console.warn("Deep linked product not found:", productParam);
+          // Optional: clear param if invalid?
+       }
     }
 
     // Load Cart
@@ -1162,6 +1222,11 @@ export default {
         (p) => p.productName === product.productName
       );
       this.showImagePopup = true;
+      
+      // Update URL
+      const url = new URL(window.location);
+      url.searchParams.set('product', product.productName);
+      window.history.pushState({}, '', url);
     },
     closeImagePopup() {
       this.showImagePopup = false;
@@ -1170,12 +1235,23 @@ export default {
       this.currentGroupProducts = [];
       this.currentGroupName = "";
       this.currentProductIndex = 0;
+      
+      // Remove URL Param
+      const url = new URL(window.location);
+      url.searchParams.delete('product');
+      window.history.pushState({}, '', url);
     },
     navigateImage(direction) {
       const newIndex = this.currentProductIndex + direction;
       if (newIndex >= 0 && newIndex < this.currentGroupProducts.length) {
         this.currentProductIndex = newIndex;
+        this.currentProductIndex = newIndex;
         this.currentProduct = this.currentGroupProducts[newIndex];
+        
+        // Update URL
+        const url = new URL(window.location);
+        url.searchParams.set('product', this.currentProduct.productName);
+        window.history.replaceState({}, '', url);
       }
     },
     handleTouchStart(event) {
