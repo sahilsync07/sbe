@@ -317,13 +317,13 @@
             v-for="(group, index) in filteredStockData"
             :key="group.groupName"
             :id="normalizeId(group.groupName)"
-            class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
+            class="bg-transparent overflow-hidden"
           >
             <!-- Group Header -->
             <div
               @click="toggleGroup(index)"
-              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-10"
-              :class="expandedGroups[index] ? 'bg-white' : 'hover:bg-slate-50'"
+              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-10 rounded-2xl shadow-sm border border-slate-100 mb-4"
+              :class="expandedGroups[index] ? 'rounded-b-none border-b-0' : 'hover:bg-slate-50'"
             >
               <div class="flex items-center gap-3 overflow-hidden">
                 <!-- Special Rainbow Header for New Arrivals -->
@@ -365,11 +365,11 @@
               leave-to-class="opacity-0 max-h-0"
             >
               <div v-show="expandedGroups[index]">
-                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-px bg-slate-100 border-b border-slate-100">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 pb-4 px-0.5">
                   <div
                     v-for="(product, pIndex) in group.products"
                     :key="product.productName"
-                    class="bg-white p-3 sm:p-4 relative group flex flex-col h-full"
+                    class="bg-white p-1.5 sm:p-2.5 relative group flex flex-col h-full rounded-2xl shadow-sm border border-slate-200 transition-shadow hover:shadow-md"
                   >
                     
                     <!-- Image Area (Portrait 3:4) -->
@@ -420,8 +420,8 @@
                     </div>
 
                   <div class="p-2.5 flex flex-col justify-between flex-grow bg-white">
-                    <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem] text-center" :title="product.productName">
-                      {{ product.productName }}
+                    <h3 class="text-sm font-bold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem] text-center" :title="formatProductName(product.productName)">
+                      {{ formatProductName(product.productName) }}
                     </h3>
                     <div class="flex items-end justify-center border-t border-slate-50 pt-2 mt-auto">
                        <!-- Old Stock Display Removed -->
@@ -1032,6 +1032,11 @@ export default {
       }
       // Note: Auto-open disabled per request
       // this.showCart = true; 
+    },
+    formatProductName(name) {
+      if (!name) return '';
+      // First letter capital, rest small for every word
+      return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     },
     removeFromCart(index) {
       this.cart.splice(index, 1);
