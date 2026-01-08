@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800">
     <!-- Sticky Header with Glassmorphism -->
     <header
-      class="sticky top-0 z-[50] w-full bg-white border-b border-slate-200 transition-all duration-300 py-2"
+      class="sticky top-0 z-[60] w-full bg-white border-b border-slate-200 transition-all duration-300 py-2"
     >
       <div class="w-full px-2 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between gap-4">
@@ -10,9 +10,11 @@
           <div class="flex items-center gap-3">
              <button
               @click="toggleSidebar"
-              class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95"
+              class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95 w-10 h-10 flex items-center justify-center border border-white/20"
+              :class="{ 'opacity-0 pointer-events-none': showCart }"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              <i v-if="showSidePanel" class="fa-solid fa-house text-lg animate-fade-in"></i>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-fade-in" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
 
             <button
@@ -82,11 +84,15 @@
 
              <button
                @click="toggleCart"
-               class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0"
+               class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0 w-10 h-10 flex items-center justify-center border border-white/20"
+               :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
                title="Toggle Cart"
              >
-               <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
-               <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
+               <i v-if="showCart" class="fa-solid fa-house text-white text-lg animate-fade-in"></i>
+               <div v-else class="flex items-center justify-center w-full h-full animate-fade-in">
+                  <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
+                  <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
+               </div>
              </button>
           </div>
         </div>
@@ -96,15 +102,13 @@
     <div class="flex w-full">
       <!-- Side Panel (Bird Eye View) -->
       <aside
-        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-full sm:w-80 lg:w-80 z-[60] lg:z-40 transform transition-transform duration-300 ease-in-out pt-0 lg:pt-40"
+        class="fixed inset-y-0 left-0 w-full sm:w-80 lg:w-80 border-r border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
         :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
       >
         <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
-             <button @click="closePane" class="w-auto p-2 shrink-0 transition-transform active:scale-90 bg-transparent hover:bg-transparent shadow-none border-none inline-flex items-center justify-center">
-               <i class="fa-solid fa-xmark text-2xl text-blue-600"></i>
-             </button>
+             <button class="hidden"></button>
            </div>
            <nav class="space-y-1">
               <template v-for="(group, index) in filteredStockData" :key="group.groupName">
@@ -142,18 +146,15 @@
 
       <!-- Cart Sidebar (Right Side - Push Layout) -->
       <aside
-        class="fixed inset-y-0 right-0 bg-white border-l border-slate-200 w-full sm:w-80 z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col"
+        class="fixed inset-y-0 right-0 w-full sm:w-80 border-l border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] sm:pt-0"
         :class="showCart ? 'translate-x-0' : 'translate-x-full'"
-        style="height: 100vh; top: 0;" 
       >
         <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button @click="closePane" class="w-auto p-2 shrink-0 transition-transform active:scale-90 bg-transparent hover:bg-transparent shadow-none border-none inline-flex items-center justify-center">
-             <i class="fa-solid fa-xmark text-2xl text-blue-600"></i>
-           </button>
+           <button class="hidden"></button>
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
