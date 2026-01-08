@@ -79,87 +79,27 @@ async function fetchTallyData() {
       throw new Error("Mismatched DSPACCNAME and DSPSTKINFO counts");
     }
 
+    require("dotenv").config({ path: path.resolve(__dirname, "../../frontend/.env") });
+
+    // Load Company Config
+    const configFileName = process.env.VITE_CONFIG_FILE || 'sbe.json';
+    const configPath = path.resolve(__dirname, `../../frontend/public/config/${configFileName}`);
+    let companyConfig = {};
+    try {
+      const configFileContent = await fs.readFile(configPath, 'utf-8');
+      companyConfig = JSON.parse(configFileContent);
+      console.log(`Loaded company config: ${configFileName}`);
+    } catch (err) {
+      console.error(`Failed to load config file: ${configPath}`, err.message);
+      // Fallback or critical error? Critical as we need groups.
+      throw new Error(`Critical: Cannot load config file ${configFileName}`);
+    }
+
     const stockGroups = {};
     let currentGroup = "Stock";
 
-    // Hardcoded list of group names (case-insensitive comparison)
-    const groupNames = [
-      "4WAY SPORT",
-      "AAGAM POLYMER",
-      "ADDA",
-      "ADDOXY",
-      "A G ENTERPRISES",
-      "AGRA",
-      "AIRFAX",
-      "AIRSON",
-      "AIRSUN",
-      "AMBIKA FOOTWEAR",
-      "ASHU",
-      "Avon International (WOODS)",
-      "Balaji",
-      "Barun",
-      "CUBIX",
-      "Eeken",
-      "Electrical & Electronic",
-      "Escoute",
-      "Fencer",
-      "Fender",
-      "Florex (Swastik)",
-      "GLAMIUM",
-      "GOKUL FOOTWEAR",
-      "Hawai Chappal",
-      "HITWAY",
-      "J.K Plastic",
-      "J.K.Plastic",
-      "KHADIM",
-      "Kohinoor",
-      "LEO",
-      "Magnet",
-      "MARUTI PLASTICS",
-      "Max",
-      "Mini F/w",
-      "NAV DURGA ENTERPRISES",
-      "NEXGEN FOOTWEAR",
-      "NEXUS",
-      "NON BRAND",
-      "NX KIDS SANDEL",
-      "OTHERS",
-      "PANKAJ PLASTIC",
-      "PARAGON",
-      "Paragon Blot",
-      "PARAGON COMFY",
-      "PARAGON GENTS",
-      "PARAGON LADIES",
-      "Paralite",
-      "Pareek Soucks",
-      "PARIS",
-      "Polish Liquid @18%",
-      "P-TOES",
-      "PU-LION",
-      "RELIANCE FOOTWEAR",
-      "R K TRADERS",
-      "R R POLYPLAST",
-      "Ruban F/w",
-      "Safety",
-      "School",
-      "SCHOOL SHOE DUROLITE",
-      "Shree Shyam Ind",
-      "SHYAM",
-      "Solea & Meriva , Mascara",
-      "SRG ENTERPRISES",
-      "S S BANSAL",
-      "Stimulus",
-      "TEUZ",
-      "UAM FOOTWEAR",
-      "VAISHNO PLASTIC",
-      "VARDHMAN PLASTICS",
-      "VERTEX, SLICKERS & FENDER",
-      "Walkaholic",
-      "Xpania",
-      "YASH FOOTWEAR",
-      "ZYF TEX",
-      "ARITCLE WRONGLY ENTERED"
-    ];
+    // Use groups from config (case-insensitive comparison)
+    const groupNames = companyConfig.tallyGroups || [];
 
     dspAccNames.forEach((acc, index) => {
       const name = acc.DSPDISPNAME || `Unknown ${index}`;

@@ -49,9 +49,9 @@
             <h1 
               class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer"
               @click="promptAdminLogin"
-              title="SBE Rayagada"
+              title="Admin Login"
             >
-              <span class="text-blue-600">SBE</span> Rayagada
+              <span class="text-blue-600">{{ companyName.split(' ')[0] }}</span> {{ companyName.split(' ').slice(1).join(' ') }}
             </h1>
           </div>
 
@@ -199,7 +199,7 @@
             All Items
           </button>
 
-          <!-- Dynamic Brands -->
+          <!-- Dynamic Brands (Images) -->
           <button
             v-for="brand in brands"
             :key="brand.name"
@@ -207,18 +207,18 @@
             class="flex items-center justify-center px-4 py-1.5 rounded-full border transition-all duration-200 min-w-[80px]"
             :class="selectedGroup === brand.name ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
           >
-            <img :src="brand.logo" :alt="brand.name" class="h-6 object-contain" />
+            <img :src="brand.logo.replace('{{CLOUD_NAME}}', cloudName)" :alt="brand.name" class="h-6 object-contain" />
           </button>
 
-          <!-- Static Filters (Capsule Style) -->
+          <!-- Dynamic Filters (Text Capsules) -->
           <button
-             v-for="filter in ['Kids', 'Hawai', 'Loose', 'Box', 'Shoe', 'Maruti', 'Magnet', 'rktraders', 'jkplastic', 'airson', 'GeneralItems']"
-             :key="filter"
-             @click="selectGroup(filter)"
+             v-for="filter in toolbarFilters.filter(f => !['All', 'Brands'].includes(f.id))"
+             :key="filter.id"
+             @click="selectGroup(filter.id)"
              class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border capitalize"
-             :class="selectedGroup === filter ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+             :class="selectedGroup === filter.id ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
           >
-            {{ filter === 'rktraders' ? 'R.K.Traders' : filter === 'jkplastic' ? 'J.K.Plastic' : filter === 'airson' ? 'Airson' : filter === 'GeneralItems' ? 'General Items' : filter }}
+            {{ filter.label }}
           </button>
         </div>
 
@@ -246,11 +246,9 @@
                class="w-full appearance-none px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
              >
                <option value="All">All Categories</option>
-               <option value="Kids">Kids Only</option>
-               <option value="Hawai">Hawai Only</option>
-               <option value="Loose">Loose Items</option>
-               <option value="Box">Box Items</option>
-               <option value="Shoe">Shoes</option>
+               <option v-for="filter in toolbarFilters.filter(f => !['All', 'Brands'].includes(f.id))" :key="filter.id" :value="filter.id">
+                 {{ filter.label }}
+               </option>
                <option disabled>──────────</option>
                <option
                  v-for="group in sortedStockDataForDropdown"
@@ -679,77 +677,12 @@ export default {
       touchStartX: 0,
       viewMode: "image",
       showLedgerView: false,
-      brands: [
-        {
-          name: "Paragon",
-          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/paragonLogo_rqk3hu.webp`,
-        },
-        {
-          name: "Reliance",
-          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/relianceLogo_bvgwwz.png`,
-        },
-        {
-          name: "Cubix",
-          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667073/cubixLogo_bwawj3.jpg`,
-        },
-        {
-          name: "Florex",
-          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/florexLogo_wn50tj.jpg`,
-        },
-        {
-          name: "EEKEN",
-          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749668232/eekenLogo_rg5xwa.webp`,
-        },
-        {
-          name: "Escoute",
-          logo: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/v1749667072/escouteLogo_maieji.jpg`,
-        },
-      ],
-      paragonSubgroups: [
-        "Walkaholic",
-        "VERTEX, SLICKERS & FENDER",
-        "Stimulus",
-        "Solea & Meriva , Mascara",
-        "P-TOES",
-        "Paralite",
-        "PARAGON COMFY",
-        "Paragon Blot",
-        "PARAGON",
-        "Max",
-        "Hawai Chappal",
-      ],
-      marutiSubgroups: ["MARUTI PLASTICS"],
-      magnetSubgroups: ["Magnet"],
-      rktradersSubgroups: ["R K TRADERS"], // Kept for safety, though moved to general
-      jkplasticSubgroups: ["J.K Plastic"],
-      airsonSubgroups: ["Airsun"],
-
-      // NEW: General Items Group (Updated Order)
-      generalItemsSubgroups: [
-        "AIRFAX",
-        "Airsun",
-        "J.K Plastic",
-        "SRG ENTERPRISES",
-        "VARDHMAN PLASTICS",
-        "NAV DURGA ENTERPRISES",
-        "AAGAM POLYMER",
-        "Magnet",
-        "MARUTI PLASTICS",
-        "Fencer",
-        "PANKAJ PLASTIC",
-        "PARIS",
-        "PU-LION",
-        "SHYAM",
-        "TEUZ",
-        "UAM FOOTWEAR",
-        "Xpania",
-        "R K TRADERS",
-        "Maruti",
-        "rktraders",
-        "jkplastic",
-        "airson"
-      ],
+      config: {},
+      companyName: "",
+      brands: [], // Loaded from config
+      toolbarFilters: [], // Loaded from config
       showImagesOnly: true, // Default to true
+
       showNoImagesOnly: false,
       showSidePanel: false,
       activeScrollGroup: '',
@@ -780,6 +713,8 @@ export default {
     cartTotalItems() {
       return this.cart.reduce((total, item) => total + item.quantity, 0);
     },
+
+    // ... data properties updated below ...
     filteredStockData() {
       let filtered = this.stockData;
       if (this.searchQuery) {
@@ -816,136 +751,41 @@ export default {
         filtered = filtered.filter(group => !group.groupName.toLowerCase().includes('old'));
       }
       
+      const normalize = (name) => name ? name.toLowerCase().trim() : '';
+
       if (this.selectedGroup !== "All") {
-        if (this.selectedGroup === "Paragon") {
-          filtered = filtered.filter((group) =>
-            this.paragonSubgroups.includes(group.groupName)
-          );
-        } else if (this.selectedGroup === "Reliance") {
-          filtered = filtered.filter(
-            (group) => group.groupName === "RELIANCE FOOTWEAR"
-          );
-        } else if (this.selectedGroup === "Florex") {
-          filtered = filtered.filter(
-            (group) => group.groupName === "Florex (Swastik)"
-          );
-        } else if (this.selectedGroup === "Cubix") {
-          filtered = filtered.filter((group) => group.groupName === "CUBIX");
-        } else if (this.selectedGroup === "EEKEN") {
-          filtered = filtered.filter((group) => group.groupName === "EEKEN");
-        } else if (this.selectedGroup === "Maruti") {
-          filtered = filtered.filter((group) =>
-            this.marutiSubgroups.includes(group.groupName)
-          );
-        } else if (this.selectedGroup === "Magnet") {
-          filtered = filtered.filter((group) =>
-            this.magnetSubgroups.includes(group.groupName)
-          );
-        } else if (this.selectedGroup === "rktraders") {
-          filtered = filtered.filter((group) =>
-            this.rktradersSubgroups.includes(group.groupName)
-          );
-        } else if (this.selectedGroup === "jkplastic") {
-          filtered = filtered.filter((group) =>
-            this.jkplasticSubgroups.includes(group.groupName)
-          );
-        } else if (this.selectedGroup === "airson") {
-          filtered = filtered.filter((group) =>
-            this.airsonSubgroups.includes(group.groupName)
-          );
+        const groupKey = this.selectedGroup;
+
+        // Check if it's a Brand Group (e.g. Paragon, Florex)
+        if (this.config.brandGroups && this.config.brandGroups[groupKey]) {
+           const allowedSubgroups = this.config.brandGroups[groupKey].map(g => normalize(g));
+           filtered = filtered.filter(g => allowedSubgroups.includes(normalize(g.groupName)));
+        } 
+        // Check if it's a Custom Filter (Regex based like Kids, Hawai)
+        else if (this.config.customFilters && this.config.customFilters[groupKey]) {
+           const keywords = this.config.customFilters[groupKey];
+           filtered = filtered.map(group => ({
+             ...group,
+             products: group.products.filter(p => 
+               keywords.some(k => p.productName.toLowerCase().includes(k.toLowerCase()))
+             )
+           })).filter(g => g.products.length > 0);
         }
-        // NEW: General Items Filter
-        else if (this.selectedGroup === "GeneralItems") {
-          filtered = filtered.filter(g => this.generalItemsSubgroups.includes(g.groupName));
-        }
-        else if (this.selectedGroup === "Kids") {
-          filtered = filtered
-            .map((group) => ({
-              ...group,
-              products: group.products.filter((product) =>
-                product.productName
-                  .toLowerCase()
-                  .match(/kid|toes|boy|girl|chu|1\*|child/)
-              ),
-            }))
-            .filter((group) => group.products.length > 0);
-        } else if (this.selectedGroup === "Hawai") {
-          filtered = filtered
-            .map((group) => ({
-              ...group,
-              products: group.products.filter((product) =>
-                product.productName
-                  .toLowerCase()
-                  .match(/hawai|walkaholic|cushion/)
-              ),
-            }))
-            .filter((group) => group.products.length > 0);
-        } else if (this.selectedGroup === "Loose") {
-          filtered = filtered
-            .map((group) => ({
-              ...group,
-              products: group.products.filter((product) =>
-                product.productName
-                  .toLowerCase()
-                  .match(/loose|era ladies|bond|r.k|r k/)
-              ),
-            }))
-            .filter((group) => group.products.length > 0);
-        } else if (this.selectedGroup === "Box") {
-          filtered = filtered
-            .map((group) => ({
-              ...group,
-              products: group.products.filter((product) =>
-                product.productName
-                  .toLowerCase()
-                  .match(/seltos|airson|airsun|lion/)
-              ),
-            }))
-            .filter((group) => group.products.length > 0);
-        } else if (this.selectedGroup === "Shoe") {
-          filtered = filtered
-            .map((group) => ({
-              ...group,
-              products: group.products.filter((product) =>
-                product.productName.toLowerCase().match(/shoe/)
-              ),
-            }))
-            .filter((group) => group.products.length > 0);
-        } else {
-          filtered = filtered.filter(
-            (group) => group.groupName === this.selectedGroup
-          );
+        // Specific Group Name match
+        else {
+           filtered = filtered.filter(g => g.groupName === groupKey);
         }
       }
-      
-      // --- Sorting Logic Implementation ---
-      // Order: Cubix -> Florex -> Paragon (Ordered) -> General Items (Ordered) -> Others
-      
-      const normalize = (name) => name ? name.toLowerCase().trim() : '';
       
       return filtered.sort(this.compareGroups);
     },
     sortedStockDataForDropdown() {
-      // Create a sorted list of all groups using the same logic, but on the FULL (non-filtered) stock data
-      // EXCEPT we do want to reflect the "Images Only" filtering if we want the sidebar to be accurate to what's shown? 
-      // Usually sidebar shows all available categories.
-      // However, if we filter by Images Only, some groups might become empty.
-      // Use filteredStockData for sidebar to assume consistency with view?
-      // User said "bird eye view... navigate to any brand... order... same".
-      // If I use filteredStockData, the sidebar items disappear if they have no items matching filter. This is usually desired.
-      
-      // But the dropdown code used `[...this.stockData]`. Let's stick to using the `filteredStockData` for the sidebar list 
-      // to ensure 1:1 mapping with the main view content.
-      // But wait, the dropdown in the toolbar uses `sortedStockDataForDropdown`. If I change this, I change that too.
-      // The toolbar dropdown probably should show all categories? Or only visible ones?
-      // Usually specific group filter dropdown should show all.
-      
-      // Let's keep `sortedStockDataForDropdown` sorting ALL stock data, but with the new sort logic.
       return [...this.stockData].sort(this.compareGroups);
     },
 
   },
   async mounted() {
+    await this.loadConfig();
     await this.loadStockData();
     // Load Cart
     const savedCart = localStorage.getItem('sbe_cart');
@@ -960,17 +800,30 @@ export default {
       (acc, _, index) => ({ ...acc, [index]: true }),
       {}
     );
-    // Default open sidebar on large screens
-    // Default open sidebar logic removed as per user request
-    // if (window.innerWidth >= 1024) {
-    //   this.showSidePanel = true;
-    // }
     window.addEventListener("scroll", this.handleScroll);
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
+    async loadConfig() {
+      try {
+        const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
+        const response = await fetch(`/config/${configFile}`);
+        const config = await response.json();
+        
+        this.config = config;
+        this.brands = config.brands;
+        this.companyName = config.companyName;
+        this.toolbarFilters = config.toolbarFilters || [];
+        
+        // Populate specific subgroups for backward compatibility if needed, 
+        // but logic is now dynamic.
+      } catch (err) {
+        console.error("Failed to load company config", err);
+        toast.error("Failed to load app configuration");
+      }
+    },
     getCartQty(product) {
        const item = this.cart.find(i => i.product.productName === product.productName);
        return item ? item.quantity : 0;
@@ -1004,8 +857,8 @@ export default {
 
       const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: 'numeric' });
       
-      let message = `Order from ${this.customerName}\n`;
-      message += `Phone: ${this.customerPhone}\n\n`;
+      let message = `Order for ${this.config.companyName || 'SBE'}\n`;
+      message += `From: ${this.customerName} (${this.customerPhone})\n\n`;
       message += `Order Summary\n`;
       message += `------------------\n`;
       
@@ -1285,41 +1138,29 @@ export default {
       const nameA = normalize(a.groupName);
       const nameB = normalize(b.groupName);
       
-      // 0. "Old" Check - Force to bottom
+      const sortList = this.config.sortPriority || [];
+      
+      const indexA = sortList.findIndex((key) => nameA.includes(key));
+      const indexB = sortList.findIndex((key) => nameB.includes(key));
+      
+      // If both match logic, compare their indices in priority list
+      if (indexA !== -1 && indexB !== -1) {
+         // But wait, if they match DIFFERENT keys, we respect the order of keys.
+         // If they match the SAME key (e.g. both 'paragon'), we might want alpha sort?
+         // This simple check assumes strict ordering in config.
+         return indexA - indexB;
+      }
+      
+      if (indexA !== -1) return -1; // A has priority
+      if (indexB !== -1) return 1;  // B has priority
+      
+      // "Old" Check - Force to bottom (should be last rule)
       const isOldA = nameA.includes('old');
       const isOldB = nameB.includes('old');
       if (isOldA && !isOldB) return 1;
       if (!isOldA && isOldB) return -1;
-
-      // 1. Cubix
-      const isCubixA = nameA.includes('cubix');
-      const isCubixB = nameB.includes('cubix');
-      if (isCubixA && !isCubixB) return -1;
-      if (!isCubixA && isCubixB) return 1;
       
-      // 2. Florex
-      const isFlorexA = nameA.includes('florex');
-      const isFlorexB = nameB.includes('florex');
-      if (isFlorexA && !isFlorexB) return -1;
-      if (!isFlorexA && isFlorexB) return 1;
-      
-      // 3. Paragon Subgroups (Explicit Order)
-      const pIndexA = this.paragonSubgroups.findIndex(p => normalize(p) === nameA);
-      const pIndexB = this.paragonSubgroups.findIndex(p => normalize(p) === nameB);
-      
-      if (pIndexA !== -1 && pIndexB !== -1) return pIndexA - pIndexB;
-      if (pIndexA !== -1) return -1; // Paragon first
-      if (pIndexB !== -1) return 1;
-      
-      // 4. General Items Subgroups (Explicit Order)
-      const gIndexA = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameA);
-      const gIndexB = this.generalItemsSubgroups.findIndex(g => normalize(g) === nameB);
-      
-      if (gIndexA !== -1 && gIndexB !== -1) return gIndexA - gIndexB;
-      if (gIndexA !== -1) return -1; // General items before others
-      if (gIndexB !== -1) return 1;
-      
-      // 5. Default: Alphabetical
+      // Default: Alphabetical
       return nameA.localeCompare(nameB);
     },
   },
