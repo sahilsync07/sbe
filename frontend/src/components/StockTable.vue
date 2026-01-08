@@ -79,7 +79,7 @@
         <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
-             <button @click="showSidePanel = false" class="p-1 rounded-full hover:bg-slate-100">
+             <button @click="showSidePanel = false" class="p-1 rounded-full hover:bg-slate-100 shrink-0">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
              </button>
            </div>
@@ -117,7 +117,7 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button @click="showCart = false" class="p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+           <button @click="showCart = false" class="p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
            </button>
         </div>
@@ -144,7 +144,7 @@
                        <span class="text-xs font-bold text-slate-800 min-w-[3rem] text-center">{{ item.quantity }} {{ item.quantity > 1 ? 'Sets' : 'Set' }}</span>
                        <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
                     </div>
-                     <button @click="removeFromCart(index)" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
+                     <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                      </button>
                  </div>
@@ -263,7 +263,7 @@
              </span>
           </div>
 
-          <!-- Toggles & View Options (Wraps independently) -->
+           <!-- Toggles & View Options -->
           <div class="flex flex-wrap items-center gap-2 flex-grow basis-auto justify-between sm:justify-end">
              <!-- Filter Checkboxes -->
              <div class="flex flex-wrap gap-2 flex-grow sm:flex-grow-0 justify-center">
@@ -275,30 +275,6 @@
                  <input type="checkbox" v-model="showNoImagesOnly" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
                  <span class="text-sm font-medium text-slate-700 whitespace-nowrap">No Images</span>
                </label>
-               <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 transition-colors select-none">
-                 <input type="checkbox" v-model="hideOldArticles" class="w-4 h-4 text-slate-600 rounded border-gray-300 focus:ring-slate-500">
-                 <span class="text-sm font-medium text-slate-700 whitespace-nowrap">Hide Old</span>
-               </label>
-             </div>
-
-             <!-- View Mode Switcher -->
-             <div class="flex bg-slate-100 p-1 rounded-xl shrink-0">
-                <button
-                  @click="viewMode = 'list'"
-                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                  :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                  title="List View"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                </button>
-                <button
-                  @click="viewMode = 'image'"
-                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                  :class="viewMode === 'image' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                  title="Grid View"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                </button>
              </div>
           </div>
         </div>
@@ -473,7 +449,6 @@
                       </div>
                     </div>
 
-                  <!-- Card Footer -->
                   <div class="p-2.5 flex flex-col justify-between flex-grow bg-white">
                     <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem]" :title="product.productName">
                       {{ product.productName }}
@@ -484,23 +459,23 @@
                           <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
                        </div>
                        
-                       <!-- Conditional Cart Control -->
-                       <div v-if="getCartQty(product) > 0" class="flex items-center gap-0 bg-blue-600 border border-blue-600 rounded-lg overflow-hidden shadow-md h-8">
-                          <button @click.stop="updateCart(product, -1)" class="w-8 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-lg active:scale-90">-</button>
-                          <span class="min-w-[1.5rem] h-full flex items-center justify-center text-[11px] font-bold text-white bg-blue-600 border-x border-blue-500/30">
-                            {{ getCartQty(product) }}
-                          </span>
-                          <button @click.stop="updateCart(product, 1)" class="w-8 h-full flex items-center justify-center hover:bg-blue-700 text-white font-bold transition-colors text-lg active:scale-90">+</button>
+                       <!-- Conditional Cart Control (Stacked) -->
+                       <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
+                          <span class="text-[10px] font-bold text-blue-600">{{ getCartQty(product) }}</span>
+                          <div class="flex items-center gap-1">
+                             <button @click.stop="updateCart(product, -1)" class="w-6 h-6 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md font-bold text-sm active:scale-90">-</button>
+                             <button @click.stop="updateCart(product, 1)" class="w-6 h-6 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-sm active:scale-90">+</button>
+                          </div>
                        </div>
                        
-                       <!-- Add Button (+) -->
+                       <!-- Initial Add Button (Grey Squircle) -->
                        <button 
                          v-else
                          @click.stop="addToCart(product)"
-                         class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-100 hover:border-blue-600 transition-all shadow-sm active:scale-90 group/btn"
+                         class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200 transition-all shadow-sm active:scale-90"
                          title="Add to Cart"
                        >
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                        </button>
                     </div>
                   </div>
@@ -1015,7 +990,8 @@ export default {
         this.cart.push({ product, quantity: 1 });
         toast.success("Added to cart", { autoClose: 1500 });
       }
-      this.showCart = true; // Auto open cart on add? Maybe better user feedback than just toast
+      // Note: Auto-open disabled per request
+      // this.showCart = true; 
     },
     removeFromCart(index) {
       this.cart.splice(index, 1);
