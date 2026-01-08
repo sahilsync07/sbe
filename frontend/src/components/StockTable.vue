@@ -102,7 +102,7 @@
         <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
-             <button @click="showSidePanel = false" class="w-auto p-2 shrink-0 transition-transform active:scale-90 bg-transparent hover:bg-transparent shadow-none border-none inline-flex items-center justify-center">
+             <button @click="closePane" class="w-auto p-2 shrink-0 transition-transform active:scale-90 bg-transparent hover:bg-transparent shadow-none border-none inline-flex items-center justify-center">
                <i class="fa-solid fa-xmark text-2xl text-blue-600"></i>
              </button>
            </div>
@@ -1226,6 +1226,23 @@ export default {
       const url = new URL(window.location);
       url.searchParams.set('product', product.productName);
       window.history.pushState({}, '', url);
+    },
+
+    shareBrand(brandName) {
+       const url = `${window.location.origin}${window.location.pathname}?brand=${encodeURIComponent(brandName)}`;
+       if (navigator.share) {
+           navigator.share({
+               title: `Check out ${brandName} on ${this.companyName}`,
+               url: url
+           }).catch((e) => console.log('Share canceled', e));
+       } else {
+           navigator.clipboard.writeText(url).then(() => {
+               toast.info("Link copied to clipboard!");
+           }).catch((err) => {
+               console.warn("Clipboard failed", err);
+               prompt("Copy this link:", url);
+           });
+       }
     },
     closeImagePopup(isPop = false) {
       this.showImagePopup = false;
