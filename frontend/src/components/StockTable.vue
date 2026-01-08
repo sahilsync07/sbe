@@ -766,11 +766,26 @@ export default {
       if (this.selectedGroup !== "All") {
         const groupKey = this.selectedGroup;
 
+        // New Arrivals Logic
+        if (groupKey === "NewArrivals") {
+           const cutoff = new Date();
+           cutoff.setMonth(cutoff.getMonth() - 1);
+           
+           filtered = filtered.map(group => ({
+             ...group,
+             products: group.products.filter(p => {
+               if (!p.imageUrl) return false;
+               // If timestamp exists, check if recent. If missing, assume old (Nov 2025).
+               const uploadDate = p.imageUploadedAt ? new Date(p.imageUploadedAt) : new Date('2025-11-01');
+               return uploadDate > cutoff;
+             })
+           })).filter(g => g.products.length > 0);
+        }
         // Check if it's a Brand Group (e.g. Paragon, Florex)
-        if (this.config.brandGroups && this.config.brandGroups[groupKey]) {
+        else if (this.config.brandGroups && this.config.brandGroups[groupKey]) {
            const allowedSubgroups = this.config.brandGroups[groupKey].map(g => normalize(g));
            filtered = filtered.filter(g => allowedSubgroups.includes(normalize(g.groupName)));
-        } 
+        }  
         // Check if it's a Custom Filter (Regex based like Kids, Hawai)
         else if (this.config.customFilters && this.config.customFilters[groupKey]) {
            const keywords = this.config.customFilters[groupKey];
@@ -1063,7 +1078,7 @@ export default {
           ...group,
           products: group.products.map((product) =>
             product.productName === productName
-              ? { ...product, imageUrl: data.secure_url }
+              ? { ...product, imageUrl: data.secure_url, imageUploadedAt: new Date().toISOString() }
               : product
           ),
         }));

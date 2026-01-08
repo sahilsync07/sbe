@@ -299,6 +299,7 @@ app.post("/api/updateImage", async (req, res) => {
 
         if (product.productName === productName) {
           product.imageUrl = imageUrl;
+          product.imageUploadedAt = new Date().toISOString();
           updated = true;
         }
       });
