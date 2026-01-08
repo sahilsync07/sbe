@@ -79,8 +79,8 @@
         <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
-             <button @click="showSidePanel = false" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors shrink-0">
-               <img src="https://img.icons8.com/ios-filled/50/64748b/delete-sign.png" class="w-5 h-5 opacity-70" alt="Close" />
+             <button @click="showSidePanel = false" class="p-1 rounded-full hover:bg-slate-100 shrink-0">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
              </button>
            </div>
            <nav class="space-y-1">
@@ -117,8 +117,8 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button @click="showCart = false" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors shrink-0">
-             <img src="https://img.icons8.com/ios-filled/50/64748b/delete-sign.png" class="w-5 h-5 opacity-70" alt="Close" />
+           <button @click="showCart = false" class="p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
            </button>
         </div>
         
@@ -144,8 +144,8 @@
                        <span class="text-xs font-bold text-slate-800 min-w-[3rem] text-center">{{ item.quantity }} {{ item.quantity > 1 ? 'Sets' : 'Set' }}</span>
                        <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
                     </div>
-                     <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-all shadow-sm">
-                        <img src="https://img.icons8.com/fluency-systems-filled/96/ef4444/filled-trash.png" class="w-4 h-4" />
+                     <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                      </button>
                  </div>
               </div>
@@ -449,45 +449,33 @@
                       </div>
                     </div>
 
-                  <!-- Card Footer -->
-                  <div class="p-3 flex items-start justify-between bg-white h-auto min-h-[4.5rem]">
-                    <!-- Left: Title -->
-                    <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 pr-2" :title="product.productName">
+                  <div class="p-2.5 flex flex-col justify-between flex-grow bg-white">
+                    <h3 class="text-[11px] font-semibold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem]" :title="product.productName">
                       {{ product.productName }}
                     </h3>
-
-                    <!-- Right: Stock & Controls -->
-                    <div class="flex flex-col items-end gap-1.5 shrink-0">
-                       <!-- Stock Count (Top) -->
-                       <div class="flex flex-col items-end leading-none">
-                          <span class="text-[8px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Stock</span>
-                          <span class="text-xs font-bold text-slate-700">{{ product.quantity }}</span>
+                    <div class="flex items-end justify-between border-t border-slate-50 pt-2 mt-auto">
+                       <div class="flex flex-col justify-end">
+                          <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-0.5">Stock</span>
+                          <span class="text-sm font-bold text-slate-700 leading-none">{{ product.quantity }}</span>
                        </div>
                        
-                       <!-- Controls (Bottom) -->
-                       <div v-if="getCartQty(product) > 0" class="flex items-center bg-white border border-blue-200 rounded-lg shadow-sm h-7 overflow-hidden">
-                          <button @click.stop="updateCart(product, -1)" class="w-7 h-full flex items-center justify-center hover:bg-blue-50 transition-colors active:scale-90">
-                             <img src="https://img.icons8.com/fluency-systems-filled/96/2563eb/minus-math.png" class="w-2.5 h-2.5" />
-                          </button>
-                          <span class="min-w-[1.25rem] h-full flex items-center justify-center text-[11px] font-bold text-blue-600 bg-blue-50 border-x border-blue-100">
-                            {{ getCartQty(product) }}
-                          </span>
-                          <button @click.stop="updateCart(product, 1)" class="w-7 h-full flex items-center justify-center hover:bg-blue-50 transition-colors active:scale-90">
-                             <img src="https://img.icons8.com/fluency-systems-filled/96/2563eb/plus-math.png" class="w-2.5 h-2.5" />
-                          </button>
+                       <!-- Conditional Cart Control (Stacked) -->
+                       <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
+                          <span class="text-[10px] font-bold text-blue-600">{{ getCartQty(product) }}</span>
+                          <div class="flex items-center gap-1">
+                             <button @click.stop="updateCart(product, -1)" class="w-6 h-6 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md font-bold text-sm active:scale-90">-</button>
+                             <button @click.stop="updateCart(product, 1)" class="w-6 h-6 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-sm active:scale-90">+</button>
+                          </div>
                        </div>
                        
                        <!-- Initial Add Button (Grey Squircle) -->
                        <button 
                          v-else
                          @click.stop="addToCart(product)"
-                         class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-blue-600 hover:shadow-md transition-all active:scale-90 group/btn"
+                         class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200 transition-all shadow-sm active:scale-90"
                          title="Add to Cart"
                        >
-                         <!-- Normal State (Grey Plus) -->
-                         <img src="https://img.icons8.com/fluency-systems-filled/96/94a3b8/plus-math.png" class="w-3.5 h-3.5 group-hover/btn:hidden" />
-                         <!-- Hover State (White Plus) -->
-                         <img src="https://img.icons8.com/fluency-systems-filled/96/ffffff/plus-math.png" class="w-3.5 h-3.5 hidden group-hover/btn:block" />
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                        </button>
                     </div>
                   </div>
