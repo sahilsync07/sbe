@@ -685,6 +685,7 @@ export default {
       showOrderDetailsModal: false,
       customerName: '',
       customerPhone: '',
+      userHasScrolled: false,
     };
   },
   watch: {
@@ -893,9 +894,8 @@ export default {
       // Search actual groups
       const groupMatch = this.stockData.find(g => g.groupName.toLowerCase() === paramLower);
       if (groupMatch) {
-         this.$nextTick(() => {
-            this.scrollToGroup(groupMatch.groupName);
-         });
+         // Use retry mechanism to ensure DOM is ready
+         this.retryScroll(groupMatch.groupName);
       }
     }
 
@@ -961,10 +961,19 @@ export default {
        prodUrl.searchParams.set('product', pParam);
        window.history.pushState(null, '', prodUrl);
     }
+    
+    // User Interaction Listeners
+    window.addEventListener('wheel', this.handleUserScroll, { passive: true });
+    window.addEventListener('touchmove', this.handleUserScroll, { passive: true });
+    window.addEventListener('keydown', this.handleUserScroll, { passive: true });
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
     window.removeEventListener("popstate", this.handlePopState);
+    
+    window.removeEventListener('wheel', this.handleUserScroll);
+    window.removeEventListener('touchmove', this.handleUserScroll);
+    window.removeEventListener('keydown', this.handleUserScroll);
   },
   methods: {
     async loadConfig() {
@@ -1356,20 +1365,74 @@ export default {
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    scrollToGroup(groupName) {
+    handleUserScroll() {
+       this.userHasScrolled = true;
+    },
+    async retryScroll(groupName, attempt = 1, isLocking = false) {
+       // Stop if user took control (manual interaction)
+       if (this.userHasScrolled && !isLocking) return;
+
+       const id = 'group-grid-' + this.normalizeId(groupName);
+       const element = document.getElementById(id);
+       
+       if (element) {
+           // Found it! Scroll to it.
+           // Use 'auto' (instant) for the first success to jump immediately
+           this.scrollToGroup(groupName, 'auto');
+           
+           // Start locking phase: Keep correcting scroll position for 3s to handle layout shifts (image loads)
+           if (!isLocking) {
+               const lockDuration = 4000; // 4 seconds
+               const startTime = Date.now();
+               
+               const maintainPosition = () => {
+                   // If user intentionally scrolls away, stop fighting them
+                   if (this.userHasScrolled) return;
+                   
+                   if (Date.now() - startTime > lockDuration) return;
+                   
+                   const el = document.getElementById(id);
+                   if (el) {
+                       const rect = el.getBoundingClientRect();
+                       // Sticky header is approx 80px-100px. Target slightly below it.
+                       const targetVisibleTop = 90; 
+                       
+                       // If element has drifted significantly (e.g. > 20px) due to layout shift, correct it
+                       if (Math.abs(rect.top - targetVisibleTop) > 20) {
+                           console.log('Correcting scroll drift for', groupName);
+                           this.scrollToGroup(groupName, 'auto');
+                       }
+                   }
+                   requestAnimationFrame(maintainPosition);
+               };
+               requestAnimationFrame(maintainPosition);
+           }
+       } else {
+           // Not found yet, keep retrying to find the DOM element
+           if (attempt > 30) { // 30 * 100ms = 3s wait for DOM
+              console.warn(`Failed to scroll to ${groupName} after 30 attempts`);
+              return;
+           }
+           
+           await new Promise(r => setTimeout(r, 100)); // Faster polling (100ms)
+           this.retryScroll(groupName, attempt + 1, false);
+       }
+    },
+    scrollToGroup(groupName, behavior = 'smooth') {
       const id = 'group-grid-' + this.normalizeId(groupName);
       const element = document.getElementById(id);
       if (element) {
         // Adjust for sticky header
-    const y = element.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top: y, behavior: 'smooth' });
+        const y = element.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: behavior });
     
-    this.activeScrollGroup = groupName;
+        this.activeScrollGroup = groupName;
     
-    // Update URL
-    const url = new URL(window.location);
-    url.searchParams.set('brand', groupName);
-    window.history.replaceState(null, '', url);
+        // Update URL
+        const url = new URL(window.location);
+        url.searchParams.set('brand', groupName);
+        window.history.replaceState(null, '', url);
+
 
     // Close sidebar on mobile after selection
         if (window.innerWidth < 1024) {
