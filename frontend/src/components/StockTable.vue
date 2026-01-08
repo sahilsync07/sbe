@@ -4,12 +4,12 @@
     <header
       class="sticky top-0 z-[50] w-full bg-white border-b border-slate-200 transition-all duration-300 py-2"
     >
-      <div class="w-full px-4 sm:px-6 lg:px-8">
+      <div class="w-full px-2 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between gap-4">
           <!-- Left: Sidebar Toggle & Sync -->
           <div class="flex items-center gap-3">
              <button
-              @click="showSidePanel = !showSidePanel"
+              @click="toggleSidebar"
               class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -81,7 +81,7 @@
              </label>
 
              <button
-               @click="showCart = !showCart"
+               @click="toggleCart"
                class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0"
                title="Toggle Cart"
              >
@@ -96,14 +96,14 @@
     <div class="flex w-full">
       <!-- Side Panel (Bird Eye View) -->
       <aside
-        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-full sm:w-80 lg:w-80 z-40 transform transition-transform duration-300 ease-in-out pt-16"
+        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-full sm:w-80 lg:w-80 z-[60] lg:z-40 transform transition-transform duration-300 ease-in-out pt-0 lg:pt-40"
         :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
       >
         <div class="p-4 h-full overflow-y-auto">
            <div class="flex items-center justify-between mb-4 lg:hidden">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
-             <button @click="showSidePanel = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 shrink-0">
-               <i class="fa-solid fa-xmark text-xl text-slate-500"></i>
+             <button @click="showSidePanel = false" class="w-auto p-2 shrink-0 transition-transform active:scale-90 bg-transparent hover:bg-transparent shadow-none border-none inline-flex items-center justify-center">
+               <i class="fa-solid fa-xmark text-2xl text-blue-600"></i>
              </button>
            </div>
            <nav class="space-y-1">
@@ -122,10 +122,10 @@
                    </a>
                    <button 
                      @click.stop="shareBrand(group.groupName)"
-                     class="w-8 h-8 flex items-center justify-center shrink-0 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-100 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95"
+                     class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent shadow-none border-none"
                      title="Share Link"
                    >
-                     <i class="fa-solid fa-share-nodes text-xs"></i>
+                     <i class="fa-solid fa-share-nodes text-sm"></i>
                    </button>
                  </div>
               </template>
@@ -151,7 +151,7 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button @click="showCart = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+           <button @click="closePane" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
              <i class="fa-solid fa-xmark text-xl"></i>
            </button>
         </div>
@@ -202,7 +202,7 @@
       </aside>
 
       <main 
-         class="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6 min-w-0 transition-all duration-300"
+         class="flex-1 w-full px-2 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6 min-w-0 transition-all duration-300"
          :class="{'mr-0 lg:mr-80': showCart, 'ml-0 lg:ml-80': showSidePanel}"
       >
       
@@ -332,7 +332,7 @@
               leave-to-class="opacity-0 max-h-0"
             >
               <div v-show="expandedGroups[index]">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 pb-4 px-0.5">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4 pb-4 px-0.5">
                   <div
                     v-for="(product, pIndex) in group.products"
                     :key="product.productName"
@@ -926,11 +926,25 @@ export default {
     });
     
     window.addEventListener("scroll", this.handleScroll);
-    
+    window.addEventListener("popstate", this.handlePopState);
 
+    // Deep Linking Fix: If product is present, replace root then push product
+    const initialParams = new URLSearchParams(window.location.search);
+    if (initialParams.get('product')) {
+       const pParam = initialParams.get('product');
+       // Replace current (product) with Root
+       const rootUrl = new URL(window.location);
+       rootUrl.searchParams.delete('product');
+       window.history.replaceState(null, '', rootUrl);
+       // Push Product
+       const prodUrl = new URL(window.location);
+       prodUrl.searchParams.set('product', pParam);
+       window.history.pushState(null, '', prodUrl);
+    }
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
+    window.removeEventListener("popstate", this.handlePopState);
   },
   methods: {
     async loadConfig() {
@@ -1213,7 +1227,7 @@ export default {
       url.searchParams.set('product', product.productName);
       window.history.pushState({}, '', url);
     },
-    closeImagePopup() {
+    closeImagePopup(isPop = false) {
       this.showImagePopup = false;
       this.currentProduct = {};
       this.currentGroupIndex = null;
@@ -1221,10 +1235,10 @@ export default {
       this.currentGroupName = "";
       this.currentProductIndex = 0;
       
-      // Remove URL Param
-      const url = new URL(window.location);
-      url.searchParams.delete('product');
-      window.history.pushState({}, '', url);
+      // Navigate Back (undo pushState)
+      if (!isPop) {
+         window.history.back();
+      }
     },
     navigateImage(direction) {
       const newIndex = this.currentProductIndex + direction;
@@ -1256,6 +1270,42 @@ export default {
     selectGroup(groupName) {
       this.selectedGroup = groupName;
     },
+    // Pane Management
+    toggleSidebar() {
+      if (this.showSidePanel) this.closePane();
+      else this.openSidebar();
+    },
+    toggleCart() {
+      if (this.showCart) this.closePane();
+      else this.openCart();
+    },
+    openSidebar() {
+       this.showSidePanel = true;
+       window.history.pushState({ pane: 'side' }, '');
+    },
+    openCart() {
+       this.showCart = true;
+       window.history.pushState({ pane: 'cart' }, '');
+    },
+    closePane() {
+       window.history.back();
+    },
+    handlePopState(event) {
+       // Close modal if open
+       if (this.showImagePopup) {
+           this.closeImagePopup(true); // true = don't call back()
+           return;
+       }
+       // Close sidebars
+       if (this.showSidePanel) {
+           this.showSidePanel = false;
+           return;
+       }
+       if (this.showCart) {
+           this.showCart = false;
+           return;
+       }
+    },
     handleScroll() {
       this.showGoToTop = window.scrollY > 300;
       this.isScrolled = window.scrollY > 20;
@@ -1280,7 +1330,9 @@ export default {
 
     // Close sidebar on mobile after selection
         if (window.innerWidth < 1024) {
-            this.showSidePanel = false;
+             // We pushed state when opening. Now we selected.
+             // We should Back to close.
+            this.closePane();
         }
       }
     },
