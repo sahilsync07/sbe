@@ -130,7 +130,7 @@
                    </a>
                    <button 
                      @click.stop="shareBrand(group.groupName)"
-                     class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent shadow-none border-none"
+                     class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-blue-50 rounded-full shadow-none border-none"
                      title="Share Link"
                    >
                      <i class="fa-solid fa-share-nodes text-sm"></i>
@@ -158,7 +158,14 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              Your Cart <span v-if="cart.length" class="text-sm font-normal text-slate-500">({{ cartTotalItems }})</span>
            </h2>
-           <button class="hidden"></button>
+           <button 
+             v-if="cart.length > 0"
+             @click="clearCart"
+             class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+             title="Clear Cart"
+           >
+             <i class="fa-solid fa-trash-can text-sm"></i>
+           </button>
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
@@ -180,11 +187,11 @@
                     <h4 class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ item.product.productName }}</h4>
                     <div class="flex items-center justify-between mt-2">
                        <div class="flex items-center gap-2">
-                          <button @click="updateCartQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">-</button>
+                          <button @click="updateCartQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-sm transition-all">-</button>
                           <span class="text-xs font-bold text-slate-800 min-w-[3rem] text-center">{{ item.quantity }} {{ item.quantity > 1 ? 'Sets' : 'Set' }}</span>
-                          <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-all">+</button>
+                          <button @click="updateCartQuantity(index, 1)" class="w-6 h-6 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-sm transition-all">+</button>
                        </div>
-                        <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-lg transition-all shadow-sm">
+                        <button @click="removeFromCart(index)" class="shrink-0 w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white rounded-full transition-all shadow-sm">
                            <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -267,7 +274,7 @@
                      </span>
                      <button 
                        @click.stop="addToCart(product)"
-                       class="ml-2 w-7 h-7 inline-flex items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all shadow-md"
+                       class="ml-2 w-7 h-7 inline-flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all shadow-md"
                        title="Add to Cart"
                      >
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
@@ -404,11 +411,11 @@
                        <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
                           <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Stock: {{ product.quantity }}</span>
                           <div class="flex items-center gap-2">
-                             <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-bold active:scale-90 transition-all">
+                             <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full font-bold active:scale-90 transition-all">
                                 <i class="fa-solid fa-minus text-xs"></i>
                              </button>
                              <span class="text-sm font-extrabold text-blue-700 min-w-[1.2rem] text-center">{{ getCartQty(product) }}</span>
-                             <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold active:scale-90 transition-all shadow-md shadow-blue-200">
+                             <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold active:scale-90 transition-all shadow-md shadow-blue-200">
                                 <i class="fa-solid fa-plus text-xs"></i>
                              </button>
                           </div>
@@ -534,15 +541,15 @@
                <div class="space-y-4">
                   <div v-if="getCartQty(currentProduct) > 0" class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center justify-between">
                       <span class="font-bold text-slate-700">In your cart</span>
-                      <div class="flex items-center gap-3">
-                         <button @click="updateCart(currentProduct, -1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
-                           <i class="fa-solid fa-minus"></i>
-                         </button>
-                         <span class="text-xl font-black text-blue-700 min-w-[2rem] text-center">{{ getCartQty(currentProduct) }}</span>
-                         <button @click="updateCart(currentProduct, 1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
-                           <i class="fa-solid fa-plus"></i>
-                         </button>
-                      </div>
+                       <div class="flex items-center gap-3">
+                          <button @click="updateCart(currentProduct, -1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
+                            <i class="fa-solid fa-minus"></i>
+                          </button>
+                          <span class="text-xl font-black text-blue-700 min-w-[2rem] text-center">{{ getCartQty(currentProduct) }}</span>
+                          <button @click="updateCart(currentProduct, 1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
+                            <i class="fa-solid fa-plus"></i>
+                          </button>
+                       </div>
                   </div>
 
                   <button 
@@ -1010,6 +1017,12 @@ export default {
        } else if (change > 0) {
           this.addToCart(product);
        }
+    },
+    clearCart() {
+      if (confirm("Are you sure you want to clear the entire cart?")) {
+        this.cart = [];
+        toast.info("Cart cleared");
+      }
     },
     sendOrderToWhatsapp() {
       if (this.cart.length === 0) return;
@@ -1529,6 +1542,27 @@ export default {
         @keyframes holographic-shimmer {
             0% { background-position: 0% 50%; }
             100% { background-position: 200% 50%; }
+        }
+        /* Toastify Customization */
+        .Toastify__toast {
+           border-radius: 16px !important;
+           font-family: inherit !important;
+           box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1) !important;
+        }
+        .Toastify__close-button {
+           width: 24px !important;
+           height: 24px !important;
+           border-radius: 50% !important;
+           display: flex !important;
+           align-items: center !important;
+           justify-content: center !important;
+           opacity: 0.5 !important;
+           align-self: center !important;
+           transition: all 0.2s !important;
+        }
+        .Toastify__close-button:hover {
+           background-color: rgba(0,0,0,0.05) !important;
+           opacity: 1 !important;
         }
        `;
     }
