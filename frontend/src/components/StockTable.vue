@@ -290,7 +290,7 @@
             <!-- Group Header -->
             <div
               @click="toggleGroup(index)"
-              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[88px] bg-white z-30 rounded-t-2xl"
+              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[96px] bg-white z-30 rounded-t-2xl"
               :class="expandedGroups[index] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
             >
               <div class="flex items-center gap-3 overflow-hidden">
