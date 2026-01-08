@@ -285,13 +285,13 @@
             v-for="(group, index) in filteredStockData"
             :key="group.groupName"
             :id="'group-grid-' + normalizeId(group.groupName)"
-            class="bg-transparent overflow-hidden"
+            class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-6"
           >
             <!-- Group Header -->
             <div
               @click="toggleGroup(index)"
-              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-10 rounded-2xl shadow-sm border border-slate-100 mb-4"
-              :class="expandedGroups[index] ? 'rounded-b-none border-b-0' : 'hover:bg-slate-50'"
+              class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl"
+              :class="expandedGroups[index] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
             >
               <div class="flex items-center gap-3 overflow-hidden">
                 <!-- Special Rainbow Header for New Arrivals -->
@@ -332,8 +332,8 @@
               leave-from-class="opacity-100 max-h-[5000px]"
               leave-to-class="opacity-0 max-h-0"
             >
-              <div v-show="expandedGroups[index]">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4 pb-4 px-0.5">
+              <div v-show="expandedGroups[index]" class="bg-slate-50/30 p-2 sm:p-4">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4">
                   <div
                     v-for="(product, pIndex) in group.products"
                     :key="product.productName"
