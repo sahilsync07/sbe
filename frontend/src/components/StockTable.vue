@@ -96,7 +96,7 @@
     <div class="flex w-full">
       <!-- Side Panel (Bird Eye View) -->
       <aside
-        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-40 transform transition-transform duration-300 ease-in-out pt-16"
+        class="fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-full sm:w-80 lg:w-80 z-40 transform transition-transform duration-300 ease-in-out pt-16"
         :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
       >
         <div class="p-4 h-full overflow-y-auto">
@@ -107,17 +107,28 @@
              </button>
            </div>
            <nav class="space-y-1">
-             <template v-for="(group, index) in filteredStockData" :key="group.groupName">
-                <a
-                  href="#"
-                  @click.prevent="scrollToGroup(group.groupName)"
-                  class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50 hover:text-blue-600 group"
-                  :class="activeScrollGroup === group.groupName ? 'bg-blue-50 text-blue-600' : 'text-slate-600'"
-                >
-                   <span class="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-blue-400" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
-                   <span class="truncate">{{ group.groupName }}</span>
-                </a>
-             </template>
+              <template v-for="(group, index) in filteredStockData" :key="group.groupName">
+                 <div 
+                   class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand mb-0.5"
+                   :class="activeScrollGroup === group.groupName ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'"
+                 >
+                   <a
+                     href="#"
+                     @click.prevent="scrollToGroup(group.groupName)"
+                     class="flex items-center gap-2 flex-1 min-w-0 outline-none"
+                   >
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-slate-300 group-hover/brand:bg-blue-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
+                      <span class="truncate font-medium text-sm leading-none">{{ group.groupName }}</span>
+                   </a>
+                   <button 
+                     @click.stop="shareBrand(group.groupName)"
+                     class="w-8 h-8 flex items-center justify-center shrink-0 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-100 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95"
+                     title="Share Link"
+                   >
+                     <i class="fa-solid fa-share-nodes text-xs"></i>
+                   </button>
+                 </div>
+              </template>
            </nav>
         </div>
       </aside>
@@ -192,7 +203,7 @@
 
       <main 
          class="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6 min-w-0 transition-all duration-300"
-         :class="{'mr-0 lg:mr-80': showCart, 'ml-0 lg:ml-64': showSidePanel}"
+         :class="{'mr-0 lg:mr-80': showCart, 'ml-0 lg:ml-80': showSidePanel}"
       >
       
       <!-- Ledger View Placeholder -->
@@ -272,7 +283,7 @@
           <div
             v-for="(group, index) in filteredStockData"
             :key="group.groupName"
-            :id="normalizeId(group.groupName)"
+            :id="'group-grid-' + normalizeId(group.groupName)"
             class="bg-transparent overflow-hidden"
           >
             <!-- Group Header -->
@@ -859,17 +870,12 @@ export default {
     
     if (brandParam) {
       const paramLower = brandParam.toLowerCase();
-      
-      // 1. Check Toolbar Filters
-      const filterMatch = this.toolbarFilters.find(f => f.id.toLowerCase() === paramLower);
-      if (filterMatch) {
-         this.selectedGroup = filterMatch.id;
-      } else {
-         // 2. Check Actual Groups (Stock Data)
-         const groupMatch = this.stockData.find(g => g.groupName.toLowerCase() === paramLower);
-         if (groupMatch) {
-            this.selectedGroup = groupMatch.groupName;
-         }
+      // Search actual groups
+      const groupMatch = this.stockData.find(g => g.groupName.toLowerCase() === paramLower);
+      if (groupMatch) {
+         this.$nextTick(() => {
+            this.scrollToGroup(groupMatch.groupName);
+         });
       }
     }
 
@@ -920,6 +926,8 @@ export default {
     });
     
     window.addEventListener("scroll", this.handleScroll);
+    
+
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
@@ -1260,11 +1268,17 @@ export default {
       const element = document.getElementById(id);
       if (element) {
         // Adjust for sticky header
-        const y = element.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-        
-        this.activeScrollGroup = groupName;
-        // Close sidebar on mobile after selection
+    const y = element.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+    
+    this.activeScrollGroup = groupName;
+    
+    // Update URL
+    const url = new URL(window.location);
+    url.searchParams.set('brand', groupName);
+    window.history.replaceState(null, '', url);
+
+    // Close sidebar on mobile after selection
         if (window.innerWidth < 1024) {
             this.showSidePanel = false;
         }
