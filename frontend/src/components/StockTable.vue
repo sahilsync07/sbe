@@ -1493,9 +1493,10 @@ export default {
     applyTheme() {
        const theme = this.config.theme || 'blue';
        const colors = {
-          blue: { 600: '#2563eb', 500: '#3b82f6', 50: '#eff6ff', 100: '#dbeafe' },
-          green: { 600: '#16a34a', 500: '#22c55e', 50: '#f0fdf4', 100: '#dcfce7' },
-          orange: { 600: '#ea580c', 500: '#f97316', 50: '#fff7ed', 100: '#ffedd5' },
+         blue: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+          green: { 50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' },
+          orange: { 50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 400: '#fb923c', 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
+          red: { 50: '#fef2f2', 100: '#fee2e2', 200: '#fecaca', 400: '#f87171', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
        };
        
        const c = colors[theme] || colors.blue;
@@ -1510,16 +1511,51 @@ export default {
        
        styleEl.innerHTML = `
          /* Override Blue Utils with Request Theme */
-         .text-blue-600 { color: ${c[600]} !important; }
-         .bg-blue-600 { background-color: ${c[600]} !important; }
-         .border-blue-600 { border-color: ${c[600]} !important; }
-         
-         .bg-blue-50 { background-color: ${c[50]} !important; }
-         .hover\\:bg-blue-50:hover { background-color: ${c[50]} !important; }
-         
+         /* Text Colors */
          .text-blue-500 { color: ${c[500]} !important; }
-         .border-blue-500 { border-color: ${c[500]} !important; }
+         .text-blue-600 { color: ${c[600]} !important; }
+         .text-blue-700 { color: ${c[700]} !important; }
+         .group:hover .group-hover\\:text-blue-600 { color: ${c[600]} !important; }
+         .hover\\:text-blue-600:hover { color: ${c[600]} !important; }
+
+         /* Backgrounds */
+         .bg-blue-50 { background-color: ${c[50]} !important; }
+         .bg-blue-100 { background-color: ${c[100]} !important; }
+         .bg-blue-600 { background-color: ${c[600]} !important; }
+         .bg-blue-700 { background-color: ${c[700]} !important; }
          
+         /* Hovers & States */
+         .hover\\:bg-blue-50:hover { background-color: ${c[50]} !important; }
+         .hover\\:bg-blue-100:hover { background-color: ${c[100]} !important; }
+         .hover\\:bg-blue-200:hover { background-color: ${c[200]} !important; }
+         .hover\\:bg-blue-500:hover { background-color: ${c[500]} !important; }
+         .hover\\:bg-blue-600:hover { background-color: ${c[600]} !important; }
+         .hover\\:bg-blue-700:hover { background-color: ${c[700]} !important; }
+         
+         /* Borders */
+         .border-blue-100 { border-color: ${c[100]} !important; }
+         .border-blue-200 { border-color: ${c[200]} !important; }
+         .border-blue-500 { border-color: ${c[500]} !important; }
+         .border-blue-600 { border-color: ${c[600]} !important; }
+         .focus\\:border-blue-500:focus { border-color: ${c[500]} !important; }
+
+         /* Shadows/Rings */
+         .shadow-blue-200 { --tw-shadow-color: ${c[200]} !important; }
+         .focus\\:ring-blue-500:focus { --tw-ring-color: ${c[500]} !important; }
+         .focus\\:ring-blue-500\\/20:focus { --tw-ring-color: ${c[500]}33 !important; }
+         .hover\\:shadow-blue-600\\/20:hover { --tw-shadow-color: ${c[600]}33 !important; } 
+         
+         /* Background Opacity Variants */
+         .bg-blue-50\\/50 { background-color: ${c[50]}80 !important; }
+         .hover\\:bg-blue-50\\/30:hover { background-color: ${c[50]}4d !important; }
+         
+         /* Specialized */
+         .group\\/brand:hover .group-hover\\/brand\\:bg-blue-400 { background-color: ${c[400]} !important; }
+         
+         /* Peer Checked (Toggles) */
+         .peer:checked ~ .peer-checked\\:text-blue-600 { color: ${c[600]} !important; }
+         .peer:checked ~ .peer-checked\\:bg-blue-600 { background-color: ${c[600]} !important; }
+
         /* Holographic Text Effect */
         .holographic-text {
             background-image: linear-gradient(
