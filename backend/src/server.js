@@ -192,15 +192,18 @@ app.post("/api/updateStockData", async (req, res) => {
     }
 
     // ---- 3. Preserve images + zero-stock products that have images ----------
-    const imageUrls = {};               // productName → imageUrl
-    const zeroStockProducts = {};       // groupName → [product,…]
+    const productImages = {};               // productName → { imageUrl, imageUploadedAt }
+    const zeroStockProducts = {};           // groupName → [product,…]
 
     existingData.forEach((group) => {
       if (!group.products) return;
 
       group.products.forEach((product) => {
         if (product.imageUrl) {
-          imageUrls[product.productName] = product.imageUrl;
+          productImages[product.productName] = {
+            imageUrl: product.imageUrl,
+            imageUploadedAt: product.imageUploadedAt
+          };
         }
         if (product.quantity === 0 && product.imageUrl) {
           const { rate, amount, ...cleanProduct } = product; // Remove sensitive data
@@ -208,7 +211,7 @@ app.post("/api/updateStockData", async (req, res) => {
         }
       });
     });
-    console.log("Preserved image URLs:", Object.keys(imageUrls).length);
+    console.log("Preserved image URLs:", Object.keys(productImages).length);
     console.log("Preserved zero-stock products with images:", Object.keys(zeroStockProducts).length);
 
     // ---- 4. Fetch fresh data from Tally --------------------------------------
@@ -219,7 +222,13 @@ app.post("/api/updateStockData", async (req, res) => {
     stockData.forEach((group) => {
       // attach saved images to live products
       group.products.forEach((p) => {
-        p.imageUrl = imageUrls[p.productName] ?? null;
+        const saved = productImages[p.productName];
+        if (saved) {
+          p.imageUrl = saved.imageUrl;
+          p.imageUploadedAt = saved.imageUploadedAt;
+        } else {
+          p.imageUrl = null;
+        }
       });
 
       // bring back zero-stock items that had an image
