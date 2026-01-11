@@ -117,17 +117,14 @@
            <nav class="space-y-1">
               <template v-for="(group, index) in sidebarGroups" :key="group.groupName">
                  <div 
-                   class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand mb-0.5"
+                   class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand mb-0.5 cursor-pointer"
                    :class="activeScrollGroup === group.groupName ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'"
+                   @click="scrollToGroup(group.groupName)"
                  >
-                   <a
-                     href="#"
-                     @click.prevent="scrollToGroup(group.groupName)"
-                     class="flex items-center gap-2 flex-1 min-w-0 outline-none"
-                   >
+                   <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                       <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-slate-300 group-hover/brand:bg-blue-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
                       <span class="truncate font-medium text-sm leading-none">{{ group.groupName }}</span>
-                   </a>
+                   </div>
                    <button 
                      @click.stop="shareBrand(group.groupName)"
                      class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-blue-50 rounded-full shadow-none border-none"
@@ -638,7 +635,16 @@
       </div>
     </transition>
   </div>
-</template>
+    <!-- Loading Screen -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="loading" class="fixed inset-0 z-[200] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+         <div class="flex flex-col items-center gap-4">
+             <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+             <p class="text-blue-600 font-bold animate-pulse text-lg">Processing...</p>
+         </div>
+      </div>
+    </transition>
+  </template>
 
 <script>
 import axios from "axios";
@@ -1431,7 +1437,7 @@ export default {
            this.retryScroll(groupName, attempt + 1, false);
        }
     },
-    scrollToGroup(groupName, behavior = 'smooth') {
+    scrollToGroup(groupName, behavior = 'instant') {
       const id = 'group-grid-' + this.normalizeId(groupName);
       const element = document.getElementById(id);
       if (element) {
