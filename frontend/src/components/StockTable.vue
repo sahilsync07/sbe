@@ -105,8 +105,8 @@
 
     <div class="flex w-full">
       <!-- Side Panel (Bird Eye View) -->
-      <aside
-        class="fixed inset-y-0 left-0 w-full sm:w-80 lg:w-80 border-r border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
+       <aside
+        class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
         :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
       >
         <div class="p-4 h-full overflow-y-auto overscroll-contain">
@@ -121,25 +121,18 @@
                  <div class="mb-3 px-1">
                     <img src="https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp" alt="Paragon" class="h-8 object-contain" />
                  </div>
-                 <div class="space-y-0.5">
+                 <div class="grid grid-cols-2 gap-1">
                    <div 
                      v-for="group in groupedSidebar.paragon" 
                      :key="group.groupName"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="activeScrollGroup === group.groupName ? 'bg-red-100 text-red-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleSidebarClick(group)"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-200 group-hover/brand:bg-red-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-red-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(group.groupName) }}</span>
+                        <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(group.groupName) }}</span>
                      </div>
-                     <button 
-                       @click.stop="shareBrand(group.groupName)"
-                       class="w-6 h-6 flex items-center justify-center shrink-0 text-red-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-red-950 rounded-md"
-                       title="Share Link"
-                     >
-                       <i class="fa-solid fa-share-nodes text-xs"></i>
-                     </button>
                    </div>
                  </div>
               </div>
@@ -147,11 +140,11 @@
               <!-- Top Brands -->
               <div v-if="groupedSidebar.topBrands.length > 0" class="p-3 bg-amber-50/50 border border-amber-100 rounded-2xl">
                  <h3 class="px-1 text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">Top Brands</h3>
-                 <div class="space-y-0.5">
+                 <div class="grid grid-cols-2 gap-1">
                    <div 
                      v-for="item in groupedSidebar.topBrands" 
                      :key="item.group.groupName"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="activeScrollGroup === item.group.groupName ? 'bg-amber-100 text-amber-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleSidebarClick(item.group)"
                    >
@@ -160,15 +153,8 @@
                            <img v-if="item.logo" :src="item.logo" class="w-full h-full object-contain" />
                            <span v-else class="w-full h-full flex items-center justify-center text-[8px] bg-amber-50 text-amber-600">{{ item.group.groupName[0] }}</span>
                         </div>
-                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(item.group.groupName) }}</span>
+                        <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
                      </div>
-                     <button 
-                       @click.stop="shareBrand(item.group.groupName)"
-                       class="w-6 h-6 flex items-center justify-center shrink-0 text-amber-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-amber-950 rounded-md"
-                       title="Share Link"
-                     >
-                       <i class="fa-solid fa-share-nodes text-xs"></i>
-                     </button>
                    </div>
                  </div>
               </div>
@@ -177,25 +163,18 @@
               <!-- Mid Brands -->
               <div v-if="groupedSidebar.midBrands.length > 0" class="p-3 bg-purple-50/50 border border-purple-100 rounded-2xl">
                  <h3 class="px-1 text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Mid Brands</h3>
-                 <div class="space-y-0.5">
+                 <div class="grid grid-cols-2 gap-1">
                    <div 
                      v-for="item in groupedSidebar.midBrands" 
                      :key="item.group.groupName"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="activeScrollGroup === item.group.groupName ? 'bg-purple-100 text-purple-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleSidebarClick(item.group)"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-purple-200 group-hover/brand:bg-purple-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-purple-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(item.group.groupName) }}</span>
+                        <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
                      </div>
-                     <button 
-                       @click.stop="shareBrand(item.group.groupName)"
-                       class="w-6 h-6 flex items-center justify-center shrink-0 text-purple-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-purple-950 rounded-md"
-                       title="Share Link"
-                     >
-                       <i class="fa-solid fa-share-nodes text-xs"></i>
-                     </button>
                    </div>
                  </div>
               </div>
@@ -203,25 +182,18 @@
               <!-- Socks -->
               <div v-if="groupedSidebar.socksGroups.length > 0" class="p-3 bg-cyan-50/50 border border-cyan-100 rounded-2xl">
                  <h3 class="px-1 text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2">Socks</h3>
-                 <div class="space-y-0.5">
+                 <div class="grid grid-cols-2 gap-1">
                    <div 
                      v-for="item in groupedSidebar.socksGroups" 
                      :key="item.group.groupName"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="activeScrollGroup === item.group.groupName ? 'bg-cyan-100 text-cyan-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleSidebarClick(item.group)"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-cyan-200 group-hover/brand:bg-cyan-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-cyan-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(item.group.groupName) }}</span>
+                        <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
                      </div>
-                     <button 
-                       @click.stop="shareBrand(item.group.groupName)"
-                       class="w-6 h-6 flex items-center justify-center shrink-0 text-cyan-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-cyan-950 rounded-md"
-                       title="Share Link"
-                     >
-                       <i class="fa-solid fa-share-nodes text-xs"></i>
-                     </button>
                    </div>
                  </div>
               </div>
@@ -229,54 +201,47 @@
               <!-- General Brands -->
               <div v-if="groupedSidebar.general.length > 0 || bansalExists" class="p-3 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
                  <h3 class="px-1 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">General Brands</h3>
-                 <div class="space-y-0.5">
+                 <div class="grid grid-cols-2 gap-1">
                    
                    <!-- Maruti & Magnet & Others defined in logic -->
                    <div 
                      v-for="group in groupedSidebar.general" 
                      :key="group.groupName"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="activeScrollGroup === group.groupName ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleSidebarClick(group)"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-emerald-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(group.groupName) }}</span>
+                        <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(group.groupName) }}</span>
                      </div>
-                     <button 
-                       @click.stop="shareBrand(group.groupName)"
-                       class="w-6 h-6 flex items-center justify-center shrink-0 text-emerald-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-emerald-950 rounded-md"
-                       title="Share Link"
-                     >
-                       <i class="fa-solid fa-share-nodes text-xs"></i>
-                     </button>
                    </div>
 
                    <!-- Bansal Club -->
                    <div 
                      v-if="groupedSidebar.bansalGroups.length > 0"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="selectedGroup === 'Bansal' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleClubClick('Bansal')"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Bansal' ? 'bg-emerald-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">Bansal</span>
+                        <span class="font-medium text-sm leading-snug break-words">Bansal</span>
                      </div>
                    </div>
 
                    <!-- Bansal Sub-list -->
-                   <div v-if="groupedSidebar.bansalGroups.length > 0">
+                   <div v-if="groupedSidebar.bansalGroups.length > 0" class="col-span-2 grid grid-cols-2 gap-1">
                       <div 
                         v-for="bGroup in groupedSidebar.bansalGroups" 
                         :key="bGroup.groupName"
-                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                         :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
                         @click="handleSidebarClick(bGroup)"
                       >
                          <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                             <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
-                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                            <span class="text-xs font-light leading-snug break-words">{{ formatProductName(bGroup.groupName) }}</span>
                          </div>
                       </div>
                    </div>
@@ -284,28 +249,28 @@
                    <!-- Airson Club -->
                    <div 
                      v-if="groupedSidebar.airsonGroups.length > 0"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="selectedGroup === 'Airson' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleClubClick('Airson')"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Airson' ? 'bg-emerald-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">Airson</span>
+                        <span class="font-medium text-sm leading-snug break-words">Airson</span>
                      </div>
                    </div>
 
                    <!-- Airson Sub-list -->
-                   <div v-if="groupedSidebar.airsonGroups.length > 0">
+                   <div v-if="groupedSidebar.airsonGroups.length > 0" class="col-span-2 grid grid-cols-2 gap-1">
                       <div 
                         v-for="bGroup in groupedSidebar.airsonGroups" 
                         :key="bGroup.groupName"
-                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                         :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
                         @click="handleSidebarClick(bGroup)"
                       >
                          <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                             <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
-                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                            <span class="text-xs font-light leading-snug break-words">{{ formatProductName(bGroup.groupName) }}</span>
                          </div>
                       </div>
                    </div>
@@ -313,28 +278,28 @@
                    <!-- Kohinoor Club -->
                    <div 
                      v-if="groupedSidebar.kohinoorGroups.length > 0"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="selectedGroup === 'Kohinoor' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleClubClick('Kohinoor')"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Kohinoor' ? 'bg-emerald-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">Kohinoor</span>
+                        <span class="font-medium text-sm leading-snug break-words">Kohinoor</span>
                      </div>
                    </div>
 
                    <!-- Kohinoor Sub-list -->
-                   <div v-if="groupedSidebar.kohinoorGroups.length > 0">
+                   <div v-if="groupedSidebar.kohinoorGroups.length > 0" class="col-span-2 grid grid-cols-2 gap-1">
                       <div 
                         v-for="bGroup in groupedSidebar.kohinoorGroups" 
                         :key="bGroup.groupName"
-                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                         :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
                         @click="handleSidebarClick(bGroup)"
                       >
                          <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                             <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
-                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                            <span class="text-xs font-light leading-snug break-words">{{ formatProductName(bGroup.groupName) }}</span>
                          </div>
                       </div>
                    </div>
@@ -342,28 +307,28 @@
                    <!-- Naresh Club -->
                    <div 
                      v-if="groupedSidebar.nareshGroups.length > 0"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="selectedGroup === 'Naresh' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleClubClick('Naresh')"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Naresh' ? 'bg-emerald-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">Naresh</span>
+                        <span class="font-medium text-sm leading-snug break-words">Naresh</span>
                      </div>
                    </div>
 
                    <!-- Naresh Sub-list -->
-                   <div v-if="groupedSidebar.nareshGroups.length > 0">
+                   <div v-if="groupedSidebar.nareshGroups.length > 0" class="col-span-2 grid grid-cols-2 gap-1">
                       <div 
                         v-for="bGroup in groupedSidebar.nareshGroups" 
                         :key="bGroup.groupName"
-                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                         :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
                         @click="handleSidebarClick(bGroup)"
                       >
                          <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                             <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
-                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                            <span class="text-xs font-light leading-snug break-words">{{ formatProductName(bGroup.groupName) }}</span>
                          </div>
                       </div>
                    </div>
@@ -374,25 +339,18 @@
               <!-- Others -->
               <div v-if="groupedSidebar.others.length > 0" class="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
                  <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Others</h3>
-                 <div class="space-y-0.5">
+                 <div class="grid grid-cols-2 gap-1">
                    <div 
                      v-for="group in groupedSidebar.others" 
                      :key="group.groupName"
-                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
                      :class="activeScrollGroup === group.groupName ? 'bg-white shadow-sm text-blue-600' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
                      @click="handleSidebarClick(group)"
                    >
                      <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
                         <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-slate-300 group-hover/brand:bg-blue-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
-                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(group.groupName) }}</span>
+                        <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(group.groupName) }}</span>
                      </div>
-                     <button 
-                       @click.stop="shareBrand(group.groupName)"
-                       class="w-6 h-6 flex items-center justify-center shrink-0 text-slate-700 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-slate-900 rounded-md"
-                       title="Share Link"
-                     >
-                       <i class="fa-solid fa-share-nodes text-xs"></i>
-                     </button>
                    </div>
                  </div>
               </div>
@@ -567,15 +525,29 @@
             >
               <div class="flex items-center gap-3 overflow-hidden">
                 <!-- Special Rainbow Header for New Arrivals -->
-                <h2 v-if="group.isSpecial" class="text-2xl sm:text-3xl font-black tracking-tight holographic-text truncate">
-                   ✨ {{ group.groupName }}
+                <h2 v-if="group.isSpecial" class="text-2xl sm:text-3xl font-black tracking-tight holographic-text truncate flex items-center gap-3">
+                   <span>✨ {{ group.groupName }}</span>
+                    <button 
+                      @click.stop="shareBrand(group.groupName)"
+                      class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 hover:text-blue-700 bg-transparent hover:bg-transparent rounded-full transition-all"
+                      title="Share Link"
+                    >
+                      <i class="fa-solid fa-share-nodes text-sm"></i>
+                    </button>
                 </h2>
                 <!-- Standard Header -->
-                <h2 v-else class="text-lg sm:text-xl font-bold text-slate-800 truncate">
-                  {{ group.groupName }}
-                  <span class="ml-2 text-sm font-medium text-slate-400">
+                <h2 v-else class="text-lg sm:text-xl font-bold text-slate-800 truncate flex items-center gap-3">
+                  <span>{{ group.groupName }}</span>
+                  <span class="text-sm font-medium text-slate-400">
                     ({{ group.products.length }})
                   </span>
+                    <button 
+                      @click.stop="shareBrand(group.groupName)"
+                      class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 hover:text-blue-700 bg-transparent hover:bg-transparent rounded-full transition-all"
+                      title="Share Link"
+                    >
+                      <i class="fa-solid fa-share-nodes text-sm"></i>
+                    </button>
                 </h2>
               </div>
               <div class="flex items-center gap-3 shrink-0">
@@ -1724,11 +1696,20 @@ export default {
     },
     // Pane Management
     toggleSidebar() {
-      if (this.showSidePanel) this.closePane();
+      if (this.showSidePanel) {
+         this.showSidePanel = false;
+         this.searchQuery = '';
+         this.selectedGroup = 'All'; // Also reset URL when going Home
+         window.history.replaceState(null, '', window.location.pathname);
+      }
       else this.openSidebar();
     },
     toggleCart() {
-      if (this.showCart) this.closePane();
+      if (this.showCart) {
+         this.showCart = false;
+         this.searchQuery = '';
+         window.history.replaceState(null, '', window.location.pathname);
+      }
       else this.openCart();
     },
     openSidebar() {
@@ -1766,6 +1747,8 @@ export default {
       this.isScrolled = window.scrollY > 20;
     },
     scrollToTop() {
+      this.selectedGroup = 'All';
+      window.history.replaceState(null, '', window.location.pathname);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
     handleUserScroll() {
