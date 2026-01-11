@@ -109,31 +109,294 @@
         class="fixed inset-y-0 left-0 w-full sm:w-80 lg:w-80 border-r border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
         :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
       >
-        <div class="p-4 h-full overflow-y-auto">
-           <div class="flex items-center justify-between mb-4 lg:hidden">
+        <div class="p-4 h-full overflow-y-auto overscroll-contain">
+           <div class="flex items-center justify-between mb-4">
              <h2 class="text-lg font-bold text-slate-800">Brands</h2>
              <button class="hidden"></button>
            </div>
-           <nav class="space-y-1">
-              <template v-for="(group, index) in sidebarGroups" :key="group.groupName">
-                 <div 
-                   class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand mb-0.5 cursor-pointer"
-                   :class="activeScrollGroup === group.groupName ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'"
-                   @click="scrollToGroup(group.groupName)"
-                 >
-                   <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
-                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-slate-300 group-hover/brand:bg-blue-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
-                      <span class="truncate font-medium text-sm leading-none">{{ group.groupName }}</span>
-                   </div>
-                   <button 
-                     @click.stop="shareBrand(group.groupName)"
-                     class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 transition-all sm:opacity-0 sm:group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-blue-50 rounded-full shadow-none border-none"
-                     title="Share Link"
-                   >
-                     <i class="fa-solid fa-share-nodes text-sm"></i>
-                   </button>
+            <nav class="space-y-6 pb-20">
+              
+              <!-- Paragon Legend -->
+              <div v-if="groupedSidebar.paragon.length > 0" class="p-3 bg-red-50/50 border border-red-100 rounded-2xl">
+                 <div class="mb-3 px-1">
+                    <img src="https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp" alt="Paragon" class="h-8 object-contain" />
                  </div>
-              </template>
+                 <div class="space-y-0.5">
+                   <div 
+                     v-for="group in groupedSidebar.paragon" 
+                     :key="group.groupName"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="activeScrollGroup === group.groupName ? 'bg-red-100 text-red-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleSidebarClick(group)"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-200 group-hover/brand:bg-red-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-red-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(group.groupName) }}</span>
+                     </div>
+                     <button 
+                       @click.stop="shareBrand(group.groupName)"
+                       class="w-6 h-6 flex items-center justify-center shrink-0 text-red-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-red-950 rounded-md"
+                       title="Share Link"
+                     >
+                       <i class="fa-solid fa-share-nodes text-xs"></i>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+
+              <!-- Top Brands -->
+              <div v-if="groupedSidebar.topBrands.length > 0" class="p-3 bg-amber-50/50 border border-amber-100 rounded-2xl">
+                 <h3 class="px-1 text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">Top Brands</h3>
+                 <div class="space-y-0.5">
+                   <div 
+                     v-for="item in groupedSidebar.topBrands" 
+                     :key="item.group.groupName"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="activeScrollGroup === item.group.groupName ? 'bg-amber-100 text-amber-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleSidebarClick(item.group)"
+                   >
+                     <div class="flex items-center gap-3 flex-1 min-w-0 outline-none">
+                        <div class="w-6 h-6 rounded-full bg-white border border-amber-200 p-0.5 shrink-0 overflow-hidden">
+                           <img v-if="item.logo" :src="item.logo" class="w-full h-full object-contain" />
+                           <span v-else class="w-full h-full flex items-center justify-center text-[8px] bg-amber-50 text-amber-600">{{ item.group.groupName[0] }}</span>
+                        </div>
+                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(item.group.groupName) }}</span>
+                     </div>
+                     <button 
+                       @click.stop="shareBrand(item.group.groupName)"
+                       class="w-6 h-6 flex items-center justify-center shrink-0 text-amber-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-amber-950 rounded-md"
+                       title="Share Link"
+                     >
+                       <i class="fa-solid fa-share-nodes text-xs"></i>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+
+
+              <!-- Mid Brands -->
+              <div v-if="groupedSidebar.midBrands.length > 0" class="p-3 bg-purple-50/50 border border-purple-100 rounded-2xl">
+                 <h3 class="px-1 text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Mid Brands</h3>
+                 <div class="space-y-0.5">
+                   <div 
+                     v-for="item in groupedSidebar.midBrands" 
+                     :key="item.group.groupName"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="activeScrollGroup === item.group.groupName ? 'bg-purple-100 text-purple-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleSidebarClick(item.group)"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-purple-200 group-hover/brand:bg-purple-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-purple-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(item.group.groupName) }}</span>
+                     </div>
+                     <button 
+                       @click.stop="shareBrand(item.group.groupName)"
+                       class="w-6 h-6 flex items-center justify-center shrink-0 text-purple-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-purple-950 rounded-md"
+                       title="Share Link"
+                     >
+                       <i class="fa-solid fa-share-nodes text-xs"></i>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+
+              <!-- Socks -->
+              <div v-if="groupedSidebar.socksGroups.length > 0" class="p-3 bg-cyan-50/50 border border-cyan-100 rounded-2xl">
+                 <h3 class="px-1 text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2">Socks</h3>
+                 <div class="space-y-0.5">
+                   <div 
+                     v-for="item in groupedSidebar.socksGroups" 
+                     :key="item.group.groupName"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="activeScrollGroup === item.group.groupName ? 'bg-cyan-100 text-cyan-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleSidebarClick(item.group)"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-cyan-200 group-hover/brand:bg-cyan-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-cyan-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(item.group.groupName) }}</span>
+                     </div>
+                     <button 
+                       @click.stop="shareBrand(item.group.groupName)"
+                       class="w-6 h-6 flex items-center justify-center shrink-0 text-cyan-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-cyan-950 rounded-md"
+                       title="Share Link"
+                     >
+                       <i class="fa-solid fa-share-nodes text-xs"></i>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+
+              <!-- General Brands -->
+              <div v-if="groupedSidebar.general.length > 0 || bansalExists" class="p-3 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
+                 <h3 class="px-1 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">General Brands</h3>
+                 <div class="space-y-0.5">
+                   
+                   <!-- Maruti & Magnet & Others defined in logic -->
+                   <div 
+                     v-for="group in groupedSidebar.general" 
+                     :key="group.groupName"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="activeScrollGroup === group.groupName ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleSidebarClick(group)"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-emerald-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(group.groupName) }}</span>
+                     </div>
+                     <button 
+                       @click.stop="shareBrand(group.groupName)"
+                       class="w-6 h-6 flex items-center justify-center shrink-0 text-emerald-800 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-emerald-950 rounded-md"
+                       title="Share Link"
+                     >
+                       <i class="fa-solid fa-share-nodes text-xs"></i>
+                     </button>
+                   </div>
+
+                   <!-- Bansal Club -->
+                   <div 
+                     v-if="groupedSidebar.bansalGroups.length > 0"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="selectedGroup === 'Bansal' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleClubClick('Bansal')"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Bansal' ? 'bg-emerald-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">Bansal</span>
+                     </div>
+                   </div>
+
+                   <!-- Bansal Sub-list -->
+                   <div v-if="groupedSidebar.bansalGroups.length > 0">
+                      <div 
+                        v-for="bGroup in groupedSidebar.bansalGroups" 
+                        :key="bGroup.groupName"
+                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
+                        @click="handleSidebarClick(bGroup)"
+                      >
+                         <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                            <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
+                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <!-- Airson Club -->
+                   <div 
+                     v-if="groupedSidebar.airsonGroups.length > 0"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="selectedGroup === 'Airson' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleClubClick('Airson')"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Airson' ? 'bg-emerald-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">Airson</span>
+                     </div>
+                   </div>
+
+                   <!-- Airson Sub-list -->
+                   <div v-if="groupedSidebar.airsonGroups.length > 0">
+                      <div 
+                        v-for="bGroup in groupedSidebar.airsonGroups" 
+                        :key="bGroup.groupName"
+                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
+                        @click="handleSidebarClick(bGroup)"
+                      >
+                         <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                            <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
+                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <!-- Kohinoor Club -->
+                   <div 
+                     v-if="groupedSidebar.kohinoorGroups.length > 0"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="selectedGroup === 'Kohinoor' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleClubClick('Kohinoor')"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Kohinoor' ? 'bg-emerald-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">Kohinoor</span>
+                     </div>
+                   </div>
+
+                   <!-- Kohinoor Sub-list -->
+                   <div v-if="groupedSidebar.kohinoorGroups.length > 0">
+                      <div 
+                        v-for="bGroup in groupedSidebar.kohinoorGroups" 
+                        :key="bGroup.groupName"
+                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
+                        @click="handleSidebarClick(bGroup)"
+                      >
+                         <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                            <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
+                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <!-- Naresh Club -->
+                   <div 
+                     v-if="groupedSidebar.nareshGroups.length > 0"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="selectedGroup === 'Naresh' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleClubClick('Naresh')"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-200 group-hover/brand:bg-emerald-400 transition-colors" :class="selectedGroup === 'Naresh' ? 'bg-emerald-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">Naresh</span>
+                     </div>
+                   </div>
+
+                   <!-- Naresh Sub-list -->
+                   <div v-if="groupedSidebar.nareshGroups.length > 0">
+                      <div 
+                        v-for="bGroup in groupedSidebar.nareshGroups" 
+                        :key="bGroup.groupName"
+                        class="flex items-center justify-between rounded-lg px-3 py-1.5 transition-colors group/brand cursor-pointer"
+                        :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
+                        @click="handleSidebarClick(bGroup)"
+                      >
+                         <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                            <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
+                            <span class="truncate text-xs font-light leading-none">{{ formatProductName(bGroup.groupName) }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                 </div>
+              </div>
+
+              <!-- Others -->
+              <div v-if="groupedSidebar.others.length > 0" class="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                 <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Others</h3>
+                 <div class="space-y-0.5">
+                   <div 
+                     v-for="group in groupedSidebar.others" 
+                     :key="group.groupName"
+                     class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors group/brand cursor-pointer"
+                     :class="activeScrollGroup === group.groupName ? 'bg-white shadow-sm text-blue-600' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                     @click="handleSidebarClick(group)"
+                   >
+                     <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                        <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-slate-300 group-hover/brand:bg-blue-400 transition-colors" :class="activeScrollGroup === group.groupName ? 'bg-blue-600' : ''"></span>
+                        <span class="truncate font-medium text-sm leading-none">{{ formatProductName(group.groupName) }}</span>
+                     </div>
+                     <button 
+                       @click.stop="shareBrand(group.groupName)"
+                       class="w-6 h-6 flex items-center justify-center shrink-0 text-slate-700 transition-all opacity-0 group-hover/brand:opacity-100 active:scale-95 bg-transparent hover:bg-transparent hover:text-slate-900 rounded-md"
+                       title="Share Link"
+                     >
+                       <i class="fa-solid fa-share-nodes text-xs"></i>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+
            </nav>
         </div>
       </aside>
@@ -147,7 +410,7 @@
 
       <!-- Cart Sidebar (Right Side - Push Layout) -->
       <aside
-        class="fixed inset-y-0 right-0 w-full sm:w-80 border-l border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] sm:pt-0"
+        class="fixed inset-y-0 right-0 w-full sm:w-80 border-l border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
         :class="showCart ? 'translate-x-0' : 'translate-x-full'"
       >
         <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
@@ -165,7 +428,7 @@
            </button>
         </div>
         
-        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 overscroll-contain">
            <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-64 text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               <p class="text-sm font-medium">Your cart is empty</p>
@@ -214,7 +477,6 @@
 
       <main 
          class="flex-1 w-full px-2 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6 min-w-0 transition-all duration-300"
-         :class="{'mr-0 lg:mr-80': showCart, 'ml-0 lg:ml-80': showSidePanel}"
       >
       
       <!-- Ledger View Placeholder -->
@@ -250,16 +512,16 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template v-for="(group, index) in filteredStockData" :key="index">
-                <tr :id="'group-row-' + index" class="bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer" @click="toggleGroup(index)">
+                <tr :id="'group-row-' + index" class="bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer" @click="toggleGroup(group.groupName)">
                   <td colspan="3" class="px-6 py-3 font-bold text-slate-700 text-sm flex items-center gap-2">
-                    <span class="transform transition-transform text-slate-400" :class="{ 'rotate-90': expandedGroups[index] }">▸</span>
+                    <span class="transform transition-transform text-slate-400" :class="{ 'rotate-90': expandedGroups[group.groupName] }">▸</span>
                     {{ group.groupName }}
                   </td>
                 </tr>
                 <tr
                   v-for="(product, pIndex) in group.products"
                   :key="`${index}-${pIndex}`"
-                  v-show="expandedGroups[index]"
+                  v-show="expandedGroups[group.groupName]"
                   class="group/row hover:bg-blue-50/30 transition-colors"
                 >
                   <td class="px-6 py-6">
@@ -299,9 +561,9 @@
           >
             <!-- Group Header -->
             <div
-              @click="toggleGroup(index)"
+              @click="toggleGroup(group.groupName)"
               class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[96px] bg-white z-30 rounded-t-2xl"
-              :class="expandedGroups[index] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
+              :class="expandedGroups[group.groupName] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
             >
               <div class="flex items-center gap-3 overflow-hidden">
                 <!-- Special Rainbow Header for New Arrivals -->
@@ -322,7 +584,7 @@
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       class="h-5 w-5 transform transition-transform duration-300"
-                      :class="expandedGroups[index] ? 'rotate-180' : ''"
+                      :class="expandedGroups[group.groupName] ? 'rotate-180' : ''"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -342,7 +604,7 @@
               leave-from-class="opacity-100 max-h-[5000px]"
               leave-to-class="opacity-0 max-h-0"
             >
-              <div v-show="expandedGroups[index]" class="bg-slate-50/30 p-2 sm:p-4">
+              <div v-show="expandedGroups[group.groupName]" class="bg-slate-50/30 p-2 sm:p-4">
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4">
                   <div
                     v-for="(product, pIndex) in group.products"
@@ -699,9 +961,44 @@ export default {
       customerName: '',
       customerPhone: '',
       userHasScrolled: false,
+      
+      // Config Data
+      bansalList: [
+        'SRG Enterprises', 'NAV DURGA ENTERPRISES', 'AAGAM POLYMERE', 
+        'R K TRADERS', 'A G ENTERPRISES', 'NEXUS', 'YASH FOOTWEAR',
+        'AAGAM POLYMER', 'Vardhman Plastics'
+      ],
+      airsonList: ['AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR'],
+      kohinoorList: ['KOHINOOR', 'UAM FOOTWEAR'],
+      nareshList: ['KRishna Agency', 'SHYAM'],
+      socksList: ['BArun', 'PAreek Soucks', 'LEo'],
+      paragonList: [
+        'Paragon Gents', 'Paragon Ladies', 'Eeken', 'Meriva', 'Paragon',  
+        'Paragon Blot', 'Max', 'Paralite', 'P-TOES', 'Hawai Chappal', 
+        'Stimulus', 'Escoute', 'Safety', 'Walkaholic', 'School'
+      ],
+      topBrandsConfig: [
+        { name: 'Cubix', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
+        { name: 'CUBIX 2', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
+        { name: 'Florex (Swastik)', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg' },
+        { name: 'RELIANCE FOOTWEAR', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png' },
+        { name: 'Action', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' }
+      ],
+      midBrandsConfig: [
+         'AIRFAX', 'TEUZ', 'Paris', 'Hitway', 'PANKAJ PLASTIC', 'VAISHNO PLASTIC', 'TARA', 'ADDA', 'ASHU', 'ADDOXY'
+      ],
+      generalList: ['Maruti Plastics', 'Magnet', 'J.K Plastic', 
+        'R R POLYPLAST', 'AGRA'
+      ],
     };
   },
   watch: {
+    showSidePanel(val) {
+      document.body.style.overflow = val || this.showCart ? 'hidden' : '';
+    },
+    showCart(val) {
+      document.body.style.overflow = val || this.showSidePanel ? 'hidden' : '';
+    },
     showImagesOnly(val) {
       if (val) this.showNoImagesOnly = false;
     },
@@ -804,6 +1101,18 @@ export default {
              )
            })).filter(g => g.products.length > 0);
         }
+        else if (['Bansal', 'Airson', 'Kohinoor', 'Naresh'].includes(groupKey)) {
+            // Generic Club Logic
+            const normalize = (name) => name ? name.toLowerCase().trim() : '';
+            let list = [];
+            if (groupKey === 'Bansal') list = this.bansalList;
+            if (groupKey === 'Airson') list = this.airsonList;
+            if (groupKey === 'Kohinoor') list = this.kohinoorList;
+            if (groupKey === 'Naresh') list = this.nareshList;
+    
+            const clubbed = list.map(n => normalize(n));
+            filtered = filtered.filter(g => clubbed.includes(normalize(g.groupName)));
+        }
         // Specific Group Name match
         else {
            filtered = filtered.filter(g => g.groupName === groupKey);
@@ -867,12 +1176,87 @@ export default {
       return [...this.stockData].sort(this.compareGroups);
     },
     sidebarGroups() {
-       let groups = this.filteredStockData;
+       let groups = this.filteredStockData; // Only used for Search filtering if needed
        if (this.searchQuery && this.showSidePanel) {
           const q = this.searchQuery.toLowerCase();
           return groups.filter(g => g.groupName.toLowerCase().includes(q));
        }
+       // If no sidebar search, we use the structured lists.
+       // But wait, the template now uses groupedSidebar.
+       // We keep this for compatibility if something else uses it
        return groups;
+    },
+    
+    // Computed property to organize sidebar
+    groupedSidebar() {
+       // Use raw stockData to build the tree, or filtered depending on context.
+       // Usually sidebar shows all available brands. 
+       // However, if we are in 'Bansal' mode, the main view is filtered, but sidebar should probably remain full?
+       // Let's use stockData to keep sidebar constant unless search is active.
+       
+       let source = this.stockData;
+       if (this.searchQuery && this.showSidePanel) {
+          const q = this.searchQuery.toLowerCase();
+          source = source.filter(g => g.groupName.toLowerCase().includes(q));
+       }
+
+       const normalize = (name) => name ? name.toLowerCase().trim() : '';
+       
+       const paragon = [];
+       const topBrands = [];
+       const midBrands = [];
+       const socksGroups = [];
+       const general = [];
+       const bansalGroups = [];
+       const airsonGroups = [];
+       const kohinoorGroups = [];
+       const nareshGroups = [];
+       const others = [];
+
+       const paragonSet = new Set(this.paragonList.map(n => normalize(n)));
+       const topBrandSet = new Set(this.topBrandsConfig.map(n => normalize(n.name)));
+       const midBrandSet = new Set(this.midBrandsConfig.map(n => normalize(n)));
+       const socksSet = new Set(this.socksList.map(n => normalize(n)));
+       const generalSet = new Set(this.generalList.map(n => normalize(n)));
+       const bansalSet = new Set(this.bansalList.map(n => normalize(n)));
+       const airsonSet = new Set(this.airsonList.map(n => normalize(n)));
+       const kohinoorSet = new Set(this.kohinoorList.map(n => normalize(n)));
+       const nareshSet = new Set(this.nareshList.map(n => normalize(n)));
+
+       source.forEach(group => {
+          const nName = normalize(group.groupName);
+          
+          if (paragonSet.has(nName)) {
+             paragon.push(group);
+          } else if (topBrandSet.has(nName)) {
+             // Find logo
+             const cfg = this.topBrandsConfig.find(c => normalize(c.name) === nName);
+             topBrands.push({ group, logo: cfg ? cfg.logo : null });
+          } else if (midBrandSet.has(nName)) {
+             midBrands.push({ group }); 
+          } else if (socksSet.has(nName)) {
+             socksGroups.push({ group });
+          } else if (generalSet.has(nName)) {
+             general.push(group);
+          } else if (bansalSet.has(nName)) {
+             bansalGroups.push(group);
+          } else if (airsonSet.has(nName)) {
+             airsonGroups.push(group);
+          } else if (kohinoorSet.has(nName)) {
+             kohinoorGroups.push(group);
+          } else if (nareshSet.has(nName)) {
+             nareshGroups.push(group);
+          } else {
+             others.push(group);
+          }
+       });
+
+       return { paragon, topBrands, midBrands, socksGroups, general, bansalGroups, airsonGroups, kohinoorGroups, nareshGroups, others };
+    },
+
+    bansalExists() {
+       // Kept for backward compat if needed, but groupedSidebar handles existence now
+       return this.groupedSidebar && this.groupedSidebar.bansalGroups.length > 0;
     },
     filteredCart() {
        if (this.searchQuery && this.showCart) {
@@ -948,13 +1332,13 @@ export default {
     }
     this.applyTheme();
     this.expandedGroups = this.stockData.reduce(
-      (acc, _, index) => ({ ...acc, [index]: true }),
+      (acc, group) => ({ ...acc, [group.groupName]: true }),
       {}
     );
     // Expand New Arrivals (index 0) by default if it exists
     this.$nextTick(() => {
        if (this.filteredStockData.length > 0 && this.filteredStockData[0].isSpecial) {
-           this.expandedGroups[0] = true;
+           this.expandedGroups[this.filteredStockData[0].groupName] = true;
        }
     });
     
@@ -1164,7 +1548,7 @@ export default {
 
         this.stockData = data;
         this.expandedGroups = this.stockData.reduce(
-          (acc, _, index) => ({ ...acc, [index]: true }),
+          (acc, group) => ({ ...acc, [group.groupName]: true }),
           {}
         );
         toast.success("Stock data updated successfully!", { autoClose: 2500 });
@@ -1192,8 +1576,8 @@ export default {
         toast.error("Incorrect password", { autoClose: 3000 });
       }
     },
-    toggleGroup(index) {
-      this.expandedGroups[index] = !this.expandedGroups[index];
+    toggleGroup(groupName) {
+      this.expandedGroups[groupName] = !this.expandedGroups[groupName];
     },
     handleFileChange(event, productName) {
       this.imageFiles[productName] = event.target.files[0];
@@ -1387,6 +1771,38 @@ export default {
     handleUserScroll() {
        this.userHasScrolled = true;
     },
+    async handleClubClick(clubName) {
+        this.selectedGroup = clubName;
+        if (window.innerWidth < 1024) this.closePane();
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    },
+    handleSidebarClick(group) {
+        // Check if this group is part of ANY club (Bansal, Airson, Kohinoor, Naresh)
+        const normalize = (name) => name ? name.toLowerCase().trim() : '';
+        const nName = normalize(group.groupName);
+
+        const isBansal = this.bansalList.map(n=>normalize(n)).includes(nName);
+        const isAirson = this.airsonList.map(n=>normalize(n)).includes(nName);
+        const isKohinoor = this.kohinoorList.map(n=>normalize(n)).includes(nName);
+        const isNaresh = this.nareshList.map(n=>normalize(n)).includes(nName);
+
+        // Determine current club context
+        const currentContext = this.selectedGroup;
+
+        // If we are in a specific club context, and we click a member of THAT club, stay in context.
+        if (currentContext === 'Bansal' && isBansal) { this.scrollToGroup(group.groupName); return; }
+        if (currentContext === 'Airson' && isAirson) { this.scrollToGroup(group.groupName); return; }
+        if (currentContext === 'Kohinoor' && isKohinoor) { this.scrollToGroup(group.groupName); return; }
+        if (currentContext === 'Naresh' && isNaresh) { this.scrollToGroup(group.groupName); return; }
+
+        // Otherwise reset to All
+        if (['Bansal', 'Airson', 'Kohinoor', 'Naresh'].includes(currentContext)) {
+           this.selectedGroup = 'All';
+            this.$nextTick(() => { this.scrollToGroup(group.groupName); });
+        } else {
+           this.scrollToGroup(group.groupName);
+        }
+    },
     async retryScroll(groupName, attempt = 1, isLocking = false) {
        // Stop if user took control (manual interaction)
        if (this.userHasScrolled && !isLocking) return;
@@ -1438,28 +1854,42 @@ export default {
        }
     },
     scrollToGroup(groupName, behavior = 'instant') {
-      const id = 'group-grid-' + this.normalizeId(groupName);
-      const element = document.getElementById(id);
-      if (element) {
-        // Adjust for sticky header
-        const y = element.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: behavior });
-    
-        this.activeScrollGroup = groupName;
-    
-        // Update URL
-        const url = new URL(window.location);
-        url.searchParams.set('brand', groupName);
-        window.history.replaceState(null, '', url);
+      // Ensure expanded
+      this.expandedGroups[groupName] = true;
 
+      this.$nextTick(() => {
+          const id = 'group-grid-' + this.normalizeId(groupName);
+          const element = document.getElementById(id);
+          
+          if (element) {
+            // Function to run the actual scroll and URL update
+            const runScroll = () => {
+                // Adjust for sticky header
+                const y = element.getBoundingClientRect().top + window.scrollY - 80;
+                window.scrollTo({ top: y, behavior: behavior });
+            
+                this.activeScrollGroup = groupName;
+            
+                // Update URL
+                const url = new URL(window.location);
+                url.searchParams.set('brand', groupName);
+                
+                // If on mobile and sidebar was open, we want to "replace" the sidebar state with this new view state
+                // to avoid history.back() scroll jumping
+                window.history.replaceState(null, '', url);
+            };
 
-    // Close sidebar on mobile after selection
-        if (window.innerWidth < 1024) {
-             // We pushed state when opening. Now we selected.
-             // We should Back to close.
-            this.closePane();
-        }
-      }
+            // Close sidebar on mobile special handling
+            if (window.innerWidth < 1024 && this.showSidePanel) {
+                 this.showSidePanel = false;
+                 this.searchQuery = ''; // Clear search like closePane does
+                 // Do NOT call closePane/history.back(). Just update current state.
+                 runScroll();
+            } else {
+                 runScroll();
+            }
+          }
+      });
     },
     normalizeId(name) {
       if (!name) return '';
