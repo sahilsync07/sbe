@@ -1649,6 +1649,7 @@ export default {
        }
     },
     closeImagePopup(isPop = false) {
+      const isPopState = isPop === true;
       this.showImagePopup = false;
       this.currentProduct = {};
       this.currentGroupIndex = null;
@@ -1657,11 +1658,9 @@ export default {
       this.currentProductIndex = 0;
       
       // Navigate Back (undo pushState)
-      // Navigate Back (undo pushState)
-      if (!isPop) {
-         const url = new URL(window.location);
-         url.searchParams.delete('product');
-         window.history.replaceState(null, '', url);
+      if (!isPopState) {
+         this.selectedGroup = 'All';
+         window.history.replaceState(null, '', window.location.pathname);
       }
     },
     navigateImage(direction) {
