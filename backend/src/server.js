@@ -192,42 +192,47 @@ app.post("/api/updateStockData", async (req, res) => {
     }
 
     // ---- 3. Preserve images + zero-stock products that have images ----------
-    const productImages = {};               // productName → { imageUrl, imageUploadedAt }
+    // ---- 3. Preserve images, timestamps & zero-stock products with images ----------
+    const productMeta = {};               // productName → { imageUrl, imageUploadedAt, firstSeenAt }
     const zeroStockProducts = {};           // groupName → [product,…]
 
     existingData.forEach((group) => {
       if (!group.products) return;
 
       group.products.forEach((product) => {
-        if (product.imageUrl) {
-          productImages[product.productName] = {
-            imageUrl: product.imageUrl,
-            imageUploadedAt: product.imageUploadedAt
-          };
-        }
+        // Save metadata for ALL known products to track "first seen"
+        productMeta[product.productName] = {
+          imageUrl: product.imageUrl || null,
+          imageUploadedAt: product.imageUploadedAt || null,
+          firstSeenAt: product.firstSeenAt || null
+        };
+
         if (product.quantity === 0 && product.imageUrl) {
           const { rate, amount, ...cleanProduct } = product; // Remove sensitive data
           (zeroStockProducts[group.groupName] ??= []).push(cleanProduct);
         }
       });
     });
-    console.log("Preserved image URLs:", Object.keys(productImages).length);
+    console.log("Preserved existing product metadata:", Object.keys(productMeta).length);
     console.log("Preserved zero-stock products with images:", Object.keys(zeroStockProducts).length);
 
     // ---- 4. Fetch fresh data from Tally --------------------------------------
     const stockData = await fetchTallyData();
 
-    // ---- 5. Re-attach images & re-inject zero-stock items --------------------
+    // ---- 5. Re-attach images, timestamps & re-inject zero-stock items --------
     // ---- 6. De-duplicate by productName ------------------------------------
     stockData.forEach((group) => {
-      // attach saved images to live products
+      // attach saved info to live products
       group.products.forEach((p) => {
-        const saved = productImages[p.productName];
+        const saved = productMeta[p.productName];
         if (saved) {
           p.imageUrl = saved.imageUrl;
           p.imageUploadedAt = saved.imageUploadedAt;
+          p.firstSeenAt = saved.firstSeenAt; // Preserve original seen time
         } else {
+          // New product from Tally!
           p.imageUrl = null;
+          p.firstSeenAt = new Date().toISOString(); // Mark as new
         }
       });
 

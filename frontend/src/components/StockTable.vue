@@ -755,7 +755,7 @@
                <div>
                   <div class="flex items-center gap-2 mb-3">
                      <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
-                     <span v-if="currentProduct.imageUploadedAt" class="px-2.5 py-1 rounded-md bg-green-50 text-green-600 text-xs font-bold uppercase tracking-wider">New Arrival</span>
+                     <span v-if="isNewArrival(currentProduct)" class="px-2.5 py-1 rounded-md bg-green-50 text-green-600 text-xs font-bold uppercase tracking-wider">New Arrival</span>
                   </div>
                   <h1 class="text-2xl md:text-4xl font-black text-slate-800 leading-tight mb-4">
                     {{ currentProduct.productName }}
@@ -1106,15 +1106,22 @@ export default {
          // Iterate all groups to find new products
          this.stockData.forEach(g => {
             g.products.forEach(p => {
-               if (!p.imageUrl) return;
-                
                 // Respect Search Query
                 if (this.searchQuery && !p.productName.toLowerCase().includes(this.searchQuery.toLowerCase())) {
                     return;
                 }
 
-                const uploadDate = p.imageUploadedAt ? new Date(p.imageUploadedAt) : minDate;
-                if (uploadDate > cutoff) {
+                // Respect View Filters
+                if (this.showImagesOnly && !p.imageUrl) return;
+                if (this.showNoImagesOnly && p.imageUrl) return;
+
+                const imageDate = p.imageUploadedAt ? new Date(p.imageUploadedAt) : minDate;
+                const itemDate = p.firstSeenAt ? new Date(p.firstSeenAt) : minDate;
+                
+                // Use the latest relevant date
+                const latestDate = itemDate > imageDate ? itemDate : imageDate;
+
+                if (latestDate > cutoff) {
                    // Avoid duplicates if multiple groups share products? (Usually not case here)
                    newProducts.push(p);
                 }
@@ -1122,12 +1129,17 @@ export default {
          });
 
          if (newProducts.length > 0) {
-            // Flatten/Dedup if needed, assume unique productName
-            // Sort new products by date desc?
+            // Sort new products by date desc
             newProducts.sort((a,b) => {
-                const dA = a.imageUploadedAt ? new Date(a.imageUploadedAt) : minDate;
-                const dB = b.imageUploadedAt ? new Date(b.imageUploadedAt) : minDate;
-                return dB - dA;
+                const dateA = new Date(Math.max(
+                    a.imageUploadedAt ? new Date(a.imageUploadedAt) : minDate,
+                    a.firstSeenAt ? new Date(a.firstSeenAt) : minDate
+                ));
+                const dateB = new Date(Math.max(
+                    b.imageUploadedAt ? new Date(b.imageUploadedAt) : minDate,
+                    b.firstSeenAt ? new Date(b.firstSeenAt) : minDate
+                ));
+                return dateB - dateA;
             });
             
             filtered.unshift({
@@ -1135,9 +1147,6 @@ export default {
                products: newProducts,
                isSpecial: true
             });
-            
-            // Should we collapse 'New Arrivals' by default? Maybe not.
-            // Check expandedGroups default.
          }
       }
 
@@ -1461,6 +1470,18 @@ export default {
       } catch (e) {
         return imageUrl;
       }
+    },
+    isNewArrival(product) {
+       if (!product) return false;
+       const cutoff = new Date();
+       cutoff.setMonth(cutoff.getMonth() - 1);
+       const minDate = new Date('2025-11-01');
+       
+       const imageDate = product.imageUploadedAt ? new Date(product.imageUploadedAt) : minDate;
+       const itemDate = product.firstSeenAt ? new Date(product.firstSeenAt) : minDate;
+       
+       const latestDate = itemDate > imageDate ? itemDate : imageDate;
+       return latestDate > cutoff;
     },
     async loadStockData() {
       try {
