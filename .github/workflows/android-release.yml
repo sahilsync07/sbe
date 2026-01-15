@@ -39,7 +39,8 @@ jobs:
       - name: Decode Keystore
         run: |
           mkdir -p frontend/android/app
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > frontend/android/app/release-key.keystore
+          # Remove newlines and potential headers from Windows certutil output
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '\r\n' | sed 's/-----BEGIN CERTIFICATE-----//g' | sed 's/-----END CERTIFICATE-----//g' | base64 --decode > frontend/android/app/release-key.keystore
 
       - name: Bump Version Code
         uses: chkfung/android-version-actions@v1.2.1
