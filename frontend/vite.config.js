@@ -4,5 +4,5 @@ import vue from "@vitejs/plugin-vue";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  base: "/sbe/", // Set base path to repository root
+  base: "./", // Set base path to relative for Capacitor/Android compatibility
 });

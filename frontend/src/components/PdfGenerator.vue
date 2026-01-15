@@ -7,6 +7,11 @@
     >
       <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-10">
          <div class="flex items-center gap-2">
+            <!-- Sidebar Home Button -->
+            <button @click="$router.push('/')" class="w-8 h-8 flex lg:hidden items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm active:scale-95 border border-white/20 mr-1" title="Home">
+               <i class="fa-solid fa-house text-xs"></i>
+            </button>
+            
             <h2 class="text-xl font-black text-slate-800 tracking-tight">Brands</h2>
             <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider">{{ brands.length }}</span>
          </div>
@@ -477,6 +482,7 @@ import { jsPDF } from "jspdf";
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 
 export default {
   data() {
@@ -486,11 +492,11 @@ export default {
       onlyWithPhotos: true,
       minQtyEnabled: false,
       minQty: 5,
-      minQty: 5,
+      // Duplicate minQty removed
       pdfMode: "separate",
       isGenerating: false,
       isPdfGenerating: false,
-      isPdfGenerating: false,
+      // Duplicate isPdfGenerating removed
       isZipGenerating: false,
       isSharing: false,
       
@@ -604,6 +610,17 @@ export default {
   async mounted() {
     this.loadBrands();
     this.loadBrands();
+    
+    // Hardware Back Button Listener
+    App.addListener('backButton', () => {
+        if (this.$router.currentRoute.value.path === '/pdf-gen') {
+             this.$router.push('/');
+        }
+    });
+  },
+
+  beforeUnmount() {
+    App.removeAllListeners();
   },
 
   methods: {

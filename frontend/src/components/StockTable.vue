@@ -96,11 +96,11 @@
               <button
                 v-if="isAdmin"
                 @click="$router.push('/pdf-gen')"
-                class="p-2 rounded-full hover:bg-slate-100 transition-colors group shrink-0"
+                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors group shrink-0"
                 title="Generate Catalog PDF"
               >
-                <!-- Modern PDF Icon style -->
-                <i class="fa-solid fa-file-pdf text-red-500 text-xl group-hover:scale-110 transition-transform"></i>
+                <!-- Modern Catalog Icon style -->
+                <i class="fa-solid fa-file-invoice text-red-500 text-xl group-hover:scale-110 transition-transform"></i>
               </button>
              
              <!-- Image Toggle -->
