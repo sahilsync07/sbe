@@ -60,7 +60,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.sbe.stock.app
           releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
-          track: production
+          track: internal # Changed to internal for closed testing/instant deployment
           status: completed
           # inAppUpdatePriority: 2
           # userFraction: 0.33
