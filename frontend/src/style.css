@@ -31,9 +31,7 @@ tr.product-row {
   @apply bg-gray-800;
 }
 
-button {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500 transition-colors;
-}
+
 
 input[type="file"] {
   @apply text-sm text-gray-300;

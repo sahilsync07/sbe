@@ -8,9 +8,19 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/cli": "^8.0.1",
+    "@capacitor/core": "^8.0.1",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
     "@cloudinary/url-gen": "^1.19.0",
     "@cloudinary/vue": "^1.0.5",
-    "axios": "^1.7.7",
+    "axios": "^1.13.2",
+    "file-saver": "^2.0.5",
+    "jspdf": "^4.0.0",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^5.4.530",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
     "vue3-toastify": "^0.2.8"
