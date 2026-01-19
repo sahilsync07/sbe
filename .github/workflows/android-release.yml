@@ -42,11 +42,15 @@ jobs:
           # Remove newlines and potential headers from Windows certutil output
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '\r\n' | sed 's/-----BEGIN CERTIFICATE-----//g' | sed 's/-----END CERTIFICATE-----//g' | base64 --decode > frontend/android/app/release-key.keystore
 
+      - name: Calculate Version Code
+        id: version_code
+        run: echo "code=$(( ${{ github.run_number }} + 100 ))" >> $GITHUB_OUTPUT
+
       - name: Bump Version Code
         uses: chkfung/android-version-actions@v1.2.1
         with:
           gradlePath: frontend/android/app/build.gradle
-          versionCode: ${{ github.run_number }}
+          versionCode: ${{ steps.version_code.outputs.code }}
 
       - name: Build Release Bundle
         working-directory: frontend/android
