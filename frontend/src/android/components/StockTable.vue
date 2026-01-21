@@ -931,6 +931,8 @@ import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import ProductCard from './ProductCard.vue';
 import { store } from '../store';
+import { formatProductName, normalizeId, getOptimizedImageUrl, isNewArrival, normalizeName } from '../../utils/formatters';
+import { BRAND_LISTS, TOP_BRANDS_CONFIG, MID_BRANDS_CONFIG } from '../../utils/constants';
 
 export default {
   name: "StockTable",
@@ -984,34 +986,16 @@ export default {
       customerPhone: '',
       userHasScrolled: false,
       
-      // Config Data
-      bansalList: [
-        'SRG Enterprises', 'NAV DURGA ENTERPRISES', 'AAGAM POLYMERE', 
-        'R K TRADERS', 'A G ENTERPRISES', 'NEXUS', 'YASH FOOTWEAR',
-        'AAGAM POLYMER', 'Vardhman Plastics'
-      ],
-      airsonList: ['AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR'],
-      kohinoorList: ['KOHINOOR', 'UAM FOOTWEAR'],
-      nareshList: ['KRishna Agency', 'SHYAM'],
-      socksList: ['BArun', 'PAreek Soucks', 'LEo'],
-      paragonList: [
-        'Paragon Gents', 'Paragon Ladies', 'Eeken', 'Meriva', 'Paragon',  
-        'Paragon Blot', 'Max', 'Paralite', 'P-TOES', 'Hawai Chappal', 
-        'Stimulus', 'Escoute', 'Safety', 'Walkaholic', 'School'
-      ],
-      topBrandsConfig: [
-        { name: 'Cubix', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-        { name: 'CUBIX 2', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-        { name: 'Florex (Swastik)', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg' },
-        { name: 'RELIANCE FOOTWEAR', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png' },
-        { name: 'Action', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' }
-      ],
-      midBrandsConfig: [
-         'AIRFAX', 'TEUZ', 'Paris', 'Hitway', 'PANKAJ PLASTIC', 'VAISHNO PLASTIC', 'TARA', 'ADDA', 'ASHU', 'ADDOXY'
-      ],
-      generalList: ['Maruti Plastics', 'Magnet', 'J.K Plastic', 
-        'R R POLYPLAST', 'AGRA'
-      ],
+      // Config Data - now using imported constants
+      bansalList: BRAND_LISTS.bansal,
+      airsonList: BRAND_LISTS.airson,
+      kohinoorList: BRAND_LISTS.kohinoor,
+      nareshList: BRAND_LISTS.naresh,
+      socksList: BRAND_LISTS.socks,
+      paragonList: BRAND_LISTS.paragon,
+      topBrandsConfig: TOP_BRANDS_CONFIG,
+      midBrandsConfig: MID_BRANDS_CONFIG,
+      generalList: BRAND_LISTS.general,
     };
   },
   watch: {
@@ -1518,11 +1502,7 @@ export default {
       // Note: Auto-open disabled per request
       // this.showCart = true; 
     },
-    formatProductName(name) {
-      if (!name) return '';
-      // First letter capital, rest small for every word
-      return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    },
+    // formatProductName - now using imported utility function
     removeFromCart(index) {
       this.cart.splice(index, 1);
     },
@@ -1538,29 +1518,11 @@ export default {
     toggleLedgerView() {
       this.showLedgerView = !this.showLedgerView;
     },
+    // getOptimizedUrl - now using getOptimizedImageUrl from utils
     getOptimizedUrl(imageUrl) {
-      if (!imageUrl) return null;
-      try {
-        const parts = imageUrl.split("/upload/");
-        if (parts.length !== 2) return imageUrl;
-        const transformation = "w_1000,q_70,f_auto";
-        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
-      } catch (e) {
-        return imageUrl;
-      }
+      return getOptimizedImageUrl(imageUrl);
     },
-    isNewArrival(product) {
-       if (!product) return false;
-       const cutoff = new Date();
-       cutoff.setMonth(cutoff.getMonth() - 1);
-       const minDate = new Date('2025-11-01');
-       
-       const imageDate = product.imageUploadedAt ? new Date(product.imageUploadedAt) : minDate;
-       const itemDate = product.firstSeenAt ? new Date(product.firstSeenAt) : minDate;
-       
-       const latestDate = itemDate > imageDate ? itemDate : imageDate;
-       return latestDate > cutoff;
-    },
+    // isNewArrival - now using imported utility function (available globally)
     async loadStockData() {
       try {
         let data = [];
@@ -1978,10 +1940,7 @@ export default {
          performScroll();
       }
     },
-    normalizeId(name) {
-      if (!name) return '';
-      return name.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase();
-    },
+    // normalizeId - now using imported utility function
     // New Reusable Sort Logic
     compareGroups(a, b) {
       const normalize = (name) => name ? name.toLowerCase().trim() : '';
