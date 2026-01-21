@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import { store } from '../android/store.js';
+import { store } from '../store.js';
 
 /**
  * Cart management composable
