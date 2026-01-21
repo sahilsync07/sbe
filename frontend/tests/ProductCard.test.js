@@ -94,7 +94,10 @@ describe('ProductCard Component', () => {
         });
 
         // Find the + button (second button in quantity controls)
-        const buttons = wrapper.findAll('.text-blue-600 button');
+        // Structure is: div > button (-) > span > button (+)
+        // We can find buttons inside the quantity control container
+        const controlContainer = wrapper.find('.flex.items-center.bg-blue-50');
+        const buttons = controlContainer.findAll('button');
         const plusButton = buttons[1];
 
         await plusButton.trigger('click');
@@ -113,7 +116,8 @@ describe('ProductCard Component', () => {
         });
 
         // Find the - button (first button in quantity controls)
-        const buttons = wrapper.findAll('.text-blue-600 button');
+        const controlContainer = wrapper.find('.flex.items-center.bg-blue-50');
+        const buttons = controlContainer.findAll('button');
         const minusButton = buttons[0];
 
         await minusButton.trigger('click');
@@ -181,6 +185,6 @@ describe('ProductCard Component', () => {
             }
         });
 
-        expect(wrapper.text()).toContain('Add Photo');
+        expect(wrapper.text()).toContain('Change');
     });
 });
