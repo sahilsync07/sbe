@@ -933,6 +933,7 @@ import ProductCard from './ProductCard.vue';
 import { store } from '../store';
 import { formatProductName, normalizeId, getOptimizedImageUrl, isNewArrival, normalizeName } from '../../utils/formatters';
 import { BRAND_LISTS, TOP_BRANDS_CONFIG, MID_BRANDS_CONFIG } from '../../utils/constants';
+import { useCart } from '../../composables/useCart';
 
 export default {
   name: "StockTable",
@@ -1031,6 +1032,7 @@ export default {
   },
   computed: {
     cartTotalItems() {
+      // Using store.cart directly since useCart returns computed
       return this.cart.reduce((total, item) => total + item.quantity, 0);
     },
 
@@ -1421,6 +1423,7 @@ export default {
         toast.error("Failed to load app configuration");
       }
     },
+    // Cart methods - delegating to useCart composable for consistency
     getCartQty(product) {
        const item = this.cart.find(i => i.product.productName === product.productName);
        return item ? item.quantity : 0;
