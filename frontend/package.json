@@ -1,8 +1,9 @@
 {
   "name": "frontend",
+  "type": "module",
   "version": "1.0.4",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "build:android": "vite build --mode android",
     "preview": "vite preview",
@@ -21,6 +22,7 @@
     "file-saver": "^2.0.5",
     "jspdf": "^4.0.0",
     "jszip": "^3.10.1",
+    "lucide-vue-next": "^0.562.0",
     "pdfjs-dist": "^5.4.530",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
