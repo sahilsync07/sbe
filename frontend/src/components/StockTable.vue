@@ -77,7 +77,7 @@
               <!-- Group Header -->
               <div
                 @click="toggleGroup(group.groupName)"
-                class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[96px] bg-white z-30 rounded-t-2xl"
+                class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[calc(100px+max(env(safe-area-inset-top),20px))] bg-white z-30 rounded-t-2xl"
                 :class="expandedGroups[group.groupName] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
               >
                 <div class="flex items-center gap-3 overflow-hidden">
@@ -187,6 +187,9 @@
                         <h3 class="text-sm font-bold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem] text-center" :title="formatProductName(product.productName)">
                           {{ formatProductName(product.productName) }}
                         </h3>
+                        <div v-if="getPriceDisplay(product.productName)" class="text-sm font-extrabold text-emerald-600 mb-1 text-center">
+                          {{ getPriceDisplay(product.productName) }}
+                        </div>
                         <div class="flex items-end justify-center border-t border-slate-50 pt-2 mt-auto">
                            <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
                               <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Stock: {{ product.quantity }}</span>
@@ -603,6 +606,17 @@ watch(selectedGroup, (newVal) => {
 
 // Helpers
 const normalizeIdHelper = (name) => normalizeId(name);
+
+const getPriceDisplay = (name) => {
+    if (!name) return null;
+    const match = name.match(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/i);
+    if (match) {
+        const prefix = match[1].toUpperCase();
+        const price = match[2];
+        return prefix === 'RS' ? `Net ₹${price}` : `MRP ₹${price}`;
+    }
+    return null;
+};
 
 // Scroll Logic Re-implementation
 const scrollToGroup = (groupName, behavior = 'instant') => {

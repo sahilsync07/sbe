@@ -18,7 +18,7 @@
          <button @click="selectedBrands = []" class="text-xs font-semibold text-slate-400 hover:text-red-500 transition-colors" v-if="selectedBrands.length > 0">Clear</button>
       </div>
       
-      <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar pb-24 lg:pb-4">
+      <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-4 pt-[max(env(safe-area-inset-top),20px)]">
          
          <!-- Paragon Section -->
          <div v-if="groupedSidebar.paragon.length > 0" class="p-2 transition-all rounded-2xl bg-red-50/30 hover:bg-red-50/60 border border-transparent hover:border-red-100">
@@ -408,7 +408,7 @@
     </main>
 
     <!-- Mobile Bottom Navigation -->
-    <div class="lg:hidden fixed bottom-[60px] mb-safe left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center h-16 z-[60] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div class="lg:hidden fixed bottom-0 mb-safe left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center h-16 z-[60] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <button 
            @click="mobileTab = 'brands'"
            class="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors outline-none bg-transparent rounded-none hover:bg-transparent shadow-none"

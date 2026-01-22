@@ -1,7 +1,7 @@
 
 <template>
   <header
-    class="sticky top-0 z-[60] w-full bg-white border-b border-slate-200 transition-all duration-300 py-2"
+    class="sticky top-0 z-[60] w-full bg-white border-b border-slate-200 transition-all duration-300 pb-2 pt-[max(env(safe-area-inset-top),20px)]"
   >
     <div class="w-full px-2 sm:px-6 lg:px-8">
       <div class="flex flex-col gap-2">

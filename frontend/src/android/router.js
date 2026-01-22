@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import StockTable from '../components/StockTable.vue';
 import PdfGenerator from './components/PdfGenerator.vue';
 import ImageUpload from '../components/ImageUpload.vue';
@@ -19,7 +19,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes
 });
 

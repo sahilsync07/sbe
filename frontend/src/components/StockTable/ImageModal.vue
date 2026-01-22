@@ -61,9 +61,12 @@
                      <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
                      <span v-if="isNewArrival(currentProduct)" class="px-2.5 py-1 rounded-md bg-green-50 text-green-600 text-xs font-bold uppercase tracking-wider">New Arrival</span>
                   </div>
-                  <h1 class="text-2xl md:text-4xl font-black text-slate-800 leading-tight mb-4">
+                  <h1 class="text-2xl md:text-4xl font-black text-slate-800 leading-tight mb-2">
                     {{ currentProduct.productName }}
                   </h1>
+                  <div v-if="getPriceDisplay(currentProduct.productName)" class="text-2xl font-bold text-emerald-600 mb-4">
+                     {{ getPriceDisplay(currentProduct.productName) }}
+                  </div>
                   
                   <div class="text-blue-600 font-bold text-sm mb-2">
                      Stock: {{ currentProduct.quantity }} Sets
@@ -162,5 +165,16 @@ const isNewArrival = (product) => {
     
     const latestDate = itemDate > imageDate ? itemDate : imageDate;
     return latestDate > cutoff;
+};
+
+const getPriceDisplay = (name) => {
+    if (!name) return null;
+    const match = name.match(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/i);
+    if (match) {
+        const prefix = match[1].toUpperCase();
+        const price = match[2];
+        return prefix === 'RS' ? `Net ₹${price}` : `MRP ₹${price}`;
+    }
+    return null;
 };
 </script>
