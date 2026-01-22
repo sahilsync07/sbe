@@ -42,6 +42,7 @@
   --paragon-red: oklch(0.55 0.2 25);
   --whatsapp-green: oklch(0.6 0.18 145);
   --new-arrival: oklch(0.7 0.2 85);
+  --ion-safe-area-top: env(safe-area-inset-top);
 }
 
 .dark {

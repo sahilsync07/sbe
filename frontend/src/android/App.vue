@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-background">
+  <div class="min-h-screen bg-background pt-[var(--ion-safe-area-top,20px)]">
       <router-view></router-view>
   </div>
 </template>

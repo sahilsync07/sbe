@@ -20,6 +20,7 @@
       @promptAdminLogin="promptAdminLogin"
       @update:searchQuery="searchQuery = $event"
       @update:showImagesOnly="showImagesOnly = $event"
+      @cacheImages="handleCacheImages"
     />
 
     <div class="flex w-full">
@@ -497,7 +498,7 @@ onMounted(async () => {
     if (stockData.value) {
         expandedGroups.value = stockData.value.reduce(
           (acc, group) => ({ ...acc, [group.groupName]: true }),
-          {}
+          { "New Arrivals": true }
         );
     }
 
@@ -508,13 +509,17 @@ onMounted(async () => {
     const productParam = params.get('product');
 
     if (brandParam) {
-        const match = stockData.value.find(g => g.groupName.toLowerCase() === brandParam.toLowerCase());
-        if (match) {
-            // We need a retry scroll mechanism or similar
-            // For now, simpler approach: set selectedGroup?
-            // The original code used `retryScroll` which scrolls to element ID.
-            // We can implement a simplified version.
-            nextTick(() => scrollToGroup(match.groupName, 'auto'));
+        if (brandParam.toLowerCase() === 'new arrivals') {
+            nextTick(() => scrollToGroup('New Arrivals', 'auto'));
+        } else {
+            const match = stockData.value.find(g => g.groupName.toLowerCase() === brandParam.toLowerCase());
+            if (match) {
+                // We need a retry scroll mechanism or similar
+                // For now, simpler approach: set selectedGroup?
+                // The original code used `retryScroll` which scrolls to element ID.
+                // We can implement a simplified version.
+                nextTick(() => scrollToGroup(match.groupName, 'auto'));
+            }
         }
     }
 
@@ -649,6 +654,67 @@ const handleClubClick = (clubName) => {
     window.scrollTo({ top: 0, behavior: 'instant' });
 };
 
+
+// Image Caching Logic
+const handleCacheImages = async () => {
+    if (!stockData.value || stockData.value.length === 0) {
+        toast.info("No data to cache.");
+        return;
+    }
+
+    const imagesToCache = [];
+    stockData.value.forEach(group => {
+        if (group.products) {
+            group.products.forEach(product => {
+                if (product.imageUrl) {
+                    imagesToCache.push(product.imageUrl);
+                }
+            });
+        }
+    });
+
+    if (imagesToCache.length === 0) {
+        toast.info("No images found to cache.");
+        return;
+    }
+
+    const total = imagesToCache.length;
+    let completed = 0;
+    const toastId = toast.loading(`Starting download of ${total} images...`, { autoClose: false });
+
+    // Helper to fetch an image
+    const fetchImage = async (url) => {
+        try {
+            // Optimized Cloudinary URL if possible (add q_auto, f_auto if not present)
+            // But usually we just fetch what is there.
+            await fetch(url, { mode: 'no-cors' }); 
+        } catch (e) {
+            console.warn(`Failed to cache ${url}`, e);
+        } finally {
+            completed++;
+            if (completed % 10 === 0 || completed === total) {
+                 toast.update(toastId, { 
+                     render: `Caching images: ${completed}/${total}`,
+                     autoClose: false 
+                 });
+            }
+        }
+    };
+
+    // Process in chunks to avoid network congestion
+    const chunkSize = 5;
+    for (let i = 0; i < total; i += chunkSize) {
+        const chunk = imagesToCache.slice(i, i + chunkSize);
+        await Promise.all(chunk.map(fetchImage));
+    }
+
+    toast.update(toastId, { 
+        render: `Successfully cached ${total} images!`, 
+        type: 'success', 
+        isLoading: false,
+        autoClose: 3000 
+    });
+};
 
 const applyTheme = () => {
        // Minimal implementation based on config, can be extracted.

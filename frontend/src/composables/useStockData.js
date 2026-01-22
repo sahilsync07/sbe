@@ -14,17 +14,46 @@ export function useStockData(isLocal) {
 
     // Fetch Initial Data
     const loadStockData = async () => {
+        let data = null;
+
+        // 1. Try Live URL (for freshest data)
         try {
-            // Check based on env
-            // Using logic from original file:
-            // if (false) { axios... } else { fetch... } 
-            // The original had `if (false)` hardcoded for production/dev toggle presumably,
-            // or explicitly using json file.
-            // We'll stick to the fetch json approach for read, as in original.
+            // 5 second max wait time for live data. If slower, just use local.
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            const response = await fetch(`${import.meta.env.BASE_URL}assets/stock-data.json?t=${new Date().getTime()}`);
-            let data = await response.json();
+            // Using the production URL explicitly to ensure we get updates
+            const liveUrl = "https://sahilsync07.github.io/sbe/assets/stock-data.json";
+            const response = await fetch(`${liveUrl}?t=${new Date().getTime()}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId); // Clear timeout on success
 
+            if (response.ok) {
+                data = await response.json();
+                console.log("Loaded stock data from Live URL");
+            } else {
+                throw new Error("Live fetch failed");
+            }
+        } catch (liveErr) {
+            console.warn("Could not fetch live data (or timed out), falling back to local:", liveErr);
+        }
+
+        // 2. Fallback to Local (if live failed)
+        if (!data) {
+            try {
+                const localUrl = `${import.meta.env.BASE_URL}assets/stock-data.json`;
+                const response = await fetch(localUrl);
+                if (response.ok) {
+                    data = await response.json();
+                    console.log("Loaded stock data from Local Bundle");
+                }
+            } catch (localErr) {
+                console.error("Local fetch also failed:", localErr);
+            }
+        }
+
+        if (data) {
             // Check for Metadata
             const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
             if (metaIndex !== -1) {
@@ -39,9 +68,9 @@ export function useStockData(isLocal) {
 
             stockData.value = data;
             error.value = null;
-        } catch (err) {
+        } else {
             error.value = isLocal.value
-                ? err.response?.data?.error || "Failed to fetch stock data"
+                ? "Failed to fetch stock data (Live & Local)"
                 : "Failed to load stock-data.json";
             stockData.value = [];
             toast.error(error.value, { autoClose: 3000 });

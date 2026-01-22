@@ -102,6 +102,16 @@
               <!-- Modern Catalog Icon style -->
               <i class="fa-solid fa-file-invoice text-red-500 text-xl group-hover:scale-110 transition-transform"></i>
             </button>
+
+            <!-- Cache Images Button -->
+            <button
+              v-if="isAdmin"
+              @click="$emit('cacheImages')"
+              class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors group shrink-0"
+              title="Cache All Images for Offline"
+            >
+              <i class="fa-solid fa-cloud-arrow-down text-blue-600 text-xl group-hover:scale-110 transition-transform"></i>
+            </button>
            
            <!-- Image Toggle -->
            <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px]" title="Show Images Only">
@@ -147,7 +157,8 @@ defineEmits([
   'toggleLedgerView', 
   'promptAdminLogin',
   'update:searchQuery',
-  'update:showImagesOnly'
+  'update:showImagesOnly',
+  'cacheImages'
 ]);
 
 const companyFirstName = computed(() => props.companyName.split(' ')[0]);
