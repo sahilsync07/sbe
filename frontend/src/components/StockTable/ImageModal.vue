@@ -36,11 +36,11 @@
            </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row p-4 md:p-8 gap-6 md:gap-12">
+        <!-- Main Content (Flex Column for Mobile "Single View" fit) -->
+        <div class="flex-1 w-full flex flex-col md:flex-row md:p-8 md:gap-12 overflow-hidden">
             
-            <!-- Image Section (Left) -->
-            <div class="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center p-4 relative overflow-hidden h-[35vh] md:h-auto md:min-h-[60vh]">
+            <!-- Image Section (Takes remaining height) -->
+            <div class="flex-1 w-full bg-white relative overflow-hidden flex items-center justify-center p-4">
                <img
                  v-if="currentProduct.imageUrl"
                  :src="getOptimizedUrl(currentProduct.imageUrl)"
@@ -53,69 +53,69 @@
                </div>
             </div>
 
-            <!-- Details Section (Right) -->
-            <div class="w-full md:w-[400px] lg:w-[480px] flex flex-col gap-3 py-4">
+            <!-- Details Section (Bottom Panel - Auto Height) -->
+            <div class="w-full md:w-[400px] lg:w-[480px] flex flex-col gap-3 p-4 bg-white md:bg-transparent shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] md:shadow-none z-10 rounded-t-3xl md:rounded-none">
                
-               <div>
-                  <div class="flex items-center gap-2 mb-3">
-                     <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
-                     <span v-if="isNewArrival(currentProduct)" class="px-2.5 py-1 rounded-md bg-green-50 text-green-600 text-xs font-bold uppercase tracking-wider">New Arrival</span>
-                  </div>
-                  <h1 class="text-2xl md:text-4xl font-black text-slate-800 leading-tight mb-2">
-                    {{ currentProduct.productName }}
-                  </h1>
-                  <div v-if="getPriceDisplay(currentProduct.productName)" class="text-2xl font-bold text-emerald-600 mb-4">
-                     {{ getPriceDisplay(currentProduct.productName) }}
-                  </div>
-                  
-                  <div class="text-blue-600 font-bold text-sm mb-2">
-                     Stock: {{ currentProduct.quantity }} Sets
-                  </div>
+               <div class="flex-1 overflow-y-auto max-h-[40vh] md:max-h-none pr-1">
+                   <div class="flex items-center gap-2 mb-2">
+                      <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
+                      <span v-if="isNewArrival(currentProduct)" class="px-2 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-wider">New Arrival</span>
+                   </div>
+                   <h1 class="text-xl md:text-3xl font-black text-slate-800 leading-tight mb-1">
+                     {{ getCleanProductName(currentProduct.productName) }}
+                   </h1>
+                   <div v-if="getProductSize(currentProduct.productName)" class="text-base font-bold text-indigo-600 mb-0.5">
+                      {{ getProductSize(currentProduct.productName) }}
+                   </div>
+                   <div v-if="getProductColor(currentProduct.productName)" class="text-base font-extrabold mb-1 uppercase tracking-wider" :style="{ color: getProductColor(currentProduct.productName).hex }">
+                      {{ getProductColor(currentProduct.productName).text }}
+                   </div>
+                   <div v-if="getPriceDisplay(currentProduct.productName)" class="text-xl font-bold text-emerald-600 mb-2">
+                      {{ getPriceDisplay(currentProduct.productName) }}
+                   </div>
+                   
+                   <div class="text-blue-600 font-bold text-xs mb-2">
+                      Stock: {{ currentProduct.quantity }} Sets
+                   </div>
                </div>
 
-               <hr class="border-slate-100" />
-
                <!-- Action Area -->
-               <div class="space-y-4">
-                  <div v-if="cartQty > 0" class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center justify-between">
-                      <span class="font-bold text-slate-700">In your cart</span>
-                       <div class="flex items-center gap-3">
-                          <button @click="$emit('updateCart', currentProduct, -1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
-                            <i class="fa-solid fa-minus"></i>
-                          </button>
-                          <span class="text-xl font-black text-blue-700 min-w-[2rem] text-center">{{ cartQty }}</span>
-                          <button @click="$emit('updateCart', currentProduct, 1)" class="w-10 h-10 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
-                            <i class="fa-solid fa-plus"></i>
-                          </button>
-                       </div>
-                  </div>
+               <div class="space-y-3 mt-auto">
+                   <div v-if="cartQty > 0" class="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-center justify-between">
+                       <span class="font-bold text-sm text-slate-700">In your cart</span>
+                        <div class="flex items-center gap-3">
+                           <button @click="$emit('updateCart', currentProduct, -1)" class="w-9 h-9 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
+                             <i class="fa-solid fa-minus text-sm"></i>
+                           </button>
+                           <span class="text-lg font-black text-blue-700 min-w-[1.5rem] text-center">{{ cartQty }}</span>
+                           <button @click="$emit('updateCart', currentProduct, 1)" class="w-9 h-9 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
+                             <i class="fa-solid fa-plus text-sm"></i>
+                           </button>
+                        </div>
+                   </div>
 
-                  <button 
-                    v-else
-                    @click="$emit('addToCart', currentProduct)"
-                    class="w-full py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 shadow-xl shadow-slate-900/10 hover:shadow-blue-600/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
-                  >
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    Add to Cart
-                  </button>
-                  
-                  <p class="text-xs text-center text-slate-400 mt-2">
-                     Tap 'Add to Cart' to include this in your order list.
-                  </p>
+                   <button 
+                     v-else
+                     @click="$emit('addToCart', currentProduct)"
+                     class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-slate-900/10 hover:shadow-blue-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 text-base"
+                   >
+                     <i class="fa-solid fa-cart-shopping"></i>
+                     Add to Cart
+                   </button>
                </div>
                
                <!-- Mobile Only Nav -->
-               <div class="md:hidden grid grid-cols-2 gap-4 mt-2 pt-0">
+               <div class="md:hidden grid grid-cols-2 gap-3 pt-0">
                    <button 
                      @click="$emit('navigate', -1)" 
-                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
+                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50 text-sm"
                      :disabled="currentProductIndex <= 0"
                    >
                      Previous
                    </button>
                    <button 
                      @click="$emit('navigate', 1)" 
-                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50"
+                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50 text-sm"
                      :disabled="isLastProduct"
                    >
                      Next
@@ -130,6 +130,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { extractColor } from '../../utils/colors';
 
 const props = defineProps({
     showImagePopup: Boolean,
@@ -173,8 +174,55 @@ const getPriceDisplay = (name) => {
     if (match) {
         const prefix = match[1].toUpperCase();
         const price = match[2];
-        return prefix === 'RS' ? `Net ₹${price}` : `MRP ₹${price}`;
+        return prefix === 'RS' ? `Net ₹${price}/-` : `MRP ₹${price}/-`;
     }
     return null;
+};
+
+const getProductSize = (name) => {
+    if (!name) return null;
+    const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
+    if (match) {
+        const n1 = parseInt(match[1]);
+        const n2 = parseInt(match[2]);
+        const low = Math.min(n1, n2);
+        const high = Math.max(n1, n2);
+        return `Size ${low}x${high}`;
+    }
+    return null;
+};
+
+const getProductColor = (name) => {
+    return extractColor(name);
+};
+
+const getCleanProductName = (name) => {
+    if (!name) return '';
+    let clean = name;
+    
+    // Remove Colors
+    const colorData = extractColor(name);
+    if (colorData && colorData.originalTokens) {
+        colorData.originalTokens.forEach(token => {
+            const regex = new RegExp(`\\b${token}\\b`, 'gi');
+            clean = clean.replace(regex, '');
+        });
+    }
+
+    // Remove Price pattern
+    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    // Remove Size pattern
+    clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
+    // Remove extra parens
+    clean = clean.replace(/\(\s*\)/g, '');
+    // Remove residual price suffixes like "/-" or "/" and separators
+    clean = clean.replace(/[\/\-]+\s*$/g, '')
+                 .replace(/^\s*[\/\-]+/g, '') 
+                 .replace(/\s*[\/\-]+\s*/g, ' '); 
+    
+    // Quick format since we don't import formatProductName here necessarily (or do we?)
+    // ImageModal doesn't import formatProductName. Let's add basic capitalization.
+    const cleanedString = clean.replace(/\s+/g, ' ').trim().toLowerCase();
+    return cleanedString.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 </script>

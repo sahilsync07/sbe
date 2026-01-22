@@ -183,36 +183,55 @@
                         </div>
                       </div>
 
-                      <div class="p-2.5 flex flex-col justify-between flex-grow bg-white">
-                        <h3 class="text-sm font-bold text-slate-700 leading-snug line-clamp-3 mb-1 min-h-[2.5rem] text-center" :title="formatProductName(product.productName)">
-                          {{ formatProductName(product.productName) }}
-                        </h3>
-                        <div v-if="getPriceDisplay(product.productName)" class="text-sm font-extrabold text-emerald-600 mb-1 text-center">
-                          {{ getPriceDisplay(product.productName) }}
-                        </div>
-                        <div class="flex items-end justify-center border-t border-slate-50 pt-2 mt-auto">
-                           <div v-if="getCartQty(product) > 0" class="flex flex-col items-center gap-1">
-                              <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Stock: {{ product.quantity }}</span>
-                              <div class="flex items-center gap-2">
-                                 <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full font-bold active:scale-90 transition-all">
-                                    <i class="fa-solid fa-minus text-xs"></i>
-                                 </button>
-                                 <span class="text-sm font-extrabold text-blue-700 min-w-[1.2rem] text-center">{{ getCartQty(product) }}</span>
-                                 <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold active:scale-90 transition-all shadow-md shadow-blue-200">
-                                    <i class="fa-solid fa-plus text-xs"></i>
-                                 </button>
-                              </div>
-                           </div>
+                      <!-- Active Cart Overlay (Shows over image when quantity > 0) -->
+                      <div 
+                        v-if="getCartQty(product) > 0" 
+                        class="absolute top-2 right-2 z-20 flex flex-col items-center gap-1 bg-white/90 backdrop-blur shadow-lg rounded-full p-1 border border-blue-100"
+                        @click.stop
+                      >
+                           <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-90 transition-all shadow-md">
+                              <i class="fa-solid fa-plus text-xs"></i>
+                           </button>
+                           <span class="text-sm font-black text-slate-800 py-0.5">{{ getCartQty(product) }}</span>
+                           <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-slate-50 active:scale-90 transition-all">
+                              <i class="fa-solid fa-minus text-xs"></i>
+                           </button>
+                      </div>
+
+                      <div class="p-3 flex flex-col justify-between flex-grow bg-white relative">
+                        <!-- Header & Add Button Row -->
+                        <div class="grid grid-cols-[1fr_auto] gap-2 mb-1.5 min-h-[2.5rem] items-center">
+                           <h3 class="text-[13px] font-bold text-slate-800 leading-tight line-clamp-2" :title="product.productName">
+                             {{ getCleanProductName(product.productName) }}
+                           </h3>
                            
-                           <div v-else class="flex flex-col items-center gap-1">
-                               <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Stock: {{ product.quantity }}</span>
-                               <button 
-                                 @click.stop="addToCart(product)"
-                                 class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-blue-600 hover:text-white border border-transparent transition-all active:scale-90"
-                                 title="Add to Cart"
-                               >
-                                 <i class="fa-solid fa-plus"></i>
-                               </button>
+                           <!-- Initial Add Button (Only visible if qty is 0) -->
+                           <button 
+                             v-if="getCartQty(product) === 0"
+                             @click.stop="addToCart(product)"
+                             class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-slate-900 text-white shadow-lg shadow-slate-200 active:scale-90 transition-all hover:bg-blue-600 self-start"
+                           >
+                              <i class="fa-solid fa-plus text-xs"></i>
+                           </button>
+                        </div>
+
+                        <!-- Meta Info (Color & Size) -->
+                        <div class="flex items-center justify-between gap-2 mb-1 min-h-[1.5rem]">
+                           <span v-if="getProductColor(product.productName)" class="text-xs font-extrabold uppercase tracking-wide truncate pr-1" :style="{ color: getProductColor(product.productName).hex }">
+                             {{ getProductColor(product.productName).text }}
+                           </span>
+                           <span v-if="getProductSize(product.productName)" class="px-1 py-0.5 rounded-full text-[12px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap ml-auto">
+                             {{ getProductSize(product.productName) }}
+                           </span>
+                        </div>
+
+                        <!-- Footer (Price Only) -->
+                        <div class="mt-auto pt-1 border-t border-slate-50">
+                           <div class="flex flex-col items-start leading-none min-w-0">
+                              <div v-if="getPriceDisplay(product.productName)" class="text-sm font-black text-emerald-600 mb-0.5 truncate w-full" :title="getPriceDisplay(product.productName)">
+                                 {{ getPriceDisplay(product.productName) }}
+                              </div>
+                              <span class="text-[10px] font-medium text-slate-400">Stock: {{ product.quantity }}</span>
                            </div>
                         </div>
                       </div>
@@ -292,6 +311,7 @@ import { useBrandGroups } from '../composables/useBrandGroups';
 import { useWhatsAppOrder } from '../composables/useWhatsAppOrder';
 import { useStockData } from '../composables/useStockData';
 import { useAdmin } from '../composables/useAdmin';
+import { extractColor } from '../utils/colors'; 
 // Components
 import DesktopToolbar from './StockTable/DesktopToolbar.vue';
 import BrandsSidebar from './StockTable/BrandsSidebar.vue';
@@ -613,9 +633,56 @@ const getPriceDisplay = (name) => {
     if (match) {
         const prefix = match[1].toUpperCase();
         const price = match[2];
-        return prefix === 'RS' ? `Net ₹${price}` : `MRP ₹${price}`;
+        return prefix === 'RS' ? `Net ₹${price}/-` : `MRP ₹${price}/-`;
     }
     return null;
+};
+
+const getProductSize = (name) => {
+    if (!name) return null;
+    const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
+    if (match) {
+        const n1 = parseInt(match[1]);
+        const n2 = parseInt(match[2]);
+        const low = Math.min(n1, n2);
+        const high = Math.max(n1, n2);
+        return `${low}x${high}`;
+    }
+    return null;
+};
+
+const getProductColor = (name) => {
+    return extractColor(name);
+};
+
+const getCleanProductName = (name) => {
+    if (!name) return '';
+    let clean = name;
+    
+    // Remove Colors
+    const colorData = extractColor(name);
+    if (colorData && colorData.originalTokens) {
+        colorData.originalTokens.forEach(token => {
+            // Regex to replace whole word matching the token, effectively
+            const regex = new RegExp(`\\b${token}\\b`, 'gi');
+            clean = clean.replace(regex, '');
+        });
+    }
+
+    // Remove Price pattern
+    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    // Remove Size pattern (careful to replace with space to avoid merging words)
+    clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
+    // Remove extra parens that might be left empty e.g. "()"
+    clean = clean.replace(/\(\s*\)/g, '');
+    // Remove residual price suffixes like "/-" or "/" and standalone separators
+    clean = clean.replace(/[\/\-]+\s*$/g, '') // End of string
+                 .replace(/^\s*[\/\-]+/g, '') // Start of string
+                 .replace(/\s*[\/\-]+\s*/g, ' '); // Middle (turn to space)
+    
+    // Normalize spaces and format
+    const cleanedString = clean.replace(/\s+/g, ' ').trim();
+    return formatProductName(cleanedString);
 };
 
 // Scroll Logic Re-implementation
