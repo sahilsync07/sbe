@@ -79,7 +79,7 @@
         <!-- Bottom Row: Search & Filters -->
         <div class="flex items-center gap-2">
            <!-- Integrated Search Bar -->
-           <div class="relative flex-1">
+           <div class="relative flex-1 min-w-[100px] transition-all duration-300">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                  <i class="fa-solid fa-magnifying-glass"></i>
               </span>
@@ -113,8 +113,20 @@
               <i class="fa-solid fa-cloud-arrow-down text-blue-600 text-xl group-hover:scale-110 transition-transform"></i>
             </button>
            
+           <!-- Negative Stock Toggle -->
+           <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px] gap-2 shrink-0" title="Hide Negative Stocks">
+               <input 
+                 type="checkbox" 
+                 :checked="hideNegativeStocks" 
+                 @change="$emit('update:hideNegativeStocks', $event.target.checked)"
+                 class="sr-only peer"
+               >
+               <i class="fa-solid fa-boxes-stacked text-slate-400 text-sm peer-checked:text-slate-800 transition-colors"></i>
+               <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-red-500 relative"></div>
+           </label>
+
            <!-- Image Toggle -->
-           <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px]" title="Show Images Only">
+           <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px] shrink-0" title="Show Images Only">
                <input 
                  type="checkbox" 
                  :checked="showImagesOnly" 
@@ -147,6 +159,7 @@ const props = defineProps({
   cartTotalItems: Number,
   searchQuery: String,
   showImagesOnly: Boolean,
+  hideNegativeStocks: Boolean,
   cloudName: String
 });
 
@@ -158,6 +171,7 @@ defineEmits([
   'promptAdminLogin',
   'update:searchQuery',
   'update:showImagesOnly',
+  'update:hideNegativeStocks',
   'cacheImages'
 ]);
 

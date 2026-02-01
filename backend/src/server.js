@@ -34,6 +34,7 @@ const tallyRequestXML = `<?xml version="1.0"?>
         <STATICVARIABLES>
           <EXPLODEFLAG>Yes</EXPLODEFLAG>
           <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
+          <SVZEROQTY>Yes</SVZEROQTY>
         </STATICVARIABLES>
       </REQUESTDESC>
     </EXPORTDATA>

@@ -12,6 +12,7 @@
       :cart-total-items="cartTotalItems"
       :search-query="searchQuery"
       :show-images-only="showImagesOnly"
+      :hide-negative-stocks="hideNegativeStocks"
       :cloud-name="cloudName"
       @toggleSidebar="toggleSidebar"
       @toggleCart="toggleCart"
@@ -20,6 +21,7 @@
       @promptAdminLogin="promptAdminLogin"
       @update:searchQuery="searchQuery = $event"
       @update:showImagesOnly="showImagesOnly = $event"
+      @update:hideNegativeStocks="hideNegativeStocks = $event"
       @cacheImages="handleCacheImages"
     />
 
@@ -356,7 +358,7 @@ const {
 
 // 4. Product Filter
 const { 
-  searchQuery, selectedGroup, showImagesOnly, 
+  searchQuery, selectedGroup, showImagesOnly, hideNegativeStocks,
   filteredStockData 
 } = useProductFilter(stockData, config);
 

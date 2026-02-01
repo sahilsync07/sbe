@@ -7,6 +7,7 @@ export function useProductFilter(stockData, config) {
     const selectedGroup = ref("All");
     const showImagesOnly = ref(true);
     const showNoImagesOnly = ref(false);
+    const hideNegativeStocks = ref(true); // Default ON
     const hideOldArticles = ref(true);
 
     // Helper: Normalize strings for comparison
@@ -82,6 +83,14 @@ export function useProductFilter(stockData, config) {
             filtered = filtered.map(group => ({
                 ...group,
                 products: group.products.filter(p => !p.imageUrl)
+            })).filter(group => group.products.length > 0);
+        }
+
+        // Filter by Negative Stocks
+        if (hideNegativeStocks.value) {
+            filtered = filtered.map(group => ({
+                ...group,
+                products: group.products.filter(p => p.quantity >= 0)
             })).filter(group => group.products.length > 0);
         }
 
@@ -183,6 +192,7 @@ export function useProductFilter(stockData, config) {
         selectedGroup,
         showImagesOnly,
         showNoImagesOnly,
+        hideNegativeStocks,
         hideOldArticles,
         filteredStockData,
         sortedStockDataForDropdown,
