@@ -63,6 +63,8 @@
           <div class="text-xl font-semibold text-slate-500">Tally Ledger Work in Progress</div>
         </div>
 
+        <WelcomeSplash v-else-if="showWelcome" />
+
         <div v-else class="space-y-6">
           <div v-if="error" class="flex flex-col sm:flex-row justify-end items-center text-xs text-slate-500 px-2">
             <span class="text-red-500 font-medium mt-1 sm:mt-0">{{ error }}</span>
@@ -146,6 +148,7 @@
                           v-if="product.imageUrl"
                           :src="getOptimizedImageUrl(product.imageUrl)"
                           alt="Product"
+                          loading="lazy"
                           class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover:scale-110"
                           @click="openImagePopup(product, index)"
                         />
@@ -318,6 +321,7 @@ import { extractColor } from '../utils/colors';
 import DesktopToolbar from './StockTable/DesktopToolbar.vue';
 import BrandsSidebar from './StockTable/BrandsSidebar.vue';
 import CartSidebar from './StockTable/CartSidebar.vue';
+import WelcomeSplash from './WelcomeSplash.vue'; 
 import { defineAsyncComponent } from 'vue';
 
 const ImageModal = defineAsyncComponent(() => import('./StockTable/ImageModal.vue'));
@@ -330,6 +334,7 @@ const showGoToTop = ref(false);
 const showSidePanel = ref(false);
 const showCart = ref(false);
 const showLedgerView = ref(false);
+const showWelcome = ref(true); // Welcome Splash State
 const expandedGroups = ref({});
 const activeScrollGroup = ref('');
 const userHasScrolled = ref(false);
@@ -510,6 +515,11 @@ const loadConfig = async () => {
 };
 
 onMounted(async () => {
+    // Hide Welcome Splash after 1.5 seconds
+    setTimeout(() => {
+        showWelcome.value = false;
+    }, 1500);
+
     // Inject FontAwesome
     const link = document.createElement('link');
     link.rel = 'stylesheet';

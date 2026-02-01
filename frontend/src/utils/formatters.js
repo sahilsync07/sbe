@@ -33,7 +33,7 @@ export function getOptimizedImageUrl(imageUrl) {
     try {
         const parts = imageUrl.split('/upload/');
         if (parts.length !== 2) return imageUrl;
-        const transformation = 'w_1000,q_70,f_auto';
+        const transformation = 'w_500,q_70,f_auto';
         return `${parts[0]}/upload/${transformation}/${parts[1]}`;
     } catch (e) {
         return imageUrl;

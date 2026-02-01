@@ -11,69 +11,119 @@ export function useStockData(isLocal) {
     const uploading = ref({});
     const uploadErrors = ref({});
     const imageFiles = ref({});
+    const CACHE_KEY = 'sbe_stock_data_cache';
 
     // Fetch Initial Data
     const loadStockData = async () => {
-        let data = null;
+        loading.value = true;
+        let hasData = false;
 
-        // 1. Try Live URL (for freshest data)
+        // --- Tier 1: LocalStorage Cache (Instant) ---
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                if (parsed && Array.isArray(parsed)) {
+                    stockData.value = parsed;
+                    hasData = true;
+                    loading.value = false; // Show cached data immediately
+                    console.log("Loaded stock data from LocalStorage Cache (Tier 1)");
+                }
+            } catch (e) {
+                console.error("Cache parse error", e);
+                localStorage.removeItem(CACHE_KEY);
+            }
+        }
+
+        // --- Tier 2: Local Bundle (Fast Fallback for First Time) ---
+        // If no cache, try fetching the local file bundled with the app
+        if (!hasData) {
+            try {
+                const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+                    ? import.meta.env.BASE_URL
+                    : `${import.meta.env.BASE_URL}/`;
+
+                const localUrl = `${baseUrl}assets/stock-data.json`;
+                console.log("Attempting Local Bundle fetch:", localUrl);
+
+                const response = await fetch(localUrl);
+                if (response.ok) {
+                    const localData = await response.json();
+                    stockData.value = localData;
+                    hasData = true;
+                    loading.value = false; // Show local data
+                    console.log("Loaded stock data from Local Bundle (Tier 2)");
+
+                    // Seed the cache so next time is Tier 1
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(localData));
+                    } catch (e) { }
+                }
+            } catch (localErr) {
+                console.warn("Local Bundle fetch failed:", localErr);
+            }
+        }
+
+        // --- Tier 3: Live Network Fetch (Always Validate) ---
         try {
-            // 5 second max wait time for live data. If slower, just use local.
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            console.log("Starting Background Live Fetch (Tier 3)...");
 
-            // Using the production URL explicitly to ensure we get updates
+            // 5 second max wait time for live data
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
             const liveUrl = "https://sahilsync07.github.io/sbe/assets/stock-data.json";
             const response = await fetch(`${liveUrl}?t=${new Date().getTime()}`, {
                 signal: controller.signal
             });
-            clearTimeout(timeoutId); // Clear timeout on success
+            clearTimeout(timeoutId);
 
             if (response.ok) {
-                data = await response.json();
-                console.log("Loaded stock data from Live URL");
+                const liveData = await response.json();
+
+                // Update UI with fresh data
+                stockData.value = liveData;
+
+                // Update Cache
+                localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
+
+                console.log("Updated stock data from Live URL (Tier 3)");
+
+                if (!hasData) {
+                    loading.value = false; // Stop loading if we were still waiting
+                }
             } else {
                 throw new Error("Live fetch failed");
             }
         } catch (liveErr) {
-            console.warn("Could not fetch live data (or timed out), falling back to local:", liveErr);
-        }
-
-        // 2. Fallback to Local (if live failed)
-        if (!data) {
-            try {
-                const localUrl = `${import.meta.env.BASE_URL}assets/stock-data.json`;
-                const response = await fetch(localUrl);
-                if (response.ok) {
-                    data = await response.json();
-                    console.log("Loaded stock data from Local Bundle");
-                }
-            } catch (localErr) {
-                console.error("Local fetch also failed:", localErr);
+            console.warn("Background live fetch failed or timed out:", liveErr);
+            if (!hasData) {
+                // Only show error if we strictly have NO data (Tier 1, 2, and 3 all failed)
+                error.value = "Failed to load stock data. Please check connection.";
+                toast.error(error.value, { autoClose: 3000 });
+                loading.value = false;
             }
         }
 
-        if (data) {
-            // Check for Metadata
+        // Process Metadata (run on whatever data we have)
+        if (stockData.value.length > 0) {
+            const data = stockData.value;
             const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
             if (metaIndex !== -1) {
                 const meta = data[metaIndex];
                 if (meta.lastSync) {
                     lastRefresh.value = new Date(meta.lastSync);
                 }
+                // Don't splice metadata out of the reactive array to avoid issues with cache consistency or re-runs
+                // Ideally, we filter it out in the view, but the current app likely splices it. 
+                // Since we might be saving to cache, splicing it removes it from cache for next time.
+                // Let's splice it for the VIEW, but note:
+                // If we splice, stockData is modified.
                 data.splice(metaIndex, 1);
             } else {
                 lastRefresh.value = null;
             }
-
-            stockData.value = data;
             error.value = null;
-        } else {
-            error.value = isLocal.value
-                ? "Failed to fetch stock data (Live & Local)"
-                : "Failed to load stock-data.json";
-            stockData.value = [];
-            toast.error(error.value, { autoClose: 3000 });
         }
     };
 
@@ -99,6 +149,9 @@ export function useStockData(isLocal) {
             }
 
             stockData.value = data;
+            // Update Cache on Admin Sync too
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+
             toast.success("Stock data updated successfully!", { autoClose: 2500 });
         } catch (err) {
             error.value = err.response?.data?.error || "Failed to update stock data";
@@ -149,6 +202,9 @@ export function useStockData(isLocal) {
                 ),
             }));
 
+            // Update Cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+
             toast.success("Image uploaded updated!", { autoClose: 2500 });
         } catch (err) {
             uploadErrors.value[productName] = "Failed to load image";
@@ -173,6 +229,9 @@ export function useStockData(isLocal) {
                         : product
                 ),
             }));
+
+            // Update Cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
 
             toast.success(`Image removed for ${productName}.`, { autoClose: 2500 });
         } catch (err) {

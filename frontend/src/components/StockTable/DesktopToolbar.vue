@@ -84,8 +84,8 @@
                  <i class="fa-solid fa-magnifying-glass"></i>
               </span>
               <input
-                :value="searchQuery"
-                @input="$emit('update:searchQuery', $event.target.value)"
+                :value="localQuery"
+                @input="handleSearchInput"
                 type="text"
                 placeholder="Search items..."
                 class="w-full pl-9 pr-4 py-2 rounded-full bg-slate-100/50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
@@ -143,7 +143,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
   isAdmin: Boolean,
@@ -163,7 +163,7 @@ const props = defineProps({
   cloudName: String
 });
 
-defineEmits([
+const emit = defineEmits([
   'toggleSidebar', 
   'toggleCart', 
   'updateStockData', 
@@ -180,4 +180,26 @@ const companyRestName = computed(() => props.companyName.split(' ').slice(1).joi
 const formattedLastRefresh = computed(() => 
   props.lastRefresh ? new Date(props.lastRefresh).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never"
 );
+
+// --- Debounce Search Logic ---
+const localQuery = ref(props.searchQuery);
+let debounceTimeout = null;
+
+const handleSearchInput = (event) => {
+  const value = event.target.value;
+  localQuery.value = value;
+  
+  if (debounceTimeout) clearTimeout(debounceTimeout);
+  
+  debounceTimeout = setTimeout(() => {
+    emit('update:searchQuery', value);
+  }, 300); // 300ms wait
+};
+
+// Sync external changes (e.g. clear search from parent)
+watch(() => props.searchQuery, (newVal) => {
+  if (newVal !== localQuery.value) {
+    localQuery.value = newVal;
+  }
+});
 </script>
