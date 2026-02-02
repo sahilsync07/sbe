@@ -1,7 +1,7 @@
 
 <template>
     <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-      <div v-if="show" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+      <div v-if="show" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="$emit('close')"></div>
         <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
           <div class="p-6">
