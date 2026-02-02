@@ -31,6 +31,7 @@ export const BRAND_LISTS = {
         'Safety',
         'Walkaholic',
         'School',
+        'P-TOES PARALITE',
     ],
     general: ['Maruti Plastics', 'Magnet', 'J.K Plastic', 'R R POLYPLAST', 'AGRA'],
 };

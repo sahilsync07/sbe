@@ -13,6 +13,45 @@ export function useStockData(isLocal) {
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
 
+    // Helper: Custom Grouping Interceptor
+    const processCustomGroups = (data) => {
+        if (!Array.isArray(data)) return data;
+
+        // Custom Rule: P-TOES PARALITE
+        const targetName = "P-TOES PARALITE";
+        let foundProduct = null;
+        let originalGroupIndex = -1;
+
+        // 1. Find the product
+        for (let i = 0; i < data.length; i++) {
+            const group = data[i];
+            const pIndex = group.products.findIndex(p => p.productName.toUpperCase() === targetName);
+
+            if (pIndex !== -1) {
+                foundProduct = group.products[pIndex];
+                // Remove from original group
+                group.products.splice(pIndex, 1);
+                // If group is empty, mark for cleanup (optional, skipping for safety)
+                break;
+            }
+        }
+
+        // 2. Create new group if found
+        if (foundProduct) {
+            // Check if group already exists (avoid dupes on re-runs)
+            const existingGroup = data.find(g => g.groupName === targetName);
+            if (!existingGroup) {
+                data.push({
+                    groupName: targetName,
+                    products: [foundProduct],
+                    isSpecial: true // Optional flag for styling
+                });
+            }
+        }
+
+        return data;
+    };
+
     // Fetch Initial Data
     const loadStockData = async () => {
         loading.value = true;
@@ -24,7 +63,7 @@ export function useStockData(isLocal) {
             try {
                 const parsed = JSON.parse(cached);
                 if (parsed && Array.isArray(parsed)) {
-                    stockData.value = parsed;
+                    stockData.value = processCustomGroups(parsed);
                     hasData = true;
                     loading.value = false; // Show cached data immediately
                     console.log("Loaded stock data from LocalStorage Cache (Tier 1)");
@@ -49,7 +88,7 @@ export function useStockData(isLocal) {
                 const response = await fetch(localUrl);
                 if (response.ok) {
                     const localData = await response.json();
-                    stockData.value = localData;
+                    stockData.value = processCustomGroups(localData);
                     hasData = true;
                     loading.value = false; // Show local data
                     console.log("Loaded stock data from Local Bundle (Tier 2)");
@@ -82,7 +121,7 @@ export function useStockData(isLocal) {
                 const liveData = await response.json();
 
                 // Update UI with fresh data
-                stockData.value = liveData;
+                stockData.value = processCustomGroups(liveData);
 
                 // Update Cache
                 localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
@@ -148,7 +187,7 @@ export function useStockData(isLocal) {
                 lastRefresh.value = new Date();
             }
 
-            stockData.value = data;
+            stockData.value = processCustomGroups(data);
             // Update Cache on Admin Sync too
             localStorage.setItem(CACHE_KEY, JSON.stringify(data));
 
