@@ -101,9 +101,9 @@
 
                    <!-- Regular Group Style -->
                    <div v-else class="flex items-center gap-3">
-                      <h2 class="text-lg md:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
-                        {{ group.groupName }}
-                      </h2>
+                       <h2 class="text-lg md:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
+                         {{ formatGroupName(group.groupName) }}
+                       </h2>
                       <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">
                         {{ group.products.length }}
                       </span>
@@ -170,6 +170,8 @@
                            <i class="fa-solid fa-image text-4xl opacity-20"></i>
                         </div>
                         
+
+                        
                         <!-- Floating Cart Controls (On Image) -->
                         <div v-if="getCartQty(product) > 0" class="absolute bottom-3 right-3 z-20 flex items-center gap-1 p-1 bg-white/95 backdrop-blur rounded-full shadow-lg border border-blue-100 animate-fade-in-up" @click.stop>
                             <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
@@ -180,17 +182,7 @@
                                 <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </div>
-                        
-                        <!-- Floating Add Button (Initial) -->
-                        <button 
-                             v-else-if="product.quantity > 0"
-                             @click.stop="addToCart(product)"
-                             class="absolute bottom-3 right-3 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white text-slate-800 shadow-lg hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 border border-slate-100 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 lg:opacity-100 lg:translate-y-0"
-                             title="Add to Cart"
-                        >
-                              <i class="fa-solid fa-plus"></i>
-                        </button>
-                        
+
                         <!-- Image Upload Overlay (Admin) -->
                          <div
                           v-if="isAdmin || isSuperAdmin"
@@ -212,9 +204,10 @@
                       </div>
 
                       <!-- Content -->
-                      <div class="p-3 flex flex-col flex-1 pb-3">
+                      <!-- Content -->
+                      <div class="p-3 flex flex-col flex-1 pb-3 relative">
                           <!-- Title -->
-                          <div class="mb-1.5">
+                          <div class="mb-1.5 pr-8">
                              <h3 class="text-xs sm:text-sm font-bold text-slate-800 leading-snug line-clamp-2 min-h-[2.5em] group-hover:text-blue-600 transition-colors" :title="product.productName">
                                 {{ getCleanProductName(product.productName) }}
                              </h3>
@@ -248,11 +241,23 @@
                                  </div>
                               </div>
                               <div class="text-right flex flex-col items-end">
-                                 <span class="text-[9px] sm:text-[10px] font-medium" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
+                                 <span class="text-xs sm:text-sm font-bold" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
                                     {{ product.quantity }} Pairs
                                  </span>
                               </div>
                           </div>
+
+                          <!-- Controls (Hidden here, moved to image) -->
+                        
+                        <button 
+                             v-if="product.quantity > 0"
+                             @click.stop="addToCart(product)"
+                             class="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 shadow-sm border border-slate-200 hover:bg-blue-600 hover:text-white transition-all hover:scale-110 active:scale-95"
+                             title="Add to Cart"
+                        >
+                              <i class="fa-solid fa-plus text-xs"></i>
+                        </button>
+
                       </div>
                     </div>
                   </div>
@@ -521,7 +526,7 @@ const handleScroll = () => {
 const scrollToTop = () => {
     selectedGroup.value = 'All';
     window.history.replaceState(null, '', window.location.pathname);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
 };
 const handleUserScroll = () => {
    userHasScrolled.value = true;
@@ -729,7 +734,7 @@ const scrollToGroup = (groupName, behavior = 'instant') => {
         const id = 'group-grid-' + normalizeId(groupName);
         const element = document.getElementById(id);
         if (element) {
-             const y = element.getBoundingClientRect().top + window.scrollY - 180; // Adjusted offset for sticky header
+             const y = element.getBoundingClientRect().top + window.scrollY - 85; // Adjusted offset for sticky header
              window.scrollTo({ top: y, behavior });
              activeScrollGroup.value = groupName;
              
@@ -745,7 +750,7 @@ const scrollToGroup = (groupName, behavior = 'instant') => {
 };
 
 const handleSidebarClick = (group) => {
-    scrollToGroup(group.groupName, 'smooth');
+    scrollToGroup(group.groupName, 'instant');
 };
 
 const handleClubClick = (clubName) => {
@@ -809,4 +814,9 @@ const handleCacheImages = async () => {
     
     toast.update(toastId, { render: "All images cached successfully!", type: "success", isLoading: false, autoClose: 3000 });
 };
+const formatGroupName = (name) => {
+  if (!name) return '';
+  return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 </script>

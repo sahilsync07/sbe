@@ -1,6 +1,7 @@
 
 import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
+import { generateOrderPDF } from '../utils/pdfGenerator';
 
 export function useWhatsAppOrder(cart, config) {
     const showOrderDetailsModal = ref(false);
@@ -37,6 +38,12 @@ export function useWhatsAppOrder(cart, config) {
         });
 
         message += `\n_Generated on ${date}_\n`;
+
+        // Generate PDF
+        generateOrderPDF(cart.value, {
+            name: customerName.value,
+            phone: customerPhone.value
+        });
 
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');

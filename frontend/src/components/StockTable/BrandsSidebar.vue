@@ -205,10 +205,12 @@ const bansalExists = computed(() => {
 
 const handleSidebarClick = (group) => {
     emit('sidebarClick', group);
+    emit('update:showSidePanel', false);
 };
 
 const handleClubClick = (clubName) => {
     emit('clubClick', clubName);
+    emit('update:showSidePanel', false);
 };
 
 const formatProductName = (name) => {

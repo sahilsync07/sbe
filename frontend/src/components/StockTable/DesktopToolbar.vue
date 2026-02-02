@@ -252,7 +252,7 @@ const formattedLastRefresh = computed(() => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   let timeString = "";
-  if (diffInHours < 1) timeString = "Recently";
+  if (diffInHours <= 7) timeString = "Recently";
   else if (diffInHours < 24) timeString = `${Math.floor(diffInHours)} hours ago`;
   else if (diffInDays < 7) timeString = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   else {
