@@ -1,6 +1,6 @@
 
 <template>
-  <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800">
+  <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800 pb-20">
     <DesktopToolbar
       :is-admin="isAdmin"
       :is-super-admin="isSuperAdmin"
@@ -36,13 +36,7 @@
         @clubClick="handleClubClick"
       />
 
-      <!-- Overlay for mobile sidebar -->
-      <div 
-        v-if="showSidePanel" 
-        class="fixed inset-0 bg-black/50 z-30 lg:hidden"
-        @click="showSidePanel = false"
-      ></div>
-
+      <!-- Cart Sidebar -->
       <CartSidebar
         :show-cart="showCart"
         :cart="cart"
@@ -57,195 +51,211 @@
       />
 
       <main 
-         class="flex-1 w-full px-2 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6 min-w-0 transition-all duration-300"
+         class="flex-1 w-full px-4 sm:px-6 lg:px-8 mt-4 space-y-8 min-w-0 transition-all duration-300"
       >
-        <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
-          <div class="text-xl font-semibold text-slate-500">Tally Ledger Work in Progress</div>
+        <!-- Ledger Placeholder -->
+        <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+          <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+             <i class="fa-solid fa-book-open text-slate-400 text-2xl"></i>
+          </div>
+          <div class="text-xl font-bold text-slate-700">Ledger View Under Construction</div>
+          <p class="text-slate-400 mt-2">Check back soon for accounting features.</p>
         </div>
 
+        <!-- Welcome Splash -->
         <WelcomeSplash v-else-if="showWelcome" />
 
-        <div v-else class="space-y-6">
-          <div v-if="error" class="flex flex-col sm:flex-row justify-end items-center text-xs text-slate-500 px-2">
-            <span class="text-red-500 font-medium mt-1 sm:mt-0">{{ error }}</span>
+        <div v-else class="space-y-8">
+          <!-- Error Banner -->
+          <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 border border-red-100">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span class="font-medium text-sm">{{ error }}</span>
           </div>
 
-          <!-- View: Image Grid -->
-          <div class="space-y-6 sm:space-y-10">
+          <!-- GROUP LIST -->
+          <div class="space-y-12 pb-10">
             <div
               v-for="(group, index) in filteredStockData"
               :key="group.groupName"
               :id="'group-grid-' + normalizeId(group.groupName)"
-              class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-6 relative"
+              class="relative scroll-mt-28"
             >
-              <!-- Group Header -->
+              <!-- Group Header (Sticky Glass) -->
               <div
                 @click="toggleGroup(group.groupName)"
-                class="px-4 sm:px-6 py-4 cursor-pointer select-none transition-colors flex items-center justify-between sticky top-[calc(100px+max(env(safe-area-inset-top),20px))] bg-white z-30 rounded-t-2xl"
-                :class="expandedGroups[group.groupName] ? 'border-b border-slate-100' : 'rounded-b-2xl hover:bg-slate-50'"
+                class="flex items-center justify-between cursor-pointer select-none py-3 sticky top-[138px] z-30 transition-all duration-300 group/header"
+                :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
               >
-                <div class="flex items-center gap-3 overflow-hidden">
-                  <h2 v-if="group.isSpecial" class="text-2xl sm:text-3xl font-black tracking-tight holographic-text truncate flex items-center gap-3">
-                     <span>✨ {{ group.groupName }}</span>
-                      <button 
-                        @click.stop="shareBrand(group.groupName)"
-                        class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 hover:text-blue-700 bg-transparent hover:bg-transparent rounded-full transition-all"
-                        title="Share Link"
+                <!-- Backdrop for sticky readability -->
+                 <div class="absolute inset-x-[-16px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
+                      :class="expandedGroups[group.groupName] ? 'opacity-100' : 'opacity-0 delay-200'"></div>
+
+                 <div class="flex items-center gap-4 z-10 pl-2">
+                   <!-- Special "New Arrivals" Style -->
+                   <div v-if="group.isSpecial" class="flex items-center gap-3">
+                      <h2 class="text-3xl font-bold tracking-tighter holographic-text">
+                         ✨ {{ group.groupName }}
+                      </h2>
+                   </div>
+
+                   <!-- Regular Group Style -->
+                   <div v-else class="flex items-center gap-3">
+                      <h2 class="text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
+                        {{ group.groupName }}
+                      </h2>
+                      <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">
+                        {{ group.products.length }}
+                      </span>
+                   </div>
+                 </div>
+
+                 <!-- Actions -->
+                 <div class="flex items-center gap-2 z-10 pr-2">
+                    <button 
+                         @click.stop="shareBrand(group.groupName)"
+                         class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm border border-slate-100"
+                         title="Share"
                       >
-                        <i class="fa-solid fa-share-nodes text-sm"></i>
-                      </button>
-                  </h2>
-                  <h2 v-else class="text-lg sm:text-xl font-bold text-slate-800 truncate flex items-center gap-3">
-                    <span>{{ group.groupName }}</span>
-                    <span class="text-sm font-medium text-slate-400">
-                      ({{ group.products.length }})
-                    </span>
-                      <button 
-                        @click.stop="shareBrand(group.groupName)"
-                        class="w-8 h-8 flex items-center justify-center shrink-0 text-blue-600 hover:text-blue-700 bg-transparent hover:bg-transparent rounded-full transition-all"
-                        title="Share Link"
-                      >
-                        <i class="fa-solid fa-share-nodes text-sm"></i>
-                      </button>
-                  </h2>
-                </div>
-                <!-- Chevron -->
-                <div class="flex items-center gap-3 shrink-0">
-                   <span v-if="!group.isSpecial" class="text-slate-300">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5 transform transition-transform duration-300"
-                        :class="expandedGroups[group.groupName] ? 'rotate-180' : ''"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                   </span>
-                </div>
+                         <i class="fa-solid fa-share-nodes text-xs"></i>
+                    </button>
+                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 shadow-sm border border-slate-100 transition-transform duration-300"
+                         :class="expandedGroups[group.groupName] ? 'rotate-180 bg-slate-100' : ''">
+                       <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                 </div>
               </div>
 
-              <!-- Group Content -->
+              <!-- Product Grid -->
               <transition
-                enter-active-class="transition-all duration-300 ease-out"
-                enter-from-class="opacity-0 max-h-0"
-                enter-to-class="opacity-100 max-h-[5000px]"
+                enter-active-class="transition-all duration-500 ease-out"
+                enter-from-class="opacity-0 translate-y-4"
+                enter-to-class="opacity-100 translate-y-0"
                 leave-active-class="transition-all duration-200 ease-in"
-                leave-from-class="opacity-100 max-h-[5000px]"
-                leave-to-class="opacity-0 max-h-0"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
               >
-                <div v-show="expandedGroups[group.groupName]" class="bg-slate-50/30 p-2 sm:p-4">
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4">
+                <div v-show="expandedGroups[group.groupName]">
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-4 gap-y-8">
                     <div
                       v-for="(product, pIndex) in group.products"
                       :key="product.productName"
-                      class="bg-white p-1.5 sm:p-2.5 relative group flex flex-col h-full rounded-2xl shadow-sm border border-slate-200 transition-shadow hover:shadow-md"
+                      class="group relative flex flex-col bg-white rounded-3xl shadow-card hover:shadow-float transition-all duration-300 border border-transparent mx-auto w-full max-w-[280px]"
                     >
                       <!-- Image Area -->
-                      <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden mb-3 rounded-xl border border-slate-100 shadow-inner group-hover:shadow-md transition-shadow">
+                      <div class="relative w-full aspect-[4/5] bg-slate-100 rounded-t-3xl overflow-hidden cursor-pointer" @click="openImagePopup(product, index)">
+                        <!-- Badge: New -->
+                        <div v-if="isNewArrival(product)" class="absolute top-3 left-3 z-20 px-2 py-1 bg-black/80 backdrop-blur-md rounded-lg text-[10px] font-bold text-white uppercase tracking-widest shadow-lg border border-white/10">
+                            New
+                        </div>
+                        
+                        <!-- Badge: Stock Low -->
+                        <div v-if="product.quantity > 0 && product.quantity <= 5" class="absolute top-3 right-3 z-20 px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
+                            Low Stock
+                        </div>
+                         <!-- Badge: Out of Stock -->
+                        <div v-if="product.quantity <= 0" class="absolute inset-0 z-10 bg-slate-50/80 backdrop-blur-[2px] flex items-center justify-center">
+                            <span class="px-3 py-1 bg-slate-200 text-slate-500 text-xs font-bold rounded-full border border-slate-300">Out of Stock</span>
+                        </div>
+
+
                         <img
                           v-if="product.imageUrl"
                           :src="getOptimizedImageUrl(product.imageUrl)"
                           alt="Product"
                           loading="lazy"
-                          class="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover:scale-110"
-                          @click="openImagePopup(product, index)"
+                          class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                         />
                         <div
                            v-else
                            class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50"
                         >
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                           <i class="fa-solid fa-image text-4xl opacity-20"></i>
                         </div>
                         
-                        <!-- Admin Controls Overlay -->
-                        <div
-                          v-if="isAdmin || isSuperAdmin"
-                          class="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4 z-10"
+                        <!-- Floating Cart Controls (On Image) -->
+                        <div v-if="getCartQty(product) > 0" class="absolute bottom-3 right-3 z-20 flex items-center gap-1 p-1 bg-white/95 backdrop-blur rounded-full shadow-lg border border-blue-100 animate-fade-in-up" @click.stop>
+                            <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+                                <i class="fa-solid fa-minus text-xs"></i>
+                            </button>
+                            <span class="w-6 text-center text-sm font-bold text-slate-800">{{ getCartQty(product) }}</span>
+                            <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Floating Add Button (Initial) -->
+                        <button 
+                             v-else-if="product.quantity > 0"
+                             @click.stop="addToCart(product)"
+                             class="absolute bottom-3 right-3 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white text-slate-800 shadow-lg hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 border border-slate-100 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 lg:opacity-100 lg:translate-y-0"
+                             title="Add to Cart"
                         >
-                           <button
-                             v-if="product.imageUrl"
-                             @click.stop="deleteImage(product.productName)"
-                             class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors"
-                             title="Delete Image"
-                           >
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                           </button>
-
-                           <label class="px-3 py-1.5 bg-white/90 text-xs font-bold text-slate-800 rounded-lg cursor-pointer hover:bg-white transition-colors shadow-lg">
-                              {{ uploading[product.productName] ? 'Wait...' : (product.imageUrl ? 'Replace' : 'Upload') }}
+                              <i class="fa-solid fa-plus"></i>
+                        </button>
+                        
+                        <!-- Image Upload Overlay (Admin) -->
+                         <div
+                          v-if="isAdmin || isSuperAdmin"
+                          class="absolute top-2 left-2 z-30 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                           <label class="w-8 h-8 flex items-center justify-center bg-white/90 rounded-full cursor-pointer shadow-md hover:scale-110 transition-transform text-slate-600">
+                              <i class="fa-solid fa-camera text-xs"></i>
                               <input type="file" accept="image/*" @change="handleFileChange($event, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
                            </label>
                            
-                           <button
-                             v-if="imageFiles[product.productName]"
-                             @click="uploadImage(product.productName)"
-                             class="px-3 py-1.5 bg-blue-600 text-xs font-bold text-white rounded-lg hover:bg-blue-500 shadow-lg"
-                           >
-                             Confirm
+                           <button v-if="imageFiles[product.productName]" @click.stop="uploadImage(product.productName)" class="px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded shadow-md">
+                             Save
+                           </button>
+
+                           <button v-if="product.imageUrl" @click.stop="deleteImage(product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600">
+                             <i class="fa-solid fa-trash text-[10px]"></i>
                            </button>
                         </div>
                       </div>
 
-                      <!-- Active Cart Overlay (Shows over image when quantity > 0) -->
-                      <div 
-                        v-if="getCartQty(product) > 0" 
-                        class="absolute top-2 right-2 z-20 flex flex-col items-center gap-1 bg-white/90 backdrop-blur shadow-lg rounded-full p-1 border border-blue-100"
-                        @click.stop
-                      >
-                           <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-90 transition-all shadow-md">
-                              <i class="fa-solid fa-plus text-xs"></i>
-                           </button>
-                           <span class="text-sm font-black text-slate-800 py-0.5">{{ getCartQty(product) }}</span>
-                           <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-slate-50 active:scale-90 transition-all">
-                              <i class="fa-solid fa-minus text-xs"></i>
-                           </button>
-                      </div>
-
-                      <div class="p-3 flex flex-col justify-between flex-grow bg-white relative">
-                        <!-- Header & Add Button Row -->
-                        <div class="grid grid-cols-[1fr_auto] gap-2 mb-1.5 min-h-[2.5rem] items-center">
-                           <h3 class="text-[13px] font-bold text-slate-800 leading-tight line-clamp-2" :title="product.productName">
-                             {{ getCleanProductName(product.productName) }}
-                           </h3>
-                           
-                           <!-- Initial Add Button (Only visible if qty is 0) -->
-                           <button 
-                             v-if="getCartQty(product) === 0"
-                             @click.stop="addToCart(product)"
-                             class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-slate-900 text-white shadow-lg shadow-slate-200 active:scale-90 transition-all hover:bg-blue-600 self-start"
-                           >
-                              <i class="fa-solid fa-plus text-xs"></i>
-                           </button>
-                        </div>
-
-                        <!-- Meta Info (Color & Size) -->
-                        <div class="flex items-center justify-between gap-2 mb-1 min-h-[1.5rem]">
-                           <span v-if="getProductColor(product.productName)" class="text-xs font-extrabold uppercase tracking-wide truncate pr-1" :style="{ color: getProductColor(product.productName).hex }">
-                             {{ getProductColor(product.productName).text }}
-                           </span>
-                           <span v-if="getProductSize(product.productName)" class="px-1 py-0.5 rounded-full text-[12px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap ml-auto">
-                             {{ getProductSize(product.productName) }}
-                           </span>
-                        </div>
-
-                        <!-- Footer (Price Only) -->
-                        <div class="mt-auto pt-1 border-t border-slate-50">
-                           <div class="flex flex-col items-start leading-none min-w-0">
-                              <div v-if="getPriceDisplay(product.productName)" class="text-sm font-black text-emerald-600 mb-0.5 truncate w-full" :title="getPriceDisplay(product.productName)">
-                                 {{ getPriceDisplay(product.productName) }}
+                      <!-- Content -->
+                      <div class="p-4 flex flex-col flex-1 pb-5">
+                          <!-- Title -->
+                          <div class="mb-2">
+                             <h3 class="text-sm font-bold text-slate-800 leading-snug line-clamp-2 min-h-[2.5em] group-hover:text-blue-600 transition-colors" :title="product.productName">
+                                {{ getCleanProductName(product.productName) }}
+                             </h3>
+                          </div>
+                          
+                          <!-- Details Row -->
+                          <div class="flex items-center justify-between mb-4">
+                              <div class="flex items-center gap-1.5 overflow-hidden">
+                                 <!-- Color Dot -->
+                                 <span v-if="getProductColor(product.productName)" 
+                                       class="w-3 h-3 rounded-full shadow-sm ring-1 ring-slate-100" 
+                                       :style="{ backgroundColor: getProductColor(product.productName).hex }"
+                                       :title="getProductColor(product.productName).text"
+                                 ></span>
+                                 <span v-if="getProductColor(product.productName)" class="text-[11px] font-medium text-slate-500 capitalize truncate max-w-[60px]">
+                                    {{ getProductColor(product.productName).text }}
+                                 </span>
                               </div>
-                              <span class="text-[10px] font-medium text-slate-400">Stock: {{ product.quantity }}</span>
-                           </div>
-                        </div>
-                      </div>
+                              
+                              <span v-if="getProductSize(product.productName)" class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-bold border border-slate-200">
+                                 {{ getProductSize(product.productName) }}
+                              </span>
+                          </div>
 
-                      <!-- Upload Error Toast -->
-                      <div v-if="uploadErrors[product.productName]" class="absolute bottom-0 inset-x-0 bg-red-500 text-white text-[10px] py-1 text-center z-20">
-                        Failed
+                          <!-- Footer -->
+                          <div class="mt-auto flex items-end justify-between border-t border-dashed border-slate-100 pt-3">
+                              <div class="flex flex-col">
+                                 <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{{ getPriceInfo(product.productName).label }}</span>
+                                 <div class="text-lg font-black text-slate-900 leading-none">
+                                    <span class="text-xs align-top font-medium mr-0.5">₹</span>{{ getPriceInfo(product.productName).price }}
+                                 </div>
+                              </div>
+                              <div class="text-right flex flex-col items-end">
+                                 <span class="text-[10px] font-medium" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
+                                    {{ product.quantity }} Pairs
+                                 </span>
+                              </div>
+                          </div>
                       </div>
-
                     </div>
                   </div>
                 </div>
@@ -261,9 +271,9 @@
       <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-slate-900/90 text-white rounded-full shadow-2xl hover:bg-black transition-all hover:-translate-y-1 hover:shadow-black/20 backdrop-blur-sm z-30"
+        class="fixed bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+        <i class="fa-solid fa-arrow-up"></i>
       </button>
     </transition>
 
@@ -291,12 +301,12 @@
        @confirm="finalizeOrderAndSend"
     />
 
-    <!-- Loading Screen -->
-    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="loading" class="fixed inset-0 z-[200] bg-white/80 backdrop-blur-sm flex items-center justify-center">
-         <div class="flex flex-col items-center gap-4">
-             <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-             <p class="text-blue-600 font-bold animate-pulse text-lg">Processing...</p>
+    <!-- Admin Data Loading Overlay -->
+     <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="loading && !showWelcome" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+         <div class="bg-white px-6 py-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3">
+             <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+             <span class="text-sm font-bold text-slate-700">Updating...</span>
          </div>
       </div>
     </transition>
@@ -308,7 +318,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { toast } from 'vue3-toastify';
 import "vue3-toastify/dist/index.css";
 // Constants & Utils
-import { formatProductName, normalizeId, getOptimizedImageUrl } from '../utils/formatters';
+import { formatProductName, normalizeId, getOptimizedImageUrl, isNewArrival } from '../utils/formatters';
 // Composables
 import { useCart } from '../composables/useCart';
 import { useProductFilter } from '../composables/useProductFilter';
@@ -326,7 +336,6 @@ import { defineAsyncComponent } from 'vue';
 
 const ImageModal = defineAsyncComponent(() => import('./StockTable/ImageModal.vue'));
 const OrderModal = defineAsyncComponent(() => import('./StockTable/OrderModal.vue'));
-
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -391,8 +400,6 @@ const currentProductIndex = ref(0);
 const openImagePopup = (product, groupIndex) => {
   currentProduct.value = product;
   currentGroupIndex.value = groupIndex;
-  // If filteredStockData is used for grid, we map index from it
-  // But wait, groupIndex coming from v-for in filteredStockData is correct relative to filtered list.
   const group = filteredStockData.value[groupIndex];
   if (group) {
       currentGroupProducts.value = group.products;
@@ -450,8 +457,6 @@ const shareBrand = (brandName) => {
 const toggleSidebar = () => {
     if (showSidePanel.value) {
         showSidePanel.value = false;
-        // searchQuery.value = ''; // Should we clear search? Original did.
-        // selectedGroup.value = 'All' // Original did.
     } else {
         showSidePanel.value = true;
         searchQuery.value = ''; // Reset search on open
@@ -549,10 +554,6 @@ onMounted(async () => {
         } else {
             const match = stockData.value.find(g => g.groupName.toLowerCase() === brandParam.toLowerCase());
             if (match) {
-                // We need a retry scroll mechanism or similar
-                // For now, simpler approach: set selectedGroup?
-                // The original code used `retryScroll` which scrolls to element ID.
-                // We can implement a simplified version.
                 nextTick(() => scrollToGroup(match.groupName, 'auto'));
             }
         }
@@ -560,7 +561,6 @@ onMounted(async () => {
 
     if (productParam) {
         // Deep link product
-        // Find it in stock data
         stockData.value.forEach((group, gIndex) => {
              const pIndex = group.products.findIndex(p => p.productName === productParam);
              if (pIndex !== -1) {
@@ -569,33 +569,14 @@ onMounted(async () => {
         });
     }
 
-    // Load Cart from LocalStorage
-    // The useCart composable uses a reactive store (not local storage directly inside, wait). 
-    // The original `useCart` implementation in `frontend/src/composables/useCart.js` imported `store` from `../android/store.js`.
-    // We need to check if that store persists or if `StockTable` handled persistence.
-    // Original StockTable lines 992-997 handled persistence.
-    // We should probably add persistence here or update useCart.
+    // Load Cart
     const savedCart = localStorage.getItem('sbe_cart');
     if (savedCart) {
         try {
-            // efficient way to load? useCart doesn't have "setCart".
-            // We can push to it.
             const parsed = JSON.parse(savedCart);
-            // Clear current cart first?
-            clearCart();
-            parsed.forEach(item => addToCart(item.product)); // Add to cart adds 1. 
-            // We need to restore specific quantities.
-            // useCart exposes `cart` which is a computed from store.cart.
-            // We can iterate and update quantities or just direct manipulate if authorized.
-            // Let's assume we can loop.
             clearCart();
             parsed.forEach(item => {
-                 // Push directly if possible? 
-                 // useCart doesn't expose underlying array push easily unless we loop `addToCart` with `quantity`.
-                 // Actually `updateCart` takes `change`.
-                 // Better: Import store directly for init?
-                 // Or just `updateCart(item.product, item.quantity)` if cart is empty.
-                 updateCart(item.product, item.quantity); // updateCart adds item if not exists.
+                 updateCart(item.product, item.quantity); 
             });
         } catch (e) {
             console.error(e);
@@ -607,10 +588,6 @@ onMounted(async () => {
     window.addEventListener('wheel', handleUserScroll, { passive: true });
     window.addEventListener('touchmove', handleUserScroll, { passive: true });
     window.addEventListener('keydown', handleUserScroll, { passive: true });
-
-    // Apply Theme (Inline style injection from config)
-    // We can extract this to a util or composable too, but it's small enough here or just a function
-    applyTheme();
 });
 
 onBeforeUnmount(() => {
@@ -639,15 +616,24 @@ watch(selectedGroup, (newVal) => {
 // Helpers
 const normalizeIdHelper = (name) => normalizeId(name);
 
-const getPriceDisplay = (name) => {
-    if (!name) return null;
+// Helper to extract clean price number
+const getPriceInfo = (name) => {
+    if (!name) return { label: 'Net Rate', price: '?' };
+    // Try to find specific price patterns first: MRP 123, RS 123, @ 123
     const match = name.match(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/i);
     if (match) {
         const prefix = match[1].toUpperCase();
-        const price = match[2];
-        return prefix === 'RS' ? `Net ₹${price}/-` : `MRP ₹${price}/-`;
+        return {
+            label: prefix === 'MRP' ? 'MRP' : 'Net Rate',
+            price: match[2]
+        };
     }
-    return null;
+    // Fallback: just find the last number
+    const fallback = name.match(/(\d+(\.\d+)?)(?!.*\d)/);
+    return {
+        label: 'Net Rate', 
+        price: fallback ? fallback[0] : '?' 
+    };
 };
 
 const getProductSize = (name) => {
@@ -675,7 +661,6 @@ const getCleanProductName = (name) => {
     const colorData = extractColor(name);
     if (colorData && colorData.originalTokens) {
         colorData.originalTokens.forEach(token => {
-            // Regex to replace whole word matching the token, effectively
             const regex = new RegExp(`\\b${token}\\b`, 'gi');
             clean = clean.replace(regex, '');
         });
@@ -683,16 +668,14 @@ const getCleanProductName = (name) => {
 
     // Remove Price pattern
     clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
-    // Remove Size pattern (careful to replace with space to avoid merging words)
+    // Remove Size pattern
     clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
-    // Remove extra parens that might be left empty e.g. "()"
-    clean = clean.replace(/\(\s*\)/g, '');
-    // Remove residual price suffixes like "/-" or "/" and standalone separators
-    clean = clean.replace(/[\/\-]+\s*$/g, '') // End of string
-                 .replace(/^\s*[\/\-]+/g, '') // Start of string
-                 .replace(/\s*[\/\-]+\s*/g, ' '); // Middle (turn to space)
     
-    // Normalize spaces and format
+    clean = clean.replace(/\(\s*\)/g, '');
+    clean = clean.replace(/[\/\-]+\s*$/g, '') 
+                 .replace(/^\s*[\/\-]+/g, '') 
+                 .replace(/\s*[\/\-]+\s*/g, ' '); 
+    
     const cleanedString = clean.replace(/\s+/g, ' ').trim();
     return formatProductName(cleanedString);
 };
@@ -700,43 +683,33 @@ const getCleanProductName = (name) => {
 // Scroll Logic Re-implementation
 const scrollToGroup = (groupName, behavior = 'instant') => {
     expandedGroups.value[groupName] = true;
-    
-    // Logic to select appropriate group in filter
-    // If we click a group in sidebar that belongs to a Club, we should switch context to that Club?
-    // Not necessarily. The original logic was complex.
-    // Simplifying: If we just want to scroll to it, we ensure it's visible. 
-    // If `selectedGroup` filters it out, we must reset `selectedGroup` to 'All' or the Club it belongs to.
-    
-    // Check direct match
+
     const currentList = filteredStockData.value.map(g => g.groupName);
     if (!currentList.includes(groupName)) {
-        selectedGroup.value = 'All'; // Reset to find it
+        selectedGroup.value = 'All'; 
     }
 
     nextTick(() => {
         const id = 'group-grid-' + normalizeId(groupName);
         const element = document.getElementById(id);
         if (element) {
-             const y = element.getBoundingClientRect().top + window.scrollY - 80;
+             const y = element.getBoundingClientRect().top + window.scrollY - 180; // Adjusted offset for sticky header
              window.scrollTo({ top: y, behavior });
-             activeScrollGroup.value = groupName; // Highlight sidebar
+             activeScrollGroup.value = groupName;
              
-             // Update URL
              const url = new URL(window.location);
              url.searchParams.set('brand', groupName);
              window.history.replaceState(null, '', url);
              
-             // Mobile Close
              if (window.innerWidth < 1024 && showSidePanel.value) {
                  showSidePanel.value = false;
-                 // Don't modify history here, just close
              }
         }
     });
 };
 
 const handleSidebarClick = (group) => {
-    scrollToGroup(group.groupName);
+    scrollToGroup(group.groupName, 'smooth');
 };
 
 const handleClubClick = (clubName) => {
@@ -778,8 +751,6 @@ const handleCacheImages = async () => {
     // Helper to fetch an image
     const fetchImage = async (url) => {
         try {
-            // Optimized Cloudinary URL if possible (add q_auto, f_auto if not present)
-            // But usually we just fetch what is there.
             await fetch(url, { mode: 'no-cors' }); 
         } catch (e) {
             console.warn(`Failed to cache ${url}`, e);
@@ -794,49 +765,12 @@ const handleCacheImages = async () => {
         }
     };
 
-    // Process in chunks to avoid network congestion
     const chunkSize = 5;
     for (let i = 0; i < total; i += chunkSize) {
         const chunk = imagesToCache.slice(i, i + chunkSize);
-        await Promise.all(chunk.map(fetchImage));
+        await Promise.all(chunk.map(url => fetchImage(url)));
     }
-
-    toast.update(toastId, { 
-        render: `Successfully cached ${total} images!`, 
-        type: 'success', 
-        isLoading: false,
-        autoClose: 3000 
-    });
+    
+    toast.update(toastId, { render: "All images cached successfully!", type: "success", isLoading: false, autoClose: 3000 });
 };
-
-const applyTheme = () => {
-       // Minimal implementation based on config, can be extracted.
-       // For now, assuming standard blue or using config.
-       // The original was lengthy CSS injection.
-       // We can just keep it simple or inject specific color overrides if needed.
-}
 </script>
-
-<style scoped>
-/* Scoped styles mainly for specific overrides not in Tailwind */
-.holographic-text {
-    background-image: linear-gradient(
-        135deg, 
-        #ff00cc 0%, 
-        #3333ff 25%, 
-        #00dbde 50%, 
-        #9900ff 75%, 
-        #ff00cc 100%
-    );
-    background-size: 200% auto;
-    color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: holographic-shimmer 3s linear infinite;
-    text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
-}
-@keyframes holographic-shimmer {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-}
-</style>

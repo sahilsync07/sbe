@@ -6,11 +6,11 @@
       class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
       :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
     >
-      <div class="p-4 h-full overflow-y-auto overscroll-contain">
+      <div class="p-4 h-full overflow-y-auto overscroll-contain pb-24">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-slate-800">Brands</h2>
         </div>
-        <nav class="space-y-6 pb-20">
+        <nav class="space-y-6">
           
           <!-- Paragon Legend -->
           <div v-if="groupedSidebar.paragon && groupedSidebar.paragon.length > 0" class="p-3 bg-red-50/50 border border-red-100 rounded-2xl">
@@ -125,19 +125,16 @@
                      </div>
                    </div>
 
-                   <!-- Sub-list -->
-                   <div v-if="groupedSidebar[club.toLowerCase() + 'Groups'] && groupedSidebar[club.toLowerCase() + 'Groups'].length > 0" class="col-span-2 grid grid-cols-2 gap-1">
+                   <!-- Sub-list (Full width) -->
+                   <div v-if="groupedSidebar[club.toLowerCase() + 'Groups'] && groupedSidebar[club.toLowerCase() + 'Groups'].length > 0" class="col-span-2 pl-4 pr-1 py-1 space-y-1 relative before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
                       <div 
                         v-for="bGroup in groupedSidebar[club.toLowerCase() + 'Groups']" 
                         :key="bGroup.groupName"
-                        class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
-                        :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-white hover:shadow-sm'"
+                        class="flex items-center px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                         :class="activeScrollGroup === bGroup.groupName ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
                         @click="handleSidebarClick(bGroup)"
                       >
-                         <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
-                            <i class="fa-solid fa-circle text-[4px] shrink-0 text-slate-300"></i>
-                            <span class="text-xs font-light leading-snug break-words">{{ formatProductName(bGroup.groupName) }}</span>
-                         </div>
+                         <span class="text-xs truncate">{{ formatProductName(bGroup.groupName) }}</span>
                       </div>
                    </div>
                 </template>
@@ -171,7 +168,7 @@
     <!-- Overlay for mobile sidebar -->
     <div 
       v-if="showSidePanel" 
-      class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[40] lg:hidden transition-opacity duration-300"
       @click="$emit('update:showSidePanel', false)"
     ></div>
   </div>

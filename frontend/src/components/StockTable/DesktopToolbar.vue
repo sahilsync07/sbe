@@ -1,141 +1,127 @@
 
 <template>
   <header
-    class="sticky top-0 z-[60] w-full bg-white border-b border-slate-200 transition-all duration-300 pb-2 pt-[max(env(safe-area-inset-top),20px)]"
+    class="sticky top-0 z-[60] w-full bg-white/80 backdrop-blur-md border-b border-slate-200/50 transition-all duration-300 pb-3 pt-[max(env(safe-area-inset-top),16px)] shadow-soft"
   >
-    <div class="w-full px-2 sm:px-6 lg:px-8">
-      <div class="flex flex-col gap-2">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-3">
         <!-- Top Row: Buttons & Title -->
         <div class="flex items-center justify-between">
           <!-- Left: Sidebar Toggle & Sync -->
           <div class="flex items-center gap-3">
              <button
               @click="$emit('toggleSidebar')"
-              class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95 w-10 h-10 flex items-center justify-center border border-white/20"
+              class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600/90 text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/30 active:scale-95 border border-white/10"
               :class="{ 'opacity-0 pointer-events-none': showCart }"
             >
-              <i v-if="showSidePanel" class="fa-solid fa-house text-lg animate-fade-in"></i>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-fade-in" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              <i v-if="showSidePanel" class="fa-solid fa-house text-sm animate-fade-in"></i>
+              <i v-else class="fa-solid fa-bars text-sm animate-fade-in"></i>
             </button>
 
             <button
               v-if="isAdmin && !isSuperAdmin"
               @click="$emit('updateStockData')"
-              class="hidden sm:block p-2 rounded-full bg-transparent hover:bg-gray-100 transition-colors relative group"
+              class="hidden sm:flex w-9 h-9 items-center justify-center rounded-full bg-slate-100/50 hover:bg-slate-100 text-slate-600 transition-all active:scale-95"
               title="Sync Data"
             >
-              <img
-                :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1749701539/cloud-sync_nznxzz.png`"
-                alt="Refresh"
-                class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                :class="{ 'animate-spin': loading }"
-              />
+              <i class="fa-solid fa-rotate" :class="{ 'animate-spin': loading }"></i>
             </button>
+            
             <button
               v-if="isSuperAdmin"
               @click="$emit('toggleLedgerView')"
-              class="p-2 rounded-full hover:bg-slate-100 transition-colors group"
+              class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
               title="Ledger View"
             >
-              <img
-                :src="`https://res.cloudinary.com/${cloudName}/image/upload/v1753616091/accounting-book_vh3kg5.png`"
-                alt="Ledger"
-                class="w-6 h-6 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-              />
+               <i class="fa-solid fa-book-open text-slate-500"></i>
             </button>
           </div>
 
           <!-- Center: Title -->
-          <div class="flex flex-col items-center justify-center px-2">
+          <div class="flex flex-col items-center justify-center">
             <h1 
-              class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 select-none inline-block cursor-pointer leading-none"
+              class="text-xl sm:text-2xl font-semibold tracking-tighter text-slate-900 select-none cursor-pointer flex items-center gap-1.5"
               @click="$emit('promptAdminLogin')"
               title="Admin Login"
             >
-              <span class="text-blue-600">{{ companyFirstName }}</span> {{ companyRestName }}
+              <span class="text-blue-600 font-bold">{{ companyFirstName }}</span>
+              <span class="font-medium">{{ companyRestName }}</span>
             </h1>
-            <span class="text-[10px] text-slate-400 font-medium mt-0.5">
-               Last Synced: {{ formattedLastRefresh }}
-            </span>
+            <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full mt-1">
+               <span class="w-1.5 h-1.5 rounded-full" :class="lastRefresh ? 'bg-green-500' : 'bg-slate-300'"></span>
+               <span>{{ formattedLastRefresh || 'Offline' }}</span>
+            </div>
           </div>
 
           <!-- Right: Cart -->
           <div class="flex items-center justify-end gap-2">
              <button
                @click="$emit('toggleCart')"
-               class="relative group p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95 shrink-0 w-10 h-10 flex items-center justify-center border border-white/20"
+               class="relative w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
                title="Toggle Cart"
              >
-               <i v-if="showCart" class="fa-solid fa-house text-white text-lg animate-fade-in"></i>
+               <i v-if="showCart" class="fa-solid fa-xmark text-lg animate-fade-in"></i>
                <div v-else class="flex items-center justify-center w-full h-full animate-fade-in">
-                  <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">{{ cartTotalItems }}</div>
-                  <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
+                  <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-sm z-10 ring-2 ring-white">{{ cartTotalItems }}</div>
+                  <i class="fa-solid fa-bag-shopping text-sm"></i>
                </div>
              </button>
           </div>
         </div>
 
         <!-- Bottom Row: Search & Filters -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
            <!-- Integrated Search Bar -->
-           <div class="relative flex-1 min-w-[100px] transition-all duration-300">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                 <i class="fa-solid fa-magnifying-glass"></i>
+           <div class="relative flex-1 group">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                 <i class="fa-solid fa-magnifying-glass text-sm"></i>
               </span>
               <input
                 :value="localQuery"
                 @input="handleSearchInput"
                 type="text"
-                placeholder="Search items..."
-                class="w-full pl-9 pr-4 py-2 rounded-full bg-slate-100/50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                placeholder="Search products..."
+                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-slate-100/80 border border-slate-200/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white focus:border-blue-500 transition-all text-sm font-medium shadow-sm"
               />
            </div>
 
-            <!-- PDF Generator Button (Inline with Search) -->
-            <button
-              v-if="isAdmin"
-              @click="$router.push('/pdf-gen')"
-              class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors group shrink-0"
-              title="Generate Catalog PDF"
-            >
-              <!-- Modern Catalog Icon style -->
-              <i class="fa-solid fa-file-invoice text-red-500 text-xl group-hover:scale-110 transition-transform"></i>
-            </button>
+            <!-- Action Buttons Group -->
+            <div class="flex items-center gap-2">
+                <button
+                  v-if="isAdmin"
+                  @click="$router.push('/pdf-gen')"
+                  class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-600 transition-all border border-slate-200"
+                  title="Generate Catalog PDF"
+                >
+                  <i class="fa-solid fa-file-pdf text-red-500"></i>
+                </button>
 
-            <!-- Cache Images Button -->
-            <button
-              v-if="isAdmin"
-              @click="$emit('cacheImages')"
-              class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors group shrink-0"
-              title="Cache All Images for Offline"
-            >
-              <i class="fa-solid fa-cloud-arrow-down text-blue-600 text-xl group-hover:scale-110 transition-transform"></i>
-            </button>
-           
-           <!-- Negative Stock Toggle -->
-           <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px] gap-2 shrink-0" title="Hide Negative Stocks">
-               <input 
-                 type="checkbox" 
-                 :checked="hideNegativeStocks" 
-                 @change="$emit('update:hideNegativeStocks', $event.target.checked)"
-                 class="sr-only peer"
-               >
-               <i class="fa-solid fa-boxes-stacked text-slate-400 text-sm peer-checked:text-slate-800 transition-colors"></i>
-               <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-red-500 relative"></div>
-           </label>
-
-           <!-- Image Toggle -->
-           <label class="flex items-center cursor-pointer select-none bg-white lg:bg-slate-50 border border-slate-200 rounded-full px-3 py-2 shadow-sm active:scale-95 transition-transform h-[38px] shrink-0" title="Show Images Only">
-               <input 
-                 type="checkbox" 
-                 :checked="showImagesOnly" 
-                 @change="$emit('update:showImagesOnly', $event.target.checked)"
-                 class="sr-only peer"
-               >
-               <i class="fa-solid fa-image text-slate-400 text-sm peer-checked:text-blue-600 mr-2 transition-colors"></i>
-               <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
-           </label>
+                <!-- Filters -->
+                <div class="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200/60">
+                     <!-- Negative Stock Toggle -->
+                     <button 
+                        @click="$emit('update:hideNegativeStocks', !hideNegativeStocks)"
+                        class="w-9 h-9 rounded-full flex items-center justify-center transition-all relative"
+                        :class="hideNegativeStocks ? 'bg-white shadow text-red-600' : 'text-slate-400 hover:text-slate-600'"
+                        title="Hide Negative Stocks"
+                     >
+                        <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                        <span v-if="hideNegativeStocks" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
+                     </button>
+                     
+                     <!-- Image Toggle -->
+                     <button 
+                        @click="$emit('update:showImagesOnly', !showImagesOnly)"
+                        class="w-9 h-9 rounded-full flex items-center justify-center transition-all relative"
+                        :class="showImagesOnly ? 'bg-white shadow text-blue-600' : 'text-slate-400 hover:text-slate-600'"
+                        title="Show Images Only"
+                     >
+                        <i class="fa-solid fa-image text-xs"></i>
+                        <span v-if="showImagesOnly" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full ring-2 ring-white"></span>
+                     </button>
+                </div>
+            </div>
         </div>
       </div>
     </div>
@@ -177,9 +163,25 @@ const emit = defineEmits([
 
 const companyFirstName = computed(() => props.companyName.split(' ')[0]);
 const companyRestName = computed(() => props.companyName.split(' ').slice(1).join(' '));
-const formattedLastRefresh = computed(() => 
-  props.lastRefresh ? new Date(props.lastRefresh).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never"
-);
+const formattedLastRefresh = computed(() => {
+  if (!props.lastRefresh) return "";
+  const date = new Date(props.lastRefresh);
+  const now = new Date();
+  const diffInHours = (now - date) / (1000 * 60 * 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  let timeString = "";
+  if (diffInHours < 1) timeString = "Recently";
+  else if (diffInHours < 24) timeString = `${Math.floor(diffInHours)} hours ago`;
+  else if (diffInDays < 7) timeString = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  else {
+      timeString = date.toLocaleString("en-IN", { 
+          day: 'numeric',
+          month: 'short'
+      });
+  }
+  return `Last Synced ${timeString}`;
+});
 
 // --- Debounce Search Logic ---
 const localQuery = ref(props.searchQuery);

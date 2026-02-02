@@ -90,7 +90,7 @@ export function useProductFilter(stockData, config) {
         if (hideNegativeStocks.value) {
             filtered = filtered.map(group => ({
                 ...group,
-                products: group.products.filter(p => p.quantity >= 0)
+                products: group.products.filter(p => Number(p.quantity) >= 0)
             })).filter(group => group.products.length > 0);
         }
 
@@ -158,6 +158,7 @@ export function useProductFilter(stockData, config) {
                     if (searchQuery.value && !p.productName.toLowerCase().includes(searchQuery.value.toLowerCase())) return;
                     if (showImagesOnly.value && !p.imageUrl) return;
                     if (showNoImagesOnly.value && p.imageUrl) return;
+                    if (hideNegativeStocks.value && Number(p.quantity) < 0) return;
 
                     if (isNewArrival(p)) {
                         newProducts.push(p);
