@@ -87,11 +87,5 @@ body {
     @apply w-20 h-28;
   }
 
-  button {
-    @apply w-full;
-  }
 
-  .go-to-top {
-    @apply p-1 w-8 h-8 text-xs;
-  }
 }

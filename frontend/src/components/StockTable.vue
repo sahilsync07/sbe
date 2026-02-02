@@ -51,7 +51,7 @@
       />
 
       <main 
-         class="flex-1 w-full px-4 sm:px-6 lg:px-8 mt-[64px] md:mt-[76px] space-y-8 min-w-0 transition-all duration-300"
+         class="flex-1 w-full px-2 sm:px-4 lg:px-6 mt-[64px] md:mt-[76px] space-y-8 min-w-0 transition-all duration-300"
       >
         <!-- Ledger Placeholder -->
         <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
@@ -73,34 +73,35 @@
           </div>
 
           <!-- GROUP LIST -->
-          <div class="space-y-12 pb-10">
+          <div class="flex flex-col gap-1 pb-10">
             <div
               v-for="(group, index) in filteredStockData"
               :key="group.groupName"
               :id="'group-grid-' + normalizeId(group.groupName)"
-              class="relative scroll-mt-28"
+              class="relative scroll-mt-28 transition-all duration-300"
+              :class="expandedGroups[group.groupName] ? 'mb-8' : 'mb-1'"
             >
               <!-- Group Header (Sticky Glass) -->
               <div
                 @click="toggleGroup(group.groupName)"
-                class="flex items-center justify-between cursor-pointer select-none py-3 sticky top-[65px] md:top-[75px] z-30 transition-all duration-300 group/header"
+                class="flex items-center justify-between cursor-pointer select-none py-3 sticky top-[60px] md:top-[72px] z-30 transition-all duration-300 group/header"
                 :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
               >
                 <!-- Backdrop for sticky readability -->
-                 <div class="absolute inset-x-[-16px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
+                 <div class="absolute inset-x-[-8px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
                       :class="expandedGroups[group.groupName] ? 'opacity-100' : 'opacity-0 delay-200'"></div>
 
                  <div class="flex items-center gap-4 z-10 pl-2">
                    <!-- Special "New Arrivals" Style -->
                    <div v-if="group.isSpecial" class="flex items-center gap-3">
-                      <h2 class="text-3xl font-bold tracking-tighter holographic-text">
+                      <h2 class="text-xl md:text-3xl font-['Clash_Display'] font-bold tracking-wide holographic-text">
                          ✨ {{ group.groupName }}
                       </h2>
                    </div>
 
                    <!-- Regular Group Style -->
                    <div v-else class="flex items-center gap-3">
-                      <h2 class="text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
+                      <h2 class="text-lg md:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
                         {{ group.groupName }}
                       </h2>
                       <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">
@@ -135,7 +136,7 @@
                 leave-to-class="opacity-0"
               >
                 <div v-show="expandedGroups[group.groupName]">
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-4 gap-y-8">
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-2 gap-y-4">
                     <div
                       v-for="(product, pIndex) in group.products"
                       :key="product.productName"
@@ -148,10 +149,7 @@
                             New
                         </div>
                         
-                        <!-- Badge: Stock Low -->
-                        <div v-if="product.quantity > 0 && product.quantity <= 5" class="absolute top-3 right-3 z-20 px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
-                            Low Stock
-                        </div>
+
                          <!-- Badge: Out of Stock -->
                         <div v-if="product.quantity <= 0" class="absolute inset-0 z-10 bg-slate-50/80 backdrop-blur-[2px] flex items-center justify-center">
                             <span class="px-3 py-1 bg-slate-200 text-slate-500 text-xs font-bold rounded-full border border-slate-300">Out of Stock</span>
@@ -214,16 +212,16 @@
                       </div>
 
                       <!-- Content -->
-                      <div class="p-4 flex flex-col flex-1 pb-5">
+                      <div class="p-3 flex flex-col flex-1 pb-3">
                           <!-- Title -->
-                          <div class="mb-2">
-                             <h3 class="text-sm font-bold text-slate-800 leading-snug line-clamp-2 min-h-[2.5em] group-hover:text-blue-600 transition-colors" :title="product.productName">
+                          <div class="mb-1.5">
+                             <h3 class="text-xs sm:text-sm font-bold text-slate-800 leading-snug line-clamp-2 min-h-[2.5em] group-hover:text-blue-600 transition-colors" :title="product.productName">
                                 {{ getCleanProductName(product.productName) }}
                              </h3>
                           </div>
                           
                           <!-- Details Row -->
-                          <div class="flex items-center justify-between mb-4">
+                          <div class="flex items-center justify-between mb-1">
                               <div class="flex items-center gap-1.5 overflow-hidden">
                                  <!-- Color Dot -->
                                  <span v-if="getProductColor(product.productName)" 
@@ -231,26 +229,26 @@
                                        :style="{ backgroundColor: getProductColor(product.productName).hex }"
                                        :title="getProductColor(product.productName).text"
                                  ></span>
-                                 <span v-if="getProductColor(product.productName)" class="text-[11px] font-medium text-slate-500 capitalize truncate max-w-[60px]">
+                                 <span v-if="getProductColor(product.productName)" class="text-[10px] sm:text-[11px] font-medium text-slate-500 capitalize truncate max-w-[60px]">
                                     {{ getProductColor(product.productName).text }}
                                  </span>
                               </div>
                               
-                              <span v-if="getProductSize(product.productName)" class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-bold border border-slate-200">
+                              <span v-if="getProductSize(product.productName)" class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] sm:text-[11px] font-bold border border-slate-200">
                                  {{ getProductSize(product.productName) }}
                               </span>
                           </div>
 
                           <!-- Footer -->
-                          <div class="mt-auto flex items-end justify-between border-t border-dashed border-slate-100 pt-3">
+                          <div class="mt-auto flex items-end justify-between">
                               <div class="flex flex-col">
-                                 <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{{ getPriceInfo(product.productName).label }}</span>
-                                 <div class="text-lg font-black text-slate-900 leading-none">
-                                    <span class="text-xs align-top font-medium mr-0.5">₹</span>{{ getPriceInfo(product.productName).price }}
+                                 <span class="text-[9px] sm:text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{{ getPriceInfo(product.productName).label }}</span>
+                                 <div class="text-base sm:text-lg font-black text-slate-900 leading-none">
+                                    <span class="text-[10px] sm:text-xs align-top font-medium mr-0.5">₹</span>{{ getPriceInfo(product.productName).price }}
                                  </div>
                               </div>
                               <div class="text-right flex flex-col items-end">
-                                 <span class="text-[10px] font-medium" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
+                                 <span class="text-[9px] sm:text-[10px] font-medium" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
                                     {{ product.quantity }} Pairs
                                  </span>
                               </div>
@@ -445,12 +443,50 @@ const toggleGroup = (groupName) => {
   expandedGroups.value[groupName] = !expandedGroups.value[groupName];
 };
 
-const shareBrand = (brandName) => {
+const shareBrand = async (brandName) => {
     const url = `${window.location.origin}${window.location.pathname}?brand=${encodeURIComponent(brandName)}`;
-    if (navigator.share) {
-        navigator.share({ title: `Check out ${brandName}`, url }).catch(e => console.log(e));
-    } else {
-        navigator.clipboard.writeText(url).then(() => toast.info("Link copied!"));
+    const shareData = { title: `Check out ${brandName}`, text: `Look at this brand: ${brandName}`, url };
+
+    // 1. Try Native Share (Mobile)
+    try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            return;
+        }
+    } catch (err) {
+        if (err.name === 'AbortError') return; // User cancelled
+        // Continue to fallback
+    }
+
+    // 2. Fallback: Copy to Clipboard
+    try {
+        // Modern Clipboard API (Secure Context only)
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+             await navigator.clipboard.writeText(url);
+             toast.success("Link copied!");
+        } else {
+             // 3. Ultra-Fallback: Legacy execCommand (Insecure Context / Older Browsers)
+             const textArea = document.createElement("textarea");
+             textArea.value = url;
+             
+             // Ensure it's not visible but part of DOM
+             textArea.style.position = "fixed";
+             textArea.style.left = "-9999px";
+             textArea.style.top = "0";
+             document.body.appendChild(textArea);
+             
+             textArea.focus();
+             textArea.select();
+             
+             const successful = document.execCommand('copy');
+             document.body.removeChild(textArea);
+             
+             if (successful) toast.success("Link copied!");
+             else throw new Error("Copy failed");
+        }
+    } catch (clipErr) {
+        console.error("Share failed", clipErr);
+        toast.error("Could not copy link");
     }
 };
 

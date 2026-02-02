@@ -116,12 +116,12 @@
           <div class="flex justify-between items-end mb-6">
              <div class="flex flex-col">
                  <span class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Total Quantity</span>
-                 <span class="text-3xl font-black text-slate-900 font-heading leading-none">{{ cartTotalItems }}</span>
+                 <span class="text-3xl font-black text-slate-900 font-heading leading-none">
+                    {{ cartTotalItems }}
+                    <span class="text-lg font-bold text-slate-400 ml-1">Sets</span>
+                 </span>
              </div>
-             <div class="flex flex-col text-right">
-                <span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-full mb-1">Free Shipping</span>
-                 <span class="text-xs text-slate-400">Tax included</span>
-             </div>
+
           </div>
 
           <button 

@@ -57,12 +57,12 @@
                @click="$emit('promptAdminLogin')"
                title="Admin Login"
              >
-               <span class="text-blue-600 font-bold">{{ companyFirstName }}</span>
-               <span class="font-medium">{{ companyRestName }}</span>
+               <span class="text-slate-900 font-['Clash_Display'] font-bold text-3xl tracking-wide uppercase">{{ companyFirstName }}</span>
+               <span class="text-slate-500 font-['Clash_Display'] font-light text-3xl tracking-wide ml-1.5">{{ companyRestName }}</span>
           </h1>
           <!-- Status Pill -->
           <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-full shadow-sm">
-               <span class="w-1.5 h-1.5 rounded-full" :class="lastRefresh ? 'bg-green-500' : 'bg-slate-300'"></span>
+               <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
                <span>{{ formattedLastRefresh || 'Offline' }}</span>
           </div>
        </div>
@@ -80,25 +80,24 @@
            </button>
 
            <!-- Toggles -->
-           <div class="flex items-center bg-slate-100/80 p-1 rounded-full border border-slate-200">
+           <div class="flex items-center gap-2">
                <button 
                   @click="$emit('update:hideNegativeStocks', !hideNegativeStocks)"
-                  class="w-9 h-9 rounded-full flex items-center justify-center transition-all relative"
-                  :class="hideNegativeStocks ? 'bg-white shadow text-red-600' : 'text-slate-400 hover:text-slate-600'"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
+                  :class="hideNegativeStocks ? 'bg-stone-800 border-stone-700 text-stone-200 shadow-md' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'"
                   title="Hide Negative Stocks"
                >
-                  <i class="fa-solid fa-boxes-stacked text-xs"></i>
-                  <span v-if="hideNegativeStocks" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
+                  <i class="fa-solid fa-cube text-sm"></i>
+                  <div v-if="hideNegativeStocks" class="absolute top-2 right-2.5 w-1.5 h-1.5 bg-green-400 rounded-full shadow-lg ring-2 ring-stone-800 animate-pulse"></div>
                </button>
                
                <button 
                   @click="$emit('update:showImagesOnly', !showImagesOnly)"
-                  class="w-9 h-9 rounded-full flex items-center justify-center transition-all relative"
-                  :class="showImagesOnly ? 'bg-white shadow text-blue-600' : 'text-slate-400 hover:text-slate-600'"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
+                  :class="showImagesOnly ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-md' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'"
                   title="Show Images Only"
                >
-                  <i class="fa-solid fa-image text-xs"></i>
-                  <span v-if="showImagesOnly" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full ring-2 ring-white"></span>
+                  <i class="fa-regular fa-image text-sm" :class="showImagesOnly ? 'font-bold' : ''"></i>
                </button>
            </div>
 
@@ -130,15 +129,18 @@
           </button>
 
          <!-- Center: Logo -->
-         <div class="flex flex-col items-center">
+         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
             <h1 
-               class="text-lg font-semibold tracking-tighter text-slate-900 select-none flex items-center gap-1"
+               class="text-lg font-semibold tracking-tighter text-slate-900 select-none flex items-center gap-1 pointer-events-auto cursor-pointer"
                @click="$emit('promptAdminLogin')"
              >
-               <span class="text-blue-600 font-bold">{{ companyFirstName }}</span>
-               <span class="font-medium">{{ companyRestName }}</span>
+               <span class="text-slate-900 font-['Clash_Display'] font-bold text-2xl tracking-wide uppercase">{{ companyFirstName }}</span>
+               <span class="text-slate-500 font-['Clash_Display'] font-light text-2xl tracking-wide ml-1">{{ companyRestName }}</span>
             </h1>
-            <span class="text-[9px] font-medium text-slate-400">{{ formattedLastRefresh || 'Offline' }}</span>
+            <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
+                <span class="text-[9px] font-medium text-slate-400">{{ formattedLastRefresh || 'Offline' }}</span>
+            </div>
          </div>
 
          <!-- Right: PDF & Cart -->
@@ -156,7 +158,7 @@
              class="relative w-9 h-9 flex items-center justify-center rounded-full bg-slate-900 text-white shadow-md active:scale-95"
            >
              <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white">{{ cartTotalItems }}</div>
-             <i class="fa-solid fa-bag-shopping text-xs"></i>
+             <i class="fa-solid fa-cart-shopping text-xs"></i>
            </button>
          </div>
     </header>
@@ -179,22 +181,22 @@
               />
           </div>
 
-          <!-- Toggles -->
-           <div class="flex items-center bg-slate-100 p-1 rounded-lg shrink-0">
+           <!-- Toggles -->
+           <div class="flex items-center gap-2 shrink-0">
                <button 
                   @click="$emit('update:hideNegativeStocks', !hideNegativeStocks)"
-                  class="w-9 h-9 rounded-md flex items-center justify-center transition-all relative"
-                  :class="hideNegativeStocks ? 'bg-white shadow-sm text-red-600' : 'text-slate-400'"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border"
+                  :class="hideNegativeStocks ? 'bg-stone-800 border-stone-700 text-stone-200 shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
                >
-                  <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                  <i class="fa-solid fa-cube text-sm"></i>
+                  <div v-if="hideNegativeStocks" class="absolute top-2 right-2.5 w-1.5 h-1.5 bg-green-400 rounded-full shadow-lg ring-2 ring-stone-800 animate-pulse"></div>
                </button>
-               <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
                <button 
                   @click="$emit('update:showImagesOnly', !showImagesOnly)"
-                  class="w-9 h-9 rounded-md flex items-center justify-center transition-all relative"
-                  :class="showImagesOnly ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border"
+                  :class="showImagesOnly ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
                >
-                  <i class="fa-solid fa-image text-xs"></i>
+                  <i class="fa-regular fa-image text-sm" :class="showImagesOnly ? 'font-bold' : ''"></i>
                </button>
            </div>
        </div>
@@ -237,7 +239,11 @@ const emit = defineEmits([
 ]);
 
 const companyFirstName = computed(() => props.companyName.split(' ')[0]);
-const companyRestName = computed(() => props.companyName.split(' ').slice(1).join(' '));
+const companyRestName = computed(() => {
+  const rest = props.companyName.split(' ').slice(1).join(' ');
+  // Convert to Title Case: "RAYAGADA" -> "Rayagada"
+  return rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
+});
 const formattedLastRefresh = computed(() => {
   if (!props.lastRefresh) return "";
   const date = new Date(props.lastRefresh);
@@ -257,6 +263,19 @@ const formattedLastRefresh = computed(() => {
   }
   return `Last Synced ${timeString}`;
 });
+
+const statusColor = computed(() => {
+  if (!props.lastRefresh) return "bg-rose-500"; // Offline/No Data
+  const date = new Date(props.lastRefresh);
+  const now = new Date();
+  const diffInHours = (now - date) / (1000 * 60 * 60);
+
+  if (diffInHours < 4) return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"; // Fresh (< 4h) + Glow
+  if (diffInHours < 24) return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]";   // Stale (< 24h) + Glow
+  return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]";                          // Old (> 24h) + Glow
+});
+
+
 
 // --- Debounce Search Logic ---
 const localQuery = ref(props.searchQuery);
