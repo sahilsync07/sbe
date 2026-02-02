@@ -318,6 +318,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { Capacitor } from '@capacitor/core';
 import { toast } from 'vue3-toastify';
 import "vue3-toastify/dist/index.css";
 // Constants & Utils
@@ -342,6 +343,7 @@ const OrderModal = defineAsyncComponent(() => import('./StockTable/OrderModal.vu
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+const isAndroid = ref(Capacitor.getPlatform() === 'android');
 const showGoToTop = ref(false);
 const showSidePanel = ref(false);
 const showCart = ref(false);

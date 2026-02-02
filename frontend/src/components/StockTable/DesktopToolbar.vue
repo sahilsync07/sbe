@@ -2,7 +2,7 @@
 <template>
   <div>
     <!-- Desktop Toolbar (Hidden on Mobile) -->
-    <header class="hidden md:flex fixed top-0 inset-x-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all duration-300 h-[72px] px-6 items-center justify-between">
+    <header class="hidden md:flex fixed inset-x-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all duration-300 h-[72px] px-6 items-center justify-between" :class="isAndroid ? 'top-8' : 'top-0'">
        <!-- Left Section: Sidebar, Sync, Search -->
        <div class="flex items-center gap-4 flex-1 min-w-0 mr-4">
           <!-- Sidebar Toggle -->
@@ -207,6 +207,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { Capacitor } from '@capacitor/core';
 
 const props = defineProps({
   isAdmin: Boolean,

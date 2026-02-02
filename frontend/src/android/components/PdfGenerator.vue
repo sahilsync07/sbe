@@ -3,7 +3,7 @@
     <!-- Sidebar -->
     <aside 
       class="border-r border-slate-200 bg-white flex-shrink-0 flex-col h-full z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 w-full lg:w-[480px]"
-      :class="[mobileTab === 'brands' ? 'flex' : 'hidden lg:flex']"
+      :class="[mobileTab === 'brands' ? 'flex' : 'hidden lg:flex', isAndroid ? 'pt-8' : '']"
     >
       <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-10">
          <div class="flex items-center gap-2">
@@ -487,6 +487,7 @@ import { App } from '@capacitor/app';
 export default {
   data() {
     return {
+      isAndroid: Capacitor.getPlatform() === 'android',
       brands: [],
       selectedBrands: [],
       onlyWithPhotos: true,

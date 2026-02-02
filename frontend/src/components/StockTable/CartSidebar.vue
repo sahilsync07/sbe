@@ -2,7 +2,7 @@
 <template>
     <aside
       class="fixed inset-y-0 right-0 w-full sm:w-[500px] border-l border-slate-200 z-[90] transform transition-transform duration-300 ease-out flex flex-col bg-white shadow-2xl"
-      :class="showCart ? 'translate-x-0' : 'translate-x-full'"
+      :class="[showCart ? 'translate-x-0' : 'translate-x-full', isAndroid ? 'pt-8' : '']"
     >
       <!-- Header -->
       <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
@@ -144,17 +144,21 @@
 </template>
 
 <script setup>
-defineProps({
-    showCart: Boolean,
-    cart: Array,
-    filteredCart: Array,
-    cartTotalItems: Number,
-    cartItemCount: Number
+import { ref } from 'vue';
+import { Capacitor } from '@capacitor/core';
+
+const props = defineProps({
+  showCart: Boolean,
+  cartItems: Array,
+  cartItemCount: Number,
+  cartTotalItems: Number,
+  cartTotalMRP: Number,
+  isAdmin: Boolean,
 });
 
-defineEmits([
-    'closeCart', 'clearCart', 'updateCartQuantity', 'removeFromCart', 'sendOrderToWhatsapp'
-]);
+const emit = defineEmits(['closeCart', 'clearCart', 'updateCartQty', 'incrementCartItem', 'decrementCartItem', 'removeCartItem', 'openDetailsModal']);
+
+const isAndroid = ref(Capacitor.getPlatform() === 'android');
 
 const getOptimizedUrl = (imageUrl) => {
     if (!imageUrl) return null;
