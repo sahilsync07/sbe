@@ -1,16 +1,32 @@
 
 <template>
   <div>
+    <!-- Backdrop -->
+    <div 
+      v-if="showSidePanel"
+      @click="$emit('update:showSidePanel', false)"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] transition-opacity duration-300"
+    ></div>
+
     <!-- Side Panel -->
     <aside
-      class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[50] transform transition-transform duration-300 ease-in-out bg-white/95 backdrop-blur-sm sm:bg-white pt-[118px] lg:pt-40"
+      class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[80] transform transition-transform duration-300 ease-in-out bg-white shadow-2xl"
       :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
     >
-      <div class="p-4 h-full overflow-y-auto overscroll-contain pb-24">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-slate-800">Brands</h2>
+      <div class="h-full flex flex-col">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+          <h2 class="text-xl font-bold text-slate-800 font-heading">Brands</h2>
+          <button 
+             @click="$emit('update:showSidePanel', false)"
+             class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+          >
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
         </div>
-        <nav class="space-y-6">
+
+        <div class="p-4 overflow-y-auto overscroll-contain flex-1 pb-24">
+          <nav class="space-y-6">
           
           <!-- Paragon Legend -->
           <div v-if="groupedSidebar.paragon && groupedSidebar.paragon.length > 0" class="p-3 bg-red-50/50 border border-red-100 rounded-2xl">
@@ -163,14 +179,8 @@
 
         </nav>
       </div>
+      </div>
     </aside>
-
-    <!-- Overlay for mobile sidebar -->
-    <div 
-      v-if="showSidePanel" 
-      class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[40] lg:hidden transition-opacity duration-300"
-      @click="$emit('update:showSidePanel', false)"
-    ></div>
   </div>
 </template>
 
