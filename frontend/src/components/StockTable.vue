@@ -51,7 +51,7 @@
       />
 
       <main 
-         class="flex-1 w-full px-4 sm:px-6 lg:px-8 mt-4 space-y-8 min-w-0 transition-all duration-300"
+         class="flex-1 w-full px-4 sm:px-6 lg:px-8 mt-[64px] md:mt-[76px] space-y-8 min-w-0 transition-all duration-300"
       >
         <!-- Ledger Placeholder -->
         <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
@@ -83,7 +83,7 @@
               <!-- Group Header (Sticky Glass) -->
               <div
                 @click="toggleGroup(group.groupName)"
-                class="flex items-center justify-between cursor-pointer select-none py-3 sticky top-[138px] z-30 transition-all duration-300 group/header"
+                class="flex items-center justify-between cursor-pointer select-none py-3 sticky top-[65px] md:top-[75px] z-30 transition-all duration-300 group/header"
                 :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
               >
                 <!-- Backdrop for sticky readability -->
@@ -271,7 +271,7 @@
       <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
+        class="fixed bottom-24 md:bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
       >
         <i class="fa-solid fa-arrow-up"></i>
       </button>
