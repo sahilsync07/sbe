@@ -3,7 +3,7 @@
   <div>
     <!-- Desktop Toolbar (Hidden on Mobile) -->
     <header 
-      class="hidden md:block fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300 safe-area-top-fixed"
+      class="hidden md:block fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300 safe-area-top-fixed rounded-b-3xl"
     >
       <!-- Inner content wrapper with fixed height -->
       <div class="h-[72px] flex items-center justify-between px-6">
@@ -168,7 +168,7 @@
 
 
     <!-- Mobile Bottom Bar (Fixed) -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)]">
+    <div class="md:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl">
        <div class="flex items-center gap-3">
           <!-- Search -->
           <div class="relative flex-1">
