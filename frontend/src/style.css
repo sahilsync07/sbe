@@ -56,6 +56,18 @@ body:not(.platform-android) .main-content-offset {
   }
 }
 
+/* Sticky Group Header Offset */
+/* Mobile: 54px navbar + safe-area */
+.sticky-group-header {
+  top: calc(54px + env(safe-area-inset-top, 20px));
+}
+/* Desktop: 72px navbar */
+@media (min-width: 768px) {
+  .sticky-group-header {
+    top: 72px;
+  }
+}
+
 /* Android-only elements - hidden by default, visible on Android */
 .android-only-btn {
   display: none !important;

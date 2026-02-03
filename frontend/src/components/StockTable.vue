@@ -95,9 +95,8 @@
               <!-- Group Header (Sticky Glass) -->
               <div
                 @click="toggleGroup(group.groupName)"
-                class="flex items-center justify-between cursor-pointer select-none py-3 sticky z-30 transition-all duration-300 group/header"
+                class="flex items-center justify-between cursor-pointer select-none py-3 sticky z-30 transition-all duration-300 group/header sticky-group-header"
                 :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
-                :style="{ top: 'calc(54px + env(safe-area-inset-top, 0px))' }"
               >
                 <!-- Backdrop for sticky readability -->
                  <div class="absolute inset-x-[-8px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
