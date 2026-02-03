@@ -9,8 +9,39 @@
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased font-sans selection:bg-blue-100 selection:text-blue-700;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* Safe areas handled by fixed headers and content margins */
+}
+
+/* Root app container - handles safe area insets */
+#app {
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+}
+
+/* Safe Area Utilities for Fixed/Sticky Elements */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* For fixed elements - position at top with internal safe area padding */
+.safe-area-top-fixed {
+  top: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Safe area bottom for mobile bottom bars */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Main content offset - accounts for fixed header + safe area */
+.main-content-offset {
+  margin-top: calc(60px + env(safe-area-inset-top, 0px));
+}
+@media (min-width: 768px) {
+  .main-content-offset {
+    margin-top: calc(72px + env(safe-area-inset-top, 0px));
+  }
 }
 
 /* Custom Scrollbar */

@@ -10,8 +10,8 @@
 
     <!-- Side Panel -->
     <aside
-      class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[80] transform transition-transform duration-300 ease-in-out bg-white shadow-2xl"
-      :class="[showSidePanel ? 'translate-x-0' : '-translate-x-full', isAndroid ? 'pt-8' : '']"
+      class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[80] transform transition-transform duration-300 ease-in-out bg-white shadow-2xl safe-area-top"
+      :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
     >
       <div class="h-full flex flex-col">
         <!-- Header -->
@@ -185,19 +185,19 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { Capacitor } from '@capacitor/core';
+import { computed } from 'vue';
 
 const props = defineProps({
   showSidePanel: Boolean,
-  groupedSidebar: Object,
+  groupedSidebar: {
+    type: Object,
+    default: () => ({})
+  },
   activeScrollGroup: String,
   selectedGroup: String
 });
 
 const emit = defineEmits(['update:showSidePanel', 'sidebarClick', 'clubClick']);
-
-const isAndroid = ref(Capacitor.getPlatform() === 'android');
 
 const bansalExists = computed(() => {
    return props.groupedSidebar && props.groupedSidebar.bansalGroups && props.groupedSidebar.bansalGroups.length > 0;

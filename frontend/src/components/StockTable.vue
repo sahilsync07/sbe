@@ -51,7 +51,7 @@
       />
 
       <main 
-         class="flex-1 w-full px-2 sm:px-4 lg:px-6 mt-[64px] md:mt-[76px] space-y-8 min-w-0 transition-all duration-300"
+         class="flex-1 w-full px-2 sm:px-4 lg:px-6 space-y-8 min-w-0 transition-all duration-300 main-content-offset"
       >
         <!-- Ledger Placeholder -->
         <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
@@ -84,8 +84,9 @@
               <!-- Group Header (Sticky Glass) -->
               <div
                 @click="toggleGroup(group.groupName)"
-                class="flex items-center justify-between cursor-pointer select-none py-3 sticky top-[60px] md:top-[72px] z-30 transition-all duration-300 group/header"
+                class="flex items-center justify-between cursor-pointer select-none py-3 sticky z-30 transition-all duration-300 group/header"
                 :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
+                :style="{ top: 'calc(60px + env(safe-area-inset-top, 0px))' }"
               >
                 <!-- Backdrop for sticky readability -->
                  <div class="absolute inset-x-[-8px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
