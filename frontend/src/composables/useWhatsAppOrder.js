@@ -35,7 +35,7 @@ export function useWhatsAppOrder(cart, config) {
         message += `------------------\n`;
 
         cart.value.forEach((item) => {
-            const qtyLabel = item.quantity > 1 ? 'Sets' : 'Set';
+            const qtyLabel = item.quantity > 1 ? 'Pairs' : 'Pair';
             message += `\n*${item.product.productName}*\n`;
             message += `> ${item.quantity} ${qtyLabel}\n`;
         });

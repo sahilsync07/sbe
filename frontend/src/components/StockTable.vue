@@ -12,8 +12,7 @@
       :last-refresh="lastRefresh"
       :cart-total-items="cartTotalItems"
       :search-query="searchQuery"
-      :show-images-only="showImagesOnly"
-      :hide-negative-stocks="hideNegativeStocks"
+      :clean-view="cleanView"
       :cloud-name="cloudName"
       @toggleSidebar="toggleSidebar"
       @toggleCart="toggleCart"
@@ -21,11 +20,21 @@
       @toggleLedgerView="toggleLedgerView"
       @promptAdminLogin="promptAdminLogin"
       @update:searchQuery="searchQuery = $event"
-      @update:showImagesOnly="showImagesOnly = $event"
-      @update:hideNegativeStocks="hideNegativeStocks = $event"
+      @update:cleanView="handleCleanViewToggle($event)"
       @cacheImages="handleCacheImages"
       @refreshData="refreshStockData"
     />
+
+    <Transition
+      enter-active-class="transition-opacity duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-300 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <FunLoader v-if="isFiltering" />
+    </Transition>
 
     <div class="flex w-full">
       <BrandsSidebar
@@ -88,7 +97,7 @@
                 @click="toggleGroup(group.groupName)"
                 class="flex items-center justify-between cursor-pointer select-none py-3 sticky z-30 transition-all duration-300 group/header"
                 :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
-                :style="{ top: 'calc(60px + env(safe-area-inset-top, 0px))' }"
+                :style="{ top: 'calc(54px + env(safe-area-inset-top, 0px))' }"
               >
                 <!-- Backdrop for sticky readability -->
                  <div class="absolute inset-x-[-8px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
@@ -140,17 +149,22 @@
               >
                 <div v-show="expandedGroups[group.groupName]">
                   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-2 gap-y-4">
-                    <div
-                      v-for="(product, pIndex) in group.products"
-                      :key="product.productName"
-                      class="group relative flex flex-col bg-white rounded-3xl shadow-card hover:shadow-float transition-all duration-300 border border-transparent mx-auto w-full max-w-[280px]"
-                    >
+                      <div
+                        v-for="(product, pIndex) in group.products"
+                        :key="product.productName"
+                        class="group relative flex flex-col bg-white rounded-3xl shadow-card hover:shadow-float transition-all duration-300 border border-transparent mx-auto w-full max-w-[280px]"
+                      >
                       <!-- Image Area -->
-                      <div class="relative w-full aspect-[4/5] bg-slate-100 rounded-t-3xl overflow-hidden cursor-pointer" @click="openImagePopup(product, index)">
-                        <!-- Badge: New -->
-                        <div v-if="isNewArrival(product)" class="absolute top-3 left-3 z-20 px-2 py-1 bg-black/80 backdrop-blur-md rounded-lg text-[10px] font-bold text-white uppercase tracking-widest shadow-lg border border-white/10">
-                            New
-                        </div>
+                      <div 
+                        class="relative w-full aspect-[4/5] bg-slate-100 rounded-t-3xl cursor-pointer" 
+                        :class="{ 'holographic-border': isNewArrival(product) }"
+                        @click="openImagePopup(product, index)"
+                      >
+                         <div class="absolute inset-0 rounded-t-3xl overflow-hidden">
+                          <!-- Badge: New (Removed) -->
+                          
+  
+                           <!-- Badge: Out of Stock -->
                         
 
                          <!-- Badge: Out of Stock -->
@@ -221,8 +235,9 @@
                              <button @click.stop="deleteImage(product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-sm" title="Remove Image">
                                <i class="fa-solid fa-trash text-xs"></i>
                              </button>
-                           </div>
-                        </div>
+                             </div>
+                          </div>
+                      </div>
                       </div>
 
                       <!-- Content -->
@@ -264,7 +279,7 @@
                               </div>
                               <div class="text-right flex flex-col items-end">
                                  <span class="text-xs sm:text-sm font-bold" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
-                                    {{ product.quantity }} Pairs
+                                    {{ product.quantity }} {{ product.quantity === 1 ? 'Pair' : 'Pairs' }}
                                  </span>
                               </div>
                           </div>
@@ -362,6 +377,7 @@ import { defineAsyncComponent } from 'vue';
 
 const ImageModal = defineAsyncComponent(() => import('./StockTable/ImageModal.vue'));
 const OrderModal = defineAsyncComponent(() => import('./StockTable/OrderModal.vue'));
+const FunLoader = defineAsyncComponent(() => import('./StockTable/FunLoader.vue'));
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -374,6 +390,7 @@ const showWelcome = ref(true); // Welcome Splash State
 const expandedGroups = ref({});
 const activeScrollGroup = ref('');
 const userHasScrolled = ref(false);
+const isFiltering = ref(false); // New loader state
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
 // Config State
@@ -399,8 +416,8 @@ const {
 
 // 4. Product Filter
 const { 
-  searchQuery, selectedGroup, showImagesOnly, hideNegativeStocks,
-  filteredStockData 
+  searchQuery, selectedGroup, cleanView, hideOldArticles,
+  filteredStockData, sortedStockDataForDropdown 
 } = useProductFilter(stockData, config);
 
 // 5. Sidebar Groups
@@ -838,6 +855,20 @@ const handleCacheImages = async () => {
     
     toast.update(toastId, { render: "All images cached successfully!", type: "success", isLoading: false, autoClose: 3000 });
 };
+const handleCleanViewToggle = (newValue) => {
+  isFiltering.value = true;
+  
+  // Use setTimeout to allow the loader to render before the heavy filter operation
+  setTimeout(() => {
+    cleanView.value = newValue;
+    
+    // Ensure loader stays for at least a fun duration
+    setTimeout(() => {
+      isFiltering.value = false;
+    }, 1500); 
+  }, 100);
+};
+
 const formatGroupName = (name) => {
   if (!name) return '';
   return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');

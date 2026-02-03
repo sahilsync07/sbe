@@ -5,9 +5,7 @@ import { BRAND_LISTS, DEFAULT_MIN_DATE, NEW_ARRIVAL_MONTHS } from '../utils/cons
 export function useProductFilter(stockData, config) {
     const searchQuery = ref("");
     const selectedGroup = ref("All");
-    const showImagesOnly = ref(true);
-    const showNoImagesOnly = ref(false);
-    const hideNegativeStocks = ref(true); // Default ON
+    const cleanView = ref(true); // Default ON
     const hideOldArticles = ref(true);
 
     // Helper: Normalize strings for comparison
@@ -70,27 +68,11 @@ export function useProductFilter(stockData, config) {
                 .filter((group) => group.products.length > 0);
         }
 
-        // Filter by Images Only
-        if (showImagesOnly.value) {
+        // Clean View Logic (Replaces Images Only & Hide Negative)
+        if (cleanView.value) {
             filtered = filtered.map(group => ({
                 ...group,
-                products: group.products.filter(p => !!p.imageUrl)
-            })).filter(group => group.products.length > 0);
-        }
-
-        // Filter by No Images Only
-        if (showNoImagesOnly.value) {
-            filtered = filtered.map(group => ({
-                ...group,
-                products: group.products.filter(p => !p.imageUrl)
-            })).filter(group => group.products.length > 0);
-        }
-
-        // Filter by Negative Stocks
-        if (hideNegativeStocks.value) {
-            filtered = filtered.map(group => ({
-                ...group,
-                products: group.products.filter(p => Number(p.quantity) >= 0)
+                products: group.products.filter(p => !!p.imageUrl && Number(p.quantity) >= 0)
             })).filter(group => group.products.length > 0);
         }
 
@@ -177,9 +159,11 @@ export function useProductFilter(stockData, config) {
             stockData.value.forEach(g => {
                 g.products.forEach(p => {
                     if (searchQuery.value && !p.productName.toLowerCase().includes(searchQuery.value.toLowerCase())) return;
-                    if (showImagesOnly.value && !p.imageUrl) return;
-                    if (showNoImagesOnly.value && p.imageUrl) return;
-                    if (hideNegativeStocks.value && Number(p.quantity) < 0) return;
+
+                    // Clean View Logic for New Arrivals
+                    if (cleanView.value) {
+                        if (!p.imageUrl || Number(p.quantity) < 0) return;
+                    }
 
                     if (isNewArrival(p)) {
                         newProducts.push(p);
@@ -212,9 +196,7 @@ export function useProductFilter(stockData, config) {
     return {
         searchQuery,
         selectedGroup,
-        showImagesOnly,
-        showNoImagesOnly,
-        hideNegativeStocks,
+        cleanView,
         hideOldArticles,
         filteredStockData,
         sortedStockDataForDropdown,

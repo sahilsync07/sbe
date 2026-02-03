@@ -86,21 +86,12 @@
            <!-- Toggles -->
            <div class="flex items-center gap-2">
                <button 
-                  @click="$emit('update:hideNegativeStocks', !hideNegativeStocks)"
+                  @click="$emit('update:cleanView', !cleanView)"
                   class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
-                  :class="hideNegativeStocks ? 'bg-stone-800 border-stone-700 text-stone-200 shadow-md' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'"
-                  title="Hide Negative Stocks"
+                  :class="cleanView ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white shadow-md' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'"
+                  title="Clean View (Images Only & In Stock)"
                >
-                  <i class="fa-solid fa-cube text-sm"></i>
-               </button>
-               
-               <button 
-                  @click="$emit('update:showImagesOnly', !showImagesOnly)"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
-                  :class="showImagesOnly ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-md' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'"
-                  title="Show Images Only"
-               >
-                  <i class="fa-regular fa-image text-sm" :class="showImagesOnly ? 'font-bold' : ''"></i>
+                  <i class="fa-solid fa-wand-magic-sparkles text-sm transition-all duration-500"></i>
                </button>
            </div>
 
@@ -123,10 +114,11 @@
 
     <!-- Mobile Top Bar (Visible on Mobile) -->
     <header 
-      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all safe-area-top-fixed"
+      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all"
+      style="padding-top: env(safe-area-inset-top, 20px)"
     >
       <!-- Inner content wrapper with fixed height -->
-      <div class="h-[60px] flex items-center justify-between px-4">
+      <div class="h-[54px] flex items-center justify-between px-4 relative">
          <!-- Left: Sidebar -->
          <button
             @click="$emit('toggleSidebar')"
@@ -153,16 +145,7 @@
 
          <!-- Right: Refresh (Android), PDF & Cart -->
          <div class="flex items-center gap-2">
-            <!-- Android Refresh Button (only visible on Android) -->
-            <button
-               class="android-only-btn w-9 h-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100 active:scale-95 transition-all hidden"
-               @click="$emit('refreshData')"
-               :disabled="isRefreshing"
-               title="Refresh Data"
-            >
-              <i v-if="isRefreshing" class="fa-solid fa-spinner fa-spin text-sm"></i>
-              <i v-else class="fa-solid fa-arrows-rotate text-sm"></i>
-            </button>
+
 
             <button
                v-if="isAdmin"
@@ -201,21 +184,26 @@
               />
           </div>
 
-           <!-- Toggles -->
+           <!-- Toggles & Actions -->
            <div class="flex items-center gap-2 shrink-0">
-               <button 
-                  @click="$emit('update:hideNegativeStocks', !hideNegativeStocks)"
-                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border"
-                  :class="hideNegativeStocks ? 'bg-stone-800 border-stone-700 text-stone-200 shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
+               <!-- Android Refresh (Moved here) -->
+               <button
+                  class="android-only-btn w-10 h-10 items-center justify-center rounded-xl bg-slate-900 text-white border border-slate-700 shadow-md active:scale-95 transition-all hidden"
+                  @click="$emit('refreshData')"
+                  :disabled="isRefreshing"
+                  title="Refresh Data"
                >
-                  <i class="fa-solid fa-cube text-sm"></i>
+                 <i v-if="isRefreshing" class="fa-solid fa-spinner fa-spin text-sm"></i>
+                 <i v-else class="fa-solid fa-arrows-rotate text-sm"></i>
                </button>
+
                <button 
-                  @click="$emit('update:showImagesOnly', !showImagesOnly)"
-                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border"
-                  :class="showImagesOnly ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
+                  @click="$emit('update:cleanView', !cleanView)"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border overflow-hidden"
+                  :class="cleanView ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
+                  title="Clean View"
                >
-                  <i class="fa-regular fa-image text-sm" :class="showImagesOnly ? 'font-bold' : ''"></i>
+                  <i class="fa-solid fa-wand-magic-sparkles text-sm transition-all duration-500"></i>
                </button>
            </div>
        </div>
@@ -240,8 +228,7 @@ const props = defineProps({
   lastRefresh: [Date, String, Object],
   cartTotalItems: Number,
   searchQuery: String,
-  showImagesOnly: Boolean,
-  hideNegativeStocks: Boolean,
+  cleanView: Boolean,
   cloudName: String,
   isRefreshing: {
     type: Boolean,
@@ -256,8 +243,7 @@ const emit = defineEmits([
   'toggleLedgerView', 
   'promptAdminLogin',
   'update:searchQuery',
-  'update:showImagesOnly',
-  'update:hideNegativeStocks',
+  'update:cleanView',
   'cacheImages',
   'refreshData'
 ]);
