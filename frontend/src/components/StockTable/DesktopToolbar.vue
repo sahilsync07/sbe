@@ -152,8 +152,19 @@
             </div>
          </div>
 
-         <!-- Right: PDF & Cart -->
+         <!-- Right: Refresh (Android), PDF & Cart -->
          <div class="flex items-center gap-2">
+            <!-- Android Refresh Button (only visible on Android) -->
+            <button
+               class="android-only-btn w-9 h-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100 active:scale-95 transition-all hidden"
+               @click="$emit('refreshData')"
+               :disabled="isRefreshing"
+               title="Refresh Data"
+            >
+              <i v-if="isRefreshing" class="fa-solid fa-spinner fa-spin text-sm"></i>
+              <i v-else class="fa-solid fa-arrows-rotate text-sm"></i>
+            </button>
+
             <button
                v-if="isAdmin"
                @click="$router.push('/pdf-gen')"
@@ -233,7 +244,11 @@ const props = defineProps({
   searchQuery: String,
   showImagesOnly: Boolean,
   hideNegativeStocks: Boolean,
-  cloudName: String
+  cloudName: String,
+  isRefreshing: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const emit = defineEmits([
@@ -245,7 +260,8 @@ const emit = defineEmits([
   'update:searchQuery',
   'update:showImagesOnly',
   'update:hideNegativeStocks',
-  'cacheImages'
+  'cacheImages',
+  'refreshData'
 ]);
 
 const companyFirstName = computed(() => props.companyName.split(' ')[0]);

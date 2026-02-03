@@ -56,6 +56,14 @@ body:not(.platform-android) .main-content-offset {
   }
 }
 
+/* Android-only elements - hidden by default, visible on Android */
+.android-only-btn {
+  display: none !important;
+}
+.platform-android .android-only-btn {
+  display: flex !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

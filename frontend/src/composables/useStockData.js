@@ -6,12 +6,30 @@ import { toast } from 'vue3-toastify';
 export function useStockData(isLocal) {
     const stockData = ref([]);
     const loading = ref(false);
+    const isRefreshing = ref(false);
     const error = ref(null);
     const lastRefresh = ref(null);
     const uploading = ref({});
     const uploadErrors = ref({});
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
+    const REMOTE_DATA_URL = 'https://sahilsync07.github.io/sbe/assets/stock-data.json';
+
+    // Check if network is fast enough for background fetch
+    const isNetworkFast = () => {
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (!connection) return true; // Assume fast if API unavailable
+
+        // Check connection type
+        const type = connection.effectiveType || connection.type;
+        if (type === '2g' || type === 'slow-2g') return false;
+
+        // Check downlink speed (Mbps)
+        const downlink = connection.downlink;
+        if (downlink && downlink < 0.5) return false;
+
+        return true;
+    };
 
     // Helper: Custom Grouping Interceptor
     const processCustomGroups = (data) => {
@@ -278,9 +296,49 @@ export function useStockData(isLocal) {
         }
     };
 
+    // Manual refresh for Android - force fetch fresh data
+    const refreshStockData = async () => {
+        isRefreshing.value = true;
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for manual refresh
+
+            const response = await fetch(`${REMOTE_DATA_URL}?t=${Date.now()}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+                let data = await response.json();
+
+                // Process metadata
+                const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+                if (metaIndex !== -1) {
+                    const meta = data[metaIndex];
+                    if (meta.lastSync) {
+                        lastRefresh.value = new Date(meta.lastSync);
+                    }
+                    data.splice(metaIndex, 1);
+                }
+
+                stockData.value = processCustomGroups(data);
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                toast.success('Data updated!', { autoClose: 2000 });
+            } else {
+                throw new Error('Fetch failed');
+            }
+        } catch (err) {
+            console.warn('Refresh failed:', err);
+            toast.error('Update failed. Try again.', { autoClose: 2000 });
+        } finally {
+            isRefreshing.value = false;
+        }
+    };
+
     return {
         stockData,
         loading,
+        isRefreshing,
         error,
         lastRefresh,
         uploading,
@@ -288,8 +346,10 @@ export function useStockData(isLocal) {
         imageFiles,
         loadStockData,
         updateStockData,
+        refreshStockData,
         handleFileChange,
         uploadImage,
-        deleteImage
+        deleteImage,
+        isNetworkFast
     };
 }

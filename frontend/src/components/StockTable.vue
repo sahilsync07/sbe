@@ -5,6 +5,7 @@
       :is-admin="isAdmin"
       :is-super-admin="isSuperAdmin"
       :loading="loading"
+      :is-refreshing="isRefreshing"
       :show-side-panel="showSidePanel"
       :show-cart="showCart"
       :company-name="companyName"
@@ -23,6 +24,7 @@
       @update:showImagesOnly="showImagesOnly = $event"
       @update:hideNegativeStocks="hideNegativeStocks = $event"
       @cacheImages="handleCacheImages"
+      @refreshData="refreshStockData"
     />
 
     <div class="flex w-full">
@@ -362,9 +364,9 @@ const companyName = ref('SBE');
 // --- Use Composables ---
 // 1. Stock Data
 const { 
-  stockData, loading, error, lastRefresh, 
+  stockData, loading, isRefreshing, error, lastRefresh, 
   uploading, uploadErrors, imageFiles,
-  loadStockData, updateStockData, handleFileChange, uploadImage, deleteImage
+  loadStockData, updateStockData, refreshStockData, handleFileChange, uploadImage, deleteImage
 } = useStockData(isLocal);
 
 // 2. Admin
