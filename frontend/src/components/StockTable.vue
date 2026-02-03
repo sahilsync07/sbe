@@ -340,6 +340,13 @@
        @confirm="finalizeOrderAndSend"
     />
 
+    <!-- Admin Login Modal -->
+    <AdminLoginModal
+       :show="showAdminModal"
+       @close="showAdminModal = false"
+       @login="handleAdminLogin"
+    />
+
     <!-- Admin Data Loading Overlay -->
      <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div v-if="loading && !showWelcome" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
@@ -377,6 +384,7 @@ import { defineAsyncComponent } from 'vue';
 const ImageModal = defineAsyncComponent(() => import('./StockTable/ImageModal.vue'));
 const OrderModal = defineAsyncComponent(() => import('./StockTable/OrderModal.vue'));
 const FunLoader = defineAsyncComponent(() => import('./StockTable/FunLoader.vue'));
+const AdminLoginModal = defineAsyncComponent(() => import('./StockTable/AdminLoginModal.vue'));
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -405,7 +413,28 @@ const {
 } = useStockData(isLocal);
 
 // 2. Admin
-const { isAdmin, isSuperAdmin, promptAdminLogin } = useAdmin();
+const { isAdmin, isSuperAdmin } = useAdmin();
+const showAdminModal = ref(false);
+
+const promptAdminLogin = () => {
+  showAdminModal.value = true;
+};
+
+const handleAdminLogin = (password) => {
+  showAdminModal.value = false;
+  if (!password) return;
+  if (password === 'admin123') {
+    isAdmin.value = true;
+    isSuperAdmin.value = false;
+    toast.success('Admin Mode Enabled', { autoClose: 2000 });
+  } else if (password === 'superadmin') {
+    isAdmin.value = false;
+    isSuperAdmin.value = true;
+    toast.success('Super Admin Mode Enabled', { autoClose: 2000 });
+  } else {
+    toast.error('Incorrect password', { autoClose: 3000 });
+  }
+};
 
 // 3. Cart
 const { 
