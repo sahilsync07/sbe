@@ -10,6 +10,9 @@ import "./style.css";
   let App, router;
 
   if (isAndroidApp) {
+    // Add platform class for Android-specific CSS
+    document.body.classList.add('platform-android');
+
     // Load Android-specific version
     const androidApp = await import('./android/App.vue');
     const androidRouter = await import('./android/router.js');

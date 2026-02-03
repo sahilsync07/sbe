@@ -9,38 +9,50 @@
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased font-sans selection:bg-blue-100 selection:text-blue-700;
-  /* Safe areas handled by fixed headers and content margins */
 }
 
-/* Root app container - handles safe area insets */
+/* Root app container */
 #app {
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  min-height: 100dvh;
 }
 
-/* Safe Area Utilities for Fixed/Sticky Elements */
-.safe-area-top {
+/* ============================================
+   ANDROID-ONLY SAFE AREA STYLES
+   These only apply when running in Capacitor Android app
+   ============================================ */
+
+/* Safe Area Utilities - Android Only */
+.platform-android .safe-area-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* For fixed elements - position at top with internal safe area padding */
-.safe-area-top-fixed {
+.platform-android .safe-area-top-fixed {
   top: 0;
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Safe area bottom for mobile bottom bars */
-.safe-area-bottom {
+.platform-android .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Main content offset - accounts for fixed header + safe area */
-.main-content-offset {
+/* Main content offset - Android Only */
+.platform-android .main-content-offset {
   margin-top: calc(60px + env(safe-area-inset-top, 0px));
 }
 @media (min-width: 768px) {
-  .main-content-offset {
+  .platform-android .main-content-offset {
     margin-top: calc(72px + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Web fallback - no safe area adjustments */
+body:not(.platform-android) .main-content-offset {
+  margin-top: 60px;
+}
+@media (min-width: 768px) {
+  body:not(.platform-android) .main-content-offset {
+    margin-top: 72px;
   }
 }
 
