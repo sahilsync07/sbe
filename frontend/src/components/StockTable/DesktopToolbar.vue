@@ -3,9 +3,10 @@
   <div>
     <!-- Desktop Toolbar (Hidden on Mobile) -->
     <header 
-      class="hidden md:flex fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all duration-300 px-6 items-end justify-between safe-area-top-fixed"
-      style="height: calc(72px + env(safe-area-inset-top, 0px)); padding-bottom: 0;"
+      class="hidden md:block fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all duration-300 safe-area-top-fixed"
     >
+      <!-- Inner content wrapper with fixed height -->
+      <div class="h-[72px] flex items-center justify-between px-6">
        <!-- Left Section: Sidebar, Sync, Search -->
        <div class="flex items-center gap-4 flex-1 min-w-0 mr-4">
           <!-- Sidebar Toggle -->
@@ -117,14 +118,16 @@
              </div>
            </button>
        </div>
+      </div>
     </header>
 
 
     <!-- Mobile Top Bar (Visible on Mobile) -->
     <header 
-      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm flex items-end justify-between px-4 transition-all safe-area-top-fixed"
-      style="height: calc(60px + env(safe-area-inset-top, 0px));"
+      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all safe-area-top-fixed"
     >
+      <!-- Inner content wrapper with fixed height -->
+      <div class="h-[60px] flex items-center justify-between px-4">
          <!-- Left: Sidebar -->
          <button
             @click="$emit('toggleSidebar')"
@@ -167,6 +170,7 @@
              <i class="fa-solid fa-cart-shopping text-xs"></i>
            </button>
          </div>
+      </div>
     </header>
 
 
