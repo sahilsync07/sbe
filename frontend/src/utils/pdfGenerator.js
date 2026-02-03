@@ -54,45 +54,86 @@ const getProductColor = (name) => {
 export const generateOrderPDF = (cart, customerDetails) => {
     try {
         const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
 
-        // --- 1. HEADER ---
+        // --- 1. HEADER (Ink-Efficient: Bold Text, No Block) ---
+        // Company Name
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59); // Slate-800
-        doc.text("M/S Sri Brundabana Enterprises", 105, 20, { align: "center" });
+        doc.setTextColor(0, 0, 0); // Pure Black
+        doc.text("SRI BRUNDABANA ENTERPRISES", pageWidth / 2, 20, { align: "center" });
 
-        doc.setFontSize(14);
+        // Subtitle
+        doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(100, 116, 139); // Slate-500
-        doc.text("Rayagada", 105, 28, { align: "center" });
+        doc.setTextColor(80); // Dark Gray
+        doc.text("RAYAGADA • ODISHA", pageWidth / 2, 27, { align: "center" });
 
-        doc.line(10, 35, 200, 35); // Separator line
+        // Purchase Order Badge (Outlined, not filled)
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(pageWidth / 2 - 25, 33, 50, 9, 2, 2, 'S');
 
-        // --- 2. PARTY DETAILS ---
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.text("PURCHASE ORDER", pageWidth / 2, 39, { align: "center" });
+
+        // Thick Divider
+        doc.setLineWidth(1.5);
+        doc.line(14, 48, pageWidth - 14, 48);
+
+
+        // --- 2. DETAILS (Clean Layout) ---
         const date = new Date().toLocaleDateString('en-IN', {
             day: 'numeric', month: 'short', year: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
 
-        doc.setFontSize(10);
-        doc.setTextColor(30, 41, 59);
+        const startY = 56;
 
-        // Left Side: Party Info
+        // Left: Customer
+        doc.setFontSize(9);
+        doc.setTextColor(100);
         doc.setFont("helvetica", "bold");
-        doc.text("Party Details:", 14, 45);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Name:   ${customerDetails.name}`, 14, 51);
-        doc.text(`Phone:  ${customerDetails.phone}`, 14, 57);
+        doc.text("CUSTOMER", 14, startY);
 
-        // Right Side: Order Info
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text(customerDetails.name, 14, startY + 6);
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text(customerDetails.phone, 14, startY + 11);
+
+        // Right: Order Info
+        doc.setFontSize(9);
+        doc.setTextColor(100);
         doc.setFont("helvetica", "bold");
-        doc.text("Order Details:", 140, 45);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Date:   ${date}`, 140, 51);
-        doc.text(`Total Items: ${cart.reduce((sum, i) => sum + i.quantity, 0)} Pairs`, 140, 57);
+        doc.text("DATE", pageWidth - 14, startY, { align: "right" });
 
-        // --- 3. TABLE ---
-        const tableColumn = ["Sl No", "Article Name", "Size", "Color", "Ordered Qty", "Stock Available"];
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(date, pageWidth - 14, startY + 6, { align: "right" });
+
+        const totalQty = cart.reduce((sum, i) => sum + i.quantity, 0);
+        const totalQtyLabel = totalQty === 1 ? 'Set' : 'Sets';
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text(`TOTAL ITEMS: ${totalQty} ${totalQtyLabel}`, pageWidth - 14, startY + 12, { align: "right" });
+
+
+        // --- 3. TABLE (Compact & Minimalist) ---
+        // Explicit alignment for headers
+        const tableColumn = [
+            { content: "#", styles: { halign: 'center' } },
+            { content: "ARTICLE", styles: { halign: 'left' } },
+            { content: "SIZE", styles: { halign: 'center' } },
+            { content: "COLOR", styles: { halign: 'left' } }, // Color body is default left
+            { content: "QTY", styles: { halign: 'center' } },
+            { content: "STOCK", styles: { halign: 'center' } }
+        ];
+
         const tableRows = [];
 
         cart.forEach((item, index) => {
@@ -102,13 +143,16 @@ export const generateOrderPDF = (cart, customerDetails) => {
             const color = getProductColor(product.productName);
             const cleanName = getCleanProductName(product.productName);
 
+            const qtyLabel = item.quantity === 1 ? 'Set' : 'Sets';
+            const stockLabel = stockQty === 1 ? 'Pair' : 'Pairs';
+
             const rowData = [
                 index + 1,
                 cleanName,
                 size,
                 color,
-                `${item.quantity} ${item.quantity === 1 ? 'Pair' : 'Pairs'}`,
-                `${stockQty} ${stockQty === 1 ? 'Pair' : 'Pairs'}`
+                `${item.quantity} ${qtyLabel}`,
+                `${stockQty} ${stockLabel}`
             ];
             tableRows.push(rowData);
         });
@@ -116,45 +160,52 @@ export const generateOrderPDF = (cart, customerDetails) => {
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 65,
-            theme: 'grid',
+            startY: startY + 20,
+            theme: 'plain',
             styles: {
-                fontSize: 12, // Increased font size
-                cellPadding: 4,
+                fontSize: 9,
+                cellPadding: 3,
                 valign: 'middle',
                 font: 'helvetica',
-                fontStyle: 'bold',
-                overflow: 'linebreak'
+                textColor: [0, 0, 0],
+                overflow: 'linebreak',
+                lineWidth: 0,
             },
             headStyles: {
-                fillColor: [31, 41, 55], // Slate-800
-                textColor: [255, 255, 255],
+                fillColor: false,
+                textColor: [0, 0, 0],
                 fontStyle: 'bold',
-                fontSize: 12
+                fontSize: 9,
+                lineWidth: { bottom: 1.5 },
+                lineColor: [0, 0, 0]
             },
-            // Alternate row colors
-            alternateRowStyles: {
-                fillColor: [248, 250, 252] // Slate-50
+            bodyStyles: {
+                lineColor: [200, 200, 200],
+                lineWidth: { bottom: 0.1 },
             },
-            // Stock Column logic
+            // Column Specifics (Increased widths for side columns to reduce Article width)
             columnStyles: {
-                0: { cellWidth: 20, halign: 'center' }, // Sl No
-                1: { cellWidth: 'auto' },               // Article Name
-                2: { cellWidth: 25, halign: 'center' }, // Size
-                3: { cellWidth: 30 },                   // Color
-                4: { cellWidth: 30, halign: 'center', fontStyle: 'bold' }, // Ordered Qty
-                5: { cellWidth: 30, halign: 'center' }  // Stock Available
+                0: { cellWidth: 10, halign: 'center', fontStyle: "bold", textColor: [100] },
+                1: { cellWidth: 'auto', fontStyle: "bold" },
+                2: { cellWidth: 24, halign: 'center' }, // Increased from 22
+                3: { cellWidth: 30, halign: 'left' },   // Increased from 28
+                4: { cellWidth: 28, halign: 'center', fontStyle: 'bold' }, // Increased from 25
+                5: { cellWidth: 28, halign: 'center', textColor: [120] }   // Increased from 25
             }
         });
 
         // --- 4. FOOTER ---
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text('Proprietary Order Sheet', 105, 290, { align: 'center' });
-        }
+        const finalY = doc.lastAutoTable.finalY + 15;
+
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(200);
+        doc.line(14, finalY, pageWidth - 14, finalY);
+
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(120);
+        // Updated footer to include basic contact info or thanks
+        doc.text(customerDetails.name + " - " + customerDetails.phone, pageWidth / 2, finalY + 6, { align: "center" });
 
         // Return Base64 for Android sharing
         if (customerDetails.returnBase64) {
