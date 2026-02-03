@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #000000;
+  --foreground: #ffffff;
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased font-sans selection:bg-blue-100 selection:text-blue-700;
+  @apply bg-black text-white antialiased font-sans selection:bg-blue-500 selection:text-white;
 }
 
 /* Root app container */

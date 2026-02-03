@@ -3,7 +3,7 @@
   <div>
     <!-- Desktop Toolbar (Hidden on Mobile) -->
     <header 
-      class="hidden md:block fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all duration-300 safe-area-top-fixed"
+      class="hidden md:block fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300 safe-area-top-fixed"
     >
       <!-- Inner content wrapper with fixed height -->
       <div class="h-[72px] flex items-center justify-between px-6">
@@ -12,7 +12,7 @@
           <!-- Sidebar Toggle -->
           <button
             @click="$emit('toggleSidebar')"
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-blue-600 hover:text-white transition-all active:scale-95 shrink-0"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95 shrink-0"
             :class="{ 'opacity-0 pointer-events-none': showCart }"
           >
              <i v-if="showSidePanel" class="fa-solid fa-house text-sm"></i>
@@ -24,7 +24,7 @@
             <button
                v-if="isAdmin && !isSuperAdmin"
                @click="$emit('updateStockData')"
-               class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-all border border-slate-200"
+               class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 hover:text-blue-500 transition-all border border-white/5"
                title="Sync Data"
             >
               <i class="fa-solid fa-rotate" :class="{ 'animate-spin': loading }"></i>
@@ -32,7 +32,7 @@
              <button
               v-if="isSuperAdmin"
               @click="$emit('toggleLedgerView')"
-              class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors border border-slate-200"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 transition-colors border border-white/5"
               title="Ledger View"
             >
                <i class="fa-solid fa-book-open"></i>
@@ -41,7 +41,7 @@
 
           <!-- Search Bar (Flexible) -->
           <div class="relative flex-1 max-w-sm group">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors">
                  <i class="fa-solid fa-magnifying-glass text-sm"></i>
               </span>
               <input
@@ -49,7 +49,7 @@
                 @input="handleSearchInput"
                 type="text"
                 placeholder="Search..."
-                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-slate-100/50 border border-slate-200/60 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all text-sm font-medium"
+                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-900 border border-white/10 focus:bg-black focus:border-blue-500 focus:ring-2 focus:ring-blue-900 focus:outline-none transition-all text-sm font-medium text-white placeholder-slate-600"
               />
           </div>
        </div>
@@ -57,15 +57,15 @@
        <!-- Center Section: Logo (Absolute) -->
        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 pointer-events-none">
           <h1 
-               class="text-2xl font-semibold tracking-tighter text-slate-900 select-none pointer-events-auto cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+               class="text-2xl font-semibold tracking-tighter text-white select-none pointer-events-auto cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
                @click="$emit('promptAdminLogin')"
                title="Admin Login"
              >
-               <span class="text-slate-900 font-['Clash_Display'] font-bold text-3xl tracking-wide uppercase">{{ companyFirstName }}</span>
-               <span class="text-slate-500 font-['Clash_Display'] font-light text-3xl tracking-wide ml-1.5">{{ companyRestName }}</span>
+               <span class="text-white font-['Clash_Display'] font-bold text-3xl tracking-wide uppercase">{{ companyFirstName }}</span>
+               <span class="text-slate-400 font-['Clash_Display'] font-light text-3xl tracking-wide ml-1.5">{{ companyRestName }}</span>
           </h1>
           <!-- Status Pill -->
-          <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-full shadow-sm">
+          <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-neutral-900 border border-white/10 px-2 py-0.5 rounded-full shadow-sm">
                <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
                <span>{{ formattedLastRefresh || 'Offline' }}</span>
           </div>
@@ -77,7 +77,7 @@
            <button
               v-if="isAdmin"
               @click="$router.push('/pdf-gen')"
-              class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-red-500 transition-all border border-slate-200 shrink-0"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 hover:text-red-500 transition-all border border-white/5 shrink-0"
               title="Generate PDF"
             >
               <i class="fa-solid fa-file-pdf"></i>
@@ -88,7 +88,7 @@
                <button 
                   @click="$emit('update:cleanView', !cleanView)"
                   class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
-                  :class="cleanView ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white shadow-md' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'"
+                  :class="cleanView ? 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400 text-black shadow-md' : 'bg-neutral-900 border-white/5 text-slate-400 hover:bg-neutral-800 hover:text-slate-200'"
                   title="Clean View (Images Only & In Stock)"
                >
                   <i class="fa-solid fa-wand-magic-sparkles text-sm transition-all duration-500"></i>
@@ -98,12 +98,12 @@
            <!-- Cart -->
            <button
              @click="$emit('toggleCart')"
-             class="relative w-11 h-11 flex items-center justify-center rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 shrink-0"
+             class="relative w-11 h-11 flex items-center justify-center rounded-full bg-white text-black hover:bg-slate-200 transition-all shadow-lg shadow-white/10 active:scale-95 shrink-0"
              :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
            >
              <i v-if="showCart" class="fa-solid fa-xmark text-lg"></i>
              <div v-else class="flex items-center justify-center w-full h-full">
-                <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-sm z-10 ring-2 ring-white">{{ cartTotalItems }}</div>
+                <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-sm z-10 ring-2 ring-black">{{ cartTotalItems }}</div>
                 <i class="fa-solid fa-bag-shopping text-base"></i>
              </div>
            </button>
@@ -114,7 +114,7 @@
 
     <!-- Mobile Top Bar (Visible on Mobile) -->
     <header 
-      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-all"
+      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all"
       style="padding-top: env(safe-area-inset-top, 20px)"
     >
       <!-- Inner content wrapper with fixed height -->
@@ -122,7 +122,7 @@
          <!-- Left: Sidebar -->
          <button
             @click="$emit('toggleSidebar')"
-            class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 active:bg-blue-600 active:text-white transition-all"
+            class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all"
          >
              <i v-if="showSidePanel" class="fa-solid fa-house text-sm"></i>
              <i v-else class="fa-solid fa-bars text-sm"></i>
@@ -131,11 +131,11 @@
          <!-- Center: Logo -->
          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
             <h1 
-               class="text-lg font-semibold tracking-tighter text-slate-900 select-none flex items-center gap-1 pointer-events-auto cursor-pointer"
+               class="text-lg font-semibold tracking-tighter text-white select-none flex items-center gap-1 pointer-events-auto cursor-pointer"
                @click="$emit('promptAdminLogin')"
              >
-               <span class="text-slate-900 font-['Clash_Display'] font-bold text-2xl tracking-wide uppercase">{{ companyFirstName }}</span>
-               <span class="text-slate-500 font-['Clash_Display'] font-light text-2xl tracking-wide ml-1">{{ companyRestName }}</span>
+               <span class="text-white font-['Clash_Display'] font-bold text-2xl tracking-wide uppercase">{{ companyFirstName }}</span>
+               <span class="text-slate-400 font-['Clash_Display'] font-light text-2xl tracking-wide ml-1">{{ companyRestName }}</span>
             </h1>
             <div class="flex items-center gap-1.5 mt-0.5">
                 <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
@@ -150,16 +150,16 @@
             <button
                v-if="isAdmin"
                @click="$router.push('/pdf-gen')"
-               class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-500 border border-slate-100"
+               class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 border border-white/10"
             >
               <i class="fa-solid fa-file-pdf"></i>
            </button>
 
            <button
              @click="$emit('toggleCart')"
-             class="relative w-9 h-9 flex items-center justify-center rounded-full bg-slate-900 text-white shadow-md active:scale-95"
+             class="relative w-9 h-9 flex items-center justify-center rounded-full bg-white text-black shadow-md active:scale-95"
            >
-             <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white">{{ cartTotalItems }}</div>
+             <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-black">{{ cartTotalItems }}</div>
              <i class="fa-solid fa-cart-shopping text-xs"></i>
            </button>
          </div>
@@ -168,11 +168,11 @@
 
 
     <!-- Mobile Bottom Bar (Fixed) -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full z-[60] bg-white border-t border-slate-200/80 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div class="md:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)]">
        <div class="flex items-center gap-3">
           <!-- Search -->
           <div class="relative flex-1">
-             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
                  <i class="fa-solid fa-magnifying-glass text-xs"></i>
              </span>
              <input
@@ -180,7 +180,7 @@
                 @input="handleSearchInput"
                 type="text"
                 placeholder="Search products..."
-                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-100 border-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm font-medium"
+                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-900 border-none focus:bg-black focus:ring-2 focus:ring-blue-900/40 transition-all text-sm font-medium text-white placeholder-slate-600"
               />
           </div>
 
@@ -188,7 +188,7 @@
            <div class="flex items-center gap-2 shrink-0">
                <!-- Android Refresh (Moved here) -->
                <button
-                  class="android-only-btn w-10 h-10 items-center justify-center rounded-xl bg-slate-900 text-white border border-slate-700 shadow-md active:scale-95 transition-all hidden"
+                  class="android-only-btn w-10 h-10 items-center justify-center rounded-xl bg-white text-black border border-slate-200 shadow-md active:scale-95 transition-all hidden"
                   @click="$emit('refreshData')"
                   :disabled="isRefreshing"
                   title="Refresh Data"
@@ -200,7 +200,7 @@
                <button 
                   @click="$emit('update:cleanView', !cleanView)"
                   class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border overflow-hidden"
-                  :class="cleanView ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
+                  :class="cleanView ? 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400 text-black shadow-md' : 'bg-neutral-900 border-white/10 text-slate-400'"
                   title="Clean View"
                >
                   <i class="fa-solid fa-wand-magic-sparkles text-sm transition-all duration-500"></i>
