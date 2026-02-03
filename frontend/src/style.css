@@ -65,15 +65,22 @@ body:not(.platform-android) .main-content-offset {
 }
 
 /* Custom Scrollbar */
+/* Custom Scrollbar - Hidden but functional */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  background: transparent;
+}
+
+/* For Firefox */
+html {
+  scrollbar-width: none;
 }
 
 /* Utilities */
