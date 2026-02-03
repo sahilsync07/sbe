@@ -92,7 +92,6 @@
                   title="Hide Negative Stocks"
                >
                   <i class="fa-solid fa-cube text-sm"></i>
-                  <div v-if="hideNegativeStocks" class="absolute top-2 right-2.5 w-1.5 h-1.5 bg-green-400 rounded-full shadow-lg ring-2 ring-stone-800 animate-pulse"></div>
                </button>
                
                <button 
