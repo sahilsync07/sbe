@@ -72,7 +72,7 @@ export function useProductFilter(stockData, config) {
         if (cleanView.value) {
             filtered = filtered.map(group => ({
                 ...group,
-                products: group.products.filter(p => !!p.imageUrl && Number(p.quantity) >= 0)
+                products: group.products.filter(p => !!p.imageUrl && Number(p.quantity) >= 4)
             })).filter(group => group.products.length > 0);
         }
 
@@ -162,7 +162,7 @@ export function useProductFilter(stockData, config) {
 
                     // Clean View Logic for New Arrivals
                     if (cleanView.value) {
-                        if (!p.imageUrl || Number(p.quantity) < 0) return;
+                        if (!p.imageUrl || Number(p.quantity) < 4) return;
                     }
 
                     if (isNewArrival(p)) {
