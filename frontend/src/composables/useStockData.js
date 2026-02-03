@@ -13,7 +13,7 @@ export function useStockData(isLocal) {
     const uploadErrors = ref({});
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
-    const REMOTE_DATA_URL = 'https://sahilsync07.github.io/sbe/assets/stock-data.json';
+    const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
 
     // Check if network is fast enough for background fetch
     const isNetworkFast = () => {
