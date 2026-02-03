@@ -279,10 +279,11 @@ const statusColor = computed(() => {
   const date = new Date(props.lastRefresh);
   const now = new Date();
   const diffInHours = (now - date) / (1000 * 60 * 60);
+  const diffInDays = diffInHours / 24;
 
-  if (diffInHours < 4) return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"; // Fresh (< 4h) + Glow
-  if (diffInHours < 24) return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]";   // Stale (< 24h) + Glow
-  return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]";                          // Old (> 24h) + Glow
+  if (diffInDays < 1) return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]";   // Fresh (< 1 day) - Green
+  if (diffInDays <= 3) return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]";    // Stale (1-3 days) - Yellow
+  return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]";                           // Old (> 3 days) - Red
 });
 
 

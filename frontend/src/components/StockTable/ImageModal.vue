@@ -75,7 +75,7 @@
                    </div>
                    
                    <div class="text-blue-600 font-bold text-xs mb-2">
-                      Stock: {{ currentProduct.quantity }} Sets
+                      Stock: {{ currentProduct.quantity }} {{ currentProduct.quantity === 1 ? 'Set' : 'Sets' }}
                    </div>
                </div>
 

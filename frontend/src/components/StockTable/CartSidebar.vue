@@ -118,7 +118,7 @@
                  <span class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Total Quantity</span>
                  <span class="text-3xl font-black text-slate-900 font-heading leading-none">
                     {{ cartTotalItems }}
-                    <span class="text-lg font-bold text-slate-400 ml-1">Sets</span>
+                    <span class="text-lg font-bold text-slate-400 ml-1">{{ cartTotalItems === 1 ? 'Set' : 'Sets' }}</span>
                  </span>
              </div>
 
