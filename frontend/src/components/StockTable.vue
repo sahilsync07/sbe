@@ -187,22 +187,41 @@
                         </div>
 
                         <!-- Image Upload Overlay (Admin) -->
-                         <div
+                        <!-- Admin Controls (Refined) -->
+                        <div
                           v-if="isAdmin || isSuperAdmin"
-                          class="absolute top-2 left-2 z-30 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          class="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none p-4 transition-opacity duration-200"
+                          :class="product.imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'"
                         >
-                           <label class="w-8 h-8 flex items-center justify-center bg-white/90 rounded-full cursor-pointer shadow-md hover:scale-110 transition-transform text-slate-600">
-                              <i class="fa-solid fa-camera text-xs"></i>
-                              <input type="file" accept="image/*" @change="handleFileChange($event, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
-                           </label>
-                           
-                           <button v-if="imageFiles[product.productName]" @click.stop="uploadImage(product.productName)" class="px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded shadow-md">
-                             Save
-                           </button>
+                           <!-- Case 1: No Image - Centered Upload Button -->
+                           <div v-if="!product.imageUrl" class="pointer-events-auto w-full transform transition-all hover:scale-105">
+                               <!-- State A: No File Selected -->
+                               <label v-if="!imageFiles[product.productName]" 
+                                      class="flex w-full items-center justify-center gap-2 py-2.5 bg-white/95 backdrop-blur-sm rounded-xl cursor-pointer shadow-lg hover:shadow-xl hover:bg-white border border-slate-100 text-slate-700"
+                                      @click.stop
+                               >
+                                  <i class="fa-solid fa-camera text-sm"></i>
+                                  <span class="text-xs font-bold uppercase tracking-wide">Add Photo</span>
+                                  <input type="file" accept="image/*" @change="handleFileChange($event, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
+                               </label>
+                               
+                               <!-- State B: File Selected -> Upload Action -->
+                               <button v-else 
+                                       @click.stop="uploadImage(product.productName)" 
+                                       class="w-full py-2.5 bg-blue-600 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 hover:bg-blue-700 transition-all font-bold text-xs flex items-center justify-center gap-2 uppercase tracking-wide"
+                                       :disabled="uploading[product.productName]"
+                               >
+                                   <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin"></i>
+                                   <span v-else>Confirm Upload</span>
+                               </button>
+                           </div>
 
-                           <button v-if="product.imageUrl" @click.stop="deleteImage(product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600">
-                             <i class="fa-solid fa-trash text-[10px]"></i>
-                           </button>
+                           <!-- Case 2: Has Image - Remove Button -->
+                           <div v-else class="pointer-events-auto absolute top-2 right-2">
+                             <button @click.stop="deleteImage(product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-sm" title="Remove Image">
+                               <i class="fa-solid fa-trash text-xs"></i>
+                             </button>
+                           </div>
                         </div>
                       </div>
 
