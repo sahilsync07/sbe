@@ -209,7 +209,6 @@
                   :class="hideNegativeStocks ? 'bg-stone-800 border-stone-700 text-stone-200 shadow-md' : 'bg-slate-50 border-slate-100 text-slate-400'"
                >
                   <i class="fa-solid fa-cube text-sm"></i>
-                  <div v-if="hideNegativeStocks" class="absolute top-2 right-2.5 w-1.5 h-1.5 bg-green-400 rounded-full shadow-lg ring-2 ring-stone-800 animate-pulse"></div>
                </button>
                <button 
                   @click="$emit('update:showImagesOnly', !showImagesOnly)"
