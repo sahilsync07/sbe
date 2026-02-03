@@ -11,8 +11,7 @@
                 <i class="fa-solid fa-bag-shopping text-sm"></i>
              </div>
              <div>
-                 <h2 class="text-xl font-bold text-slate-900 font-heading leading-none">Shopping Bag</h2>
-                 <span v-if="cartTotalItems > 0" class="text-xs font-medium text-slate-500">{{ cartTotalItems }} items</span>
+                 <h2 class="text-2xl font-bold text-slate-900 font-heading leading-none">Cart</h2>
              </div>
          </div>
          

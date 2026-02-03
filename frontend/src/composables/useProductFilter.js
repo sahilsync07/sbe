@@ -103,12 +103,33 @@ export function useProductFilter(stockData, config) {
         if (selectedGroup.value !== "All") {
             const groupKey = selectedGroup.value;
 
-            // New Arrivals Logic
+            // New Arrivals Logic - Flatten all into one group sorted by date
             if (groupKey === "NewArrivals") {
-                filtered = filtered.map(group => ({
-                    ...group,
-                    products: group.products.filter(p => isNewArrival(p))
-                })).filter(g => g.products.length > 0);
+                const minDate = DEFAULT_MIN_DATE;
+                const allNewProducts = [];
+
+                // Collect all new arrival products from all groups
+                filtered.forEach(group => {
+                    group.products.forEach(p => {
+                        if (isNewArrival(p)) {
+                            allNewProducts.push(p);
+                        }
+                    });
+                });
+
+                // Sort by most recent first (imageUploadedAt = when made visible to customers)
+                allNewProducts.sort((a, b) => {
+                    const dateA = new Date(a.imageUploadedAt || a.firstSeenAt || minDate);
+                    const dateB = new Date(b.imageUploadedAt || b.firstSeenAt || minDate);
+                    return dateB - dateA;
+                });
+
+                // Return as single "New Arrivals" group  
+                filtered = allNewProducts.length > 0 ? [{
+                    groupName: "New Arrivals",
+                    products: allNewProducts,
+                    isSpecial: true
+                }] : [];
             }
             // Check if it's a Brand Group (e.g. Paragon, Florex)
             else if (config.value?.brandGroups && config.value.brandGroups[groupKey]) {

@@ -16,7 +16,7 @@
       <div class="h-full flex flex-col">
         <!-- Header -->
         <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-          <h2 class="text-xl font-bold text-slate-800 font-heading">Brands</h2>
+          <h2 class="text-2xl font-bold text-slate-900 font-heading leading-none">Brands</h2>
           <button 
              @click="$emit('update:showSidePanel', false)"
              class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
