@@ -473,7 +473,8 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import axios from "axios";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -483,682 +484,594 @@ import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { useBrandGroups } from '../composables/useBrandGroups';
 
-export default {
-  data() {
-    return {
-      brands: [],
-      selectedBrands: [],
-      onlyWithPhotos: true,
-      minQtyEnabled: false,
-      minQty: 5,
-      // Duplicate minQty removed
-      pdfMode: "separate",
-      isGenerating: false,
-      isPdfGenerating: false,
-      // Duplicate isPdfGenerating removed
-      isZipGenerating: false,
-      isSharing: false,
-      
-      // Batch Sharing State
-      showBatchModal: false,
-      batchList: [], // Array of Array of Strings (URIs)
-      currentBatchIndex: 0,
+// State
+const brands = ref([]);
+const selectedBrands = ref([]);
+const onlyWithPhotos = ref(true);
+const minQtyEnabled = ref(false);
+const minQty = ref(5);
+const pdfMode = ref("separate");
+const isGenerating = ref(false);
+const isPdfGenerating = ref(false);
+const isZipGenerating = ref(false);
+const isSharing = ref(false);
 
-      mobileTab: 'brands', // 'brands' | 'export'
-      currentBrand: "",
-      completedCount: 0,
-      showToast: false,
-      toastMessage: "",
+// Batch Sharing State
+const showBatchModal = ref(false);
+const batchList = ref([]);
+const currentBatchIndex = ref(0);
 
-      // Brand Lists Configuration
-      bansalList: [
-        'SRG Enterprises', 'NAV DURGA ENTERPRISES', 'AAGAM POLYMERE', 
-        'R K TRADERS', 'A G ENTERPRISES', 'NEXUS', 'YASH FOOTWEAR',
-        'AAGAM POLYMER', 'Vardhman Plastics'
-      ],
-      airsonList: ['AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR'],
-      kohinoorList: ['KOHINOOR', 'UAM FOOTWEAR'],
-      nareshList: ['KRishna Agency', 'SHYAM'],
-      socksList: ['BArun', 'PAreek Soucks', 'LEo'],
-      paragonList: [
-        'Paragon Gents', 'Paragon Ladies', 'Eeken', 'Meriva', 'Paragon',  
-        'Paragon Blot', 'Max', 'Paralite', 'P-TOES', 'Hawai Chappal', 
-        'Stimulus', 'Escoute', 'Safety', 'Walkaholic', 'School'
-      ],
-      topBrandsConfig: [
-        { name: 'Cubix', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-        { name: 'CUBIX 2', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-        { name: 'Florex (Swastik)', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg' },
-        { name: 'RELIANCE FOOTWEAR', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png' },
-        { name: 'Action', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' }
-      ],
-      midBrandsConfig: [
-         'AIRFAX', 'TEUZ', 'Paris', 'Hitway', 'PANKAJ PLASTIC', 'VAISHNO PLASTIC', 'TARA', 'ADDA', 'ASHU', 'ADDOXY'
-      ],
-      generalList: ['Maruti Plastics', 'Magnet', 'J.K Plastic', 
-        'R R POLYPLAST', 'AGRA'
-      ],
-    };
-  },
+const mobileTab = ref('brands');
+const currentBrand = ref("");
+const completedCount = ref(0);
+const showToast = ref(false);
+const toastMessage = ref("");
 
-  computed: {
-    groupedSidebar() {
-       const normalize = (name) => name ? name.toLowerCase().trim() : '';
+// Computed: Stock data for composable
+const stockData = computed(() => brands.value.map(b => ({ groupName: b })));
 
-       // Helper sets
-       const paragonSet = new Set(this.paragonList.map(n => normalize(n)));
-       const topBrandNames = this.topBrandsConfig.map(c => normalize(c.name));
-       const topBrandSet = new Set(topBrandNames);
-       const midBrandSet = new Set(this.midBrandsConfig.map(n => normalize(n)));
-       const socksSet = new Set(this.socksList.map(n => normalize(n)));
-       const generalSet = new Set(this.generalList.map(n => normalize(n)));
+// Use brand groups composable
+const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
 
-       // Club sets
-       const bansalSet = new Set(this.bansalList.map(n => normalize(n)));
-       const airsonSet = new Set(this.airsonList.map(n => normalize(n)));
-       const kohinoorSet = new Set(this.kohinoorList.map(n => normalize(n)));
-       const nareshSet = new Set(this.nareshList.map(n => normalize(n)));
+// Native app check
+const isNativeApp = computed(() => Capacitor.isNativePlatform());
 
-       const paragon = [];
-       const topBrands = [];
-       const midBrands = [];
-       const socksGroups = [];
-       const general = [];
-       const bansalGroups = [];
-       const airsonGroups = [];
-       const kohinoorGroups = [];
-       const nareshGroups = [];
-       const others = [];
-       
-       const brands = this.brands.map(b => ({ groupName: b }));
-
-       brands.forEach(group => {
-           const nName = normalize(group.groupName);
-           
-           if (paragonSet.has(nName)) {
-               paragon.push(group);
-           } else if (topBrandSet.has(nName)) {
-               const config = this.topBrandsConfig.find(c => normalize(c.name) === nName);
-               topBrands.push({ group, logo: config ? config.logo : null }); 
-           } else if (midBrandSet.has(nName)) {
-               midBrands.push(group);
-           } else if (socksSet.has(nName)) {
-               socksGroups.push(group);
-           } else if (generalSet.has(nName)) {
-               general.push(group);
-           } else if (bansalSet.has(nName)) {
-               bansalGroups.push(group);
-           } else if (airsonSet.has(nName)) {
-               airsonGroups.push(group);
-           } else if (kohinoorSet.has(nName)) {
-               kohinoorGroups.push(group);
-           } else if (nareshSet.has(nName)) {
-               nareshGroups.push(group);
-           } else {
-               others.push(group);
-           }
-       });
-
-       return { paragon, topBrands, midBrands, socksGroups, general, bansalGroups, airsonGroups, kohinoorGroups, nareshGroups, others };
-    },
-    isNativeApp() {
-        return Capacitor.isNativePlatform();
+onMounted(async () => {
+  await loadBrands();
+  
+  // Hardware Back Button Listener
+  App.addListener('backButton', ({ canGoBack }) => {
+    if (window.location.pathname === '/pdf-gen') {
+      window.history.back();
     }
-  },
+  });
+});
 
-  async mounted() {
-    this.loadBrands();
-    this.loadBrands();
+onBeforeUnmount(() => {
+  App.removeAllListeners();
+});
+
+// Methods
+const formatProductName = (name) => {
+  if (!name) return '';
+  return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+const getBrandLogo = (brandName) => {
+    const logos = {
+        "Paragon": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp",
+        "Reliance": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png",
+        "Cubix": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg",
+        "Florex": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg",
+        "Eeken": "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
+        "Escoute": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg"
+    };
+    // Fuzzy match logic
+    const lowerName = brandName.toLowerCase();
+    const key = Object.keys(logos).find(k => lowerName.includes(k.toLowerCase()));
+    return key ? logos[key] : null;
+};
+
+const toggleBrand = (brandName) => {
+    if (selectedBrands.value.includes(brandName)) {
+        selectedBrands.value = selectedBrands.value.filter(b => b !== brandName);
+    } else {
+        selectedBrands.value.push(brandName);
+    }
+};
+
+const isCategorySelected = (category) => {
+    const group = groupedSidebar.value[category];
+    if (!group || group.length === 0) return false;
     
-    // Hardware Back Button Listener
-    App.addListener('backButton', () => {
-        if (this.$router.currentRoute.value.path === '/pdf-gen') {
-             this.$router.push('/');
+    return group.every(item => {
+         // topBrands, midBrands, and socksGroups have { group: { groupName }, ... } structure
+         // Others have { groupName } structure
+         const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups') 
+             ? item.group.groupName 
+             : item.groupName;
+         return selectedBrands.value.includes(name);
+    });
+};
+
+const toggleCategory = (category, event) => {
+    const isChecked = event.target.checked;
+    const group = groupedSidebar.value[category];
+    
+    if (!group) return;
+
+    group.forEach(item => {
+        // topBrands, midBrands, and socksGroups have { group: { groupName }, ... } structure
+        const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups') 
+            ? item.group.groupName 
+            : item.groupName;
+        if (isChecked) {
+            if (!selectedBrands.value.includes(name)) selectedBrands.value.push(name);
+        } else {
+            selectedBrands.value = selectedBrands.value.filter(b => b !== name);
         }
     });
-  },
+};
 
-  beforeUnmount() {
-    App.removeAllListeners();
-  },
+const scrollToGenerate = () => {
+  nextTick(() => {
+    generateSection.value?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+};
 
-  methods: {
-    formatProductName(name) {
-      if (!name) return '';
-      return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    },
-    getBrandLogo(brandName) {
-        const logos = {
-            "Paragon": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp",
-            "Reliance": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png",
-            "Cubix": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg",
-            "Florex": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg",
-            "Eeken": "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
-            "Escoute": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg"
-        };
-        // Fuzzy match logic
-        const lowerName = brandName.toLowerCase();
-        const key = Object.keys(logos).find(k => lowerName.includes(k.toLowerCase()));
-        return key ? logos[key] : null;
-    },
-    toggleBrand(brandName) {
-        if (this.selectedBrands.includes(brandName)) {
-            this.selectedBrands = this.selectedBrands.filter(b => b !== brandName);
-        } else {
-            this.selectedBrands.push(brandName);
-        }
-    },
-    isCategorySelected(category) {
-        const group = this.groupedSidebar[category];
-        if (!group || group.length === 0) return false;
-        
-        // For topBrands, item has { group: { groupName: ... } }, for others item is { groupName: ... }
-        // Actually looking at update, topBrands now has structure: { group: { groupName: ... }, logo: ... }
-        // BUT wait, my computed property for topBrands pushes: { group, logo: ... }
-        // So item.group.groupName is correct.
-        // For others, we pushed `group` which is { groupName: ... }.
-        // So we need to handle that distinction.
-        
-        return group.every(item => {
-             const name = category === 'topBrands' ? item.group.groupName : item.groupName;
-             return this.selectedBrands.includes(name);
-        });
-    },
-    toggleCategory(category, event) {
-        const isChecked = event.target.checked;
-        const group = this.groupedSidebar[category];
-        
-        if (!group) return;
+const loadBrands = async () => {
+  try {
+    const res = await axios.get("https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json");
+    brands.value = [...new Set(res.data.map(g => g.groupName))].sort();
+  } catch (err) {
+    showToast.value = true;
+    toastMessage.value = "Failed to load brands — check internet";
+    setTimeout(() => showToast.value = false, 3000);
+  }
+};
 
-        group.forEach(item => {
-            const name = category === 'topBrands' ? item.group.groupName : item.groupName;
-            if (isChecked) {
-                if (!this.selectedBrands.includes(name)) this.selectedBrands.push(name);
-            } else {
-                this.selectedBrands = this.selectedBrands.filter(b => b !== name);
-            }
-        });
-    },
-    scrollToGenerate() {
-      this.$nextTick(() => {
-        this.$refs.generateSection?.scrollIntoView({ behavior: "smooth", block: "center" });
-      });
-    },
-
-    async loadBrands() {
-      try {
-        const res = await axios.get("https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json");
-        this.brands = [...new Set(res.data.map(g => g.groupName))].sort();
-      } catch (err) {
-        this.showToast = true;
-        this.toastMessage = "Failed to load brands — check internet";
-        setTimeout(() => this.showToast = false, 3000);
-      }
-    },
-
-    // --- PDF GENERATION LOGIC (Frontend Only) ---
-    async generatePdfBlob(targetBrands) {
-        // 1. Fetch Data
-        const jsonUrl = "https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json";
-        const response = await axios.get(jsonUrl);
-        const data = response.data;
-        const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
-        
-        // 2. Setup PDF
-        const doc = new jsPDF({
-            orientation: "portrait",
-            unit: "pt", // using points to match pdfkit somewhat closer (72 dpi vs pdfkit default)
-            format: "a4"
-        });
-        
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        
-        let hasAddedPage = false;
-
-        for (const group of filteredGroups) {
-            let isFirstProductInBrand = true;
-
-            for (const product of group.products) {
-                if (this.onlyWithPhotos && !product.imageUrl) continue;
-                if (this.minQtyEnabled && product.quantity <= this.minQty) continue;
-
-                if (hasAddedPage) {
-                    doc.addPage();
-                }
-                hasAddedPage = true;
-
-                // A. Background (Light beige)
-                doc.setFillColor("#faf8f6");
-                doc.rect(0, 0, pageWidth, pageHeight, "F");
-
-                // B. Waves
-                doc.setDrawColor("#e0e0e0");
-                doc.setLineWidth(3);
-
-                // Top Wave
-                doc.path([
-                    { op: 'm', c: [0, 0] },
-                    { op: 'l', c: [200, 80] },
-                    { op: 'c', c: [266, 26, 400, 33, 600, 100] }
-                ]);
-                doc.stroke();
-
-                // Bottom Wave
-                const h = pageHeight;
-                doc.path([
-                    { op: 'm', c: [0, h] },
-                    { op: 'l', c: [250, h - 100] },
-                    { op: 'c', c: [316, h - 33, 433, h - 16, 600, h - 50] }
-                ]);
-                doc.stroke();
-
-                // C. Brand Name (First product only)
-                if (isFirstProductInBrand) {
-                    doc.setTextColor(0, 0, 0); // Black
-                    // doc.setFillOpacity(0.2); // jsPDF doesn't handle fillOpacity easily for text, using light grey instead
-                    doc.setTextColor(200, 200, 200); // Light Grey to simulate opacity
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(28);
-                    doc.text(group.groupName, pageWidth / 2, 35, { align: "center" });
-                    isFirstProductInBrand = false;
-                }
-
-                // D. Product Image
-                if (product.imageUrl) {
-                    try {
-                        // Fetch image as blobs
-                        const imgData = await this.fetchImageAsBase64(product.imageUrl);
-                        
-                        // Dimensions
-                        const maxWidth = pageWidth - 40;
-                        const maxHeight = pageHeight - 150; 
-                        
-                        // We need image dimensions. 
-                        // With Base64, we can load it into a temporary Image object to get dims
-                        const dims = await this.getImageDimensions(imgData);
-                        
-                        const scale = Math.min(maxWidth / dims.width, maxHeight / dims.height, 1);
-                        const finalWidth = dims.width * scale;
-                        const finalHeight = dims.height * scale;
-                        
-                        const x = (pageWidth - finalWidth) / 2;
-                        const y = 60; 
-                        
-                        doc.addImage(imgData, "JPEG", x, y, finalWidth, finalHeight);
-
-                        const textY = y + finalHeight + 25;
-
-                        // E. Text
-                        doc.setTextColor(0, 0, 0);
-                        doc.setFont("helvetica", "bold");
-                        doc.setFontSize(16);
-                        doc.text(product.productName, pageWidth / 2, textY, { align: "center" });
-
-                        doc.setTextColor(212, 0, 0); // #d40000
-                        doc.setFontSize(18);
-                        doc.text(`Qty: ${product.quantity}`, pageWidth / 2, textY + 30, { align: "center" });
-
-                    } catch (imgErr) {
-                        console.error(`Image failed: ${product.productName}`, imgErr);
-                        doc.setTextColor(0);
-                        doc.setFontSize(16);
-                        doc.text("Image Load Failed", pageWidth / 2, pageHeight / 2, { align: "center" });
-                    }
-                } else {
-                    doc.setTextColor(0);
-                    doc.setFontSize(20);
-                    doc.text(product.productName, pageWidth / 2, pageHeight / 2 - 20, { align: "center" });
-                    doc.text(`Qty: ${product.quantity}`, pageWidth / 2, pageHeight / 2 + 20, { align: "center" });
-                }
-            }
-        }
-        
-        return doc.output("blob");
-    },
+// --- PDF GENERATION LOGIC (Frontend Only) ---
+const generatePdfBlob = async (targetBrands) => {
+    // 1. Fetch Data
+    const jsonUrl = "https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json";
+    const response = await axios.get(jsonUrl);
+    const data = response.data;
+    const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
     
-    async fetchImageAsBase64(url) {
-        const res = await axios.get(url, { responseType: "arraybuffer" });
-        const base64 = btoa(
-            new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), "")
-        );
-        return `data:${res.headers["content-type"]};base64,${base64}`;
-    },
+    // 2. Setup PDF
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "pt", // using points to match pdfkit somewhat closer (72 dpi vs pdfkit default)
+        format: "a4"
+    });
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    
+    let hasAddedPage = false;
 
-    async getImageDimensions(base64) {
-        return new Promise((resolve) => {
-            const i = new Image();
-            i.onload = () => resolve({ width: i.width, height: i.height });
-            i.src = base64;
-        });
-    },
+    for (const group of filteredGroups) {
+        let isFirstProductInBrand = true;
 
-    async generatePdf() {
-      if (!this.selectedBrands.length) {
-        this.showToast = true;
-        this.toastMessage = "Select at least one brand first";
-        setTimeout(() => this.showToast = false, 3000);
-        return;
+        for (const product of group.products) {
+            if (onlyWithPhotos.value && !product.imageUrl) continue;
+            if (minQtyEnabled.value && product.quantity <= minQty.value) continue;
+
+            if (hasAddedPage) {
+                doc.addPage();
+            }
+            hasAddedPage = true;
+
+            // A. Background (Light beige)
+            doc.setFillColor("#faf8f6");
+            doc.rect(0, 0, pageWidth, pageHeight, "F");
+
+            // B. Waves
+            doc.setDrawColor("#e0e0e0");
+            doc.setLineWidth(3);
+
+            // Top Wave
+            doc.path([
+                { op: 'm', c: [0, 0] },
+                { op: 'l', c: [200, 80] },
+                { op: 'c', c: [266, 26, 400, 33, 600, 100] }
+            ]);
+            doc.stroke();
+
+            // Bottom Wave
+            const h = pageHeight;
+            doc.path([
+                { op: 'm', c: [0, h] },
+                { op: 'l', c: [250, h - 100] },
+                { op: 'c', c: [316, h - 33, 433, h - 16, 600, h - 50] }
+            ]);
+            doc.stroke();
+
+            // C. Brand Name (First product only)
+            if (isFirstProductInBrand) {
+                doc.setTextColor(0, 0, 0); // Black
+                // doc.setFillOpacity(0.2); // jsPDF doesn't handle fillOpacity easily for text, using light grey instead
+                doc.setTextColor(200, 200, 200); // Light Grey to simulate opacity
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(28);
+                doc.text(group.groupName, pageWidth / 2, 35, { align: "center" });
+                isFirstProductInBrand = false;
+            }
+
+            // D. Product Image
+            if (product.imageUrl) {
+                try {
+                    // Fetch image as blobs
+                    const imgData = await fetchImageAsBase64(product.imageUrl);
+                    
+                    // Dimensions
+                    const maxWidth = pageWidth - 40;
+                    const maxHeight = pageHeight - 150; 
+                    
+                    // We need image dimensions. 
+                    // With Base64, we can load it into a temporary Image object to get dims
+                    const dims = await getImageDimensions(imgData);
+                    
+                    const scale = Math.min(maxWidth / dims.width, maxHeight / dims.height, 1);
+                    const finalWidth = dims.width * scale;
+                    const finalHeight = dims.height * scale;
+                    
+                    const x = (pageWidth - finalWidth) / 2;
+                    const y = 60; 
+                    
+                    doc.addImage(imgData, "JPEG", x, y, finalWidth, finalHeight);
+
+                    const textY = y + finalHeight + 25;
+
+                    // E. Text
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(16);
+                    doc.text(product.productName, pageWidth / 2, textY, { align: "center" });
+
+                    doc.setTextColor(212, 0, 0); // #d40000
+                    doc.setFontSize(18);
+                    doc.text(`Qty: ${product.quantity}`, pageWidth / 2, textY + 30, { align: "center" });
+
+                } catch (imgErr) {
+                    console.error(`Image failed: ${product.productName}`, imgErr);
+                    doc.setTextColor(0);
+                    doc.setFontSize(16);
+                    doc.text("Image Load Failed", pageWidth / 2, pageHeight / 2, { align: "center" });
+                }
+            } else {
+                doc.setTextColor(0);
+                doc.setFontSize(20);
+                doc.text(product.productName, pageWidth / 2, pageHeight / 2 - 20, { align: "center" });
+                doc.text(`Qty: ${product.quantity}`, pageWidth / 2, pageHeight / 2 + 20, { align: "center" });
+            }
+        }
+    }
+    
+    return doc.output("blob");
+};
+
+const fetchImageAsBase64 = async (url) => {
+    const res = await axios.get(url, { responseType: "arraybuffer" });
+    const base64 = btoa(
+        new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), "")
+    );
+    return `data:${res.headers["content-type"]};base64,${base64}`;
+};
+
+const getImageDimensions = async (base64) => {
+    return new Promise((resolve) => {
+        const i = new Image();
+        i.onload = () => resolve({ width: i.width, height: i.height });
+        i.src = base64;
+    });
+};
+
+const generatePdf = async () => {
+  if (!selectedBrands.value.length) {
+    showToast.value = true;
+    toastMessage.value = "Select at least one brand first";
+    setTimeout(() => showToast.value = false, 3000);
+    return;
+  }
+
+  isGenerating.value = true;
+  isPdfGenerating.value = true;
+  completedCount.value = 0;
+
+  if (pdfMode.value === "combined") {
+    // COMBINED PDF
+    currentBrand.value = "Merging All Brands...";
+    
+    try {
+      const blob = await generatePdfBlob(selectedBrands.value);
+
+      const today = new Date().toISOString().split("T")[0];
+      const filename = `CATALOG_COMBINED_${today}.pdf`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.click();
+      window.URL.revokeObjectURL(url);
+
+      completedCount.value = selectedBrands.value.length;
+      showToast.value = true;
+      toastMessage.value = "Combined PDF downloaded!";
+      setTimeout(() => showToast.value = false, 4000);
+    } catch (err) {
+      console.error(err);
+      showToast.value = true;
+      toastMessage.value = "Failed to generate combined PDF";
+      setTimeout(() => showToast.value = false, 5000);
+    } finally {
+      isGenerating.value = false;
+      isPdfGenerating.value = false;
+      currentBrand.value = "";
+    }
+  } else {
+    // SEPARATE PDFs
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const brand of selectedBrands.value) {
+      currentBrand.value = `Generating ${brand}...`;
+      
+      try {
+         const blob = await generatePdfBlob([brand]);
+         
+         const today = new Date().toISOString().split("T")[0];
+         const safe = brand.replace(/[^a-zA-Z0-9]/g, "_");
+         const filename = `${safe}_${today}.pdf`;
+
+         const url = window.URL.createObjectURL(blob);
+         const a = document.createElement("a");
+         a.href = url; a.download = filename; a.click();
+         window.URL.revokeObjectURL(url);
+         
+         successCount++;
+      } catch(e) {
+         console.error(`Failed ${brand}`, e);
+         failCount++;
+      }
+      completedCount.value++;
+      await new Promise(r => setTimeout(r, 500)); // Sleep briefly to not freeze UI
+    }
+
+    showToast.value = true;
+    toastMessage.value = `Done! ${successCount} Success, ${failCount} Failed`;
+    setTimeout(() => showToast.value = false, 4000);
+    
+    isGenerating.value = false;
+    isPdfGenerating.value = false;
+    currentBrand.value = "";
+  }
+};
+
+const downloadAsImages = async () => {
+  if (!selectedBrands.value.length) return;
+
+  isGenerating.value = true;
+  isPdfGenerating.value = false; 
+  isZipGenerating.value = false; // Just to be safe
+  completedCount.value = 0;
+  let totalSuccess = 0;
+  let totalFailed = 0;
+  let totalImages = 0;
+
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+  for (const brand of selectedBrands.value) {
+    currentBrand.value = `Processing: ${brand}`;
+    try {
+      const pdfBlob = await generatePdfBlob([brand]);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      const loadingTask = pdfjsLib.getDocument(pdfUrl);
+      const pdf = await loadingTask.promise;
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.5 });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const context = canvas.getContext("2d");
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.95));
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${brand.replace(/[^a-zA-Z0-9]/g, "_")}_Image_${String(pageNum).padStart(3, "0")}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        totalImages++;
       }
 
-      this.isGenerating = true;
-      this.isPdfGenerating = true;
-      this.completedCount = 0;
+      URL.revokeObjectURL(pdfUrl);
+      totalSuccess++;
+    } catch (err) {
+      console.error("Failed for brand:", brand, err);
+      totalFailed++;
+    }
+    completedCount.value++;
+  }
 
-      if (this.pdfMode === "combined") {
-        // COMBINED PDF
-        this.currentBrand = "Merging All Brands...";
-        
-        try {
-          const blob = await this.generatePdfBlob(this.selectedBrands);
+  isGenerating.value = false;
+  currentBrand.value = "";
+  showToast.value = true;
+  toastMessage.value = `Downloaded ${totalImages} images (${totalFailed} failed brands)`;
+  setTimeout(() => showToast.value = false, 4000);
+};
 
-          const today = new Date().toISOString().split("T")[0];
-          const filename = `CATALOG_COMBINED_${today}.pdf`;
+const downloadAsZip = async () => {
+  if (!selectedBrands.value.length) return;
 
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url; a.download = filename; a.click();
-          window.URL.revokeObjectURL(url);
+  isGenerating.value = true;
+  isZipGenerating.value = true;
+  completedCount.value = 0;
+  const zip = new JSZip();
+  
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  let totalPages = 0;
+  let failedBrands = 0;
 
-          this.completedCount = this.selectedBrands.length;
-          this.showToast = true;
-          this.toastMessage = "Combined PDF downloaded!";
-          setTimeout(() => this.showToast = false, 4000);
-        } catch (err) {
-          console.error(err);
-          this.showToast = true;
-          this.toastMessage = "Failed to generate combined PDF";
-          setTimeout(() => this.showToast = false, 5000);
-        } finally {
-          this.isGenerating = false;
-          this.isPdfGenerating = false;
-          this.currentBrand = "";
-        }
-      } else {
-        // SEPARATE PDFs
-        let successCount = 0;
-        let failCount = 0;
+  for (const brand of selectedBrands.value) {
+      currentBrand.value = `Zipping: ${brand}`;
 
-        for (const brand of this.selectedBrands) {
-          this.currentBrand = `Generating ${brand}...`;
+       try {
+          const blob = await generatePdfBlob([brand]);
           
-          try {
-             const blob = await this.generatePdfBlob([brand]);
-             
-             const today = new Date().toISOString().split("T")[0];
-             const safe = brand.replace(/[^a-zA-Z0-9]/g, "_");
-             const filename = `${safe}_${today}.pdf`;
-
-             const url = window.URL.createObjectURL(blob);
-             const a = document.createElement("a");
-             a.href = url; a.download = filename; a.click();
-             window.URL.revokeObjectURL(url);
-             
-             successCount++;
-          } catch(e) {
-             console.error(`Failed ${brand}`, e);
-             failCount++;
-          }
-          this.completedCount++;
-          await new Promise(r => setTimeout(r, 500)); // Sleep briefly to not freeze UI
-        }
-
-        this.showToast = true;
-        this.toastMessage = `Done! ${successCount} Success, ${failCount} Failed`;
-        setTimeout(() => this.showToast = false, 4000);
-        
-        this.isGenerating = false;
-        this.isPdfGenerating = false;
-        this.currentBrand = "";
-      }
-    },
-
-    async downloadAsImages() {
-      if (!this.selectedBrands.length) return;
-
-      this.isGenerating = true;
-      this.isPdfGenerating = false; 
-      this.isZipGenerating = false; // Just to be safe
-      this.completedCount = 0;
-      let totalSuccess = 0;
-      let totalFailed = 0;
-      let totalImages = 0;
-
-      const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-      for (const brand of this.selectedBrands) {
-        this.currentBrand = `Processing: ${brand}`;
-        try {
-          const pdfBlob = await this.generatePdfBlob([brand]);
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-
+          const pdfUrl = URL.createObjectURL(blob);
           const loadingTask = pdfjsLib.getDocument(pdfUrl);
           const pdf = await loadingTask.promise;
+          
+          const brandFolder = zip.folder(brand);
 
           for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 2.5 });
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 2.0 }); 
 
-            const canvas = document.createElement("canvas");
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const context = canvas.getContext("2d");
+                const canvas = document.createElement("canvas");
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const context = canvas.getContext("2d");
+                await page.render({ canvasContext: context, viewport }).promise;
 
-            await page.render({ canvasContext: context, viewport }).promise;
-
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.95));
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${brand.replace(/[^a-zA-Z0-9]/g, "_")}_Image_${String(pageNum).padStart(3, "0")}.png`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            totalImages++;
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
+                brandFolder.file(`${brand}_Page_${pageNum}.jpg`, blob);
+                totalPages++;
           }
-
-          URL.revokeObjectURL(pdfUrl);
-          totalSuccess++;
-        } catch (err) {
-          console.error("Failed for brand:", brand, err);
-          totalFailed++;
-        }
-        this.completedCount++;
-      }
-
-      this.isGenerating = false;
-      this.currentBrand = "";
-      this.showToast = true;
-      this.toastMessage = `Downloaded ${totalImages} images (${totalFailed} failed brands)`;
-      setTimeout(() => this.showToast = false, 4000);
-    },
-
-    async downloadAsZip() {
-      if (!this.selectedBrands.length) return;
-
-      this.isGenerating = true;
-      this.isZipGenerating = true;
-      this.completedCount = 0;
-      const zip = new JSZip();
-      
-      const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-      let totalPages = 0;
-      let failedBrands = 0;
-
-      for (const brand of this.selectedBrands) {
-          this.currentBrand = `Zipping: ${brand}`;
-
-           try {
-              const blob = await this.generatePdfBlob([brand]);
-              
-              const pdfUrl = URL.createObjectURL(blob);
-              const loadingTask = pdfjsLib.getDocument(pdfUrl);
-              const pdf = await loadingTask.promise;
-              
-              const brandFolder = zip.folder(brand);
-
-              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const viewport = page.getViewport({ scale: 2.0 }); 
-
-                    const canvas = document.createElement("canvas");
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    const context = canvas.getContext("2d");
-                    await page.render({ canvasContext: context, viewport }).promise;
-
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
-                    brandFolder.file(`${brand}_Page_${pageNum}.jpg`, blob);
-                    totalPages++;
-              }
-              URL.revokeObjectURL(pdfUrl);
-
-          } catch (e) {
+       } catch (e) {
               console.error(`Failed to zip ${brand}`, e);
               failedBrands++;
-              this.showToast = true;
-              this.toastMessage = `Failed to process ${brand}`;
-              setTimeout(() => this.showToast = false, 2000);
+              showToast.value = true;
+              toastMessage.value = `Failed to process ${brand}`;
+              setTimeout(() => showToast.value = false, 2000);
           }
-          this.completedCount++;
+          completedCount.value++;
       }
 
-      this.currentBrand = "Finalizing ZIP file...";
+      currentBrand.value = "Finalizing ZIP file...";
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, `Catalog_Images_${new Date().toISOString().split('T')[0]}.zip`);
 
-      this.isGenerating = false;
-      this.isZipGenerating = false;
-      this.currentBrand = "";
-      this.showToast = true;
-      this.toastMessage = `ZIP Ready! ${totalPages} images included.`;
-      setTimeout(() => this.showToast = false, 4000);
-    },
-
-    async shareViaNativeApp() {
-        if (!this.selectedBrands.length) return;
-
-        this.isGenerating = true;
-        this.isSharing = true;
-        this.completedCount = 0;
-        
-        try {
-            const pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-            
-            const fileUris = [];
-
-            // 1. Generate All Images & Save to Temp
-            for (const brand of this.selectedBrands) {
-                this.currentBrand = `Preparing: ${brand}`;
-                try {
-                    const blob = await this.generatePdfBlob([brand]);
-                    const pdfUrl = URL.createObjectURL(blob);
-                    const loadingTask = pdfjsLib.getDocument(pdfUrl);
-                    const pdf = await loadingTask.promise;
-                    
-                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                            const page = await pdf.getPage(pageNum);
-                            // Scale 1.5 is good balance for WhatsApp (lighter than print)
-                            const viewport = page.getViewport({ scale: 1.5 });
-
-                            const canvas = document.createElement("canvas");
-                            canvas.width = viewport.width;
-                            canvas.height = viewport.height;
-                            const context = canvas.getContext("2d");
-                            await page.render({ canvasContext: context, viewport }).promise;
-
-                            // Convert to Base64 (needed for Filesystem.writeFile)
-                            const base64 = canvas.toDataURL("image/jpeg", 0.8).split(',')[1];
-                            const fileName = `${brand.replace(/[^a-zA-Z0-9]/g, "")}_${pageNum}.jpg`;
-                            
-                            // Save to Cache Directory
-                            const savedFile = await Filesystem.writeFile({
-                                path: fileName,
-                                data: base64,
-                                directory: Directory.Cache
-                            });
-                            
-                            fileUris.push(savedFile.uri);
-                    }
-                    URL.revokeObjectURL(pdfUrl);
-                } catch (e) {
-                    console.error("Native Gen Error", e);
-                }
-                this.completedCount++;
-            }
-
-
-            // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
-            const chunkSize = 99; 
-            const batches = [];
-            for (let i = 0; i < fileUris.length; i += chunkSize) {
-                batches.push(fileUris.slice(i, i + chunkSize));
-            }
-
-            if (batches.length === 0) {
-                 this.showToast = true;
-                 this.toastMessage = "No images generated";
-                 setTimeout(() => this.showToast = false, 3000);
-                 this.isSharing = false;
-                 this.isGenerating = false;
-                 return;
-            }
-
-            // 3. Decide: Direct Share or Batch Mode
-            if (batches.length === 1) {
-                 await Share.share({ files: batches[0] });
-                 this.isSharing = false;
-                 this.isGenerating = false; 
-            } else {
-                 this.batchList = batches;
-                 this.currentBatchIndex = 0;
-                 this.showBatchModal = true;
-                 // Don't turn off isGenerating yet, modal handles it
-            }
-
-        } catch (err) {
-            console.error("Native Share Failed", err);
-            this.showToast = true;
-            this.toastMessage = "Sharing cancelled or failed.";
-            setTimeout(() => this.showToast = false, 3000);
-            this.isGenerating = false;
-            this.isSharing = false;
-        } finally {
-            this.currentBrand = "";
-        }
-    },
-
-    async executeBatchShare() {
-        try {
-            const currentFiles = this.batchList[this.currentBatchIndex];
-            await Share.share({ files: currentFiles });
-            
-            // Move to next batch
-            this.currentBatchIndex++;
-            
-            // Check if done
-            if (this.currentBatchIndex >= this.batchList.length) {
-                this.showBatchModal = false;
-                this.isGenerating = false;
-                this.isSharing = false;
-                this.showToast = true;
-                this.toastMessage = "All batches shared successfully!";
-                setTimeout(() => this.showToast = false, 4000);
-            }
-        } catch(e) {
-            console.error(e);
-            // Don't advance index if failed, let them retry
-        }
-    },
-  },
-
-
+      isGenerating.value = false;
+      isZipGenerating.value = false;
+      currentBrand.value = "";
+      showToast.value = true;
+      toastMessage.value = `ZIP Ready! ${totalPages} images included.`;
+      setTimeout(() => showToast.value = false, 4000);
 };
+
+const shareViaNativeApp = async () => {
+    if (!selectedBrands.value.length) return;
+
+    isGenerating.value = true;
+    isSharing.value = true;
+    completedCount.value = 0;
+    
+    try {
+        const pdfjsLib = await import("pdfjs-dist");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+        
+        const fileUris = [];
+
+        // 1. Generate All Images & Save to Temp
+        for (const brand of selectedBrands.value) {
+            currentBrand.value = `Preparing: ${brand}`;
+            try {
+                const blob = await generatePdfBlob([brand]);
+                const pdfUrl = URL.createObjectURL(blob);
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                const pdf = await loadingTask.promise;
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        // Scale 1.5 is good balance for WhatsApp (lighter than print)
+                        const viewport = page.getViewport({ scale: 1.5 });
+
+                        const canvas = document.createElement("canvas");
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        const context = canvas.getContext("2d");
+                        await page.render({ canvasContext: context, viewport }).promise;
+
+                        // Convert to Base64 (needed for Filesystem.writeFile)
+                        const base64 = canvas.toDataURL("image/jpeg", 0.8).split(',')[1];
+                        const fileName = `${brand.replace(/[^a-zA-Z0-9]/g, "")}_${pageNum}.jpg`;
+                        
+                        // Save to Cache Directory
+                        const savedFile = await Filesystem.writeFile({
+                            path: fileName,
+                            data: base64,
+                            directory: Directory.Cache
+                        });
+                        
+                        fileUris.push(savedFile.uri);
+                }
+                URL.revokeObjectURL(pdfUrl);
+            } catch (e) {
+                console.error("Native Gen Error", e);
+            }
+            completedCount.value++;
+        }
+
+
+        // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
+        const chunkSize = 99; 
+        const batches = [];
+        for (let i = 0; i < fileUris.length; i += chunkSize) {
+            batches.push(fileUris.slice(i, i + chunkSize));
+        }
+
+        if (batches.length === 0) {
+             showToast.value = true;
+             toastMessage.value = "No images generated";
+             setTimeout(() => showToast.value = false, 3000);
+             isSharing.value = false;
+             isGenerating.value = false;
+             return;
+        }
+
+        // 3. Decide: Direct Share or Batch Mode
+        if (batches.length === 1) {
+             await Share.share({ files: batches[0] });
+             isSharing.value = false;
+             isGenerating.value = false; 
+        } else {
+             batchList.value = batches;
+             currentBatchIndex.value = 0;
+             showBatchModal.value = true;
+             // Don't turn off isGenerating yet, modal handles it
+        }
+
+    } catch (err) {
+        console.error("Native Share Failed", err);
+        showToast.value = true;
+        toastMessage.value = "Sharing cancelled or failed.";
+        setTimeout(() => showToast.value = false, 3000);
+        isGenerating.value = false;
+        isSharing.value = false;
+    } finally {
+        currentBrand.value = "";
+    }
+};
+
+const executeBatchShare = async () => {
+    try {
+        const currentFiles = batchList.value[currentBatchIndex.value];
+        await Share.share({ files: currentFiles });
+        
+        // Move to next batch
+        currentBatchIndex.value++;
+        
+        // Check if done
+        if (currentBatchIndex.value >= batchList.value.length) {
+            showBatchModal.value = false;
+            isGenerating.value = false;
+            isSharing.value = false;
+            showToast.value = true;
+            toastMessage.value = "All batches shared successfully!";
+            setTimeout(() => showToast.value = false, 4000);
+        }
+    } catch(e) {
+        console.error(e);
+        // Don't advance index if failed, let them retry
+    }
+};
+
+// Add missing ref for template
+const generateSection = ref(null);
+
 </script>
 
 <style scoped>
