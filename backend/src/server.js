@@ -147,8 +147,24 @@ async function fetchTallyData() {
 
     return stockData;
   } catch (error) {
-    console.error("Error fetching Tally data:", error.message, error.stack);
-    throw error;
+    // Enhanced error messages for better debugging
+    if (error.code === 'ECONNREFUSED') {
+      const errorMsg = `❌ Cannot connect to Tally at ${tallyUrl}\n` +
+        `   → Is Tally running?\n` +
+        `   → Is Tally's web server enabled? (Gateway > F3 > Company Features > Enable Tally as web server)\n` +
+        `   → Check if port 9000 is correct`;
+      console.error(errorMsg);
+      throw new Error("Tally connection refused. Ensure Tally is running with web server enabled on port 9000.");
+    } else if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
+      console.error(`❌ Tally connection timeout after ${tallyTimeout}ms`);
+      throw new Error("Tally connection timeout. Tally may be unresponsive.");
+    } else if (error.code === 'ENOTFOUND') {
+      console.error("❌ Tally host not found");
+      throw new Error("Tally host not found. Check tallyUrl configuration.");
+    } else {
+      console.error("Error fetching Tally data:", error.message);
+      throw error;
+    }
   }
 }
 
@@ -218,7 +234,30 @@ app.post("/api/updateStockData", async (req, res) => {
     console.log("Preserved zero-stock products with images:", Object.keys(zeroStockProducts).length);
 
     // ---- 4. Fetch fresh data from Tally --------------------------------------
-    const stockData = await fetchTallyData();
+    let stockData;
+    try {
+      stockData = await fetchTallyData();
+      console.log("✅ Successfully fetched fresh data from Tally");
+    } catch (tallyError) {
+      console.error("⚠️  Tally fetch failed:", tallyError.message);
+      console.log("📋 Using existing stock data as fallback");
+
+      // Return existing data without modification if Tally is unavailable
+      if (existingData.length === 0) {
+        return res.status(503).json({
+          error: "Tally unavailable and no existing data found",
+          message: tallyError.message,
+          suggestion: "Ensure Tally is running with web server enabled on port 9000"
+        });
+      }
+
+      return res.json({
+        message: "Tally unavailable - using existing data",
+        tallyError: tallyError.message,
+        dataAge: existingData.find(g => g.groupName === "_META_DATA_")?.lastSync || "unknown",
+        data: existingData
+      });
+    }
 
     // ---- 5. Re-attach images, timestamps & re-inject zero-stock items --------
     // ---- 6. De-duplicate by productName ------------------------------------
@@ -269,7 +308,7 @@ app.post("/api/updateStockData", async (req, res) => {
     }
 
     res.json({
-      message: "Stock data updated successfully",
+      message: "Stock data updated successfully from Tally",
       data: stockData,
     });
   } catch (error) {
