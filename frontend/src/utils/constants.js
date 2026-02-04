@@ -34,6 +34,41 @@ export const BRAND_LISTS = {
         'P-TOES PARALITE',
     ],
     general: ['Maruti Plastics', 'Magnet', 'J.K Plastic', 'R R POLYPLAST', 'AGRA'],
+    generalLoosePacking: [
+        'ASHU',
+        'PANKAJ PLASTIC',
+        'TARA',
+        'J.K Plastic',
+        'Magnet',
+        'Maruti Plastics',
+        'AAGAM POLYMER',
+        'A G ENTERPRISES',
+        'NAV DURGA ENTERPRISES',
+        'NEXUS',
+        'R K TRADERS',
+        'SRG Enterprises',
+        'Vardhman Plastics',
+        'YASH FOOTWEAR',
+        'KRishna Agency',
+        'SHYAM'
+    ],
+    generalBoxPacking: [
+        'ADDA',
+        'ADDOXY',
+        'AIRFAX',
+        'Hitway',
+        'Paris',
+        'TEUZ',
+        'VAISHNO PLASTIC',
+        'AGRA',
+        'R R POLYPLAST',
+        'AIRSON',
+        'AMBIKA FOOTWEAR',
+        'GOKUL FOOTWEAR',
+        'NEXGEN FOOTWEAR',
+        'KOHINOOR',
+        'UAM FOOTWEAR'
+    ]
 };
 
 export const TOP_BRANDS_CONFIG = [

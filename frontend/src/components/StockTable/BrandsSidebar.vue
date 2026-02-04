@@ -71,6 +71,44 @@
               </div>
           </div>
 
+          <!-- General Loose Packing -->
+          <div v-if="groupedSidebar.generalLoosePackingGroups && groupedSidebar.generalLoosePackingGroups.length > 0" class="p-3 bg-teal-50/50 border border-teal-100 rounded-2xl">
+              <h3 class="px-1 text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">General Loose Packing</h3>
+              <div class="grid grid-cols-2 gap-1">
+                <div 
+                  v-for="item in groupedSidebar.generalLoosePackingGroups" 
+                  :key="item.group.groupName"
+                  class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
+                  :class="activeScrollGroup === item.group.groupName ? 'bg-teal-100 text-teal-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                  @click="handleSidebarClick(item.group)"
+                >
+                  <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-teal-200 group-hover/brand:bg-teal-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-teal-600' : ''"></span>
+                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
+                  </div>
+                </div>
+              </div>
+          </div>
+
+          <!-- General Box Packing -->
+          <div v-if="groupedSidebar.generalBoxPackingGroups && groupedSidebar.generalBoxPackingGroups.length > 0" class="p-3 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
+              <h3 class="px-1 text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">General Box Packing</h3>
+              <div class="grid grid-cols-2 gap-1">
+                <div 
+                  v-for="item in groupedSidebar.generalBoxPackingGroups" 
+                  :key="item.group.groupName"
+                  class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
+                  :class="activeScrollGroup === item.group.groupName ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                  @click="handleSidebarClick(item.group)"
+                >
+                  <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-indigo-200 group-hover/brand:bg-indigo-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-indigo-600' : ''"></span>
+                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
+                  </div>
+                </div>
+              </div>
+          </div>
+
           <!-- Mid Brands -->
           <div v-if="groupedSidebar.midBrands && groupedSidebar.midBrands.length > 0" class="p-3 bg-purple-50/50 border border-purple-100 rounded-2xl">
               <h3 class="px-1 text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Mid Brands</h3>

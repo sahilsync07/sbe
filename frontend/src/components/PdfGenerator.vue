@@ -68,6 +68,46 @@
             </div>
          </div>
 
+         <!-- General Loose Packing (Teal) -->
+         <div v-if="groupedSidebar.generalLoosePackingGroups.length > 0" class="p-2 transition-all rounded-2xl bg-teal-50/30 hover:bg-teal-50/60 border border-transparent hover:border-teal-100">
+            <div class="flex items-center justify-between px-2 mb-3">
+               <span class="text-xs font-black text-teal-600 uppercase tracking-widest pl-1">General Loose Packing</span>
+               <input type="checkbox" :checked="isCategorySelected('generalLoosePackingGroups')" @change="toggleCategory('generalLoosePackingGroups', $event)" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+               <div 
+                 v-for="item in groupedSidebar.generalLoosePackingGroups" 
+                 :key="item.group.groupName"
+                 class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white border border-transparent hover:border-teal-200 shadow-sm hover:shadow-md select-none"
+                 :class="{ '!bg-teal-50 !border-teal-200 ring-1 ring-teal-200': selectedBrands.includes(item.group.groupName) }"
+                 @click="toggleBrand(item.group.groupName)"
+               >
+                  <input type="checkbox" :checked="selectedBrands.includes(item.group.groupName)" class="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-gray-300 pointer-events-none" />
+                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-teal-800': selectedBrands.includes(item.group.groupName) }">{{ formatProductName(item.group.groupName) }}</span>
+               </div>
+            </div>
+         </div>
+
+         <!-- General Box Packing (Indigo) -->
+         <div v-if="groupedSidebar.generalBoxPackingGroups.length > 0" class="p-2 transition-all rounded-2xl bg-indigo-50/30 hover:bg-indigo-50/60 border border-transparent hover:border-indigo-100">
+            <div class="flex items-center justify-between px-2 mb-3">
+               <span class="text-xs font-black text-indigo-600 uppercase tracking-widest pl-1">General Box Packing</span>
+               <input type="checkbox" :checked="isCategorySelected('generalBoxPackingGroups')" @change="toggleCategory('generalBoxPackingGroups', $event)" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+               <div 
+                 v-for="item in groupedSidebar.generalBoxPackingGroups" 
+                 :key="item.group.groupName"
+                 class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white border border-transparent hover:border-indigo-200 shadow-sm hover:shadow-md select-none"
+                 :class="{ '!bg-indigo-50 !border-indigo-200 ring-1 ring-indigo-200': selectedBrands.includes(item.group.groupName) }"
+                 @click="toggleBrand(item.group.groupName)"
+               >
+                  <input type="checkbox" :checked="selectedBrands.includes(item.group.groupName)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 pointer-events-none" />
+                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-indigo-800': selectedBrands.includes(item.group.groupName) }">{{ formatProductName(item.group.groupName) }}</span>
+               </div>
+            </div>
+         </div>
+
          <!-- Mid Brands (Purple) -->
          <div v-if="groupedSidebar.midBrands.length > 0" class="p-2 transition-all rounded-2xl bg-purple-50/30 hover:bg-purple-50/60 border border-transparent hover:border-purple-100">
             <div class="flex items-center justify-between px-2 mb-3">
@@ -567,9 +607,9 @@ const isCategorySelected = (category) => {
     if (!group || group.length === 0) return false;
     
     return group.every(item => {
-         // topBrands, midBrands, and socksGroups have { group: { groupName }, ... } structure
+         // topBrands, midBrands, socksGroups, generalLoosePackingGroups, and generalBoxPackingGroups have { group: { groupName }, ... } structure
          // Others have { groupName } structure
-         const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups') 
+         const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups' || category === 'generalLoosePackingGroups' || category === 'generalBoxPackingGroups') 
              ? item.group.groupName 
              : item.groupName;
          return selectedBrands.value.includes(name);
@@ -583,8 +623,8 @@ const toggleCategory = (category, event) => {
     if (!group) return;
 
     group.forEach(item => {
-        // topBrands, midBrands, and socksGroups have { group: { groupName }, ... } structure
-        const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups') 
+        // topBrands, midBrands, socksGroups, generalLoosePackingGroups, and generalBoxPackingGroups have { group: { groupName }, ... } structure
+        const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups' || category === 'generalLoosePackingGroups' || category === 'generalBoxPackingGroups') 
             ? item.group.groupName 
             : item.groupName;
         if (isChecked) {

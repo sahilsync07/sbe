@@ -11,6 +11,8 @@ export function useBrandGroups(stockData, config, searchQuery) {
         naresh: BRAND_LISTS.naresh,
         socks: BRAND_LISTS.socks,
         general: BRAND_LISTS.general,
+        generalLoosePacking: BRAND_LISTS.generalLoosePacking,
+        generalBoxPacking: BRAND_LISTS.generalBoxPacking,
         midBrands: MID_BRANDS_CONFIG,
         topBrands: TOP_BRANDS_CONFIG
     };
@@ -29,6 +31,8 @@ export function useBrandGroups(stockData, config, searchQuery) {
             paragon: [],
             topBrands: [],
             midBrands: [],
+            generalLoosePackingGroups: [],
+            generalBoxPackingGroups: [],
             socksGroups: [],
             general: [],
             bansalGroups: [],
@@ -42,6 +46,8 @@ export function useBrandGroups(stockData, config, searchQuery) {
             paragon: new Set(lists.paragon.map(n => normalize(n))),
             topBrands: new Set(lists.topBrands.map(n => normalize(n.name))),
             midBrands: new Set(lists.midBrands.map(n => normalize(n))),
+            generalLoosePacking: new Set(lists.generalLoosePacking.map(n => normalize(n))),
+            generalBoxPacking: new Set(lists.generalBoxPacking.map(n => normalize(n))),
             socks: new Set(lists.socks.map(n => normalize(n))),
             general: new Set(lists.general.map(n => normalize(n))),
             bansal: new Set(lists.bansal.map(n => normalize(n))),
@@ -52,27 +58,57 @@ export function useBrandGroups(stockData, config, searchQuery) {
 
         source.forEach(group => {
             const nName = normalize(group.groupName);
+            let categorized = false;
 
+            // Check each category independently (brands can be in multiple groups)
             if (sets.paragon.has(nName)) {
                 groups.paragon.push(group);
-            } else if (sets.topBrands.has(nName)) {
+                categorized = true;
+            }
+            if (sets.topBrands.has(nName)) {
                 const cfg = lists.topBrands.find(c => normalize(c.name) === nName);
                 groups.topBrands.push({ group, logo: cfg ? cfg.logo : null });
-            } else if (sets.midBrands.has(nName)) {
+                categorized = true;
+            }
+            if (sets.midBrands.has(nName)) {
                 groups.midBrands.push({ group });
-            } else if (sets.socks.has(nName)) {
+                categorized = true;
+            }
+            if (sets.generalLoosePacking.has(nName)) {
+                groups.generalLoosePackingGroups.push({ group });
+                categorized = true;
+            }
+            if (sets.generalBoxPacking.has(nName)) {
+                groups.generalBoxPackingGroups.push({ group });
+                categorized = true;
+            }
+            if (sets.socks.has(nName)) {
                 groups.socksGroups.push({ group });
-            } else if (sets.general.has(nName)) {
+                categorized = true;
+            }
+            if (sets.general.has(nName)) {
                 groups.general.push(group);
-            } else if (sets.bansal.has(nName)) {
+                categorized = true;
+            }
+            if (sets.bansal.has(nName)) {
                 groups.bansalGroups.push(group);
-            } else if (sets.airson.has(nName)) {
+                categorized = true;
+            }
+            if (sets.airson.has(nName)) {
                 groups.airsonGroups.push(group);
-            } else if (sets.kohinoor.has(nName)) {
+                categorized = true;
+            }
+            if (sets.kohinoor.has(nName)) {
                 groups.kohinoorGroups.push(group);
-            } else if (sets.naresh.has(nName)) {
+                categorized = true;
+            }
+            if (sets.naresh.has(nName)) {
                 groups.nareshGroups.push(group);
-            } else {
+                categorized = true;
+            }
+
+            // Only add to "others" if not categorized anywhere
+            if (!categorized) {
                 groups.others.push(group);
             }
         });
