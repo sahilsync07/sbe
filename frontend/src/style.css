@@ -178,3 +178,60 @@ html {
 
 
 }
+
+
+/* Custom Toast Styling - Enhanced Premium UI */
+.Vue3Toastify__toast {
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.Vue3Toastify__toast--info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-left: 4px solid #a78bfa !important;
+}
+
+.Vue3Toastify__toast--success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border-left: 4px solid #34d399 !important;
+}
+
+.Vue3Toastify__toast--warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: white !important;
+  border-left: 4px solid #fbbf24 !important;
+}
+
+.Vue3Toastify__toast--error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border-left: 4px solid #f87171 !important;
+}
+
+.Vue3Toastify__progress-bar {
+  background: rgba(255, 255, 255, 0.4) !important;
+  height: 3px !important;
+}
+
+.Vue3Toastify__toast-icon {
+  width: 24px !important;
+  margin-right: 12px !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

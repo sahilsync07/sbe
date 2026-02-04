@@ -13,14 +13,43 @@
       </h2>
 
       <div class="pt-4">
-        <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-50 border border-green-100 shadow-sm animate-pulse-slow">
-           <div class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-ping-slow"></div>
-           <span class="text-xs sm:text-sm font-bold text-green-700 uppercase tracking-wide">Online Mode</span>
+        <div 
+          class="inline-flex items-center px-4 py-2 rounded-full border shadow-sm animate-pulse-slow"
+          :class="isOnline ? 'bg-green-50 border-green-100' : 'bg-orange-50 border-orange-100'"
+        >
+           <div 
+             class="w-2 h-2 rounded-full mr-2 animate-ping-slow"
+             :class="isOnline ? 'bg-green-500' : 'bg-orange-500'"
+           ></div>
+           <span 
+             class="text-xs sm:text-sm font-bold uppercase tracking-wide"
+             :class="isOnline ? 'text-green-700' : 'text-orange-700'"
+           >{{ isOnline ? 'Online Mode' : 'Offline Mode' }}</span>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+
+const isOnline = ref(navigator.onLine);
+
+const updateOnlineStatus = () => {
+  isOnline.value = navigator.onLine;
+};
+
+onMounted(() => {
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('online', updateOnlineStatus);
+  window.removeEventListener('offline', updateOnlineStatus);
+});
+</script>
 
 <style scoped>
 @keyframes fadeInUp {

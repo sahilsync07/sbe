@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import { Capacitor } from '@capacitor/core';
 import Vue3Toasty from "vue3-toastify";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./style.css";
 
 // Platform detection - load Android or Web version

@@ -3,7 +3,7 @@
   <div>
     <!-- Desktop Toolbar (Hidden on Mobile) -->
     <header 
-      class="hidden md:block fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300 safe-area-top-fixed rounded-b-3xl"
+      class="hidden lg:block fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300 safe-area-top-fixed rounded-b-3xl"
     >
       <!-- Inner content wrapper with fixed height -->
       <div class="h-[72px] flex items-center justify-between px-6">
@@ -41,7 +41,7 @@
 
           <!-- Search Bar (Flexible) -->
           <div class="relative flex-1 max-w-sm group">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors">
                  <i class="fa-solid fa-magnifying-glass text-sm"></i>
               </span>
               <input
@@ -49,7 +49,7 @@
                 @input="handleSearchInput"
                 type="text"
                 placeholder="Search..."
-                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-900 border border-white/10 focus:bg-black focus:border-blue-500 focus:ring-2 focus:ring-blue-900 focus:outline-none transition-all text-sm font-medium text-white placeholder-slate-600"
+                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-900 border border-white/20 ring-1 ring-white/10 focus:bg-black focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-all text-sm font-medium text-white placeholder-slate-400"
               />
           </div>
        </div>
@@ -114,28 +114,45 @@
 
     <!-- Mobile Top Bar (Visible on Mobile) -->
     <header 
-      class="md:hidden fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all"
+      class="lg:hidden fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all"
       style="padding-top: env(safe-area-inset-top, 20px)"
     >
       <!-- Inner content wrapper with fixed height -->
       <div class="h-[54px] flex items-center justify-between px-4 relative">
-         <!-- Left: Sidebar -->
-         <button
-            @click="$emit('toggleSidebar')"
-            class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all"
-         >
-             <i v-if="showSidePanel" class="fa-solid fa-house text-sm"></i>
-             <i v-else class="fa-solid fa-bars text-sm"></i>
-          </button>
+         <!-- Left: Sidebar + Cache Button (Android + Admin) -->
+         <div class="flex items-center gap-2">
+            <!-- Sidebar Toggle -->
+            <button
+               @click="$emit('toggleSidebar')"
+               class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all"
+            >
+               <i v-if="showSidePanel" class="fa-solid fa-house text-sm"></i>
+               <i v-else class="fa-solid fa-bars text-sm"></i>
+            </button>
 
-         <!-- Center: Logo -->
+            <!-- Offline Cache Button (Android Only + Admin Only) -->
+            <button
+               v-if="isAdmin || isSuperAdmin"
+               @click="$emit('cacheImages')"
+               class="android-only-btn w-9 h-9 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md active:scale-95 transition-all relative overflow-hidden"
+               :class="{ 'animate-pulse': isCachingImages }"
+               :disabled="isCachingImages"
+               title="Download Images for Offline"
+            >
+               <i v-if="isCachingImages" class="fa-solid fa-spinner fa-spin text-sm"></i>
+               <i v-else class="fa-solid fa-cloud-arrow-down text-sm"></i>
+            </button>
+         </div>
+
+         <!-- Center: Logo (Smaller in Admin Mode) -->
          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
             <h1 
-               class="text-lg font-semibold tracking-tighter text-white select-none flex items-center gap-1 pointer-events-auto cursor-pointer"
+               class="text-lg font-semibold tracking-tighter text-white select-none flex items-center gap-1 pointer-events-auto cursor-pointer transition-all"
+               :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'"
                @click="$emit('promptAdminLogin')"
              >
-               <span class="text-white font-['Clash_Display'] font-bold text-2xl tracking-wide uppercase">{{ companyFirstName }}</span>
-               <span class="text-slate-400 font-['Clash_Display'] font-light text-2xl tracking-wide ml-1">{{ companyRestName }}</span>
+               <span class="text-white font-['Clash_Display'] font-bold tracking-wide uppercase" :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'">{{ companyFirstName }}</span>
+               <span class="text-slate-400 font-['Clash_Display'] font-light tracking-wide ml-1" :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'">{{ companyRestName }}</span>
             </h1>
             <div class="flex items-center gap-1.5 mt-0.5">
                 <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
@@ -168,11 +185,11 @@
 
 
     <!-- Mobile Bottom Bar (Fixed) -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl">
+    <div class="lg:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl">
        <div class="flex items-center gap-3">
           <!-- Search -->
           <div class="relative flex-1">
-             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
                  <i class="fa-solid fa-magnifying-glass text-xs"></i>
              </span>
              <input
@@ -180,7 +197,7 @@
                 @input="handleSearchInput"
                 type="text"
                 placeholder="Search products..."
-                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-900 border-none focus:bg-black focus:ring-2 focus:ring-blue-900/40 transition-all text-sm font-medium text-white placeholder-slate-600"
+                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-white/20 ring-1 ring-white/10 focus:bg-black focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-medium text-white placeholder-slate-400"
               />
           </div>
 
@@ -231,6 +248,10 @@ const props = defineProps({
   cleanView: Boolean,
   cloudName: String,
   isRefreshing: {
+    type: Boolean,
+    default: false
+  },
+  isCachingImages: {
     type: Boolean,
     default: false
   }

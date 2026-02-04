@@ -6,6 +6,7 @@
       :is-super-admin="isSuperAdmin"
       :loading="loading"
       :is-refreshing="isRefreshing"
+      :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"
       :show-cart="showCart"
       :company-name="companyName"
@@ -105,14 +106,14 @@
                  <div class="flex items-center gap-4 z-10 pl-2">
                    <!-- Special "New Arrivals" Style -->
                    <div v-if="group.isSpecial" class="flex items-center gap-3">
-                      <h2 class="text-xl md:text-3xl font-['Clash_Display'] font-bold tracking-wide holographic-text">
+                      <h2 class="text-xl lg:text-3xl font-['Clash_Display'] font-bold tracking-wide holographic-text">
                          ✨ {{ group.groupName }}
                       </h2>
                    </div>
 
                    <!-- Regular Group Style -->
                    <div v-else class="flex items-center gap-3">
-                       <h2 class="text-lg md:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
+                       <h2 class="text-lg lg:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
                          {{ formatGroupName(group.groupName) }}
                        </h2>
                       <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">
@@ -172,11 +173,10 @@
                         </div>
 
 
-                        <img
+                        <CachedImage
                           v-if="product.imageUrl"
                           :src="getOptimizedImageUrl(product.imageUrl)"
                           alt="Product"
-                          loading="lazy"
                           class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                         />
                         <div
@@ -310,7 +310,7 @@
       <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-24 md:bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
+        class="fixed bottom-24 lg:bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
       >
         <i class="fa-solid fa-arrow-up"></i>
       </button>
@@ -373,6 +373,7 @@ import { useBrandGroups } from '../composables/useBrandGroups';
 import { useWhatsAppOrder } from '../composables/useWhatsAppOrder';
 import { useStockData } from '../composables/useStockData';
 import { useAdmin } from '../composables/useAdmin';
+import { useImageCache } from '../composables/useImageCache';
 import { extractColor } from '../utils/colors'; 
 // Components
 import DesktopToolbar from './StockTable/DesktopToolbar.vue';
@@ -385,6 +386,7 @@ const ImageModal = defineAsyncComponent(() => import('./StockTable/ImageModal.vu
 const OrderModal = defineAsyncComponent(() => import('./StockTable/OrderModal.vue'));
 const FunLoader = defineAsyncComponent(() => import('./StockTable/FunLoader.vue'));
 const AdminLoginModal = defineAsyncComponent(() => import('./StockTable/AdminLoginModal.vue'));
+const CachedImage = defineAsyncComponent(() => import('./StockTable/CachedImage.vue'));
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -415,6 +417,71 @@ const {
 // 2. Admin
 const { isAdmin, isSuperAdmin } = useAdmin();
 const showAdminModal = ref(false);
+
+// 7. Image Cache (Offline Support)
+const { 
+  isCaching, cacheProgress, progressPercent,
+  checkInternetSpeed, cacheAllImages, getCacheStatus 
+} = useImageCache();
+
+// Handle Cache Images button click
+const handleCacheImages = async () => {
+  if (isCaching.value) return;
+  
+  // Check internet speed first
+  toast.info('Checking network speed...', { autoClose: 2000 });
+  const speed = await checkInternetSpeed();
+  
+  if (speed === 'offline') {
+    toast.error('No internet connection. Please connect to download images.', { autoClose: 4000 });
+    return;
+  }
+  
+  if (speed === 'slow') {
+    toast.warning('Slow connection detected. Download may take longer.', { autoClose: 3000 });
+  }
+  
+  // Get all products with images
+  const allProducts = stockData.value?.flatMap(group => group.products) || [];
+  const productsWithImages = allProducts.filter(p => p.imageUrl);
+  
+  if (productsWithImages.length === 0) {
+    toast.info('No images to cache.', { autoClose: 2000 });
+    return;
+  }
+  
+  // Create persistent progress toast
+  const toastId = toast.loading(`Downloading 0/${productsWithImages.length} images (0%)...`, { 
+    autoClose: false,
+    closeButton: false
+  });
+  
+  // Start caching with progress updates
+  const result = await cacheAllImages(allProducts, (current, total) => {
+    // Update toast with live progress
+    const percent = Math.round((current / total) * 100);
+    toast.update(toastId, {
+      render: `Downloading ${current}/${total} images (${percent}%)...`,
+      type: 'info',
+      isLoading: true,
+      autoClose: false
+    });
+  });
+  
+  // Final success/failure toast
+  if (result.success > 0) {
+    toast.update(toastId, {
+      render: `✓ ${result.success} images cached for offline use!`,
+      type: 'success',
+      isLoading: false,
+      autoClose: 4000
+    });
+  }
+  
+  if (result.failed > 0) {
+    toast.warning(`${result.failed} images failed to download.`, { autoClose: 3000 });
+  }
+};
 
 const promptAdminLogin = () => {
   showAdminModal.value = true;
@@ -831,58 +898,6 @@ const handleClubClick = (clubName) => {
 };
 
 
-// Image Caching Logic
-const handleCacheImages = async () => {
-    if (!stockData.value || stockData.value.length === 0) {
-        toast.info("No data to cache.");
-        return;
-    }
-
-    const imagesToCache = [];
-    stockData.value.forEach(group => {
-        if (group.products) {
-            group.products.forEach(product => {
-                if (product.imageUrl) {
-                    imagesToCache.push(product.imageUrl);
-                }
-            });
-        }
-    });
-
-    if (imagesToCache.length === 0) {
-        toast.info("No images found to cache.");
-        return;
-    }
-
-    const total = imagesToCache.length;
-    let completed = 0;
-    const toastId = toast.loading(`Starting download of ${total} images...`, { autoClose: false });
-
-    // Helper to fetch an image
-    const fetchImage = async (url) => {
-        try {
-            await fetch(url, { mode: 'no-cors' }); 
-        } catch (e) {
-            console.warn(`Failed to cache ${url}`, e);
-        } finally {
-            completed++;
-            if (completed % 10 === 0 || completed === total) {
-                 toast.update(toastId, { 
-                     render: `Caching images: ${completed}/${total}`,
-                     autoClose: false 
-                 });
-            }
-        }
-    };
-
-    const chunkSize = 5;
-    for (let i = 0; i < total; i += chunkSize) {
-        const chunk = imagesToCache.slice(i, i + chunkSize);
-        await Promise.all(chunk.map(url => fetchImage(url)));
-    }
-    
-    toast.update(toastId, { render: "All images cached successfully!", type: "success", isLoading: false, autoClose: 3000 });
-};
 const handleCleanViewToggle = (newValue) => {
   isFiltering.value = true;
   

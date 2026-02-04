@@ -15,7 +15,7 @@
            
            <div class="flex items-center gap-4">
              <!-- Desktop Nav -->
-             <div class="hidden md:flex items-center gap-2">
+             <div class="hidden lg:flex items-center gap-2">
                  <button 
                    @click="$emit('navigate', -1)" 
                    class="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -37,13 +37,19 @@
         </div>
 
         <!-- Main Content (Flex Column for Mobile "Single View" fit) -->
-        <div class="flex-1 w-full flex flex-col md:flex-row md:p-8 md:gap-12 overflow-hidden">
+        <div class="flex-1 w-full flex flex-col lg:flex-row lg:p-8 lg:gap-12 overflow-hidden">
             
-            <!-- Image Section (Takes remaining height) -->
-            <div class="flex-1 w-full bg-white relative overflow-hidden flex items-center justify-center p-4">
-               <img
+            <!-- Image Section (Takes remaining height) with Swipe Support -->
+            <div 
+              class="flex-1 w-full bg-white relative overflow-hidden flex items-center justify-center p-4"
+              @touchstart="handleTouchStart"
+              @touchmove="handleTouchMove"
+              @touchend="handleTouchEnd"
+            >
+               <CachedImage
                  v-if="currentProduct.imageUrl"
                  :src="getOptimizedUrl(currentProduct.imageUrl)"
+                 :cache-key="getCacheKeyUrl(currentProduct.imageUrl)"
                  class="w-full h-full object-contain drop-shadow-xl transition-all duration-300"
                  :key="currentProduct.imageUrl" 
                />
@@ -54,14 +60,14 @@
             </div>
 
             <!-- Details Section (Bottom Panel - Auto Height) -->
-            <div class="w-full md:w-[400px] lg:w-[480px] flex flex-col gap-3 p-4 bg-white md:bg-transparent shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] md:shadow-none z-10 rounded-t-3xl md:rounded-none">
+            <div class="w-full lg:w-[400px] lg:w-[480px] flex flex-col gap-3 p-4 bg-white lg:bg-transparent shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] lg:shadow-none z-10 rounded-t-3xl lg:rounded-none">
                
-               <div class="flex-1 overflow-y-auto max-h-[40vh] md:max-h-none pr-1">
+               <div class="flex-1 overflow-y-auto max-h-[40vh] lg:max-h-none pr-1">
                    <div class="flex items-center gap-2 mb-2">
                       <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
                       <span v-if="isNewArrival(currentProduct)" class="px-2 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-wider">New Arrival</span>
                    </div>
-                   <h1 class="text-xl md:text-3xl font-black text-slate-800 leading-tight mb-1">
+                   <h1 class="text-xl lg:text-3xl font-black text-slate-800 leading-tight mb-1">
                      {{ getCleanProductName(currentProduct.productName) }}
                    </h1>
                    <div v-if="getProductSize(currentProduct.productName)" class="text-base font-bold text-indigo-600 mb-0.5">
@@ -105,7 +111,7 @@
                </div>
                
                <!-- Mobile Only Nav -->
-               <div class="md:hidden grid grid-cols-2 gap-3 pt-0">
+               <div class="lg:hidden grid grid-cols-2 gap-3 pt-0">
                    <button 
                      @click="$emit('navigate', -1)" 
                      class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50 text-sm"
@@ -129,8 +135,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { extractColor } from '../../utils/colors';
+
+const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 
 const props = defineProps({
     showImagePopup: Boolean,
@@ -141,7 +149,41 @@ const props = defineProps({
     cartQty: Number 
 });
 
-defineEmits(['close', 'navigate', 'addToCart', 'updateCart']);
+const emit = defineEmits(['close', 'navigate', 'addToCart', 'updateCart']);
+
+// Touch swipe handling
+const touchStartX = ref(0);
+const touchEndX = ref(0);
+
+const handleTouchStart = (e) => {
+  touchStartX.value = e.changedTouches[0].screenX;
+};
+
+const handleTouchMove = (e) => {
+  touchEndX.value = e.changedTouches[0].screenX;
+};
+
+const handleTouchEnd = () => {
+  const swipeThreshold = 50; // Minimum swipe distance
+  const diff = touchStartX.value - touchEndX.value;
+  
+  if (Math.abs(diff) > swipeThreshold) {
+    if (diff > 0) {
+      // Swiped left -> Next product
+      if (!props.isLastProduct) {
+        emit('navigate', 1);
+      }
+    } else {
+      // Swiped right -> Previous product
+      if (props.currentProductIndex > 0) {
+        emit('navigate', -1);
+      }
+    }
+  }
+  
+  touchStartX.value = 0;
+  touchEndX.value = 0;
+};
 
 const getOptimizedUrl = (imageUrl) => {
     if (!imageUrl) return null;
@@ -149,6 +191,18 @@ const getOptimizedUrl = (imageUrl) => {
         const parts = imageUrl.split("/upload/");
         if (parts.length !== 2) return imageUrl;
         const transformation = "w_1000,q_70,f_auto";
+        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
+      } catch (e) {
+        return imageUrl;
+      }
+};
+
+const getCacheKeyUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+     try {
+        const parts = imageUrl.split("/upload/");
+        if (parts.length !== 2) return imageUrl;
+        const transformation = "w_400,q_70,f_auto"; // Must match cached version
         return `${parts[0]}/upload/${transformation}/${parts[1]}`;
       } catch (e) {
         return imageUrl;
