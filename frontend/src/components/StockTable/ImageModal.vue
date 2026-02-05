@@ -307,6 +307,25 @@ const formatGroupName = (name) => {
   return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
+const getPriceInfo = (name) => {
+    if (!name) return { label: 'Net Rate', price: '?' };
+    // Try to find specific price patterns first: MRP 123, RS 123, @ 123
+    const match = name.match(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/i);
+    if (match) {
+        const prefix = match[1].toUpperCase();
+        return {
+            label: prefix === 'MRP' ? 'MRP' : 'Net Rate',
+            price: match[2]
+        };
+    }
+    // Fallback: just find the last number
+    const fallback = name.match(/(\d+(\.\d+)?)(?!.*\d)/);
+    return {
+        label: 'Net Rate', 
+        price: fallback ? fallback[0] : '?' 
+    };
+};
+
 const getProductSize = (name) => {
     if (!name) return null;
     const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
@@ -356,7 +375,7 @@ const getCleanProductName = (name) => {
 const isFullScreen = ref(false);
 
 const toggleFullScreen = () => {
-  if (currentProduct.value && currentProduct.value.imageUrl) {
+  if (props.currentProduct && props.currentProduct.imageUrl) {
     isFullScreen.value = !isFullScreen.value;
   }
 };
