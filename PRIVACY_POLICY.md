@@ -6,11 +6,10 @@
 
 ## 1. Information We Collect
 
-### A. Device Permissions
-Our app requires specific permissions to function correctly:
-*   **Camera:** Used to capture photos of product stock for catalog generation.
-*   **Storage (Read/Write):** Used to save generated PDF catalogs and images to your device's storage and to upload existing product images.
-*   **Internet:** Used to sync data with our inventory database.
+### A. Device Access
+Our app allows you to use specific device features:
+*   **Camera & Photos:** Used only when you choose to upload product images (via the system file picker).
+*   **Storage:** Used to save generated PDF catalogs and images to your device.
 
 ### B. Personal Data
 We do not collect personal usage data, location data, or contact lists. The app is a productivity tool for managing business inventory. Any data you input (stock names, quantities) is stored within your database or local device.
@@ -32,4 +31,4 @@ We may update our Privacy Policy from time to time. You are advised to review th
 
 ## 6. Contact Us
 If you have any questions about this Privacy Policy, please contact us at:
-*   **Email:** (Your Email Here)
+*   **Email:** sahilsync07@gmail.com
