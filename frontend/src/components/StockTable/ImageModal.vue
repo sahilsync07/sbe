@@ -89,36 +89,40 @@
             leave-to-class="opacity-0"
             >
             <div v-if="isFullScreen" 
-                class="fixed inset-0 z-[150] bg-black flex flex-col items-center justify-center"
+                class="fixed inset-0 z-[150] bg-black overflow-y-auto overflow-x-hidden touch-pan-y"
                 @click.self="toggleFullScreen"
                 @touchstart="handleTouchStart" 
                 @touchmove="handleTouchMove" 
                 @touchend="handleTouchEnd"
             >
-                <!-- Full Screen Toolbar -->
-                <div class="absolute top-0 left-0 right-0 px-4 flex justify-between items-start z-50 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 0px) + 16px)">
-                    <button @click="toggleFullScreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white pointer-events-auto active:scale-95 transition-all">
+                <!-- Full Screen Toolbar (Fixed) -->
+                <div class="fixed top-0 left-0 right-0 px-4 flex justify-between items-start z-[160] bg-gradient-to-b from-black/80 to-transparent pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 0px) + 16px)">
+                    <button @click="toggleFullScreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white pointer-events-auto active:scale-95 transition-all shadow-lg border border-white/10">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
-                    <div class="text-white text-right pointer-events-auto">
+                    <div class="text-white text-right pointer-events-auto drop-shadow-md">
                         <div class="text-lg font-bold font-heading">{{ getCleanProductName(currentProduct.productName) }}</div>
                         <div class="text-sm text-slate-300">{{ formatGroupName(currentGroupName) }}</div>
                     </div>
                 </div>
 
-                <CachedImage
-                    :src="getOptimizedUrl(currentProduct.imageUrl)"
-                    alt="Full Screen"
-                    class="w-full h-full object-contain touch-pinch-zoom transition-transform duration-300"
+                <!-- Scrollable Container for Image -->
+                <div class="min-h-full flex items-center justify-center py-24 px-2">
+                    <CachedImage
+                        :src="getOptimizedUrl(currentProduct.imageUrl)"
+                        :cache-key="getCacheKeyUrl(currentProduct.imageUrl)"
+                        alt="Full Screen"
+                        class="w-full h-auto max-w-4xl object-contain drop-shadow-2xl"
                     />
+                </div>
                     
-                    <!-- Full Screen Nav Hints -->
-                    <button @click.stop="$emit('navigate', -1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
-                        <i class="fa-solid fa-chevron-left text-xl"></i>
-                    </button>
-                    <button @click.stop="$emit('navigate', 1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
-                        <i class="fa-solid fa-chevron-right text-xl"></i>
-                    </button>
+                <!-- Full Screen Nav Hints (Fixed) -->
+                <button @click.stop="$emit('navigate', -1)" class="fixed left-4 top-1/2 -translate-y-1/2 z-[160] w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex border border-white/10 shadow-lg">
+                    <i class="fa-solid fa-chevron-left text-xl"></i>
+                </button>
+                <button @click.stop="$emit('navigate', 1)" class="fixed right-4 top-1/2 -translate-y-1/2 z-[160] w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex border border-white/10 shadow-lg">
+                    <i class="fa-solid fa-chevron-right text-xl"></i>
+                </button>
             </div>
             </Transition>
 
