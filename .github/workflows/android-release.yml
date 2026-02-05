@@ -70,20 +70,20 @@ jobs:
           # inAppUpdatePriority: 2
           # userFraction: 0.33
 
-      - name: Upload to Play Store (Alpha)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: com.sbe.stock.app
-          releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
-          track: alpha
-          status: completed
+      # - name: Upload to Play Store (Alpha)
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+      #     packageName: com.sbe.stock.app
+      #     releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
+      #     track: alpha
+      #     status: completed
 
-      - name: Upload to Play Store (Production)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: com.sbe.stock.app
-          releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
-          track: production
-          status: completed
+      # - name: Upload to Play Store (Production)
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+      #     packageName: com.sbe.stock.app
+      #     releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
+      #     track: production
+      #     status: completed
