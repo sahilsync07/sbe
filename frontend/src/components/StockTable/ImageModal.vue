@@ -96,7 +96,7 @@
                 @touchend="handleTouchEnd"
             >
                 <!-- Full Screen Toolbar -->
-                <div class="absolute top-0 left-0 right-0 p-4 pt-[env(safe-area-inset-top)] flex justify-between items-start z-50 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+                <div class="absolute top-0 left-0 right-0 px-4 flex justify-between items-start z-50 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 0px) + 16px)">
                     <button @click="toggleFullScreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white pointer-events-auto active:scale-95 transition-all">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
