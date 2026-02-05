@@ -113,10 +113,10 @@
                     />
                     
                     <!-- Full Screen Nav Hints -->
-                    <button @click.stop="$emit('navigate', -1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
+                    <button @click.stop="$emit('navigate', -1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
                         <i class="fa-solid fa-chevron-left text-xl"></i>
                     </button>
-                    <button @click.stop="$emit('navigate', 1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
+                    <button @click.stop="$emit('navigate', 1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
                         <i class="fa-solid fa-chevron-right text-xl"></i>
                     </button>
             </div>

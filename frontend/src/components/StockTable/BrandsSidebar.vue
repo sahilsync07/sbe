@@ -28,10 +28,15 @@
         <div class="p-4 overflow-y-auto overscroll-contain flex-1 pb-24">
           <nav class="space-y-6">
           
-          <!-- Paragon Legend -->
+                  <!-- Paragon Legend -->
           <div v-if="groupedSidebar.paragon && groupedSidebar.paragon.length > 0" class="p-3 bg-red-50/50 border border-red-100 rounded-2xl">
               <div class="mb-3 px-1">
-                <img src="https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp" alt="Paragon" class="h-8 object-contain" />
+                <CachedImage 
+                   src="https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp" 
+                   :cache-key="getOptimizedUrl('https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp')"
+                   alt="Paragon" 
+                   class="h-8 object-contain" 
+                />
               </div>
               <div class="grid grid-cols-2 gap-1">
                 <div 
@@ -62,7 +67,12 @@
                 >
                   <div class="flex items-center gap-3 flex-1 min-w-0 outline-none">
                       <div class="w-6 h-6 rounded-full bg-white border border-amber-200 p-0.5 shrink-0 overflow-hidden">
-                        <img v-if="item.logo" :src="item.logo" class="w-full h-full object-contain" />
+                        <CachedImage 
+                           v-if="item.logo" 
+                           :src="item.logo" 
+                           :cache-key="getOptimizedUrl(item.logo)"
+                           class="w-full h-full object-contain" 
+                        />
                         <span v-else class="w-full h-full flex items-center justify-center text-[8px] bg-amber-50 text-amber-600">{{ item.group.groupName[0] }}</span>
                       </div>
                       <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
@@ -223,7 +233,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
+
+const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 
 const props = defineProps({
   showSidePanel: Boolean,
@@ -254,5 +266,17 @@ const handleClubClick = (clubName) => {
 const formatProductName = (name) => {
   if (!name) return '';
   return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+const getOptimizedUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+     try {
+        const parts = imageUrl.split("/upload/");
+        if (parts.length !== 2) return imageUrl;
+        const transformation = "w_400,q_70,f_auto"; 
+        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
+      } catch (e) {
+        return imageUrl;
+      }
 };
 </script>

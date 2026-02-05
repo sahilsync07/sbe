@@ -102,19 +102,23 @@ export function useImageCache() {
     };
 
     /**
-     * Cache all product images
-     * @param {Array} products - Array of product objects with imageUrl property
-     * @param {Function} onProgress - Callback for progress updates (current, total)
-     * @returns {Object} - { success: number, failed: number }
+     * Cache all images (products + extras)
+     * @param {Array} products - Array of product objects
+     * @param {Array} extraUrls - Array of extra image URLs (logos, icons)
+     * @param {Function} onProgress - Callback for progress (current, total)
      */
-    const cacheAllImages = async (products, onProgress = null) => {
+    const cacheAllImages = async (products, extraUrls = [], onProgress = null) => {
         if (!isCacheSupported()) {
             return { success: 0, failed: 0, error: 'Cache API not supported' };
         }
 
-        // Filter products with images
-        const productsWithImages = products.filter(p => p.imageUrl);
-        const total = productsWithImages.length;
+        const productUrls = products
+            .filter(p => p.imageUrl)
+            .map(p => getCacheOptimizedUrl(p.imageUrl));
+
+        // Deduplicate URLs
+        const allUrls = [...new Set([...productUrls, ...extraUrls])].filter(Boolean);
+        const total = allUrls.length;
 
         if (total === 0) {
             return { success: 0, failed: 0, error: 'No images to cache' };
@@ -125,44 +129,47 @@ export function useImageCache() {
 
         let success = 0;
         let failed = 0;
+        const CONCURRENCY = 5; // Parallel downloads
 
         try {
             const cache = await caches.open(CACHE_NAME);
 
-            // Process in batches of 5 for better performance
-            const batchSize = 5;
-            for (let i = 0; i < productsWithImages.length; i += batchSize) {
-                const batch = productsWithImages.slice(i, i + batchSize);
+            // Process in chunks to avoid blocking UI
+            for (let i = 0; i < allUrls.length; i += CONCURRENCY) {
+                const chunk = allUrls.slice(i, i + CONCURRENCY);
 
-                const results = await Promise.allSettled(
-                    batch.map(async (product) => {
-                        const optimizedUrl = getCacheOptimizedUrl(product.imageUrl);
-
-                        // Skip if already cached
-                        const existing = await cache.match(optimizedUrl);
-                        if (existing) return true;
-
-                        const response = await fetch(optimizedUrl, { mode: 'cors' });
-                        if (response.ok) {
-                            await cache.put(optimizedUrl, response.clone());
-                            return true;
+                await Promise.all(chunk.map(async (url) => {
+                    try {
+                        const existing = await cache.match(url);
+                        if (existing) {
+                            success++;
+                            return;
                         }
-                        throw new Error('Fetch failed');
-                    })
-                );
 
-                results.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        success++;
-                    } else {
+                        // Add small delay to let UI breathe
+                        await new Promise(r => setTimeout(r, 20));
+
+                        const response = await fetch(url, { mode: 'cors', cache: 'no-store' });
+                        if (response.ok) {
+                            await cache.put(url, response);
+                            success++;
+                        } else {
+                            failed++;
+                        }
+                    } catch (e) {
+                        // console.error("Cache fail", url, e);
                         failed++;
                     }
-                });
+                }));
 
-                cacheProgress.value = { current: i + batch.length, total };
+                // Update Progress (Throttled)
+                const current = Math.min(i + CONCURRENCY, total);
+                cacheProgress.value = { current, total };
+                if (onProgress) onProgress(current, total);
 
-                if (onProgress) {
-                    onProgress(i + batch.length, total);
+                // Yield to main thread every few chunks
+                if (i % (CONCURRENCY * 2) === 0) {
+                    await new Promise(r => setTimeout(r, 50));
                 }
             }
 
@@ -173,12 +180,11 @@ export function useImageCache() {
             console.error('Cache operation failed:', error);
         } finally {
             isCaching.value = false;
+            // Force 100% at end
             cacheProgress.value = { current: total, total };
         }
 
-        // Update cached count
         await updateCachedCount();
-
         return { success, failed };
     };
 

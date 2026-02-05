@@ -426,62 +426,79 @@ const {
 
 // Handle Cache Images button click
 const handleCacheImages = async () => {
-  if (isCaching.value) return;
-  
-  // Check internet speed first
-  toast.info('Checking network speed...', { autoClose: 2000 });
-  const speed = await checkInternetSpeed();
-  
-  if (speed === 'offline') {
-    toast.error('No internet connection. Please connect to download images.', { autoClose: 4000 });
-    return;
-  }
-  
-  if (speed === 'slow') {
-    toast.warning('Slow connection detected. Download may take longer.', { autoClose: 3000 });
-  }
-  
-  // Get all products with images
-  const allProducts = stockData.value?.flatMap(group => group.products) || [];
-  const productsWithImages = allProducts.filter(p => p.imageUrl);
-  
-  if (productsWithImages.length === 0) {
-    toast.info('No images to cache.', { autoClose: 2000 });
-    return;
-  }
-  
-  // Create persistent progress toast
-  const toastId = toast.loading(`Downloading 0/${productsWithImages.length} images (0%)...`, { 
-    autoClose: false,
-    closeButton: false
-  });
-  
-  // Start caching with progress updates
-  const result = await cacheAllImages(allProducts, (current, total) => {
-    // Update toast with live progress
-    const percent = Math.round((current / total) * 100);
-    toast.update(toastId, {
-      render: `Downloading ${current}/${total} images (${percent}%)...`,
-      type: 'info',
-      isLoading: true,
-      autoClose: false
+    if (isCaching.value) return;
+    
+    // Check internet speed first
+    toast.info('Checking network speed...', { autoClose: 2000 });
+    const speed = await checkInternetSpeed();
+    
+    if (speed === 'offline') {
+      toast.error('No internet connection. Please connect to download images.', { autoClose: 4000 });
+      return;
+    }
+    
+    if (speed === 'slow') {
+      toast.warning('Slow connection detected. Download may take longer.', { autoClose: 3000 });
+    }
+    
+    // Get all products with images
+    const allProducts = stockData.value?.flatMap(group => group.products) || [];
+    const productsWithImages = allProducts.filter(p => p.imageUrl);
+    
+    // Collect Extra Assets (Logos)
+    const extraUrls = [
+       // Hardcoded Logos
+       'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp',
+       // Add other static assets if needed
+    ];
+
+    // Dynamic Logos from Top Brands
+    if (groupedSidebar.value?.topBrands) {
+        groupedSidebar.value.topBrands.forEach(item => {
+            if (item.logo) extraUrls.push(item.logo);
+        });
+    }
+
+    if (productsWithImages.length === 0 && extraUrls.length === 0) {
+      toast.info('No images to cache.', { autoClose: 2000 });
+      return;
+    }
+    
+    const totalCount = productsWithImages.length + extraUrls.length;
+
+    // Create persistent progress toast
+    const toastId = toast.loading(`Starting download for ${totalCount} assets...`, { 
+      autoClose: false,
+      closeButton: false
     });
-  });
-  
-  // Final success/failure toast
-  if (result.success > 0) {
-    toast.update(toastId, {
-      render: `✓ ${result.success} images cached for offline use!`,
-      type: 'success',
-      isLoading: false,
-      autoClose: 4000
+    
+    // Start caching with progress updates
+    // Pass extraUrls as second argument
+    const result = await cacheAllImages(allProducts, extraUrls, (current, total) => {
+      // Update toast with live progress
+      const percent = Math.round((current / total) * 100);
+      toast.update(toastId, {
+        render: `Downloading assets ${current}/${total} (${percent}%)...`,
+        type: 'info',
+        isLoading: true,
+        autoClose: false
+      });
     });
-  }
-  
-  if (result.failed > 0) {
-    toast.warning(`${result.failed} images failed to download.`, { autoClose: 3000 });
-  }
-};
+    
+    // Final success/failure toast
+    if (result.success > 0) {
+      toast.update(toastId, {
+        render: `✓ ${result.success} assets cached for offline use!`,
+        type: 'success',
+        isLoading: false,
+        autoClose: 4000
+      });
+    }
+    
+    if (result.failed > 0) {
+      toast.warning(`${result.failed} assets failed to download.`, { autoClose: 3000 });
+    }
+  };
 
 const promptAdminLogin = () => {
   showAdminModal.value = true;
