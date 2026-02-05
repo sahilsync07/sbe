@@ -44,7 +44,7 @@ jobs:
 
       - name: Calculate Version Code
         id: version_code
-        run: echo "code=$(( ${{ github.run_number }} + 4000 ))" >> $GITHUB_OUTPUT
+        run: echo "code=$(( ${{ github.run_number }} + 100000 ))" >> $GITHUB_OUTPUT
 
       - name: Bump Version Code
         uses: chkfung/android-version-actions@v1.2.1
@@ -55,9 +55,7 @@ jobs:
       - name: Build Release Bundle
         working-directory: frontend/android
         run: ./gradlew bundleRelease
-        env:
-          # Uses the keystore we decoded and passwords from secrets
-          ORG_GRADLE_PROJECT_minSdkVersion: 24
+
 
       - name: Upload to Play Store
         uses: r0adkll/upload-google-play@v1

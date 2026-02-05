@@ -43,7 +43,7 @@ jobs:
       - name: Calculate Version Code
         id: version_code
         # Using 5000 offset for Alpha to distinguish from Internal (4000) and avoid collisions
-        run: echo "code=$(( ${{ github.run_number }} + 5000 ))" >> $GITHUB_OUTPUT
+        run: echo "code=$(( ${{ github.run_number }} + 110000 ))" >> $GITHUB_OUTPUT
 
       - name: Bump Version Code
         uses: chkfung/android-version-actions@v1.2.1
@@ -54,9 +54,7 @@ jobs:
       - name: Build Release Bundle
         working-directory: frontend/android
         run: ./gradlew bundleRelease
-        env:
-          # Uses the keystore we decoded and passwords from secrets
-          ORG_GRADLE_PROJECT_minSdkVersion: 24
+
 
       - name: Upload to Play Store (Alpha)
         uses: r0adkll/upload-google-play@v1
