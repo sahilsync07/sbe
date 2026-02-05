@@ -569,15 +569,65 @@ const closeImagePopup = ({ isPop = false } = {}) => {
 };
 
 const navigateImage = (direction) => {
-  const newIndex = currentProductIndex.value + direction;
+  let newIndex = currentProductIndex.value + direction;
+  
+  // 1. Within current group
   if (newIndex >= 0 && newIndex < currentGroupProducts.value.length) {
     currentProductIndex.value = newIndex;
     currentProduct.value = currentGroupProducts.value[newIndex];
-    
-    const url = new URL(window.location);
-    url.searchParams.set('product', currentProduct.value.productName);
-    window.history.replaceState({}, '', url);
+  } 
+  // 2. Next Group
+  else if (newIndex >= currentGroupProducts.value.length) {
+      // Find next group index
+      const nextGroupIndex = currentGroupIndex.value + 1;
+      if (nextGroupIndex < filteredStockData.value.length) {
+          // Switch to next group
+          currentGroupIndex.value = nextGroupIndex;
+          const nextGroup = filteredStockData.value[nextGroupIndex];
+          currentGroupProducts.value = nextGroup.products;
+          currentGroupName.value = nextGroup.groupName;
+          
+          // Start at 0
+          currentProductIndex.value = 0;
+          currentProduct.value = nextGroup.products[0];
+          
+          // Ensure group is expanded (optional interaction)
+          if (!expandedGroups.value[nextGroup.groupName]) {
+             expandedGroups.value[nextGroup.groupName] = true;
+          }
+      } else {
+          toast.info("You've reached the end of the list!");
+          return;
+      }
   }
+  // 3. Previous Group
+  else if (newIndex < 0) {
+      const prevGroupIndex = currentGroupIndex.value - 1;
+      if (prevGroupIndex >= 0) {
+          // Switch to prev group
+          currentGroupIndex.value = prevGroupIndex;
+          const prevGroup = filteredStockData.value[prevGroupIndex];
+          currentGroupProducts.value = prevGroup.products;
+          currentGroupName.value = prevGroup.groupName;
+          
+          // Start at last item
+          currentProductIndex.value = prevGroup.products.length - 1;
+          currentProduct.value = prevGroup.products[prevGroup.products.length - 1];
+          
+             // Ensure group is expanded
+          if (!expandedGroups.value[prevGroup.groupName]) {
+             expandedGroups.value[prevGroup.groupName] = true;
+          }
+      } else {
+          toast.info("This is the first item!");
+          return;
+      }
+  }
+
+  // Update URL
+  const url = new URL(window.location);
+  url.searchParams.set('product', currentProduct.value.productName);
+  window.history.replaceState({}, '', url);
 };
 
 const toggleGroup = (groupName) => {

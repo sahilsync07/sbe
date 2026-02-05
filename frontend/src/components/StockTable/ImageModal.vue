@@ -7,11 +7,26 @@
         class="fixed inset-0 z-[100] bg-slate-50 overflow-y-auto overflow-x-hidden flex flex-col"
       >
         <!-- Sticky Navbar -->
-        <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
-           <button @click="$emit('close', { isPop: false })" class="flex items-center gap-2 text-blue-600 font-bold transition-colors px-0 py-1 hover:opacity-80 bg-transparent hover:bg-transparent shadow-none border-none">
+        <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 pb-3 flex items-center justify-between shadow-sm" style="padding-top: calc(env(safe-area-inset-top, 20px) + 12px)">
+           <button 
+             @click="$emit('close', { isPop: false })" 
+             class="w-10 h-10 flex items-center justify-center rounded-full bg-black text-white hover:bg-neutral-800 hover:scale-105 active:scale-95 transition-all shadow-md"
+             title="Back to Home"
+           >
               <i class="fa-solid fa-arrow-left"></i>
-              <span>Back to Home</span>
            </button>
+           
+           <!-- Dynamic Header -->
+           <div class="absolute left-1/2 -translate-x-1/2">
+                <!-- Special "New Arrivals" Style -->
+                <h2 v-if="currentGroupName === 'New Arrivals'" class="text-base sm:text-l md:text-xl font-['Clash_Display'] font-bold tracking-wide holographic-text whitespace-nowrap">
+                    ✨ {{ currentGroupName }}
+                </h2>
+                <!-- Regular Group Style -->
+                <h2 v-else class="text-base sm:text-l md:text-xl font-semibold text-slate-900 tracking-tight font-heading whitespace-nowrap">
+                   {{ formatGroupName(currentGroupName) }}
+                </h2>
+           </div>
            
            
            <div class="flex items-center gap-4">
@@ -20,7 +35,6 @@
                  <button 
                    @click="$emit('navigate', -1)" 
                    class="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                   :disabled="currentProductIndex <= 0"
                    title="Previous Product"
                  >
                    <i class="fa-solid fa-chevron-left"></i>
@@ -28,7 +42,6 @@
                  <button 
                    @click="$emit('navigate', 1)" 
                    class="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                   :disabled="isLastProduct"
                    title="Next Product"
                  >
                     <i class="fa-solid fa-chevron-right"></i>
@@ -51,84 +64,143 @@
                  v-if="currentProduct.imageUrl"
                  :src="getOptimizedUrl(currentProduct.imageUrl)"
                  :cache-key="getCacheKeyUrl(currentProduct.imageUrl)"
-                 class="w-full h-full object-contain drop-shadow-xl transition-all duration-300"
+                 class="w-full h-full object-contain drop-shadow-xl transition-all duration-300 cursor-zoom-in"
                  :key="currentProduct.imageUrl" 
+                 @click="toggleFullScreen"
                />
                <div v-else class="flex flex-col items-center gap-4 text-slate-300">
                   <i class="fa-solid fa-image text-6xl opacity-20"></i>
                   <span class="font-medium">No Image Available</span>
                </div>
+
+                <!-- Floating Full Screen Hint -->
+                <div v-if="currentProduct.imageUrl" class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium pointer-events-none animate-fade-in z-20">
+                    <i class="fa-solid fa-expand mr-1.5"></i> Tap to expand
+                </div>
             </div>
 
-            <!-- Details Section (Bottom Panel - Auto Height) -->
-            <div class="w-full lg:w-[480px] flex flex-col gap-3 p-4 bg-white lg:bg-transparent shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] lg:shadow-none z-10 rounded-t-3xl lg:rounded-none">
-               
-               <div class="flex-1 overflow-y-auto max-h-[40vh] lg:max-h-none pr-1">
-                   <div class="flex items-center gap-2 mb-2">
-                      <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">{{ currentGroupName }}</span>
-                      <span v-if="isNewArrival(currentProduct)" class="px-2 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-wider">New Arrival</span>
-                   </div>
-                   <h1 class="text-xl lg:text-3xl font-black text-slate-800 leading-tight mb-1">
-                     {{ getCleanProductName(currentProduct.productName) }}
-                   </h1>
-                   <div v-if="getProductSize(currentProduct.productName)" class="text-base font-bold text-indigo-600 mb-0.5">
-                      {{ getProductSize(currentProduct.productName) }}
-                   </div>
-                   <div v-if="getProductColor(currentProduct.productName)" class="text-base font-extrabold mb-1 uppercase tracking-wider" :style="{ color: getProductColor(currentProduct.productName).hex }">
-                      {{ getProductColor(currentProduct.productName).text }}
-                   </div>
-                   <div v-if="getPriceDisplay(currentProduct.productName)" class="text-xl font-bold text-emerald-600 mb-2">
-                      {{ getPriceDisplay(currentProduct.productName) }}
-                   </div>
-                   
-                   <div class="text-blue-600 font-bold text-xs mb-2">
-                      Stock: {{ currentProduct.quantity }} {{ currentProduct.quantity === 1 ? 'Pair' : 'Pairs' }}
-                   </div>
-               </div>
+            <!-- Full Screen Overlay -->
+            <Transition
+            enter-active-class="transition-opacity duration-300"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-300"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+            >
+            <div v-if="isFullScreen" 
+                class="fixed inset-0 z-[150] bg-black flex flex-col items-center justify-center"
+                @click.self="toggleFullScreen"
+                @touchstart="handleTouchStart" 
+                @touchmove="handleTouchMove" 
+                @touchend="handleTouchEnd"
+            >
+                <!-- Full Screen Toolbar -->
+                <div class="absolute top-0 left-0 right-0 p-4 pt-[env(safe-area-inset-top)] flex justify-between items-start z-50 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+                    <button @click="toggleFullScreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white pointer-events-auto active:scale-95 transition-all">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                    <div class="text-white text-right pointer-events-auto">
+                        <div class="text-lg font-bold font-heading">{{ getCleanProductName(currentProduct.productName) }}</div>
+                        <div class="text-sm text-slate-300">{{ formatGroupName(currentGroupName) }}</div>
+                    </div>
+                </div>
 
-               <!-- Action Area -->
-               <div class="space-y-3 mt-auto">
-                   <div v-if="cartQty > 0" class="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-center justify-between">
-                       <span class="font-bold text-sm text-slate-700">In your cart</span>
-                        <div class="flex items-center gap-3">
-                           <button @click="$emit('updateCart', currentProduct, -1)" class="w-9 h-9 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
-                             <i class="fa-solid fa-minus text-sm"></i>
-                           </button>
-                           <span class="text-lg font-black text-blue-700 min-w-[1.5rem] text-center">{{ cartQty }}</span>
-                           <button @click="$emit('updateCart', currentProduct, 1)" class="w-9 h-9 flex items-center justify-center bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-sm active:scale-95">
-                             <i class="fa-solid fa-plus text-sm"></i>
-                           </button>
+                <CachedImage
+                    :src="getOptimizedUrl(currentProduct.imageUrl)"
+                    alt="Full Screen"
+                    class="w-full h-full object-contain touch-pinch-zoom transition-transform duration-300"
+                    />
+                    
+                    <!-- Full Screen Nav Hints -->
+                    <button @click.stop="$emit('navigate', -1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
+                        <i class="fa-solid fa-chevron-left text-xl"></i>
+                    </button>
+                    <button @click.stop="$emit('navigate', 1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex">
+                        <i class="fa-solid fa-chevron-right text-xl"></i>
+                    </button>
+            </div>
+            </Transition>
+
+            <!-- Details Section (Bottom Panel - Redesigned) -->
+            <div class="w-full lg:w-[480px] bg-white lg:bg-transparent shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] lg:shadow-none z-10 rounded-t-[32px] lg:rounded-none relative -mt-6 pt-8 pb-8 px-6 lg:p-4 lg:mt-0">
+               <!-- Pull Handle (Mobile) -->
+               <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 rounded-full lg:hidden"></div>
+
+               <div class="flex flex-col gap-6">
+                    <!-- Header Info -->
+                    <div>
+                        <div class="flex items-start justify-between gap-4 mb-2">
+                             <h2 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight font-heading">{{ getCleanProductName(currentProduct.productName) }}</h2>
+                             <!-- Price Pill -->
+                             <div class="flex flex-col items-end shrink-0 bg-blue-50 px-3 py-1.5 rounded-2xl border border-blue-100">
+                                 <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">{{ getPriceInfo(currentProduct.productName).label }}</span>
+                                 <div class="text-xl font-black text-slate-900 leading-none">
+                                     <span class="text-xs font-semibold mr-0.5 align-top">₹</span>{{ getPriceInfo(currentProduct.productName).price }}
+                                 </div>
+                             </div>
                         </div>
+                        
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mb-4">
+                             <!-- Color Tag -->
+                             <div v-if="getProductColor(currentProduct.productName)" class="flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 bg-slate-50 border border-slate-100 rounded-full">
+                                  <span class="w-2.5 h-2.5 rounded-full ring-1 ring-slate-200" :style="{ backgroundColor: getProductColor(currentProduct.productName).hex }"></span>
+                                  <span class="text-xs font-bold text-slate-600 capitalize">{{ getProductColor(currentProduct.productName).text }}</span>
+                             </div>
+                             <!-- Size Tag -->
+                             <div v-if="getProductSize(currentProduct.productName)" class="flex items-center gap-1.5 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
+                                  <i class="fa-solid fa-ruler-combined text-[10px] text-slate-400"></i>
+                                  <span class="text-xs font-bold text-slate-600">{{ getProductSize(currentProduct.productName) }}</span>
+                             </div>
+                             <!-- Stock Tag -->
+                             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full border" 
+                                  :class="currentProduct.quantity < 5 ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700'">
+                                  <i class="fa-solid fa-boxes-stacked text-[10px]"></i>
+                                  <span class="text-xs font-bold">{{ currentProduct.quantity }} {{ currentProduct.quantity === 1 ? 'Pair' : 'Pairs' }} In Stock</span>
+                             </div>
+                        </div>
+                    </div>
+
+                   <!-- Action Buttons -->
+                   <div class="grid grid-cols-[1fr,auto] gap-3">
+                       <button
+                          v-if="cartQty === 0"
+                          @click="$emit('addToCart', currentProduct)"
+                          class="bg-black text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-black/20 hover:bg-neutral-800 active:scale-95 transition-all flex items-center justify-center gap-2"
+                       >
+                          <i class="fa-solid fa-bag-shopping"></i>
+                          <span>Add to Cart</span>
+                       </button>
+
+                       <!-- Quantity Controls (Only if in cart) -->
+                       <div v-else class="flex items-center gap-3 bg-slate-100 rounded-2xl px-2 w-full">
+                           <button @click="$emit('updateCart', currentProduct, -1)" class="w-12 h-full flex items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm active:scale-95">
+                               <i class="fa-solid fa-minus"></i>
+                           </button>
+                           <span class="text-xl font-bold flex-1 text-center">{{ cartQty }}</span>
+                           <button @click="$emit('updateCart', currentProduct, 1)" class="w-12 h-full flex items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm active:scale-95">
+                               <i class="fa-solid fa-plus"></i>
+                           </button>
+                       </div>
                    </div>
 
-                   <button 
-                     v-else
-                     @click="$emit('addToCart', currentProduct)"
-                     class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-slate-900/10 hover:shadow-blue-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 text-base"
-                   >
-                     <i class="fa-solid fa-cart-shopping"></i>
-                     Add to Cart
-                   </button>
+                   <!-- Mobile Nav (Bottom) -->
+                   <div class="lg:hidden grid grid-cols-2 gap-3 pt-2">
+                       <button 
+                         @click="$emit('navigate', -1)" 
+                         class="py-3 px-4 bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
+                       >
+                         <i class="fa-solid fa-arrow-left"></i> Previous
+                       </button>
+                       <button 
+                         @click="$emit('navigate', 1)" 
+                         class="py-3 px-4 bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
+                       >
+                         Next <i class="fa-solid fa-arrow-right"></i>
+                       </button>
+                   </div>
                </div>
-               
-               <!-- Mobile Only Nav -->
-               <div class="lg:hidden grid grid-cols-2 gap-3 pt-0">
-                   <button 
-                     @click="$emit('navigate', -1)" 
-                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50 text-sm"
-                     :disabled="currentProductIndex <= 0"
-                   >
-                     Previous
-                   </button>
-                   <button 
-                     @click="$emit('navigate', 1)" 
-                     class="py-2 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50 text-sm"
-                     :disabled="isLastProduct"
-                   >
-                     Next
-                   </button>
-               </div>
-
             </div>
         </div>
       </div>
@@ -171,14 +243,10 @@ const handleTouchEnd = () => {
   if (Math.abs(diff) > swipeThreshold) {
     if (diff > 0) {
       // Swiped left -> Next product
-      if (!props.isLastProduct) {
-        emit('navigate', 1);
-      }
+      emit('navigate', 1);
     } else {
       // Swiped right -> Previous product
-      if (props.currentProductIndex > 0) {
-        emit('navigate', -1);
-      }
+      emit('navigate', -1);
     }
   }
   
@@ -234,6 +302,11 @@ const getPriceDisplay = (name) => {
     return null;
 };
 
+const formatGroupName = (name) => {
+  if (!name) return '';
+  return name.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 const getProductSize = (name) => {
     if (!name) return null;
     const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
@@ -279,5 +352,12 @@ const getCleanProductName = (name) => {
     // ImageModal doesn't import formatProductName. Let's add basic capitalization.
     const cleanedString = clean.replace(/\s+/g, ' ').trim().toLowerCase();
     return cleanedString.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+const isFullScreen = ref(false);
+
+const toggleFullScreen = () => {
+  if (currentProduct.value && currentProduct.value.imageUrl) {
+    isFullScreen.value = !isFullScreen.value;
+  }
 };
 </script>
