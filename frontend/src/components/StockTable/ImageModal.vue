@@ -61,7 +61,7 @@
             </div>
 
             <!-- Details Section (Bottom Panel - Auto Height) -->
-            <div class="w-full lg:w-[400px] lg:w-[480px] flex flex-col gap-3 p-4 bg-white lg:bg-transparent shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] lg:shadow-none z-10 rounded-t-3xl lg:rounded-none">
+            <div class="w-full lg:w-[480px] flex flex-col gap-3 p-4 bg-white lg:bg-transparent shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] lg:shadow-none z-10 rounded-t-3xl lg:rounded-none">
                
                <div class="flex-1 overflow-y-auto max-h-[40vh] lg:max-h-none pr-1">
                    <div class="flex items-center gap-2 mb-2">
