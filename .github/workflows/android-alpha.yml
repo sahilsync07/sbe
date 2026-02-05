@@ -1,0 +1,68 @@
+name: Build and Release Android App (Alpha)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Install dependencies and Build Web Assets
+        run: |
+          cd frontend
+          npm install
+          npm run build:android
+          npx cap sync android
+
+      - name: Decode Keystore
+        run: |
+          mkdir -p frontend/android/app
+          # Remove newlines and potential headers from Windows certutil output
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '\r\n' | sed 's/-----BEGIN CERTIFICATE-----//g' | sed 's/-----END CERTIFICATE-----//g' | base64 --decode > frontend/android/app/release-key.keystore
+
+      - name: Calculate Version Code
+        id: version_code
+        # Using 5000 offset for Alpha to distinguish from Internal (4000) and avoid collisions
+        run: echo "code=$(( ${{ github.run_number }} + 5000 ))" >> $GITHUB_OUTPUT
+
+      - name: Bump Version Code
+        uses: chkfung/android-version-actions@v1.2.1
+        with:
+          gradlePath: frontend/android/app/build.gradle
+          versionCode: ${{ steps.version_code.outputs.code }}
+
+      - name: Build Release Bundle
+        working-directory: frontend/android
+        run: ./gradlew bundleRelease
+        env:
+          # Uses the keystore we decoded and passwords from secrets
+          ORG_GRADLE_PROJECT_minSdkVersion: 24
+
+      - name: Upload to Play Store (Alpha)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.sbe.stock.app
+          releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
+          track: alpha
+          status: completed
