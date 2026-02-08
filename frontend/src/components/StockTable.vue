@@ -916,9 +916,9 @@ const getCleanProductName = (name) => {
     clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
     
     clean = clean.replace(/\(\s*\)/g, '');
-    clean = clean.replace(/[\/\-]+\s*$/g, '') 
-                 .replace(/^\s*[\/\-]+/g, '') 
-                 .replace(/\s*[\/\-]+\s*/g, ' '); 
+    clean = clean.replace(/[\/\-\.]+\s*$/g, '') 
+                 .replace(/^\s*[\/\-\.]+/g, '') 
+                 .replace(/\s*[\/\-\.]+\s*/g, ' '); 
     
     const cleanedString = clean.replace(/\s+/g, ' ').trim();
     return formatProductName(cleanedString);

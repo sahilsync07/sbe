@@ -45,8 +45,6 @@ export const COLOR_MAP = {
     'GRAPE': { color: '#881337', label: 'Grape' }, // Rose-900
     'GRAP': { color: '#881337', label: 'Grape' }, // Rose-900
 
-
-
     // GREENS
     'GRN': { color: '#10b981', label: 'Green' }, // Emerald-500
     'GREEN': { color: '#10b981', label: 'Green' },
@@ -122,12 +120,22 @@ export function extractColor(productName) {
     // We look for color tokens. 
     // We also handle combinations like BLK/RED.
 
-    const tokens = productName.toUpperCase().split(/[\s\(\)\-\/]+/);
+    const tokens = productName.toUpperCase().split(/[\s\(\)\-\/\.]+/);
     const foundTokens = [];
     const foundLabels = [];
 
     // First pass: Direct matches
-    for (const token of tokens) {
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+
+        // EXCEPTION: "P" should not be treated as "Peacock" if it's the P-TOES brand.
+        if (token === 'P' && i < tokens.length - 1 && tokens[i + 1] === 'TOES') {
+            continue;
+        }
+        if (token === 'P.TOES' || token === 'PTOES') {
+            continue;
+        }
+
         if (COLOR_MAP[token]) {
             foundTokens.push(token);
             foundLabels.push(COLOR_MAP[token].label);
