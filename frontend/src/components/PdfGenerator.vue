@@ -525,9 +525,10 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { useBrandGroups } from '../composables/useBrandGroups';
+import { useStockData } from '../composables/useStockData';
 
 // State
-const brands = ref([]);
+const { stockData, loadStockData, loading } = useStockData(ref(false)); // Reuse existing composable
 const selectedBrands = ref([]);
 const onlyWithPhotos = ref(true);
 const minQtyEnabled = ref(false);
@@ -549,8 +550,8 @@ const completedCount = ref(0);
 const showToast = ref(false);
 const toastMessage = ref("");
 
-// Computed: Stock data for composable
-const stockData = computed(() => brands.value.map(b => ({ groupName: b })));
+// Computed: Brands list from stockData (for display/count if needed)
+const brands = computed(() => stockData.value.map(g => g.groupName).sort());
 
 // Use brand groups composable
 const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
@@ -559,7 +560,7 @@ const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
 const isNativeApp = computed(() => Capacitor.isNativePlatform());
 
 onMounted(async () => {
-  await loadBrands();
+  await loadStockData();
   
   // Hardware Back Button Listener
   App.addListener('backButton', ({ canGoBack }) => {
@@ -641,23 +642,10 @@ const scrollToGenerate = () => {
   });
 };
 
-const loadBrands = async () => {
-  try {
-    const res = await axios.get("https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json");
-    brands.value = [...new Set(res.data.map(g => g.groupName))].sort();
-  } catch (err) {
-    showToast.value = true;
-    toastMessage.value = "Failed to load brands — check internet";
-    setTimeout(() => showToast.value = false, 3000);
-  }
-};
-
 // --- PDF GENERATION LOGIC (Frontend Only) ---
 const generatePdfBlob = async (targetBrands) => {
-    // 1. Fetch Data
-    const jsonUrl = "https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json";
-    const response = await axios.get(jsonUrl);
-    const data = response.data;
+    // 1. Use Cached Data
+    const data = stockData.value;
     const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
     
     // 2. Setup PDF
