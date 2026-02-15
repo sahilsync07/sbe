@@ -1,2 +1,29 @@
+# Android
 frontend/android/app/release-key.keystore
+frontend/android/.gradle
+frontend/android/local.properties
+frontend/android/*/build
+frontend/android/.idea
+frontend/android/app/build
+frontend/android/captures
+frontend/android/.externalNativeBuild
+*.iml
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Mobile Design
 mobile-app-design/
