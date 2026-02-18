@@ -1,0 +1,1 @@
+import{_ as o}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as t,b as r,r as s,d as n}from"./index-BqitSvTu.js";const c={name:"App"},a={class:"min-h-screen"};function p(_,i,m,d,f,l){const e=s("router-view");return n(),t("div",a,[r(e)])}const $=o(c,[["render",p]]);export{$ as default};
