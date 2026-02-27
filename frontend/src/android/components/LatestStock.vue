@@ -12,9 +12,14 @@
           <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Sri Brundabana Enterprises</p>
         </div>
       </div>
-      <button v-if="state === 'folders'" @click="startDownload" class="text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors">
-        <i class="fa-solid fa-arrows-rotate mr-1"></i> Re-download
-      </button>
+      <div class="flex flex-col items-end gap-1">
+        <button v-if="state === 'folders'" @click="startDownload" class="text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i> Re-download
+        </button>
+        <span v-if="lastDownloadDate" class="text-[10px] text-slate-500">
+          <i class="fa-solid fa-clock mr-1"></i>{{ lastDownloadLabel }}
+        </span>
+      </div>
     </div>
 
     <!-- State 1: Landing -->
@@ -152,6 +157,8 @@
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 
+const STORAGE_KEY = 'sbe_latest_stock';
+
 const GROUPS = [
   { folder: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], onlyWithPhotos: true, minQty: 6, icon: '👟' },
   { folder: 'Florex', brands: ['Florex (Swastik)'], onlyWithPhotos: true, minQty: 6, icon: '🌸' },
@@ -201,6 +208,9 @@ export default {
       completedGroups: [],
       downloadedGroups: [], // { folder, icon, fileUris: [] }
 
+      // Persistence
+      lastDownloadDate: null,
+
       // Share state
       isSharing: false,
       sharingGroupName: '',
@@ -219,6 +229,17 @@ export default {
     },
     currentBatchSize() {
       return this.batchList[this.currentBatchIndex]?.length || 0;
+    },
+    lastDownloadLabel() {
+      if (!this.lastDownloadDate) return '';
+      const d = new Date(this.lastDownloadDate);
+      const now = new Date();
+      const diffH = (now - d) / (1000 * 60 * 60);
+      if (diffH < 1) return 'Downloaded just now';
+      if (diffH < 24) return `Downloaded ${Math.floor(diffH)}h ago`;
+      const diffD = Math.floor(diffH / 24);
+      if (diffD === 1) return 'Downloaded yesterday';
+      return `Downloaded ${diffD} days ago`;
     }
   },
 
@@ -231,11 +252,91 @@ export default {
       console.error('Failed to load stock data', e);
     }
     
-    // Pre-count total products
     this.totalProductCount = this.countProducts();
+
+    // Try to restore cached download
+    await this.restoreFromCache();
+
+    // Auto-download if stale (> 24 hours) or never downloaded
+    if (this.state === 'landing' || this.isStale()) {
+      this.startDownload();
+    }
   },
 
   methods: {
+    isStale() {
+      if (!this.lastDownloadDate) return true;
+      const diffH = (Date.now() - new Date(this.lastDownloadDate).getTime()) / (1000 * 60 * 60);
+      return diffH >= 24;
+    },
+
+    async restoreFromCache() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+
+        const data = JSON.parse(saved);
+        this.lastDownloadDate = data.downloadedAt;
+
+        if (!data.groups || data.groups.length === 0) return;
+
+        // Verify first file still exists
+        const testUri = data.groups[0]?.fileUris?.[0];
+        if (testUri) {
+          try {
+            await Filesystem.stat({ path: testUri });
+          } catch {
+            // Files gone, clear cache
+            localStorage.removeItem(STORAGE_KEY);
+            this.lastDownloadDate = null;
+            return;
+          }
+        }
+
+        // Restore groups
+        this.downloadedGroups = data.groups;
+        this.state = 'folders';
+      } catch (e) {
+        console.error('Failed to restore cache', e);
+      }
+    },
+
+    saveToCache() {
+      const data = {
+        downloadedAt: new Date().toISOString(),
+        groups: this.downloadedGroups.map(g => ({
+          folder: g.folder,
+          icon: g.icon,
+          fileUris: g.fileUris
+        }))
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      this.lastDownloadDate = data.downloadedAt;
+    },
+
+    async clearOldFiles() {
+      // Delete old downloaded files
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      
+      try {
+        const data = JSON.parse(saved);
+        for (const group of (data.groups || [])) {
+          for (const uri of (group.fileUris || [])) {
+            try {
+              // Extract just the filename from the URI
+              const parts = uri.split('/');
+              const fileName = parts[parts.length - 1];
+              await Filesystem.deleteFile({
+                path: fileName,
+                directory: Directory.Data
+              });
+            } catch { /* file may already be gone */ }
+          }
+        }
+      } catch { /* ignore */ }
+    },
+
     countProducts() {
       const normalize = (s) => s ? s.toLowerCase().trim() : '';
       const groupMap = new Map();
@@ -260,6 +361,9 @@ export default {
     },
 
     async startDownload() {
+      // Clear old files first
+      await this.clearOldFiles();
+
       this.state = 'downloading';
       this.globalDone = 0;
       this.completedGroups = [];
@@ -272,7 +376,6 @@ export default {
         groupMap.set(normalize(g.groupName), g);
       }
 
-      // Collect all products per group
       const allGroupProducts = [];
       let grandTotal = 0;
 
@@ -293,7 +396,6 @@ export default {
 
       this.globalTotal = grandTotal;
 
-      // Download each group
       for (const { config, products } of allGroupProducts) {
         this.currentGroupIcon = config.icon;
         this.currentGroupName = config.folder;
@@ -308,27 +410,23 @@ export default {
           this.groupPct = ((i + 1) / products.length) * 100;
 
           try {
-            // Fetch image
             const response = await fetch(prod.imageUrl);
             const blob = await response.blob();
-
-            // Convert to base64
             const base64 = await this.blobToBase64(blob);
 
-            // Determine filename
             const safeName = prod.productName.replace(/[^a-zA-Z0-9]/g, '_');
-            const fileName = `lateststock_${safeName}_${i}.jpg`;
+            const fileName = `ls_${safeName}_${i}.jpg`;
 
-            // Write to cache
+            // Save to Directory.Data (persistent, survives app restarts)
             const saved = await Filesystem.writeFile({
               path: fileName,
               data: base64,
-              directory: Directory.Cache
+              directory: Directory.Data
             });
 
             fileUris.push(saved.uri);
           } catch (err) {
-            console.error(`Failed to download: ${prod.productName}`, err);
+            console.error(`Failed: ${prod.productName}`, err);
           }
 
           this.globalDone++;
@@ -349,7 +447,8 @@ export default {
         });
       }
 
-      // Done downloading
+      // Persist to localStorage
+      this.saveToCache();
       this.state = 'folders';
       this.toast(`Downloaded ${this.globalDone} images across ${this.downloadedGroups.length} categories`);
     },
@@ -358,7 +457,6 @@ export default {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          // Remove data:*;base64, prefix
           const base64 = reader.result.split(',')[1];
           resolve(base64);
         };
@@ -376,7 +474,6 @@ export default {
       }
 
       if (batches.length === 1) {
-        // Direct share
         try {
           await Share.share({ files: batches[0] });
           this.toast(`Shared ${group.folder} (${batches[0].length} images)`);
@@ -386,7 +483,6 @@ export default {
           }
         }
       } else {
-        // Batch share
         this.sharingGroupName = group.folder;
         this.batchList = batches;
         this.currentBatchIndex = 0;
