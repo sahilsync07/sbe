@@ -8,6 +8,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { getLocalImageUri } from '../../utils/nativeCache';
 
 const props = defineProps({
   src: String,
@@ -29,13 +30,19 @@ const loadImage = async () => {
     objectUrl.value = null;
   }
 
-  // 1. Try Cache API first
+  const keyToCheck = props.cacheKey || props.src;
+
+  // 1. Try Native App Data Cache first (Zero Latency if already Delta Synced)
+  const nativeUri = await getLocalImageUri(keyToCheck);
+  if (nativeUri) {
+    displaySrc.value = nativeUri;
+    return;
+  }
+
+  // 2. Try Web API Cache
   if ('caches' in window) {
     try {
       const cache = await caches.open(CACHE_NAME);
-      
-      // Check cacheKey first (e.g. low-res cached version), then src
-      const keyToCheck = props.cacheKey || props.src;
       const cachedResponse = await cache.match(keyToCheck);
       
       if (cachedResponse) {
@@ -45,16 +52,15 @@ const loadImage = async () => {
         return;
       }
     } catch (e) {
-      console.warn('Cache check failed', e);
+      console.warn('Web Cache check failed', e);
     }
   }
 
-  // 2. Fallback to network (default behavior)
+  // 3. Fallback to network
   displaySrc.value = props.src;
 };
 
 const handleError = () => {
-  // If blob URL fails, try original URL as last resort
   if (displaySrc.value !== props.src) {
     displaySrc.value = props.src;
   }

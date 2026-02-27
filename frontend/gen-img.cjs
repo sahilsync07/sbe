@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * gen-img.cjs — Download product images from stock-data.json into a structured ZIP
- * With visual progress bars and colored output for Windows terminal
+ * gen-img.cjs — Download styled product catalog images from stock-data.json into a ZIP
+ * Uses Puppeteer to render the images exactly like the web app's PDF generator
+ * (Beige background, wave graphics, Helvetica bold text, etc.)
  */
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const JSZip = require('jszip');
 
 // ── ANSI Colors ─────────────────────────────────────────────────────────────
@@ -16,20 +16,11 @@ const c = {
     dim: '\x1b[2m',
     green: '\x1b[32m',
     yellow: '\x1b[33m',
-    blue: '\x1b[34m',
-    magenta: '\x1b[35m',
     cyan: '\x1b[36m',
     red: '\x1b[31m',
     white: '\x1b[37m',
-    bgGreen: '\x1b[42m',
-    bgBlue: '\x1b[44m',
-    bgMagenta: '\x1b[45m',
-    bgRed: '\x1b[41m',
-    bgWhite: '\x1b[47m',
-    bgGray: '\x1b[100m',
 };
 
-// ── Pretty helpers ──────────────────────────────────────────────────────────
 function progressBar(current, total, width = 30) {
     const pct = total > 0 ? current / total : 0;
     const filled = Math.round(pct * width);
@@ -44,10 +35,6 @@ function header(text) {
     console.log(`\n${c.cyan}${line}${c.reset}`);
     console.log(`${c.bright}${c.cyan}  ${text}${c.reset}`);
     console.log(`${c.cyan}${line}${c.reset}`);
-}
-
-function sectionHeader(icon, name, brandCount) {
-    console.log(`\n  ${icon}  ${c.bright}${c.yellow}${name}${c.reset} ${c.dim}(${brandCount} brand${brandCount > 1 ? 's' : ''})${c.reset}`);
 }
 
 function clearLine() {
@@ -87,59 +74,84 @@ const GROUPS = [
 
 const BATCH_SIZE = 99;
 
-// ── Download helper ─────────────────────────────────────────────────────────
-function downloadImage(url) {
-    return new Promise((resolve, reject) => {
-        const get = (u, redirects = 0) => {
-            if (redirects > 5) return reject(new Error('Too many redirects'));
-            https.get(u, (res) => {
-                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                    return get(res.headers.location, redirects + 1);
-                }
-                if (res.statusCode !== 200) {
-                    res.resume();
-                    return reject(new Error(`HTTP ${res.statusCode}`));
-                }
-                const chunks = [];
-                res.on('data', ch => chunks.push(ch));
-                res.on('end', () => resolve(Buffer.concat(chunks)));
-                res.on('error', reject);
-            }).on('error', reject);
-        };
-        get(url);
-    });
-}
-
-function getExtension(url) {
-    try {
-        const ext = path.extname(new URL(url).pathname).toLowerCase();
-        return ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-    } catch { return '.jpg'; }
-}
-
 function sanitize(name) {
     return name.replace(/[<>:"/\\|?*%]/g, '_').trim();
 }
 
+const getHtmlTemplate = (imgSrc, brandName, productName, quantity, showBrand) => `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    margin: 0; padding: 0;
+    width: 800px; height: 1131px;
+    background-color: #faf8f6;
+    font-family: Arial, Helvetica, sans-serif;
+    position: relative; overflow: hidden;
+  }
+  .wave-top { position: absolute; top: 0; left: 0; width: 100%; height: auto; }
+  .wave-bottom { position: absolute; bottom: 0; left: 0; width: 100%; height: auto; }
+  .brand {
+    position: absolute; top: 40px; width: 100%; text-align: center;
+    color: #c8c8c8; font-size: 45px; font-weight: bold; z-index: 10;
+  }
+  .img-container {
+    position: absolute; top: 120px; left: 40px; right: 40px; height: 750px;
+    display: flex; justify-content: center; align-items: center; z-index: 20;
+  }
+  .img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .details { position: absolute; bottom: 80px; width: 100%; text-align: center; z-index: 30; }
+  .name { font-size: 24px; font-weight: bold; color: #000; padding: 0 40px; }
+  .qty { font-size: 28px; font-weight: bold; color: #d40000; margin-top: 15px; }
+</style>
+</head>
+<body>
+  <svg class="wave-top" viewBox="0 0 600 150" preserveAspectRatio="none">
+    <path d="M 0 0 L 200 80 C 266 26, 400 33, 600 100" fill="transparent" stroke="#e0e0e0" stroke-width="4"/>
+  </svg>
+  <svg class="wave-bottom" viewBox="0 0 600 150" preserveAspectRatio="none" style="bottom:0; top:auto; height:150px;">
+    <path d="M 0 150 L 250 50 C 316 117, 433 134, 600 100" fill="transparent" stroke="#e0e0e0" stroke-width="4"/>
+  </svg>
+
+  <div class="brand" style="display: ${showBrand ? 'block' : 'none'}">${brandName}</div>
+  
+  <div class="img-container">
+    <img src="${imgSrc}" />
+  </div>
+
+  <div class="details">
+    <div class="name">${productName}</div>
+    <div class="qty">Qty: ${quantity}</div>
+  </div>
+</body>
+</html>
+`;
+
 // ── Main ────────────────────────────────────────────────────────────────────
 async function main() {
+    let puppeteer;
+    try {
+        puppeteer = require('puppeteer');
+    } catch (e) {
+        console.error(`\n${c.red}❌ Puppeteer is not installed.${c.reset}`);
+        console.error(`${c.yellow}Please run: npm install puppeteer${c.reset}\n`);
+        process.exit(1);
+    }
+
     const startTime = Date.now();
 
     // Banner
-    console.log(`\n${c.bgBlue}${c.bright}${c.white}                                                        ${c.reset}`);
-    console.log(`${c.bgBlue}${c.bright}${c.white}    📸  SBE CATALOG IMAGE GENERATOR                      ${c.reset}`);
-    console.log(`${c.bgBlue}${c.bright}${c.white}    Sri Brundabana Enterprises                            ${c.reset}`);
-    console.log(`${c.bgBlue}${c.bright}${c.white}                                                        ${c.reset}`);
+    console.log(`\n${c.bright}${c.cyan}📸  SBE CATALOG IMAGE GENERATOR (PUPPETEER)  ${c.reset}`);
 
     const dataPath = path.join(__dirname, 'public', 'assets', 'stock-data.json');
     if (!fs.existsSync(dataPath)) {
-        console.error(`\n${c.red}❌ stock-data.json not found at: ${dataPath}${c.reset}`);
+        console.error(`\n${c.red}❌ stock-data.json not found${c.reset}`);
         process.exit(1);
     }
 
     const stockData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
     const normalize = (s) => s ? s.toLowerCase().trim() : '';
-
     const groupMap = new Map();
     for (const g of stockData) {
         if (g.groupName === '_META_DATA_') continue;
@@ -147,8 +159,6 @@ async function main() {
     }
 
     header('SCANNING GROUPS');
-
-    // Pre-scan to count products
     const groupResults = [];
     let grandTotal = 0;
 
@@ -165,95 +175,63 @@ async function main() {
         }
         groupResults.push({ config, products });
         grandTotal += products.length;
-
-        const filters = [];
-        if (config.onlyWithPhotos) filters.push('📷 Photos Only');
-        if (config.minQty > 0) filters.push(`📊 Min ${config.minQty} pairs`);
-        const filterStr = filters.length ? `${c.dim}[${filters.join(', ')}]${c.reset}` : '';
-        const countStr = products.length > 0
-            ? `${c.green}${products.length} products${c.reset}`
-            : `${c.red}0 products${c.reset}`;
-        console.log(`  ${config.icon}  ${config.folder.padEnd(30)} ${countStr}  ${filterStr}`);
+        console.log(`  ${config.icon}  ${config.folder.padEnd(30)} ${c.green}${products.length} products${c.reset}`);
     }
 
-    console.log(`\n  ${c.bright}${c.magenta}TOTAL: ${grandTotal} images to download${c.reset}`);
+    console.log(`\n  ${c.bright}TOTAL: ${grandTotal} images to generate${c.reset}`);
 
-    // Download
-    header('DOWNLOADING IMAGES');
+    header('STARTING BROWSER ENGINE');
+    const browser = await puppeteer.launch({ headless: 'new' });
+    const page = await browser.newPage();
+    await page.setViewport({ width: 800, height: 1131 });
 
+    header('RENDERING IMAGES');
     const zip = new JSZip();
     let totalImages = 0;
-    let totalFailed = 0;
     let globalDone = 0;
 
     for (const { config, products } of groupResults) {
         if (products.length === 0) continue;
 
-        sectionHeader(config.icon, config.folder, config.brands.length);
+        console.log(`\n  ${config.icon}  ${c.bright}${c.yellow}${config.folder}${c.reset}`);
+        let isFirstInBrand = true;
+        let pidx = 0;
 
-        const needsBatching = products.length > BATCH_SIZE;
-        if (needsBatching) {
-            const batches = Math.ceil(products.length / BATCH_SIZE);
-            console.log(`     ${c.yellow}⚠ ${products.length} images → splitting into ${batches} batches of ${BATCH_SIZE}${c.reset}`);
-        }
-
-        for (let i = 0; i < products.length; i++) {
-            const prod = products[i];
-            const idx = i + 1;
-            const ext = getExtension(prod.imageUrl);
-            const fileName = `${sanitize(prod.productName)}${ext}`;
-
-            let folderPath;
-            if (needsBatching) {
-                const batchNum = Math.ceil(idx / BATCH_SIZE);
-                folderPath = `${config.folder}/Batch ${batchNum}`;
-            } else {
-                folderPath = config.folder;
-            }
-
-            const shortName = prod.productName.length > 35
-                ? prod.productName.substring(0, 35) + '...'
-                : prod.productName;
+        for (const prod of products) {
+            pidx++;
+            const fileName = `${sanitize(prod.productName)}.jpg`;
+            const folderPath = products.length > BATCH_SIZE
+                ? `${config.folder}/Batch ${Math.ceil(pidx / BATCH_SIZE)}`
+                : config.folder;
 
             clearLine();
-            process.stdout.write(`     ${progressBar(idx, products.length)} ${c.dim}${idx}/${products.length}${c.reset} ${c.white}${shortName}${c.reset}`);
+            process.stdout.write(`     ${progressBar(pidx, products.length)} `);
+
+            const html = getHtmlTemplate(prod.imageUrl, prod.brandName, prod.productName, prod.quantity, isFirstInBrand);
+            isFirstInBrand = false;
 
             try {
-                const imgData = await downloadImage(prod.imageUrl);
-                zip.folder(folderPath).file(fileName, imgData);
+                // Wait until image is fully loaded via networkidle0
+                await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
+                const buffer = await page.screenshot({ type: 'jpeg', quality: 85, clip: { x: 0, y: 0, width: 800, height: 1131 } });
+                zip.folder(folderPath).file(fileName, buffer);
                 totalImages++;
             } catch (err) {
                 clearLine();
-                console.log(`     ${c.red}✗ FAILED: ${shortName} (${err.message})${c.reset}`);
-                totalFailed++;
+                console.log(`     ${c.red}✗ FAILED: ${prod.productName} (${err.message})${c.reset} `);
             }
-
-            globalDone++;
         }
-
-        clearLine();
-        console.log(`     ${c.green}✓ ${config.folder}: ${products.length} images done${c.reset}`);
+        console.log(`\n     ${c.green}✓ ${config.folder} done${c.reset} `);
     }
 
-    // Generate ZIP
-    header('GENERATING ZIP FILE');
+    await browser.close();
 
-    const zipFileName = 'latest-stock.zip';
-    const outDir = path.join(__dirname, '..');
-    const zipPath = path.join(outDir, zipFileName);
-    const extractDir = path.join(outDir, 'latest-stock');
+    header('GENERATING ZIP ARCHIVE');
+    const zipPath = path.join(__dirname, '..', 'latest-stock.zip');
+    const extractDir = path.join(__dirname, '..', 'latest-stock');
 
-    // Delete old zip and folder if they exist
-    if (fs.existsSync(zipPath)) {
-        fs.unlinkSync(zipPath);
-        console.log(`  ${c.yellow}🗑  Deleted old ${zipFileName}${c.reset}`);
-    }
-    if (fs.existsSync(extractDir)) {
-        fs.rmSync(extractDir, { recursive: true, force: true });
-        console.log(`  ${c.yellow}🗑  Deleted old latest-stock/ folder${c.reset}`);
-    }
-
-    console.log(`\n  ${c.cyan}📦 Compressing ${totalImages} images...${c.reset}`);
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    if (fs.existsSync(extractDir)) fs.rmSync(extractDir, { recursive: true, force: true });
 
     let lastPct = -1;
     const content = await zip.generateAsync(
@@ -263,55 +241,25 @@ async function main() {
             if (pct !== lastPct && pct % 5 === 0) {
                 lastPct = pct;
                 clearLine();
-                process.stdout.write(`     ${progressBar(pct, 100)} ${c.dim}Compressing...${c.reset}`);
+                process.stdout.write(`     ${progressBar(pct, 100)} `);
             }
         }
     );
 
-    clearLine();
     fs.writeFileSync(zipPath, content);
-    const sizeMB = (content.length / (1024 * 1024)).toFixed(1);
-
-    // Extract ZIP to latest-stock/ folder
-    header('EXTRACTING FILES');
-    console.log(`\n  ${c.cyan}📂 Extracting to latest-stock/ ...${c.reset}`);
+    console.log(`\n\n  ${c.cyan}📂 Extracting to latest - stock / ...${c.reset} `);
 
     const extractZip = await JSZip.loadAsync(content);
-    const entries = Object.entries(extractZip.files);
-    let extractCount = 0;
-
-    for (const [relativePath, zipEntry] of entries) {
+    for (const [relativePath, zipEntry] of Object.entries(extractZip.files)) {
         const destPath = path.join(extractDir, relativePath);
-        if (zipEntry.dir) {
-            fs.mkdirSync(destPath, { recursive: true });
-        } else {
+        if (zipEntry.dir) fs.mkdirSync(destPath, { recursive: true });
+        else {
             fs.mkdirSync(path.dirname(destPath), { recursive: true });
-            const data = await zipEntry.async('nodebuffer');
-            fs.writeFileSync(destPath, data);
-            extractCount++;
+            fs.writeFileSync(destPath, await zipEntry.async('nodebuffer'));
         }
     }
 
-    console.log(`  ${c.green}✓ Extracted ${extractCount} files${c.reset}`);
-
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-
-    // Final summary
-    console.log('');
-    console.log(`${c.bgGreen}${c.bright}${c.white}                                                        ${c.reset}`);
-    console.log(`${c.bgGreen}${c.bright}${c.white}    ✅  ALL DONE!                                        ${c.reset}`);
-    console.log(`${c.bgGreen}${c.bright}${c.white}                                                        ${c.reset}`);
-    console.log('');
-    console.log(`  ${c.bright}ZIP:${c.reset}        ${c.cyan}${zipPath}${c.reset}`);
-    console.log(`  ${c.bright}Folder:${c.reset}     ${c.cyan}${extractDir}${c.reset}`);
-    console.log(`  ${c.bright}Size:${c.reset}       ${c.yellow}${sizeMB} MB${c.reset}`);
-    console.log(`  ${c.bright}Images:${c.reset}     ${c.green}${totalImages} downloaded${c.reset}${totalFailed > 0 ? `  ${c.red}${totalFailed} failed${c.reset}` : ''}`);
-    console.log(`  ${c.bright}Time:${c.reset}       ${c.magenta}${elapsed}s${c.reset}`);
-    console.log('');
+    console.log(`\n  ${c.green}✓ ALL DONE in ${((Date.now() - startTime) / 1000).toFixed(1)}s${c.reset} \n`);
 }
 
-main().catch(err => {
-    console.error(`\n${c.red}Fatal error: ${err.message}${c.reset}`);
-    console.error(err.stack);
-    process.exit(1);
-});
+main().catch(console.error);
