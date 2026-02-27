@@ -3,8 +3,6 @@ import { reactive, computed } from 'vue';
 
 export const store = reactive({
     cart: [],
-    isAdmin: false,
-    isSuperAdmin: false,
     searchQuery: '',
     lastSyncTime: null,
     isSyncing: false,

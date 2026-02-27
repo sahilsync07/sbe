@@ -1,14 +1,35 @@
-
 import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
+import { Preferences } from '@capacitor/preferences';
+
+// Shared state so multiple components calling useAdmin() get the same ref
+const isAdmin = ref(false);
+const isSuperAdmin = ref(false);
+let initialized = false;
 
 export function useAdmin() {
-    // Restore persisted admin state
-    const savedRole = localStorage.getItem('sbe_admin_role');
-    const isAdmin = ref(savedRole === 'admin');
-    const isSuperAdmin = ref(savedRole === 'superadmin');
+    // Restore persisted admin state asynchronously once
+    const checkAdminState = async () => {
+        if (initialized) return;
+        initialized = true;
+        try {
+            const { value } = await Preferences.get({ key: 'sbe_admin_role' });
+            if (value === 'admin') {
+                isAdmin.value = true;
+                isSuperAdmin.value = false;
+            } else if (value === 'superadmin') {
+                isAdmin.value = false;
+                isSuperAdmin.value = true;
+            }
+        } catch (e) {
+            console.error('Failed to load admin state', e);
+        }
+    };
 
-    const promptAdminLogin = () => {
+    // Call immediately (it will only run once)
+    checkAdminState();
+
+    const promptAdminLogin = async () => {
         // If already admin, skip
         if (isAdmin.value || isSuperAdmin.value) return;
 
@@ -18,12 +39,12 @@ export function useAdmin() {
         if (password === "admin123") {
             isAdmin.value = true;
             isSuperAdmin.value = false;
-            localStorage.setItem('sbe_admin_role', 'admin');
+            await Preferences.set({ key: 'sbe_admin_role', value: 'admin' });
             toast.success("Admin Mode Enabled", { autoClose: 2000 });
         } else if (password === "superadmin") {
             isAdmin.value = false;
             isSuperAdmin.value = true;
-            localStorage.setItem('sbe_admin_role', 'superadmin');
+            await Preferences.set({ key: 'sbe_admin_role', value: 'superadmin' });
             toast.success("Super Admin Mode Enabled", { autoClose: 2000 });
         } else {
             toast.error("Incorrect password", { autoClose: 3000 });
@@ -33,6 +54,7 @@ export function useAdmin() {
     return {
         isAdmin,
         isSuperAdmin,
-        promptAdminLogin
+        promptAdminLogin,
+        checkAdminState
     };
 }
