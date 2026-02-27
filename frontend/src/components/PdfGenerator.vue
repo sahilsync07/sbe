@@ -367,6 +367,13 @@
                           </div>
                        </label>
                     </div>
+                    <!-- Batch checkbox (only when combined) -->
+                    <div v-if="zipMode === 'combined'" class="mt-3 px-1">
+                       <label class="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" v-model="zipBatchMode" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300" />
+                          <span class="text-sm font-medium text-slate-600">Split into batches of 99 images per subfolder</span>
+                       </label>
+                    </div>
                  </div>
 
                  <!-- Action Area -->
@@ -558,6 +565,7 @@ const minQtyEnabled = ref(false);
 const minQty = ref(5);
 const pdfMode = ref("separate");
 const zipMode = ref("separate");
+const zipBatchMode = ref(false);
 const isGenerating = ref(false);
 const isPdfGenerating = ref(false);
 const isZipGenerating = ref(false);
@@ -978,7 +986,13 @@ const downloadAsZip = async () => {
                 const imgBlob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
                 if (isCombined) {
                     globalPageCounter++;
-                    target.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
+                    if (zipBatchMode.value) {
+                        const batchNum = Math.ceil(globalPageCounter / 99);
+                        const batchFolder = zip.folder(`Batch ${batchNum}`);
+                        batchFolder.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
+                    } else {
+                        target.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
+                    }
                 } else {
                     target.file(`${brand}_Page_${pageNum}.jpg`, imgBlob);
                 }
