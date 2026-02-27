@@ -50,7 +50,9 @@ export const BRAND_LISTS = {
         'Vardhman Plastics',
         'YASH FOOTWEAR',
         'KRishna Agency',
-        'SHYAM'
+        'SHYAM',
+        'AVTAR V V POLYMERS',
+        'ATHARV PLASTIC'
     ],
     generalBoxPacking: [
         'ADDA',

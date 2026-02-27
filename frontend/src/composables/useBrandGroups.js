@@ -71,19 +71,19 @@ export function useBrandGroups(stockData, config, searchQuery) {
                 categorized = true;
             }
             if (sets.midBrands.has(nName)) {
-                groups.midBrands.push({ group });
+                groups.midBrands.push(group);
                 categorized = true;
             }
             if (sets.generalLoosePacking.has(nName)) {
-                groups.generalLoosePackingGroups.push({ group });
+                groups.generalLoosePackingGroups.push(group);
                 categorized = true;
             }
             if (sets.generalBoxPacking.has(nName)) {
-                groups.generalBoxPackingGroups.push({ group });
+                groups.generalBoxPackingGroups.push(group);
                 categorized = true;
             }
             if (sets.socks.has(nName)) {
-                groups.socksGroups.push({ group });
+                groups.socksGroups.push(group);
                 categorized = true;
             }
             if (sets.general.has(nName)) {

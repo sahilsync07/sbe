@@ -87,14 +87,14 @@
               <div class="grid grid-cols-2 gap-1">
                 <div 
                   v-for="item in groupedSidebar.generalLoosePackingGroups" 
-                  :key="item.group.groupName"
+                  :key="item.groupName"
                   class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
-                  :class="activeScrollGroup === item.group.groupName ? 'bg-teal-100 text-teal-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
-                  @click="handleSidebarClick(item.group)"
+                  :class="activeScrollGroup === item.groupName ? 'bg-teal-100 text-teal-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                  @click="handleSidebarClick(item)"
                 >
                   <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
-                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-teal-200 group-hover/brand:bg-teal-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-teal-600' : ''"></span>
-                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-teal-200 group-hover/brand:bg-teal-400 transition-colors" :class="activeScrollGroup === item.groupName ? 'bg-teal-600' : ''"></span>
+                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.groupName) }}</span>
                   </div>
                 </div>
               </div>
@@ -106,14 +106,14 @@
               <div class="grid grid-cols-2 gap-1">
                 <div 
                   v-for="item in groupedSidebar.generalBoxPackingGroups" 
-                  :key="item.group.groupName"
+                  :key="item.groupName"
                   class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
-                  :class="activeScrollGroup === item.group.groupName ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
-                  @click="handleSidebarClick(item.group)"
+                  :class="activeScrollGroup === item.groupName ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                  @click="handleSidebarClick(item)"
                 >
                   <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
-                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-indigo-200 group-hover/brand:bg-indigo-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-indigo-600' : ''"></span>
-                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-indigo-200 group-hover/brand:bg-indigo-400 transition-colors" :class="activeScrollGroup === item.groupName ? 'bg-indigo-600' : ''"></span>
+                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.groupName) }}</span>
                   </div>
                 </div>
               </div>
@@ -125,14 +125,14 @@
               <div class="grid grid-cols-2 gap-1">
                 <div 
                   v-for="item in groupedSidebar.midBrands" 
-                  :key="item.group.groupName"
+                  :key="item.groupName"
                   class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
-                  :class="activeScrollGroup === item.group.groupName ? 'bg-purple-100 text-purple-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
-                  @click="handleSidebarClick(item.group)"
+                  :class="activeScrollGroup === item.groupName ? 'bg-purple-100 text-purple-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                  @click="handleSidebarClick(item)"
                 >
                   <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
-                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-purple-200 group-hover/brand:bg-purple-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-purple-600' : ''"></span>
-                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-purple-200 group-hover/brand:bg-purple-400 transition-colors" :class="activeScrollGroup === item.groupName ? 'bg-purple-600' : ''"></span>
+                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.groupName) }}</span>
                   </div>
                 </div>
               </div>
@@ -144,14 +144,14 @@
               <div class="grid grid-cols-2 gap-1">
                 <div 
                   v-for="item in groupedSidebar.socksGroups" 
-                  :key="item.group.groupName"
+                  :key="item.groupName"
                   class="flex items-center justify-between rounded-lg px-2 py-1 transition-colors group/brand cursor-pointer"
-                  :class="activeScrollGroup === item.group.groupName ? 'bg-cyan-100 text-cyan-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
-                  @click="handleSidebarClick(item.group)"
+                  :class="activeScrollGroup === item.groupName ? 'bg-cyan-100 text-cyan-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'"
+                  @click="handleSidebarClick(item)"
                 >
                   <div class="flex items-center gap-2 flex-1 min-w-0 outline-none">
-                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-cyan-200 group-hover/brand:bg-cyan-400 transition-colors" :class="activeScrollGroup === item.group.groupName ? 'bg-cyan-600' : ''"></span>
-                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.group.groupName) }}</span>
+                      <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-cyan-200 group-hover/brand:bg-cyan-400 transition-colors" :class="activeScrollGroup === item.groupName ? 'bg-cyan-600' : ''"></span>
+                      <span class="font-medium text-sm leading-snug break-words">{{ formatProductName(item.groupName) }}</span>
                   </div>
                 </div>
               </div>

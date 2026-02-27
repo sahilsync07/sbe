@@ -77,13 +77,13 @@
             <div class="grid grid-cols-2 gap-2">
                <div 
                  v-for="item in groupedSidebar.generalLoosePackingGroups" 
-                 :key="item.group.groupName"
+                 :key="item.groupName"
                  class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white border border-transparent hover:border-teal-200 shadow-sm hover:shadow-md select-none"
-                 :class="{ '!bg-teal-50 !border-teal-200 ring-1 ring-teal-200': selectedBrands.includes(item.group.groupName) }"
-                 @click="toggleBrand(item.group.groupName)"
+                 :class="{ '!bg-teal-50 !border-teal-200 ring-1 ring-teal-200': selectedBrands.includes(item.groupName) }"
+                 @click="toggleBrand(item.groupName)"
                >
-                  <input type="checkbox" :checked="selectedBrands.includes(item.group.groupName)" class="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-gray-300 pointer-events-none" />
-                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-teal-800': selectedBrands.includes(item.group.groupName) }">{{ formatProductName(item.group.groupName) }}</span>
+                  <input type="checkbox" :checked="selectedBrands.includes(item.groupName)" class="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-gray-300 pointer-events-none" />
+                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-teal-800': selectedBrands.includes(item.groupName) }">{{ formatProductName(item.groupName) }}</span>
                </div>
             </div>
          </div>
@@ -97,13 +97,13 @@
             <div class="grid grid-cols-2 gap-2">
                <div 
                  v-for="item in groupedSidebar.generalBoxPackingGroups" 
-                 :key="item.group.groupName"
+                 :key="item.groupName"
                  class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white border border-transparent hover:border-indigo-200 shadow-sm hover:shadow-md select-none"
-                 :class="{ '!bg-indigo-50 !border-indigo-200 ring-1 ring-indigo-200': selectedBrands.includes(item.group.groupName) }"
-                 @click="toggleBrand(item.group.groupName)"
+                 :class="{ '!bg-indigo-50 !border-indigo-200 ring-1 ring-indigo-200': selectedBrands.includes(item.groupName) }"
+                 @click="toggleBrand(item.groupName)"
                >
-                  <input type="checkbox" :checked="selectedBrands.includes(item.group.groupName)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 pointer-events-none" />
-                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-indigo-800': selectedBrands.includes(item.group.groupName) }">{{ formatProductName(item.group.groupName) }}</span>
+                  <input type="checkbox" :checked="selectedBrands.includes(item.groupName)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 pointer-events-none" />
+                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-indigo-800': selectedBrands.includes(item.groupName) }">{{ formatProductName(item.groupName) }}</span>
                </div>
             </div>
          </div>
@@ -608,11 +608,8 @@ const isCategorySelected = (category) => {
     if (!group || group.length === 0) return false;
     
     return group.every(item => {
-         // topBrands, midBrands, socksGroups, generalLoosePackingGroups, and generalBoxPackingGroups have { group: { groupName }, ... } structure
-         // Others have { groupName } structure
-         const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups' || category === 'generalLoosePackingGroups' || category === 'generalBoxPackingGroups') 
-             ? item.group.groupName 
-             : item.groupName;
+         // Only topBrands uses { group: { groupName }, logo } structure
+         const name = category === 'topBrands' ? item.group.groupName : item.groupName;
          return selectedBrands.value.includes(name);
     });
 };
@@ -624,10 +621,8 @@ const toggleCategory = (category, event) => {
     if (!group) return;
 
     group.forEach(item => {
-        // topBrands, midBrands, socksGroups, generalLoosePackingGroups, and generalBoxPackingGroups have { group: { groupName }, ... } structure
-        const name = (category === 'topBrands' || category === 'midBrands' || category === 'socksGroups' || category === 'generalLoosePackingGroups' || category === 'generalBoxPackingGroups') 
-            ? item.group.groupName 
-            : item.groupName;
+        // Only topBrands uses { group: { groupName }, logo } structure
+        const name = category === 'topBrands' ? item.group.groupName : item.groupName;
         if (isChecked) {
             if (!selectedBrands.value.includes(name)) selectedBrands.value.push(name);
         } else {

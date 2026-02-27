@@ -68,6 +68,46 @@
             </div>
          </div>
 
+         <!-- General Loose Packing (Teal) -->
+         <div v-if="groupedSidebar.generalLoosePackingGroups.length > 0" class="p-2 transition-all rounded-2xl bg-teal-50/30 hover:bg-teal-50/60 border border-transparent hover:border-teal-100">
+            <div class="flex items-center justify-between px-2 mb-3">
+               <span class="text-xs font-black text-teal-600 uppercase tracking-widest pl-1">General Loose Packing</span>
+               <input type="checkbox" :checked="isCategorySelected('generalLoosePackingGroups')" @change="toggleCategory('generalLoosePackingGroups', $event)" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+               <div 
+                 v-for="item in groupedSidebar.generalLoosePackingGroups" 
+                 :key="item.groupName"
+                 class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white border border-transparent hover:border-teal-200 shadow-sm hover:shadow-md select-none"
+                 :class="{ '!bg-teal-50 !border-teal-200 ring-1 ring-teal-200': selectedBrands.includes(item.groupName) }"
+                 @click="toggleBrand(item.groupName)"
+               >
+                  <input type="checkbox" :checked="selectedBrands.includes(item.groupName)" class="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-gray-300 pointer-events-none" />
+                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-teal-800': selectedBrands.includes(item.groupName) }">{{ formatProductName(item.groupName) }}</span>
+               </div>
+            </div>
+         </div>
+
+         <!-- General Box Packing (Indigo) -->
+         <div v-if="groupedSidebar.generalBoxPackingGroups.length > 0" class="p-2 transition-all rounded-2xl bg-indigo-50/30 hover:bg-indigo-50/60 border border-transparent hover:border-indigo-100">
+            <div class="flex items-center justify-between px-2 mb-3">
+               <span class="text-xs font-black text-indigo-600 uppercase tracking-widest pl-1">General Box Packing</span>
+               <input type="checkbox" :checked="isCategorySelected('generalBoxPackingGroups')" @change="toggleCategory('generalBoxPackingGroups', $event)" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+               <div 
+                 v-for="item in groupedSidebar.generalBoxPackingGroups" 
+                 :key="item.groupName"
+                 class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white border border-transparent hover:border-indigo-200 shadow-sm hover:shadow-md select-none"
+                 :class="{ '!bg-indigo-50 !border-indigo-200 ring-1 ring-indigo-200': selectedBrands.includes(item.groupName) }"
+                 @click="toggleBrand(item.groupName)"
+               >
+                  <input type="checkbox" :checked="selectedBrands.includes(item.groupName)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 pointer-events-none" />
+                  <span class="text-sm font-semibold text-slate-700 leading-tight" :class="{ 'text-indigo-800': selectedBrands.includes(item.groupName) }">{{ formatProductName(item.groupName) }}</span>
+               </div>
+            </div>
+         </div>
+
          <!-- Mid Brands (Purple) -->
          <div v-if="groupedSidebar.midBrands.length > 0" class="p-2 transition-all rounded-2xl bg-purple-50/30 hover:bg-purple-50/60 border border-transparent hover:border-purple-100">
             <div class="flex items-center justify-between px-2 mb-3">
@@ -483,133 +523,52 @@ import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { ref } from 'vue';
+import { useBrandGroups } from '../../composables/useBrandGroups';
+import { useStockData } from '../../composables/useStockData';
 
 export default {
+  setup() {
+    const { stockData, loadStockData } = useStockData(ref(false));
+    const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
+    const brands = ref([]);
+    
+    return { stockData, loadStockData, groupedSidebar, brands };
+  },
   data() {
     return {
-      brands: [],
       selectedBrands: [],
       onlyWithPhotos: true,
       minQtyEnabled: false,
       minQty: 5,
-      // Duplicate minQty removed
       pdfMode: "separate",
       isGenerating: false,
       isPdfGenerating: false,
-      // Duplicate isPdfGenerating removed
       isZipGenerating: false,
       isSharing: false,
       
       // Batch Sharing State
       showBatchModal: false,
-      batchList: [], // Array of Array of Strings (URIs)
+      batchList: [],
       currentBatchIndex: 0,
 
-      mobileTab: 'brands', // 'brands' | 'export'
+      mobileTab: 'brands',
       currentBrand: "",
       completedCount: 0,
       showToast: false,
       toastMessage: "",
-
-      // Brand Lists Configuration
-      bansalList: [
-        'SRG Enterprises', 'NAV DURGA ENTERPRISES', 'AAGAM POLYMERE', 
-        'R K TRADERS', 'A G ENTERPRISES', 'NEXUS', 'YASH FOOTWEAR',
-        'AAGAM POLYMER', 'Vardhman Plastics'
-      ],
-      airsonList: ['AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR'],
-      kohinoorList: ['KOHINOOR', 'UAM FOOTWEAR'],
-      nareshList: ['KRishna Agency', 'SHYAM'],
-      socksList: ['BArun', 'PAreek Soucks', 'LEo'],
-      paragonList: [
-        'Paragon Gents', 'Paragon Ladies', 'Eeken', 'Meriva', 'Paragon',  
-        'Paragon Blot', 'Max', 'Paralite', 'P-TOES', 'Hawai Chappal', 
-        'Stimulus', 'Escoute', 'Safety', 'Walkaholic', 'School'
-      ],
-      topBrandsConfig: [
-        { name: 'Cubix', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-        { name: 'CUBIX 2', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-        { name: 'Florex (Swastik)', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg' },
-        { name: 'RELIANCE FOOTWEAR', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png' },
-        { name: 'Action', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' }
-      ],
-      midBrandsConfig: [
-         'AIRFAX', 'TEUZ', 'Paris', 'Hitway', 'PANKAJ PLASTIC', 'VAISHNO PLASTIC', 'TARA', 'ADDA', 'ASHU', 'ADDOXY'
-      ],
-      generalList: ['Maruti Plastics', 'Magnet', 'J.K Plastic', 
-        'R R POLYPLAST', 'AGRA'
-      ],
     };
   },
 
   computed: {
-    groupedSidebar() {
-       const normalize = (name) => name ? name.toLowerCase().trim() : '';
-
-       // Helper sets
-       const paragonSet = new Set(this.paragonList.map(n => normalize(n)));
-       const topBrandNames = this.topBrandsConfig.map(c => normalize(c.name));
-       const topBrandSet = new Set(topBrandNames);
-       const midBrandSet = new Set(this.midBrandsConfig.map(n => normalize(n)));
-       const socksSet = new Set(this.socksList.map(n => normalize(n)));
-       const generalSet = new Set(this.generalList.map(n => normalize(n)));
-
-       // Club sets
-       const bansalSet = new Set(this.bansalList.map(n => normalize(n)));
-       const airsonSet = new Set(this.airsonList.map(n => normalize(n)));
-       const kohinoorSet = new Set(this.kohinoorList.map(n => normalize(n)));
-       const nareshSet = new Set(this.nareshList.map(n => normalize(n)));
-
-       const paragon = [];
-       const topBrands = [];
-       const midBrands = [];
-       const socksGroups = [];
-       const general = [];
-       const bansalGroups = [];
-       const airsonGroups = [];
-       const kohinoorGroups = [];
-       const nareshGroups = [];
-       const others = [];
-       
-       const brands = this.brands.map(b => ({ groupName: b }));
-
-       brands.forEach(group => {
-           const nName = normalize(group.groupName);
-           
-           if (paragonSet.has(nName)) {
-               paragon.push(group);
-           } else if (topBrandSet.has(nName)) {
-               const config = this.topBrandsConfig.find(c => normalize(c.name) === nName);
-               topBrands.push({ group, logo: config ? config.logo : null }); 
-           } else if (midBrandSet.has(nName)) {
-               midBrands.push(group);
-           } else if (socksSet.has(nName)) {
-               socksGroups.push(group);
-           } else if (generalSet.has(nName)) {
-               general.push(group);
-           } else if (bansalSet.has(nName)) {
-               bansalGroups.push(group);
-           } else if (airsonSet.has(nName)) {
-               airsonGroups.push(group);
-           } else if (kohinoorSet.has(nName)) {
-               kohinoorGroups.push(group);
-           } else if (nareshSet.has(nName)) {
-               nareshGroups.push(group);
-           } else {
-               others.push(group);
-           }
-       });
-
-       return { paragon, topBrands, midBrands, socksGroups, general, bansalGroups, airsonGroups, kohinoorGroups, nareshGroups, others };
-    },
     isNativeApp() {
         return Capacitor.isNativePlatform();
     }
   },
 
   async mounted() {
-    this.loadBrands();
-    this.loadBrands();
+    await this.loadStockData();
+    this.brands = this.stockData.map(g => g.groupName).sort();
     
     // Hardware Back Button Listener
     App.addListener('backButton', () => {
@@ -637,7 +596,6 @@ export default {
             "Eeken": "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
             "Escoute": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg"
         };
-        // Fuzzy match logic
         const lowerName = brandName.toLowerCase();
         const key = Object.keys(logos).find(k => lowerName.includes(k.toLowerCase()));
         return key ? logos[key] : null;
@@ -653,14 +611,8 @@ export default {
         const group = this.groupedSidebar[category];
         if (!group || group.length === 0) return false;
         
-        // For topBrands, item has { group: { groupName: ... } }, for others item is { groupName: ... }
-        // Actually looking at update, topBrands now has structure: { group: { groupName: ... }, logo: ... }
-        // BUT wait, my computed property for topBrands pushes: { group, logo: ... }
-        // So item.group.groupName is correct.
-        // For others, we pushed `group` which is { groupName: ... }.
-        // So we need to handle that distinction.
-        
         return group.every(item => {
+             // Only topBrands uses { group: { groupName }, logo } structure
              const name = category === 'topBrands' ? item.group.groupName : item.groupName;
              return this.selectedBrands.includes(name);
         });
@@ -672,6 +624,7 @@ export default {
         if (!group) return;
 
         group.forEach(item => {
+            // Only topBrands uses { group: { groupName }, logo } structure
             const name = category === 'topBrands' ? item.group.groupName : item.groupName;
             if (isChecked) {
                 if (!this.selectedBrands.includes(name)) this.selectedBrands.push(name);
@@ -699,10 +652,8 @@ export default {
 
     // --- PDF GENERATION LOGIC (Frontend Only) ---
     async generatePdfBlob(targetBrands) {
-        // 1. Fetch Data
-        const jsonUrl = "https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json";
-        const response = await axios.get(jsonUrl);
-        const data = response.data;
+        // 1. Use Cached Data
+        const data = this.stockData;
         const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
         
         // 2. Setup PDF
