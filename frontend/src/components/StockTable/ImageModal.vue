@@ -95,19 +95,18 @@
                 @touchmove="handleTouchMove" 
                 @touchend="handleTouchEnd"
             >
-                <!-- Full Screen Toolbar (Fixed) -->
+                <!-- Full Screen Top Bar -->
                 <div class="fixed top-0 left-0 right-0 px-4 flex justify-between items-start z-[160] bg-gradient-to-b from-black/80 to-transparent pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 0px) + 16px)">
-                    <button @click="toggleFullScreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white pointer-events-auto active:scale-95 transition-all shadow-lg border border-white/10">
+                    <button @click="$emit('close', { isPop: false })" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white pointer-events-auto active:scale-95 transition-all shadow-lg border border-white/10">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                     <div class="text-white text-right pointer-events-auto drop-shadow-md">
-                        <div class="text-lg font-bold font-heading">{{ getCleanProductName(currentProduct.productName) }}</div>
-                        <div class="text-sm text-slate-300">{{ formatGroupName(currentGroupName) }}</div>
+                        <div class="text-sm text-slate-400 font-medium">{{ formatGroupName(currentGroupName) }}</div>
                     </div>
                 </div>
 
                 <!-- Scrollable Container for Image -->
-                <div class="min-h-full flex items-center justify-center py-24 px-2">
+                <div class="min-h-full flex items-center justify-center pt-20 pb-56 px-2">
                     <CachedImage
                         :src="getOptimizedUrl(currentProduct.imageUrl)"
                         :cache-key="getCacheKeyUrl(currentProduct.imageUrl)"
@@ -115,8 +114,72 @@
                         class="w-full h-auto max-w-4xl object-contain drop-shadow-2xl"
                     />
                 </div>
+
+                <!-- Bottom Details Bar (Fixed) -->
+                <div class="fixed bottom-0 left-0 right-0 z-[160] bg-gradient-to-t from-black via-black/95 to-transparent pointer-events-auto" style="padding-bottom: max(env(safe-area-inset-bottom, 8px), 12px)">
+                    <div class="px-5 pt-8 pb-3 space-y-4">
+                        <!-- Product Info -->
+                        <div class="flex items-end justify-between gap-3">
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-xl font-['Clash_Display'] font-bold text-white leading-tight truncate">{{ getCleanProductName(currentProduct.productName) }}</h2>
+                                <div class="flex flex-wrap items-center gap-2 mt-2">
+                                    <span v-if="getProductColor(currentProduct.productName)" class="flex items-center gap-1.5 px-2 py-0.5 bg-white/10 rounded-full">
+                                        <span class="w-2 h-2 rounded-full ring-1 ring-white/30" :style="{ backgroundColor: getProductColor(currentProduct.productName).hex }"></span>
+                                        <span class="text-[10px] font-bold text-slate-300 capitalize">{{ getProductColor(currentProduct.productName).text }}</span>
+                                    </span>
+                                    <span v-if="getProductSize(currentProduct.productName)" class="px-2 py-0.5 bg-white/10 rounded-full text-[10px] font-bold text-slate-300">
+                                        {{ getProductSize(currentProduct.productName) }}
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Price + Stock -->
+                            <div class="text-right flex-shrink-0">
+                                <div class="text-2xl font-['Clash_Display'] font-black text-white">
+                                    <span class="text-sm font-semibold text-slate-400 mr-0.5">₹</span>{{ getPriceInfo(currentProduct.productName).price }}
+                                </div>
+                                <div class="text-[10px] font-bold uppercase tracking-wider" :class="currentProduct.quantity < 5 ? 'text-amber-400' : 'text-emerald-400'">
+                                    {{ currentProduct.quantity }} Pairs
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cart Controls + Nav -->
+                        <div class="flex items-center gap-3">
+                            <!-- Nav Prev -->
+                            <button @click.stop="$emit('navigate', -1)" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 text-white active:scale-95 transition-all border border-white/10">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+
+                            <!-- Cart Button -->
+                            <button
+                                v-if="cartQty === 0"
+                                @click.stop="$emit('addToCart', currentProduct)"
+                                class="flex-1 py-3.5 bg-white text-black font-['Clash_Display'] font-bold text-base rounded-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 shadow-xl"
+                            >
+                                <i class="fa-solid fa-plus text-sm"></i>
+                                Add to Cart
+                            </button>
+
+                            <!-- Quantity Controls -->
+                            <div v-else class="flex-1 flex items-center bg-white/10 rounded-xl border border-white/10 h-12">
+                                <button @click.stop="$emit('updateCart', currentProduct, -1)" class="w-14 h-full flex items-center justify-center text-white text-xl font-bold active:scale-90 transition-all">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <span class="flex-1 text-center text-xl font-['Clash_Display'] font-black text-white">{{ cartQty }}</span>
+                                <button @click.stop="$emit('updateCart', currentProduct, 1)" class="w-14 h-full flex items-center justify-center text-white text-xl font-bold active:scale-90 transition-all">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <!-- Nav Next -->
+                            <button @click.stop="$emit('navigate', 1)" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 text-white active:scale-95 transition-all border border-white/10">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                     
-                <!-- Full Screen Nav Hints (Fixed) -->
+                <!-- Desktop Nav Hints -->
                 <button @click.stop="$emit('navigate', -1)" class="fixed left-4 top-1/2 -translate-y-1/2 z-[160] w-12 h-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all pointer-events-auto hidden lg:flex border border-white/10 shadow-lg">
                     <i class="fa-solid fa-chevron-left text-xl"></i>
                 </button>
@@ -212,7 +275,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { extractColor } from '../../utils/colors';
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
@@ -383,4 +446,13 @@ const toggleFullScreen = () => {
     isFullScreen.value = !isFullScreen.value;
   }
 };
+
+// Auto-enter fullscreen when modal opens
+watch(() => props.showImagePopup, (newVal) => {
+  if (newVal && props.currentProduct?.imageUrl) {
+    isFullScreen.value = true;
+  } else if (!newVal) {
+    isFullScreen.value = false;
+  }
+});
 </script>
