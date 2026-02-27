@@ -346,6 +346,29 @@
                     </div>
                  </div>
 
+                 <!-- ZIP Mode Card -->
+                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                       <i class="fa-solid fa-file-zipper text-yellow-500"></i> ZIP Mode
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                       <label class="cursor-pointer relative">
+                          <input type="radio" v-model="zipMode" value="separate" class="peer sr-only">
+                          <div class="p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-400 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 transition-all text-center">
+                             <span class="block font-bold text-slate-700 peer-checked:text-emerald-700 mb-1">Separate Folders</span>
+                             <span class="text-xs text-slate-500">One folder per brand</span>
+                          </div>
+                       </label>
+                       <label class="cursor-pointer relative">
+                          <input type="radio" v-model="zipMode" value="combined" class="peer sr-only">
+                          <div class="p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-400 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 transition-all text-center">
+                             <span class="block font-bold text-slate-700 peer-checked:text-emerald-700 mb-1">Combined (Flat)</span>
+                             <span class="text-xs text-slate-500">All images in root</span>
+                          </div>
+                       </label>
+                    </div>
+                 </div>
+
                  <!-- Action Area -->
                  <div class="grid grid-cols-1 gap-3 pt-4">
                     <button 
@@ -534,6 +557,7 @@ const onlyWithPhotos = ref(true);
 const minQtyEnabled = ref(false);
 const minQty = ref(5);
 const pdfMode = ref("separate");
+const zipMode = ref("separate");
 const isGenerating = ref(false);
 const isPdfGenerating = ref(false);
 const isZipGenerating = ref(false);
@@ -926,6 +950,8 @@ const downloadAsZip = async () => {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
   let totalPages = 0;
   let failedBrands = 0;
+  const isCombined = zipMode.value === 'combined';
+  let globalPageCounter = 0;
 
   for (const brand of selectedBrands.value) {
       currentBrand.value = `Zipping: ${brand}`;
@@ -937,7 +963,7 @@ const downloadAsZip = async () => {
           const loadingTask = pdfjsLib.getDocument(pdfUrl);
           const pdf = await loadingTask.promise;
           
-          const brandFolder = zip.folder(brand);
+          const target = isCombined ? zip : zip.folder(brand);
 
           for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
@@ -949,10 +975,16 @@ const downloadAsZip = async () => {
                 const context = canvas.getContext("2d");
                 await page.render({ canvasContext: context, viewport }).promise;
 
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
-                brandFolder.file(`${brand}_Page_${pageNum}.jpg`, blob);
+                const imgBlob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
+                if (isCombined) {
+                    globalPageCounter++;
+                    target.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
+                } else {
+                    target.file(`${brand}_Page_${pageNum}.jpg`, imgBlob);
+                }
                 totalPages++;
           }
+          URL.revokeObjectURL(pdfUrl);
        } catch (e) {
               console.error(`Failed to zip ${brand}`, e);
               failedBrands++;
