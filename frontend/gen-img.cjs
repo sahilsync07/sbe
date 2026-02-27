@@ -238,10 +238,20 @@ async function main() {
     // Generate ZIP
     header('GENERATING ZIP FILE');
 
-    const today = new Date().toISOString().split('T')[0];
-    const zipFileName = `Catalog_Images_${today}.zip`;
-    // Save directly under sbe (parent of frontend)
-    const zipPath = path.join(__dirname, '..', zipFileName);
+    const zipFileName = 'latest-stock.zip';
+    const outDir = path.join(__dirname, '..');
+    const zipPath = path.join(outDir, zipFileName);
+    const extractDir = path.join(outDir, 'latest-stock');
+
+    // Delete old zip and folder if they exist
+    if (fs.existsSync(zipPath)) {
+        fs.unlinkSync(zipPath);
+        console.log(`  ${c.yellow}🗑  Deleted old ${zipFileName}${c.reset}`);
+    }
+    if (fs.existsSync(extractDir)) {
+        fs.rmSync(extractDir, { recursive: true, force: true });
+        console.log(`  ${c.yellow}🗑  Deleted old latest-stock/ folder${c.reset}`);
+    }
 
     console.log(`\n  ${c.cyan}📦 Compressing ${totalImages} images...${c.reset}`);
 
@@ -261,6 +271,29 @@ async function main() {
     clearLine();
     fs.writeFileSync(zipPath, content);
     const sizeMB = (content.length / (1024 * 1024)).toFixed(1);
+
+    // Extract ZIP to latest-stock/ folder
+    header('EXTRACTING FILES');
+    console.log(`\n  ${c.cyan}📂 Extracting to latest-stock/ ...${c.reset}`);
+
+    const extractZip = await JSZip.loadAsync(content);
+    const entries = Object.entries(extractZip.files);
+    let extractCount = 0;
+
+    for (const [relativePath, zipEntry] of entries) {
+        const destPath = path.join(extractDir, relativePath);
+        if (zipEntry.dir) {
+            fs.mkdirSync(destPath, { recursive: true });
+        } else {
+            fs.mkdirSync(path.dirname(destPath), { recursive: true });
+            const data = await zipEntry.async('nodebuffer');
+            fs.writeFileSync(destPath, data);
+            extractCount++;
+        }
+    }
+
+    console.log(`  ${c.green}✓ Extracted ${extractCount} files${c.reset}`);
+
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
     // Final summary
@@ -269,7 +302,8 @@ async function main() {
     console.log(`${c.bgGreen}${c.bright}${c.white}    ✅  ALL DONE!                                        ${c.reset}`);
     console.log(`${c.bgGreen}${c.bright}${c.white}                                                        ${c.reset}`);
     console.log('');
-    console.log(`  ${c.bright}File:${c.reset}       ${c.cyan}${zipPath}${c.reset}`);
+    console.log(`  ${c.bright}ZIP:${c.reset}        ${c.cyan}${zipPath}${c.reset}`);
+    console.log(`  ${c.bright}Folder:${c.reset}     ${c.cyan}${extractDir}${c.reset}`);
     console.log(`  ${c.bright}Size:${c.reset}       ${c.yellow}${sizeMB} MB${c.reset}`);
     console.log(`  ${c.bright}Images:${c.reset}     ${c.green}${totalImages} downloaded${c.reset}${totalFailed > 0 ? `  ${c.red}${totalFailed} failed${c.reset}` : ''}`);
     console.log(`  ${c.bright}Time:${c.reset}       ${c.magenta}${elapsed}s${c.reset}`);

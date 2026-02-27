@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import StockTable from '../components/StockTable.vue';
 import PdfGenerator from './components/PdfGenerator.vue';
 import ImageUpload from '../components/ImageUpload.vue';
+import LatestStock from './components/LatestStock.vue';
 
 const routes = [
     {
@@ -15,6 +16,10 @@ const routes = [
     {
         path: '/upload',
         component: ImageUpload
+    },
+    {
+        path: '/latest-stock',
+        component: LatestStock
     }
 ];
 

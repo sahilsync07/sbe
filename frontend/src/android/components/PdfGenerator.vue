@@ -431,6 +431,16 @@
                        </span>
                     </button>
 
+                    <!-- Latest Stock Button (Native Only) -->
+                    <button 
+                      v-if="isNativeApp"
+                      @click="$router.push('/latest-stock')"
+                      :disabled="isGenerating"
+                      class="w-full mt-3 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+                    >
+                       <i class="fa-solid fa-bolt"></i>
+                       Latest Stock
+                    </button>
                     <!-- Progress Bar -->
                     <div v-if="isGenerating" class="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2">
                         <div class="flex justify-between text-xs font-bold text-blue-800 uppercase tracking-widest">
