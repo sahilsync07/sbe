@@ -2,7 +2,7 @@
   <div class="flex flex-col h-screen w-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 font-sans text-white overflow-hidden">
     
     <!-- Header -->
-    <div class="px-5 py-4 flex items-center justify-between border-b border-white/10 bg-white/5 backdrop-blur-sm">
+    <div class="px-5 py-4 flex items-center justify-between border-b border-white/10 bg-white/5 backdrop-blur-sm" style="padding-top: max(env(safe-area-inset-top, 20px), 16px)">
       <div class="flex items-center gap-3">
         <button @click="$router.push('/pdf-gen')" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
           <i class="fa-solid fa-arrow-left text-sm"></i>

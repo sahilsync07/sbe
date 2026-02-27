@@ -130,17 +130,14 @@
                <i v-else class="fa-solid fa-bars text-sm"></i>
             </button>
 
-            <!-- Offline Cache Button (Android Only + Admin Only) -->
+            <!-- Latest Stock Button (Android Only + Admin Only) -->
             <button
                v-if="isAdmin || isSuperAdmin"
-               @click="$emit('cacheImages')"
-               class="android-only-btn w-9 h-9 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md active:scale-95 transition-all relative overflow-hidden"
-               :class="{ 'animate-pulse': isCachingImages }"
-               :disabled="isCachingImages"
-               title="Download Images for Offline"
+               @click="$router.push('/latest-stock')"
+               class="android-only-btn w-9 h-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md active:scale-95 transition-all"
+               title="Latest Stock"
             >
-               <i v-if="isCachingImages" class="fa-solid fa-spinner fa-spin text-sm"></i>
-               <i v-else class="fa-solid fa-cloud-arrow-down text-sm"></i>
+               <i class="fa-solid fa-bolt text-sm"></i>
             </button>
          </div>
 

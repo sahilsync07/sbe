@@ -5,7 +5,7 @@
       class="border-r border-slate-200 bg-white flex-shrink-0 flex-col h-full z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 w-full lg:w-[480px]"
       :class="[mobileTab === 'brands' ? 'flex' : 'hidden lg:flex']"
     >
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-10" style="padding-top: max(env(safe-area-inset-top, 20px), 16px)">
          <div class="flex items-center gap-2">
             <!-- Sidebar Back Button -->
             <button @click="$router.back()" class="w-8 h-8 flex lg:hidden items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors shadow-sm active:scale-95 border border-slate-200 mr-1" title="Back">
@@ -283,7 +283,7 @@
     >
        <div class="flex h-full flex-col lg:flex-row w-full"> 
           <!-- Settings & Actions Area -->
-          <div class="flex-1 overflow-y-auto p-4 lg:p-10 pb-24 lg:pb-10 w-full">
+          <div class="flex-1 overflow-y-auto p-4 lg:p-10 pb-24 lg:pb-10 w-full" style="padding-top: max(env(safe-area-inset-top, 20px), 16px)">
               <header class="mb-8 flex items-center gap-4">
                   <button @click="$router.push('/')" class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md active:scale-95 border border-white/20" title="Home">
                      <i class="fa-solid fa-house"></i>
