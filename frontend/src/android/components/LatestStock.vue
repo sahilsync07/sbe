@@ -29,7 +29,7 @@
       </div>
       <div class="text-center space-y-2">
         <h2 class="text-2xl font-black">Download Latest Stock</h2>
-        <p class="text-slate-400 text-sm max-w-xs">Download all product images organized by category, ready to share on WhatsApp</p>
+        <p class="text-slate-400 text-sm max-w-xs">Download formatted catalog images with product details, ready to share on WhatsApp</p>
       </div>
       <button 
         @click="startDownload"
@@ -38,7 +38,7 @@
         <i class="fa-solid fa-bolt"></i>
         Start Download
       </button>
-      <p class="text-[11px] text-slate-500">{{ GROUPS.length }} categories • {{ totalProductCount }} products</p>
+      <p class="text-[11px] text-slate-500">{{ GROUPS.length }} categories • Formatted catalog pages</p>
     </div>
 
     <!-- State 2: Downloading -->
@@ -47,13 +47,13 @@
       <div class="mb-6 space-y-3">
         <div class="flex justify-between items-center">
           <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Overall Progress</span>
-          <span class="text-sm font-black text-amber-400">{{ Math.round((globalDone / globalTotal) * 100) }}%</span>
+          <span class="text-sm font-black text-amber-400">{{ globalTotal > 0 ? Math.round((globalDone / globalTotal) * 100) : 0 }}%</span>
         </div>
         <div class="h-3 w-full bg-white/10 rounded-full overflow-hidden">
           <div class="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-300 ease-out" 
-               :style="{ width: `${(globalDone / globalTotal) * 100}%` }"></div>
+               :style="{ width: globalTotal > 0 ? `${(globalDone / globalTotal) * 100}%` : '0%' }"></div>
         </div>
-        <div class="text-xs text-slate-400 text-center">{{ globalDone }} / {{ globalTotal }} images</div>
+        <div class="text-xs text-slate-400 text-center">{{ globalDone }} / {{ globalTotal }} pages rendered</div>
       </div>
 
       <!-- Current group -->
@@ -77,7 +77,7 @@
              class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5">
           <span>{{ g.icon }}</span>
           <span class="flex-1 text-sm font-medium text-slate-300 truncate">{{ g.name }}</span>
-          <span class="text-xs font-bold text-emerald-400">✓ {{ g.count }}</span>
+          <span class="text-xs font-bold text-emerald-400">✓ {{ g.count }} pages</span>
         </div>
       </div>
     </div>
@@ -96,7 +96,7 @@
         <div class="flex-1 min-w-0">
           <div class="font-bold text-white truncate">{{ group.folder }}</div>
           <div class="text-xs text-slate-400 mt-0.5">
-            {{ group.fileUris.length }} images
+            {{ group.fileUris.length }} pages
             <span v-if="group.fileUris.length > 99" class="text-amber-400 ml-1">
               • {{ Math.ceil(group.fileUris.length / 99) }} batches
             </span>
@@ -156,6 +156,8 @@
 <script>
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { jsPDF } from 'jspdf';
+import axios from 'axios';
 
 const STORAGE_KEY = 'sbe_latest_stock';
 
@@ -194,9 +196,8 @@ export default {
   data() {
     return {
       GROUPS,
-      state: 'landing', // landing | downloading | folders
+      state: 'landing',
       stockData: [],
-      totalProductCount: 0,
 
       // Download state
       globalDone: 0,
@@ -206,7 +207,7 @@ export default {
       currentGroupProgress: '',
       groupPct: 0,
       completedGroups: [],
-      downloadedGroups: [], // { folder, icon, fileUris: [] }
+      downloadedGroups: [],
 
       // Persistence
       lastDownloadDate: null,
@@ -224,12 +225,8 @@ export default {
   },
 
   computed: {
-    totalBatches() {
-      return this.batchList.length;
-    },
-    currentBatchSize() {
-      return this.batchList[this.currentBatchIndex]?.length || 0;
-    },
+    totalBatches() { return this.batchList.length; },
+    currentBatchSize() { return this.batchList[this.currentBatchIndex]?.length || 0; },
     lastDownloadLabel() {
       if (!this.lastDownloadDate) return '';
       const d = new Date(this.lastDownloadDate);
@@ -244,20 +241,16 @@ export default {
   },
 
   async mounted() {
-    // Load stock data
     try {
       const res = await fetch('./assets/stock-data.json');
       this.stockData = await res.json();
     } catch (e) {
       console.error('Failed to load stock data', e);
     }
-    
-    this.totalProductCount = this.countProducts();
 
-    // Try to restore cached download
     await this.restoreFromCache();
 
-    // Auto-download if stale (> 24 hours) or never downloaded
+    // Auto-download if stale (>24h) or never downloaded
     if (this.state === 'landing' || this.isStale()) {
       this.startDownload();
     }
@@ -266,104 +259,196 @@ export default {
   methods: {
     isStale() {
       if (!this.lastDownloadDate) return true;
-      const diffH = (Date.now() - new Date(this.lastDownloadDate).getTime()) / (1000 * 60 * 60);
-      return diffH >= 24;
+      return (Date.now() - new Date(this.lastDownloadDate).getTime()) / (1000 * 60 * 60) >= 24;
     },
 
     async restoreFromCache() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return;
-
         const data = JSON.parse(saved);
         this.lastDownloadDate = data.downloadedAt;
-
         if (!data.groups || data.groups.length === 0) return;
 
         // Verify first file still exists
         const testUri = data.groups[0]?.fileUris?.[0];
         if (testUri) {
-          try {
-            await Filesystem.stat({ path: testUri });
-          } catch {
-            // Files gone, clear cache
-            localStorage.removeItem(STORAGE_KEY);
-            this.lastDownloadDate = null;
-            return;
-          }
+          try { await Filesystem.stat({ path: testUri }); }
+          catch { localStorage.removeItem(STORAGE_KEY); this.lastDownloadDate = null; return; }
         }
-
-        // Restore groups
         this.downloadedGroups = data.groups;
         this.state = 'folders';
-      } catch (e) {
-        console.error('Failed to restore cache', e);
-      }
+      } catch (e) { console.error('Restore failed', e); }
     },
 
     saveToCache() {
       const data = {
         downloadedAt: new Date().toISOString(),
-        groups: this.downloadedGroups.map(g => ({
-          folder: g.folder,
-          icon: g.icon,
-          fileUris: g.fileUris
-        }))
+        groups: this.downloadedGroups.map(g => ({ folder: g.folder, icon: g.icon, fileUris: g.fileUris }))
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       this.lastDownloadDate = data.downloadedAt;
     },
 
     async clearOldFiles() {
-      // Delete old downloaded files
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
-      
       try {
         const data = JSON.parse(saved);
         for (const group of (data.groups || [])) {
           for (const uri of (group.fileUris || [])) {
             try {
-              // Extract just the filename from the URI
-              const parts = uri.split('/');
-              const fileName = parts[parts.length - 1];
-              await Filesystem.deleteFile({
-                path: fileName,
-                directory: Directory.Data
-              });
-            } catch { /* file may already be gone */ }
+              const fileName = uri.split('/').pop();
+              await Filesystem.deleteFile({ path: fileName, directory: Directory.Data });
+            } catch { /* already gone */ }
           }
         }
       } catch { /* ignore */ }
     },
 
-    countProducts() {
-      const normalize = (s) => s ? s.toLowerCase().trim() : '';
-      const groupMap = new Map();
-      for (const g of this.stockData) {
-        if (g.groupName === '_META_DATA_') continue;
-        groupMap.set(normalize(g.groupName), g);
-      }
+    // ─── PDF GENERATION (same as PdfGenerator) ─────────────────────────────
 
-      let total = 0;
-      for (const config of GROUPS) {
-        for (const brandName of config.brands) {
-          const entry = groupMap.get(normalize(brandName));
-          if (!entry) continue;
-          for (const prod of entry.products) {
-            if (config.onlyWithPhotos && !prod.imageUrl) continue;
-            if (config.minQty > 0 && prod.quantity < config.minQty) continue;
-            total++;
+    async fetchImageAsBase64(url) {
+      const res = await axios.get(url, { responseType: 'arraybuffer' });
+      const base64 = btoa(new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+      return `data:${res.headers['content-type']};base64,${base64}`;
+    },
+
+    getImageDimensions(base64) {
+      return new Promise((resolve) => {
+        const i = new Image();
+        i.onload = () => resolve({ width: i.width, height: i.height });
+        i.src = base64;
+      });
+    },
+
+    async generatePdfBlob(groups) {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      let hasAddedPage = false;
+
+      for (const group of groups) {
+        let isFirstProductInBrand = true;
+
+        for (const product of group.products) {
+          if (hasAddedPage) doc.addPage();
+          hasAddedPage = true;
+
+          // Background
+          doc.setFillColor('#faf8f6');
+          doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+          // Top wave
+          doc.setDrawColor('#e0e0e0');
+          doc.setLineWidth(3);
+          doc.path([
+            { op: 'm', c: [0, 0] },
+            { op: 'l', c: [200, 80] },
+            { op: 'c', c: [266, 26, 400, 33, 600, 100] }
+          ]);
+          doc.stroke();
+
+          // Bottom wave
+          doc.path([
+            { op: 'm', c: [0, pageHeight] },
+            { op: 'l', c: [250, pageHeight - 100] },
+            { op: 'c', c: [316, pageHeight - 33, 433, pageHeight - 16, 600, pageHeight - 50] }
+          ]);
+          doc.stroke();
+
+          // Brand header (first product only)
+          if (isFirstProductInBrand) {
+            doc.setTextColor(200, 200, 200);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(28);
+            doc.text(group.groupName, pageWidth / 2, 35, { align: 'center' });
+            isFirstProductInBrand = false;
+          }
+
+          // Product image
+          if (product.imageUrl) {
+            try {
+              const imgData = await this.fetchImageAsBase64(product.imageUrl);
+              const dims = await this.getImageDimensions(imgData);
+              const maxWidth = pageWidth - 40;
+              const maxHeight = pageHeight - 150;
+              const scale = Math.min(maxWidth / dims.width, maxHeight / dims.height, 1);
+              const finalWidth = dims.width * scale;
+              const finalHeight = dims.height * scale;
+              const x = (pageWidth - finalWidth) / 2;
+              const y = 60;
+
+              doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+
+              const textY = y + finalHeight + 25;
+              doc.setTextColor(0, 0, 0);
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(16);
+              doc.text(product.productName, pageWidth / 2, textY, { align: 'center' });
+
+              doc.setTextColor(212, 0, 0);
+              doc.setFontSize(18);
+              doc.text(`Qty: ${product.quantity}`, pageWidth / 2, textY + 30, { align: 'center' });
+            } catch {
+              doc.setTextColor(0);
+              doc.setFontSize(16);
+              doc.text('Image Load Failed', pageWidth / 2, pageHeight / 2, { align: 'center' });
+            }
+          } else {
+            doc.setTextColor(0);
+            doc.setFontSize(20);
+            doc.text(product.productName, pageWidth / 2, pageHeight / 2 - 20, { align: 'center' });
+            doc.text(`Qty: ${product.quantity}`, pageWidth / 2, pageHeight / 2 + 20, { align: 'center' });
           }
         }
       }
-      return total;
+
+      return doc.output('blob');
     },
 
-    async startDownload() {
-      // Clear old files first
-      await this.clearOldFiles();
+    // ─── RENDER PDF TO IMAGES ──────────────────────────────────────────────
 
+    async renderPdfToImages(pdfBlob, folderPrefix, onPage) {
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+      const fileUris = [];
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.5 });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Convert to base64 JPEG
+        const base64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+        const fileName = `ls_${folderPrefix}_page${pageNum}.jpg`;
+
+        const saved = await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Data
+        });
+
+        fileUris.push(saved.uri);
+        if (onPage) onPage(pageNum, pdf.numPages);
+      }
+
+      URL.revokeObjectURL(pdfUrl);
+      return fileUris;
+    },
+
+    // ─── MAIN DOWNLOAD ─────────────────────────────────────────────────────
+
+    async startDownload() {
+      await this.clearOldFiles();
       this.state = 'downloading';
       this.globalDone = 0;
       this.completedGroups = [];
@@ -376,99 +461,77 @@ export default {
         groupMap.set(normalize(g.groupName), g);
       }
 
+      // Collect filtered products per group
       const allGroupProducts = [];
       let grandTotal = 0;
 
       for (const config of GROUPS) {
-        const products = [];
+        const matchedGroups = [];
         for (const brandName of config.brands) {
           const entry = groupMap.get(normalize(brandName));
           if (!entry) continue;
-          for (const prod of entry.products) {
-            if (config.onlyWithPhotos && !prod.imageUrl) continue;
-            if (config.minQty > 0 && prod.quantity < config.minQty) continue;
-            products.push(prod);
+          const filteredProducts = entry.products.filter(p => {
+            if (config.onlyWithPhotos && !p.imageUrl) return false;
+            if (config.minQty > 0 && p.quantity < config.minQty) return false;
+            return true;
+          });
+          if (filteredProducts.length > 0) {
+            matchedGroups.push({ groupName: entry.groupName, products: filteredProducts });
+            grandTotal += filteredProducts.length;
           }
         }
-        allGroupProducts.push({ config, products });
-        grandTotal += products.length;
+        allGroupProducts.push({ config, matchedGroups });
       }
 
       this.globalTotal = grandTotal;
 
-      for (const { config, products } of allGroupProducts) {
+      // For each config group, generate PDF → render to images
+      for (const { config, matchedGroups } of allGroupProducts) {
+        if (matchedGroups.length === 0) {
+          this.completedGroups.push({ icon: config.icon, name: config.folder, count: 0 });
+          continue;
+        }
+
         this.currentGroupIcon = config.icon;
         this.currentGroupName = config.folder;
-        this.currentGroupProgress = `0 / ${products.length}`;
+        this.currentGroupProgress = 'Generating PDF...';
         this.groupPct = 0;
 
-        const fileUris = [];
+        try {
+          // Step 1: Generate styled PDF blob
+          const pdfBlob = await this.generatePdfBlob(matchedGroups);
 
-        for (let i = 0; i < products.length; i++) {
-          const prod = products[i];
-          this.currentGroupProgress = `${i + 1} / ${products.length}`;
-          this.groupPct = ((i + 1) / products.length) * 100;
+          // Step 2: Render PDF pages to JPEG
+          this.currentGroupProgress = 'Rendering pages...';
+          const safeFolder = config.folder.replace(/[^a-zA-Z0-9]/g, '_');
 
-          try {
-            const response = await fetch(prod.imageUrl);
-            const blob = await response.blob();
-            const base64 = await this.blobToBase64(blob);
+          const fileUris = await this.renderPdfToImages(pdfBlob, safeFolder, (pageNum, total) => {
+            this.currentGroupProgress = `${pageNum} / ${total} pages`;
+            this.groupPct = (pageNum / total) * 100;
+            this.globalDone++;
+          });
 
-            const safeName = prod.productName.replace(/[^a-zA-Z0-9]/g, '_');
-            const fileName = `ls_${safeName}_${i}.jpg`;
-
-            // Save to Directory.Data (persistent, survives app restarts)
-            const saved = await Filesystem.writeFile({
-              path: fileName,
-              data: base64,
-              directory: Directory.Data
-            });
-
-            fileUris.push(saved.uri);
-          } catch (err) {
-            console.error(`Failed: ${prod.productName}`, err);
+          if (fileUris.length > 0) {
+            this.downloadedGroups.push({ folder: config.folder, icon: config.icon, fileUris });
           }
 
-          this.globalDone++;
+          this.completedGroups.push({ icon: config.icon, name: config.folder, count: fileUris.length });
+        } catch (err) {
+          console.error(`Failed group ${config.folder}:`, err);
+          this.completedGroups.push({ icon: config.icon, name: config.folder, count: 0 });
         }
-
-        if (fileUris.length > 0) {
-          this.downloadedGroups.push({
-            folder: config.folder,
-            icon: config.icon,
-            fileUris
-          });
-        }
-
-        this.completedGroups.push({
-          icon: config.icon,
-          name: config.folder,
-          count: fileUris.length
-        });
       }
 
-      // Persist to localStorage
       this.saveToCache();
       this.state = 'folders';
-      this.toast(`Downloaded ${this.globalDone} images across ${this.downloadedGroups.length} categories`);
+      this.toast(`Generated ${this.globalDone} catalog pages across ${this.downloadedGroups.length} categories`);
     },
 
-    blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result.split(',')[1];
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    },
+    // ─── SHARING ───────────────────────────────────────────────────────────
 
     async shareGroup(group) {
       const chunkSize = 99;
       const batches = [];
-
       for (let i = 0; i < group.fileUris.length; i += chunkSize) {
         batches.push(group.fileUris.slice(i, i + chunkSize));
       }
@@ -476,11 +539,9 @@ export default {
       if (batches.length === 1) {
         try {
           await Share.share({ files: batches[0] });
-          this.toast(`Shared ${group.folder} (${batches[0].length} images)`);
+          this.toast(`Shared ${group.folder} (${batches[0].length} pages)`);
         } catch (e) {
-          if (e.message !== 'Share canceled') {
-            this.toast('Share cancelled or failed');
-          }
+          if (e.message !== 'Share canceled') this.toast('Share cancelled or failed');
         }
       } else {
         this.sharingGroupName = group.folder;
@@ -492,11 +553,8 @@ export default {
 
     async executeBatchShare() {
       try {
-        const currentFiles = this.batchList[this.currentBatchIndex];
-        await Share.share({ files: currentFiles });
-
+        await Share.share({ files: this.batchList[this.currentBatchIndex] });
         this.currentBatchIndex++;
-
         if (this.currentBatchIndex >= this.batchList.length) {
           this.isSharing = false;
           this.toast(`All batches shared for ${this.sharingGroupName}`);
@@ -508,9 +566,7 @@ export default {
       }
     },
 
-    cancelShare() {
-      this.isSharing = false;
-    },
+    cancelShare() { this.isSharing = false; },
 
     toast(msg) {
       this.toastMessage = msg;
@@ -522,14 +578,7 @@ export default {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 2px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 </style>
