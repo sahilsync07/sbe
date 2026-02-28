@@ -211,8 +211,18 @@ async function main() {
             isFirstInBrand = false;
 
             try {
-                // Wait until image is fully loaded via networkidle0
-                await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
+                // Wait for the img element to finish loading its source
+                await page.setContent(html, { waitUntil: 'load', timeout: 30000 });
+                // We inject a small script to guarantee the <img> is fully decoded before screenshotting
+                await page.evaluate(async () => {
+                    const img = document.querySelector('.img-container img');
+                    if (img && !img.complete) {
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                        });
+                    }
+                });
                 const buffer = await page.screenshot({ type: 'jpeg', quality: 85, clip: { x: 0, y: 0, width: 800, height: 1131 } });
                 zip.folder(folderPath).file(fileName, buffer);
                 totalImages++;
