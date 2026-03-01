@@ -1,0 +1,299 @@
+{
+    "companyName": "SBE Rayagada",
+    "theme": "blue",
+    "tallyGroups": [
+        "4WAY SPORT",
+        "AAGAM POLYMER",
+        "ADDA",
+        "ADDOXY",
+        "A G ENTERPRISES",
+        "AGRA",
+        "AIRFAX",
+        "AIRSON",
+        "AIRSUN",
+        "AMBIKA FOOTWEAR",
+        "ASHU",
+        "Avon International (WOODS)",
+        "Balaji",
+        "Barun",
+        "CUBIX",
+        "Eeken",
+        "Electrical & Electronic",
+        "Escoute",
+        "Fencer",
+        "Fender",
+        "Florex (Swastik)",
+        "GLAMIUM",
+        "GOKUL FOOTWEAR",
+        "Hawai Chappal",
+        "HITWAY",
+        "J.K Plastic",
+        "J.K.Plastic",
+        "KHADIM",
+        "Kohinoor",
+        "LEO",
+        "Magnet",
+        "MARUTI PLASTICS",
+        "Max",
+        "Mini F/w",
+        "NAV DURGA ENTERPRISES",
+        "NEXGEN FOOTWEAR",
+        "NEXUS",
+        "NON BRAND",
+        "NX KIDS SANDEL",
+        "OTHERS",
+        "PANKAJ PLASTIC",
+        "PARAGON",
+        "Paragon Blot",
+        "PARAGON COMFY",
+        "PARAGON GENTS",
+        "PARAGON LADIES",
+        "Paralite",
+        "Pareek Soucks",
+        "PARIS",
+        "Polish Liquid @18%",
+        "P-TOES",
+        "P-TOES PARALITE",
+        "PU-LION",
+        "RELIANCE FOOTWEAR",
+        "R K TRADERS",
+        "R R POLYPLAST",
+        "Ruban F/w",
+        "Safety",
+        "School",
+        "SCHOOL SHOE DUROLITE",
+        "Shree Shyam Ind",
+        "SHYAM",
+        "Solea & Meriva , Mascara",
+        "SRG ENTERPRISES",
+        "S S BANSAL",
+        "Stimulus",
+        "TEUZ",
+        "UAM FOOTWEAR",
+        "VAISHNO PLASTIC",
+        "VARDHMAN PLASTICS",
+        "VERTEX, SLICKERS & FENDER",
+        "Walkaholic",
+        "Xpania",
+        "YASH FOOTWEAR",
+        "ZYF TEX",
+        "ARITCLE WRONGLY ENTERED"
+    ],
+    "brands": [
+        {
+            "name": "Paragon",
+            "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749667072/paragonLogo_rqk3hu.webp"
+        },
+        {
+            "name": "Reliance",
+            "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749667072/relianceLogo_bvgwwz.png"
+        },
+        {
+            "name": "Cubix",
+            "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749667073/cubixLogo_bwawj3.jpg"
+        },
+        {
+            "name": "Florex",
+            "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749667072/florexLogo_wn50tj.jpg"
+        },
+        {
+            "name": "EEKEN",
+            "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749668232/eekenLogo_rg5xwa.webp"
+        },
+        {
+            "name": "Escoute",
+            "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749667072/escouteLogo_maieji.jpg"
+        }
+    ],
+    "brandGroups": {
+        "Paragon": [
+            "Walkaholic",
+            "VERTEX, SLICKERS & FENDER",
+            "Stimulus",
+            "Solea & Meriva , Mascara",
+            "P-TOES",
+            "P-TOES PARALITE",
+            "Paralite",
+            "PARAGON COMFY",
+            "Paragon Blot",
+            "PARAGON",
+            "Max",
+            "Hawai Chappal"
+        ],
+        "Reliance": [
+            "RELIANCE FOOTWEAR"
+        ],
+        "Cubix": [
+            "CUBIX"
+        ],
+        "Florex": [
+            "Florex (Swastik)"
+        ],
+        "EEKEN": [
+            "EEKEN"
+        ],
+        "Maruti": [
+            "MARUTI PLASTICS"
+        ],
+        "Magnet": [
+            "Magnet"
+        ],
+        "rktraders": [
+            "R K TRADERS"
+        ],
+        "jkplastic": [
+            "J.K Plastic"
+        ],
+        "airson": [
+            "Airsun"
+        ],
+        "GeneralItems": [
+            "AIRFAX",
+            "Airsun",
+            "J.K Plastic",
+            "SRG ENTERPRISES",
+            "VARDHMAN PLASTICS",
+            "NAV DURGA ENTERPRISES",
+            "AAGAM POLYMER",
+            "Magnet",
+            "MARUTI PLASTICS",
+            "Fencer",
+            "PANKAJ PLASTIC",
+            "PARIS",
+            "PU-LION",
+            "SHYAM",
+            "TEUZ",
+            "UAM FOOTWEAR",
+            "Xpania",
+            "R K TRADERS",
+            "Maruti",
+            "rktraders",
+            "jkplastic",
+            "airson"
+        ]
+    },
+    "customFilters": {
+        "Kids": [
+            "kid",
+            "toes",
+            "boy",
+            "girl",
+            "chu",
+            "1*",
+            "child"
+        ],
+        "Hawai": [
+            "hawai",
+            "walkaholic",
+            "cushion"
+        ],
+        "Loose": [
+            "loose",
+            "era ladies",
+            "bond",
+            "r.k",
+            "r k"
+        ],
+        "Box": [
+            "seltos",
+            "airson",
+            "airsun",
+            "lion"
+        ],
+        "Shoe": [
+            "shoe"
+        ]
+    },
+    "toolbarFilters": [
+        {
+            "id": "All",
+            "label": "All Items"
+        },
+        {
+            "id": "Brands",
+            "type": "dynamic",
+            "label": "Dynamic Brands"
+        },
+        {
+            "id": "Kids",
+            "label": "Kids"
+        },
+        {
+            "id": "Hawai",
+            "label": "Hawai"
+        },
+        {
+            "id": "Loose",
+            "label": "Loose"
+        },
+        {
+            "id": "Box",
+            "label": "Box"
+        },
+        {
+            "id": "Shoe",
+            "label": "Shoe"
+        },
+        {
+            "id": "Maruti",
+            "label": "Maruti"
+        },
+        {
+            "id": "Magnet",
+            "label": "Magnet"
+        },
+        {
+            "id": "rktraders",
+            "label": "R.K.Traders"
+        },
+        {
+            "id": "jkplastic",
+            "label": "J.K.Plastic"
+        },
+        {
+            "id": "airson",
+            "label": "Airson"
+        },
+        {
+            "id": "GeneralItems",
+            "label": "General Items"
+        }
+    ],
+    "sortPriority": [
+        "cubix",
+        "florex",
+        "walkaholic",
+        "vertex, slickers & fender",
+        "stimulus",
+        "solea & meriva , mascara",
+        "p-toes",
+        "paralite",
+        "paragon comfy",
+        "paragon blot",
+        "paragon",
+        "max",
+        "hawai chappal",
+        "airfax",
+        "airsun",
+        "j.k plastic",
+        "srg enterprises",
+        "vardhman plastics",
+        "nav durga enterprises",
+        "aagam polymer",
+        "magnet",
+        "maruti plastics",
+        "fencer",
+        "pankaj plastic",
+        "paris",
+        "pu-lion",
+        "shyam",
+        "teuz",
+        "uam footwear",
+        "xpania",
+        "r k traders",
+        "maruti",
+        "rktraders",
+        "jkplastic",
+        "airson"
+    ]
+}
