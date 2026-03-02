@@ -110,6 +110,35 @@ export const COLOR_MAP = {
     // MIX
     'MIX': { color: '#6366f1', label: 'Mix' }, // Indigo-500 (General)
     'MULTI': { color: '#6366f1', label: 'Multi' },
+
+    // EXTRACTED COLOURS
+    'MHD': { color: '#4d7c0f', label: 'Mehandi' },
+    'CHR': { color: '#9f1239', label: 'Cherry' },
+    'PPL': { color: '#a855f7', label: 'Purple' },
+    'F GREEN': { color: '#15803d', label: 'Forest Green' },
+    'LAV': { color: '#c4b5fd', label: 'Lavender' },
+    'PCH': { color: '#fb7185', label: 'Peach' },
+    'LTP': { color: '#fbcfe8', label: 'Light Pink' },
+    'ONN': { color: '#c084fc', label: 'Onion' },
+    'SND': { color: '#e7e5e4', label: 'Sand' },
+    'PLM': { color: '#701a75', label: 'Plum' },
+    'CML': { color: '#d97706', label: 'Camel' },
+    'MAJ': { color: '#d946ef', label: 'Magenta' },
+    'BRZ': { color: '#ca8a04', label: 'Brass' },
+    'BRT': { color: '#92400e', label: 'Brown Tan' },
+    'TBR': { color: '#b45309', label: 'Tan Brown' },
+    'NYB': { color: '#1e3a8a', label: 'Navy Blue' },
+    'DBN': { color: '#451a03', label: 'Dark Brown' },
+    'MIG': { color: '#3f6212', label: 'Military Green' },
+    'TLB': { color: '#0f766e', label: 'Teal Blue' },
+    'GYB': { color: '#475569', label: 'Grey Blue' },
+    'BNR': { color: '#7f1d1d', label: 'Barn Red' },
+    'BNB': { color: '#a8a29e', label: 'Brown Beige' },
+    'BGY': { color: '#64748b', label: 'Blue Grey' },
+    'BKT': { color: '#1c1917', label: 'Black Tan' },
+    'BBG': { color: '#292524', label: 'Black Beige' },
+    'FGN': { color: '#15803d', label: 'Forest Green' },
+    'BKR': { color: '#450a0a', label: 'Black Red' },
 };
 
 export const COLOR_KEYS = Object.keys(COLOR_MAP).sort((a, b) => b.length - a.length); // Match longest first
