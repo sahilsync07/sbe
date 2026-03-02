@@ -38,6 +38,7 @@ export const COLOR_MAP = {
     'RED': { color: '#ef4444', label: 'Red' }, // Red-500
     'RD': { color: '#ef4444', label: 'Red' },
     'MRN': { color: '#991b1b', label: 'Maroon' }, // Red-800
+    'MAR': { color: '#991b1b', label: 'Maroon' }, // Red-800
     'MAROON': { color: '#991b1b', label: 'Maroon' },
     'CHERRY': { color: '#9f1239', label: 'Cherry' }, // Rose-800
     'WINE': { color: '#881337', label: 'Wine' }, // Rose-900
@@ -116,6 +117,7 @@ export const COLOR_MAP = {
     'CHR': { color: '#9f1239', label: 'Cherry' },
     'PPL': { color: '#a855f7', label: 'Purple' },
     'F GREEN': { color: '#15803d', label: 'Forest Green' },
+    'F GRN': { color: '#15803d', label: 'Forest Green' },
     'LAV': { color: '#c4b5fd', label: 'Lavender' },
     'PCH': { color: '#fb7185', label: 'Peach' },
     'LTP': { color: '#fbcfe8', label: 'Light Pink' },
