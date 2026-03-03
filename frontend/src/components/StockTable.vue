@@ -75,10 +75,23 @@
           <p class="text-slate-400 mt-2">Check back soon for accounting features.</p>
         </div>
 
-        <!-- Welcome Splash -->
-        <WelcomeSplash v-else-if="showWelcome" />
+        <!-- Welcome Splash Removed -->
+
+        <!-- Brand Landing Page -->
+        <BrandLanding
+          v-else-if="showLanding && !searchQuery"
+          :stock-data="stockData"
+          :cart="cart"
+          :is-admin="isAdmin"
+          :is-super-admin="isSuperAdmin"
+          @select-category="handleCategorySelect"
+          @add-to-cart="addToCart"
+          @update-cart="updateCart"
+          @open-image-popup="openImagePopup"
+        />
 
         <div v-else class="space-y-8">
+          <!-- Back to Landing REMOVED -->
           <!-- Error Banner -->
           <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 border border-red-100">
             <i class="fa-solid fa-circle-exclamation"></i>
@@ -350,7 +363,7 @@
 
     <!-- Admin Data Loading Overlay -->
      <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="loading && !showWelcome" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+      <div v-if="loading" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
          <div class="bg-white px-6 py-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3">
              <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
              <span class="text-sm font-bold text-slate-700">Updating...</span>
@@ -380,7 +393,6 @@ import { extractColor } from '../utils/colors';
 import DesktopToolbar from './StockTable/DesktopToolbar.vue';
 import BrandsSidebar from './StockTable/BrandsSidebar.vue';
 import CartSidebar from './StockTable/CartSidebar.vue';
-import WelcomeSplash from './WelcomeSplash.vue'; 
 import { defineAsyncComponent } from 'vue';
 
 const ImageModal = defineAsyncComponent(() => import('./StockTable/ImageModal.vue'));
@@ -388,6 +400,7 @@ const OrderModal = defineAsyncComponent(() => import('./StockTable/OrderModal.vu
 const FunLoader = defineAsyncComponent(() => import('./StockTable/FunLoader.vue'));
 const AdminLoginModal = defineAsyncComponent(() => import('./StockTable/AdminLoginModal.vue'));
 const CachedImage = defineAsyncComponent(() => import('./StockTable/CachedImage.vue'));
+const BrandLanding = defineAsyncComponent(() => import('./StockTable/BrandLanding.vue'));
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -396,7 +409,7 @@ const showGoToTop = ref(false);
 const showSidePanel = ref(false);
 const showCart = ref(false);
 const showLedgerView = ref(false);
-const showWelcome = ref(true); // Welcome Splash State
+const showLanding = ref(true); // Brand Landing Page State
 const expandedGroups = ref({});
 const activeScrollGroup = ref('');
 const userHasScrolled = ref(false);
@@ -723,6 +736,26 @@ const toggleLedgerView = () => {
     showLedgerView.value = !showLedgerView.value;
 };
 
+// Brand Landing Page
+const handleCategorySelect = (categoryId) => {
+    showLanding.value = false;
+    if (categoryId === 'All') {
+        selectedGroup.value = 'All';
+    } else {
+        selectedGroup.value = categoryId;
+    }
+    // Push a history entry so browser back returns to landing
+    window.history.pushState({ view: 'category', categoryId }, '', '');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+};
+
+const backToLanding = () => {
+    showLanding.value = true;
+    selectedGroup.value = 'All';
+    searchQuery.value = '';
+    window.scrollTo({ top: 0, behavior: 'instant' });
+};
+
 // Scroll Handling
 const handleScroll = () => {
     showGoToTop.value = window.scrollY > 300;
@@ -750,6 +783,11 @@ const handlePopState = () => {
         showCart.value = false;
         return;
     }
+    // If not on landing page, go back to it
+    if (!showLanding.value) {
+        backToLanding();
+        return;
+    }
 };
 
 // Config Loading
@@ -765,11 +803,6 @@ const loadConfig = async () => {
 };
 
 onMounted(async () => {
-    // Hide Welcome Splash after 1.5 seconds
-    setTimeout(() => {
-        showWelcome.value = false;
-    }, 1500);
-
     // Inject FontAwesome
     const link = document.createElement('link');
     link.rel = 'stylesheet';

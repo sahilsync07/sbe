@@ -1,6 +1,8 @@
 name: Build and Release Android App (Alpha)
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:

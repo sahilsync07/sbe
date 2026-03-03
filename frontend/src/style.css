@@ -235,3 +235,32 @@ html {
     opacity: 1;
   }
 }
+
+/* 
+ * Infinite Marquee Animations for Horizontal Galleries
+ * These are applied to flex containers to make them scroll automatically
+ */
+.animate-marquee-left {
+  animation: marquee-left 35s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 35s linear infinite;
+}
+
+@keyframes marquee-left {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); } /* Scrolls half of its duplicated width */
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); } /* Starts half-scrolled */
+  100% { transform: translateX(0%); }
+}
+
+/* Pause animations when user hovers or touches the container */
+.pause-marquee:hover,
+.pause-marquee:active,
+.pause-marquee:focus-within {
+  animation-play-state: paused;
+}

@@ -617,7 +617,8 @@ const getBrandLogo = (brandName) => {
         "Paragon": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp",
         "Reliance": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png",
         "Cubix": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg",
-        "Florex": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg",
+        "Florex": "https://res.cloudinary.com/dg365ewal/image/upload/v1772558569/florexLogo_sqgjln.png",
+        "ACTION": "https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png",
         "Eeken": "https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp",
         "Escoute": "https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg"
     };
