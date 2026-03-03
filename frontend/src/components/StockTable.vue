@@ -24,6 +24,7 @@
       @update:cleanView="handleCleanViewToggle($event)"
       @cacheImages="handleCacheImages"
       @refreshData="refreshStockData"
+      :stock-data="stockData"
     />
 
     <Transition

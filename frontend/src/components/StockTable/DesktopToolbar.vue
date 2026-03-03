@@ -40,17 +40,80 @@
           </div>
 
           <!-- Search Bar (Flexible) -->
-          <div class="relative flex-1 max-w-sm group">
+          <div class="relative flex-1 max-w-sm group" ref="desktopSearchRef">
               <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors">
                  <i class="fa-solid fa-magnifying-glass text-sm"></i>
               </span>
               <input
                 :value="localQuery"
                 @input="handleSearchInput"
+                @keydown.enter="executeSearch(localQuery)"
+                @focus="showDesktopDropdown = true"
                 type="text"
                 placeholder="Search..."
                 class="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-900 border border-white/20 ring-1 ring-white/10 focus:bg-black focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-all text-sm font-medium text-white placeholder-slate-400"
               />
+              
+              <!-- Desktop Smart Dropdown -->
+              <transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="translate-y-2 opacity-0"
+                enter-to-class="translate-y-0 opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="translate-y-0 opacity-100"
+                leave-to-class="translate-y-2 opacity-0"
+              >
+                <div v-if="showDesktopDropdown && localQuery.trim().length > 0" 
+                     class="absolute top-full left-0 right-0 mt-3 bg-neutral-900 border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-[70] max-h-[60vh] flex flex-col">
+                  <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 custom-scrollbar">
+                    <button 
+                      @click="executeSearch(localQuery)"
+                      class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3 border border-transparent hover:border-white/5"
+                    >
+                       <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+                          <i class="fa-solid fa-magnifying-glass text-blue-400 text-sm"></i>
+                       </div>
+                       <div class="flex-1 overflow-hidden">
+                          <div class="text-white font-medium truncate text-sm">Search for "{{ localQuery.trim() }}"</div>
+                          <div class="text-slate-400 text-xs mt-0.5">Press Enter to see all results</div>
+                       </div>
+                    </button>
+                    
+                    <div v-if="searchSuggestions.length > 0" class="h-px bg-white/10 my-2 mx-4"></div>
+                    
+                    <button
+                      v-for="product in searchSuggestions"
+                      :key="product.productName"
+                      @click="executeSearch(product.productName)"
+                      class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3 border border-transparent hover:border-white/5"
+                    >
+                       <div class="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
+                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-80" />
+                          <i v-else class="fa-solid fa-box text-slate-500 text-xs"></i>
+                       </div>
+                       <div class="flex-1 overflow-hidden">
+                          <div class="text-white font-medium truncate text-sm">{{ formatProductNameToolbar(product.productName) }}</div>
+                          <div class="text-slate-400 text-xs mt-0.5 truncate flex items-center gap-2">
+                            <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
+                              <span class="w-2.5 h-2.5 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                              <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
+                              <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            </span>
+                            <span v-if="product.quantity > 0" class="text-emerald-400">{{ product.quantity }} pairs</span>
+                            <span v-else class="text-rose-400 flex items-center gap-1"><i class="fa-solid fa-xmark text-[10px]"></i> Out of Stock</span>
+                            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            <span>{{ getPriceInfo(product.productName).label }} ₹{{ getPriceInfo(product.productName).price }}</span>
+                          </div>
+                       </div>
+                       <i class="fa-solid fa-arrow-right text-slate-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </button>
+                    
+                    <div v-if="searchSuggestions.length === 0" class="px-4 py-6 text-center text-slate-400 text-sm">
+                       No specific products found matching "{{ localQuery.trim() }}"
+                    </div>
+                  </div>
+                </div>
+              </transition>
           </div>
        </div>
 
@@ -185,17 +248,78 @@
     <div class="lg:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl">
        <div class="flex items-center gap-3">
           <!-- Search -->
-          <div class="relative flex-1">
+          <div class="relative flex-1" ref="mobileSearchRef">
              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
                  <i class="fa-solid fa-magnifying-glass text-xs"></i>
              </span>
              <input
                 :value="localQuery"
                 @input="handleSearchInput"
+                @keydown.enter="executeSearch(localQuery)"
+                @focus="showMobileDropdown = true"
                 type="text"
                 placeholder="Search products..."
                 class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-white/20 ring-1 ring-white/10 focus:bg-black focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-medium text-white placeholder-slate-400"
               />
+              
+              <!-- Mobile Smart Dropdown (Opens Upward) -->
+              <transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="translate-y-2 opacity-0"
+                enter-to-class="translate-y-0 opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="translate-y-0 opacity-100"
+                leave-to-class="translate-y-2 opacity-0"
+              >
+                <div v-if="showMobileDropdown && localQuery.trim().length > 0" 
+                     class="absolute bottom-full left-0 right-0 mb-3 bg-neutral-900 border border-white/20 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-[70] max-h-[60vh] flex flex-col">
+                  <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 custom-scrollbar">
+                    <button 
+                      @click="executeSearch(localQuery)"
+                      class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3"
+                    >
+                       <div class="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+                          <i class="fa-solid fa-magnifying-glass text-blue-400 text-xs"></i>
+                       </div>
+                       <div class="flex-1 overflow-hidden">
+                          <div class="text-white font-medium truncate text-sm">Search for "{{ localQuery.trim() }}"</div>
+                       </div>
+                    </button>
+                    
+                    <div v-if="searchSuggestions.length > 0" class="h-px bg-white/10 my-1 mx-3"></div>
+                    
+                    <button
+                      v-for="product in searchSuggestions"
+                      :key="product.productName"
+                      @click="executeSearch(product.productName)"
+                      class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3"
+                    >
+                       <div class="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
+                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-80" />
+                          <i v-else class="fa-solid fa-box text-slate-500 text-xs"></i>
+                       </div>
+                       <div class="flex-1 overflow-hidden">
+                          <div class="text-white font-medium truncate text-sm leading-tight">{{ formatProductNameToolbar(product.productName) }}</div>
+                          <div class="text-slate-400 text-[10px] mt-0.5 truncate flex items-center gap-1.5">
+                            <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
+                              <span class="w-2 h-2 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                              <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
+                              <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            </span>
+                            <span v-if="product.quantity > 0" class="text-emerald-400">{{ product.quantity }} prs</span>
+                            <span v-else class="text-rose-400">Out of Stock</span>
+                            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            <span>{{ getPriceInfo(product.productName).label }} ₹{{ getPriceInfo(product.productName).price }}</span>
+                          </div>
+                       </div>
+                    </button>
+                    
+                    <div v-if="searchSuggestions.length === 0" class="px-3 py-4 text-center text-slate-400 text-xs">
+                       No products matching "{{ localQuery.trim() }}"
+                    </div>
+                  </div>
+                </div>
+              </transition>
           </div>
 
            <!-- Toggles & Actions -->
@@ -227,7 +351,8 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { extractColor } from '../../utils/colors';
 
 const props = defineProps({
   isAdmin: Boolean,
@@ -251,6 +376,10 @@ const props = defineProps({
   isCachingImages: {
     type: Boolean,
     default: false
+  },
+  stockData: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -306,20 +435,134 @@ const statusColor = computed(() => {
 
 
 
-// --- Debounce Search Logic ---
+// --- Smart Dropdown Search Logic ---
 const localQuery = ref(props.searchQuery);
-let debounceTimeout = null;
+const showDesktopDropdown = ref(false);
+const showMobileDropdown = ref(false);
+const desktopSearchRef = ref(null);
+const mobileSearchRef = ref(null);
+
+// Format product name for dropdown (clean: remove color, price, size, special chars → Title Case)
+const formatProductNameToolbar = (fullName) => {
+    if (!fullName) return '';
+    let clean = fullName;
+
+    // Remove Colors
+    const colorData = extractColor(fullName);
+    if (colorData && colorData.originalTokens) {
+        colorData.originalTokens.forEach(token => {
+            const regex = new RegExp(`\\b${token}\\b`, 'gi');
+            clean = clean.replace(regex, '');
+        });
+    }
+
+    // Remove Price pattern (RS 123, MRP 123, @ 123)
+    clean = clean.replace(/((?:RS|MRP|@))[.\s]*(\d+(\.\d+)?)/gi, '');
+    // Remove Size pattern (e.g. 6x10, 7X11)
+    clean = clean.replace(/(?:^|[\s(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s)]|$)/g, ' ');
+
+    // Clean up leftover separators and parens
+    clean = clean.replace(/\(\s*\)/g, '');
+    clean = clean.replace(/[/\-.]+\s*$/g, '')
+                 .replace(/^\s*[/\-.]+/g, '')
+                 .replace(/\s*[/\-.]+\s*/g, ' ');
+
+    // Collapse whitespace, trim, and Title Case each word
+    return clean
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase()
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+};
+
+// Extract color info from product name
+const getProductColor = (name) => extractColor(name);
+
+// Extract price info using regex (matches StockTable.vue logic)
+const getPriceInfo = (name) => {
+    if (!name) return { label: 'Net Rate', price: '?' };
+    // Try to find specific price patterns: MRP 123, RS 123, @ 123
+    const match = name.match(/((?:RS|MRP|@))[.\s]*(\d+(\.\d+)?)/i);
+    if (match) {
+        const prefix = match[1].toUpperCase();
+        return {
+            label: prefix === 'MRP' ? 'MRP' : 'Net Rate',
+            price: match[2]
+        };
+    }
+    // Fallback: just find the last number
+    const fallback = name.match(/(\d+(\.\d+)?)(?!.*\d)/);
+    return {
+        label: 'Net Rate',
+        price: fallback ? fallback[0] : '?'
+    };
+};
+
+const searchSuggestions = computed(() => {
+  const query = localQuery.value.trim().toLowerCase();
+  if (!query) return [];
+  
+  const matches = [];
+  const maxSuggestions = 8;
+  
+  // Search through nested stockData
+  if (props.stockData && Array.isArray(props.stockData)) {
+    for (const group of props.stockData) {
+      if (group.products && Array.isArray(group.products)) {
+        for (const product of group.products) {
+          if (product.productName && product.productName.toLowerCase().includes(query)) {
+            matches.push(product);
+            if (matches.length >= maxSuggestions) {
+              return matches;
+            }
+          }
+        }
+      }
+    }
+  }
+  return matches;
+});
+
+const executeSearch = (query) => {
+  localQuery.value = query;
+  emit('update:searchQuery', query);
+  showDesktopDropdown.value = false;
+  showMobileDropdown.value = false;
+  // Blur active element to hide keyboard on mobile
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+};
 
 const handleSearchInput = (event) => {
-  const value = event.target.value;
-  localQuery.value = value;
-  
-  if (debounceTimeout) clearTimeout(debounceTimeout);
-  
-  debounceTimeout = setTimeout(() => {
-    emit('update:searchQuery', value);
-  }, 300); // 300ms wait
+  localQuery.value = event.target.value;
+  // Let the user keep typing; dropdown will update reactivity
+  // We no longer automatically emit the search query to filter the huge list
+  showDesktopDropdown.value = true;
+  showMobileDropdown.value = true;
 };
+
+// Handle clicks outside the search containers to close dropdowns
+const handleClickOutside = (event) => {
+  if (desktopSearchRef.value && !desktopSearchRef.value.contains(event.target)) {
+    showDesktopDropdown.value = false;
+  }
+  if (mobileSearchRef.value && !mobileSearchRef.value.contains(event.target)) {
+    showMobileDropdown.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside);
+  document.addEventListener('touchstart', handleClickOutside); // For mobile
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
+  document.removeEventListener('touchstart', handleClickOutside);
+});
 
 // Sync external changes (e.g. clear search from parent)
 watch(() => props.searchQuery, (newVal) => {
