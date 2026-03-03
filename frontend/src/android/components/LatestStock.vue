@@ -4,8 +4,8 @@
     <!-- Header -->
     <div class="px-5 py-4 flex items-center justify-between border-b border-white/10 bg-white/5 backdrop-blur-sm" style="padding-top: max(env(safe-area-inset-top, 20px), 16px)">
       <div class="flex items-center gap-3">
-        <button @click="$router.push('/pdf-gen')" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
-          <i class="fa-solid fa-arrow-left text-sm"></i>
+        <button @click="$emit('close')" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+          <i class="fa-solid fa-xmark text-sm"></i>
         </button>
         <div>
           <h1 class="text-lg font-black tracking-tight">Latest Stock</h1>
@@ -38,7 +38,7 @@
         <i class="fa-solid fa-bolt"></i>
         Start Download
       </button>
-      <p class="text-[11px] text-slate-500">{{ GROUPS.length }} categories • Formatted catalog pages</p>
+      <p class="text-[11px] text-slate-500">{{ GROUPS.length }} categories • Formatted catalog images</p>
     </div>
 
     <!-- State 2: Downloading -->
@@ -53,7 +53,7 @@
           <div class="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-300 ease-out" 
                :style="{ width: globalTotal > 0 ? `${(globalDone / globalTotal) * 100}%` : '0%' }"></div>
         </div>
-        <div class="text-xs text-slate-400 text-center">{{ globalDone }} / {{ globalTotal }} pages rendered</div>
+        <div class="text-xs text-slate-400 text-center">{{ globalDone }} / {{ globalTotal }} images rendered</div>
       </div>
 
       <!-- Current group -->
@@ -77,7 +77,7 @@
              class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5">
           <span>{{ g.icon }}</span>
           <span class="flex-1 text-sm font-medium text-slate-300 truncate">{{ g.name }}</span>
-          <span class="text-xs font-bold text-emerald-400">✓ {{ g.count }} pages</span>
+          <span class="text-xs font-bold text-emerald-400">✓ {{ g.count }} images</span>
         </div>
       </div>
     </div>
@@ -96,7 +96,7 @@
         <div class="flex-1 min-w-0">
           <div class="font-bold text-white truncate">{{ group.folder }}</div>
           <div class="text-xs text-slate-400 mt-0.5">
-            {{ group.fileUris.length }} pages
+            {{ group.fileUris.length }} images
             <span v-if="group.fileUris.length > 99" class="text-amber-400 ml-1">
               • {{ Math.ceil(group.fileUris.length / 99) }} batches
             </span>
@@ -193,6 +193,10 @@ const GROUPS = [
 
 export default {
   name: 'LatestStock',
+  props: {
+    stockDataProp: { type: Array, default: null }
+  },
+  emits: ['close'],
   data() {
     return {
       GROUPS,
@@ -241,11 +245,16 @@ export default {
   },
 
   async mounted() {
-    try {
-      const res = await fetch('./assets/stock-data.json');
-      this.stockData = await res.json();
-    } catch (e) {
-      console.error('Failed to load stock data', e);
+    // Use prop if provided, otherwise fetch
+    if (this.stockDataProp && this.stockDataProp.length > 0) {
+      this.stockData = this.stockDataProp;
+    } else {
+      try {
+        const res = await fetch('./assets/stock-data.json');
+        this.stockData = await res.json();
+      } catch (e) {
+        console.error('Failed to load stock data', e);
+      }
     }
 
     await this.restoreFromCache();
@@ -290,13 +299,15 @@ export default {
       this.lastDownloadDate = data.downloadedAt;
     },
 
-    async clearOldFiles() {
+    async clearOldFiles(keepFiles = []) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
+      const keepSet = new Set(keepFiles);
       try {
         const data = JSON.parse(saved);
         for (const group of (data.groups || [])) {
           for (const uri of (group.fileUris || [])) {
+            if (keepSet.has(uri)) continue; // Skip files we want to keep
             try {
               const fileName = uri.split('/').pop();
               await Filesystem.deleteFile({ path: fileName, directory: Directory.Data });
@@ -304,6 +315,11 @@ export default {
           }
         }
       } catch { /* ignore */ }
+    },
+
+    // Build a hash key for a product to detect changes
+    productHash(p) {
+      return `${p.productName}|${p.imageUrl || ''}|${p.quantity}`;
     },
 
     // ─── PDF GENERATION (same as PdfGenerator) ─────────────────────────────
@@ -494,7 +510,7 @@ export default {
 
         this.currentGroupIcon = config.icon;
         this.currentGroupName = config.folder;
-        this.currentGroupProgress = 'Generating PDF...';
+        this.currentGroupProgress = 'Generating images...';
         this.groupPct = 0;
 
         try {
@@ -502,11 +518,11 @@ export default {
           const pdfBlob = await this.generatePdfBlob(matchedGroups);
 
           // Step 2: Render PDF pages to JPEG
-          this.currentGroupProgress = 'Rendering pages...';
+          this.currentGroupProgress = 'Rendering images...';
           const safeFolder = config.folder.replace(/[^a-zA-Z0-9]/g, '_');
 
           const fileUris = await this.renderPdfToImages(pdfBlob, safeFolder, (pageNum, total) => {
-            this.currentGroupProgress = `${pageNum} / ${total} pages`;
+            this.currentGroupProgress = `${pageNum} / ${total} images`;
             this.groupPct = (pageNum / total) * 100;
             this.globalDone++;
           });
@@ -524,7 +540,7 @@ export default {
 
       this.saveToCache();
       this.state = 'folders';
-      this.toast(`Generated ${this.globalDone} catalog pages across ${this.downloadedGroups.length} categories`);
+      this.toast(`Generated ${this.globalDone} catalog images across ${this.downloadedGroups.length} categories`);
     },
 
     // ─── SHARING ───────────────────────────────────────────────────────────

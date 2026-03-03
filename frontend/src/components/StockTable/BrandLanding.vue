@@ -456,6 +456,16 @@
 
     <!-- VIEW ALL CTA REMOVED -->
 
+    <!-- Admin: Catalog Generator FAB -->
+    <button
+      v-if="isAdmin || isSuperAdmin"
+      @click="$emit('open-catalog-gen')"
+      class="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-2xl shadow-amber-500/40 flex items-center justify-center text-white text-xl hover:scale-110 active:scale-95 transition-all animate-pulse"
+      title="Generate Catalog Images"
+    >
+      <i class="fa-solid fa-bolt"></i>
+    </button>
+
   </div>
 </template>
 
@@ -474,7 +484,7 @@ const props = defineProps({
   isSuperAdmin: { type: Boolean, default: false }
 });
 
-defineEmits(['select-category', 'add-to-cart', 'update-cart', 'open-image-popup']);
+defineEmits(['select-category', 'add-to-cart', 'update-cart', 'open-image-popup', 'open-catalog-gen']);
 
 const windowWidth = ref(window.innerWidth);
 const updateWidth = () => { windowWidth.value = window.innerWidth; };
@@ -657,7 +667,7 @@ import ParagonGents4 from '../../assets/Carousal Pics/Paragon-gents-4.jpg';
 import ParagonLadies1 from '../../assets/Carousal Pics/Paragon-ladies-1.jpg';
 import ParagonLadies2 from '../../assets/Carousal Pics/Paragon-ladies-2.jpg';
 import ParagonLadies3 from '../../assets/Carousal Pics/Paragon-ladies-3.jpg';
-import ParagonSchool from '../../assets/Carousal Pics/Paragon-school.jpg';
+import ParagonSchool from '../../assets/Carousal Pics/paragon-school.jpg';
 import Paralite from '../../assets/Carousal Pics/Paralite.jpg';
 import Walkaholic from '../../assets/Carousal Pics/Walkaholic.jpg';
 import Paragon50Logo from '../../assets/Carousal Pics/Paragon 50 years logo.png';

@@ -88,6 +88,7 @@
           @add-to-cart="addToCart"
           @update-cart="updateCart"
           @open-image-popup="openImagePopup"
+          @open-catalog-gen="showCatalogGen = true"
         />
 
         <div v-else class="space-y-8">
@@ -361,6 +362,16 @@
        @login="handleAdminLogin"
     />
 
+    <!-- Admin Catalog Generator Overlay -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
+      <div v-if="showCatalogGen" class="fixed inset-0 z-[90]">
+        <LatestStock
+          :stock-data-prop="stockData"
+          @close="showCatalogGen = false"
+        />
+      </div>
+    </transition>
+
     <!-- Admin Data Loading Overlay -->
      <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div v-if="loading" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
@@ -401,6 +412,7 @@ const FunLoader = defineAsyncComponent(() => import('./StockTable/FunLoader.vue'
 const AdminLoginModal = defineAsyncComponent(() => import('./StockTable/AdminLoginModal.vue'));
 const CachedImage = defineAsyncComponent(() => import('./StockTable/CachedImage.vue'));
 const BrandLanding = defineAsyncComponent(() => import('./StockTable/BrandLanding.vue'));
+const LatestStock = defineAsyncComponent(() => import('../android/components/LatestStock.vue'));
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -408,6 +420,7 @@ const isAndroid = ref(Capacitor.getPlatform() === 'android');
 const showGoToTop = ref(false);
 const showSidePanel = ref(false);
 const showCart = ref(false);
+const showCatalogGen = ref(false);
 const showLedgerView = ref(false);
 const showLanding = ref(true); // Brand Landing Page State
 const expandedGroups = ref({});
