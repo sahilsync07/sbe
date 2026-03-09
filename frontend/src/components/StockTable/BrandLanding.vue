@@ -454,7 +454,19 @@
       />
     </div>
 
-    <!-- VIEW ALL CTA REMOVED -->
+    <!-- EXPLORE ALL PRODUCTS CTA -->
+    <div class="mt-12 mb-8 px-4 flex justify-center">
+      <button 
+        @click="$emit('select-category', 'AllProducts')"
+        class="group relative inline-flex items-center justify-center px-8 py-4 bg-slate-900 text-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
+      >
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div class="relative flex items-center gap-3">
+          <span class="font-['Clash_Display'] font-bold text-lg lg:text-xl uppercase tracking-wider">Explore All Products</span>
+          <i class="fa-solid fa-arrow-right-long text-xl transition-transform duration-300 group-hover:translate-x-2"></i>
+        </div>
+      </button>
+    </div>
 
     <!-- Admin: Catalog Generator FAB -->
     <button
