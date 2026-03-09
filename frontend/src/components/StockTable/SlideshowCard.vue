@@ -66,7 +66,7 @@ const props = defineProps({
   card: { type: Object, required: true },
   images: { type: Array, default: () => [] },
   count: { type: Number, default: 0 },
-  aspectClass: { type: String, default: 'aspect-[4/3]' },
+  aspectClass: { type: String, default: 'aspect-[3/4]' },
   roundedClass: { type: String, default: 'rounded-xl' },
   isHero: { type: Boolean, default: false },
   hideTextOnImage: { type: Boolean, default: false },

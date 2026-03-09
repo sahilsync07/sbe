@@ -416,7 +416,7 @@
           <!-- Bottom Banner -->
           <div 
              class="h-24 sm:flex-1 rounded-3xl overflow-hidden relative group cursor-pointer transition-transform duration-500 hover:-translate-y-1 hover:shadow-xl bg-gradient-to-br from-blue-600 to-indigo-700 p-[1px]"
-             @click="$emit('select-category', 'AllProducts')"
+             @click="$emit('select-category', 'All')"
           >
               <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyIiBjeT0iMiIgcj0iMiIgZmlsbD0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjEpIi8+PC9zdmc+')] opacity-20"></div>
               <div class="w-full h-full bg-slate-900/40 backdrop-blur-md rounded-[23px] flex items-center justify-between p-5 relative z-10 overflow-hidden">
@@ -457,7 +457,7 @@
     <!-- EXPLORE ALL PRODUCTS CTA -->
     <div class="mt-12 mb-8 px-4 flex justify-center">
       <button 
-        @click="$emit('select-category', 'AllProducts')"
+        @click="$emit('select-category', 'All')"
         class="group relative inline-flex items-center justify-center px-8 py-4 bg-slate-900 text-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
       >
         <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -657,7 +657,6 @@ const getBrandProducts = (groupNames) => {
     return products.slice(0, 15);
 };
 
-// Assets Mapping
 import Boot1 from '../../assets/Carousal Pics/Boot-1.jpg';
 import Boot2 from '../../assets/Carousal Pics/Boot-2.jpg';
 import Eeken1 from '../../assets/Carousal Pics/Eeken-1.jpg';
