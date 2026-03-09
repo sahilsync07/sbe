@@ -526,8 +526,8 @@ const searchSuggestions = computed(() => {
 });
 
 const executeSearch = (query) => {
-  localQuery.value = query;
   emit('update:searchQuery', query);
+  localQuery.value = ''; // Empty the search bar instead of pasting the result
   showDesktopDropdown.value = false;
   showMobileDropdown.value = false;
   // Blur active element to hide keyboard on mobile
@@ -566,8 +566,8 @@ onUnmounted(() => {
 
 // Sync external changes (e.g. clear search from parent)
 watch(() => props.searchQuery, (newVal) => {
-  if (newVal !== localQuery.value) {
-    localQuery.value = newVal;
+  if (newVal === '') {
+    localQuery.value = '';
   }
 });
 </script>
