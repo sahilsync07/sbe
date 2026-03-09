@@ -84,7 +84,7 @@ export const TOP_BRANDS_CONFIG = [
     },
     {
         name: 'Florex (Swastik)',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_wn50tj.jpg',
+        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_sqgjln.png',
     },
     {
         name: 'RELIANCE FOOTWEAR',
