@@ -1000,10 +1000,12 @@ const scrollToGroup = (groupName, behavior = 'instant') => {
 };
 
 const handleSidebarClick = (group) => {
+    showLanding.value = false;
     scrollToGroup(group.groupName, 'instant');
 };
 
 const handleClubClick = (clubName) => {
+    showLanding.value = false;
     selectedGroup.value = clubName;
     if (window.innerWidth < 1024) {
         showSidePanel.value = false;

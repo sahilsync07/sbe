@@ -682,6 +682,8 @@ import ParagonSchool from '../../assets/Carousal Pics/paragon-school.jpg';
 import Paralite from '../../assets/Carousal Pics/Paralite.jpg';
 import Walkaholic from '../../assets/Carousal Pics/Walkaholic.jpg';
 import Paragon50Logo from '../../assets/Carousal Pics/Paragon 50 years logo.png';
+import BoxPack from '../../assets/Carousal Pics/box.png';
+import LoosePack from '../../assets/Carousal Pics/loose.png';
 
 // Assets using Cloudinary optimized URLs
 const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp';
@@ -696,7 +698,9 @@ const localCarousals = {
   'School': [ParagonSchool],
   'Walkaholic': [Walkaholic],
   'Max': [Max1],
-  'Escoute': [EscouteImg]
+  'Escoute': [EscouteImg],
+  'LoosePacking': [LoosePack],
+  'BoxPacking': [BoxPack]
 };
 
 const getParagonImages = (card) => {
@@ -719,10 +723,15 @@ const getCount = (groupNames) => {
   return count;
 };
 
+const looseGroupNames = ['ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS', 'AAGAM POLYMER', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS', 'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY', 'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC'];
+const boxGroupNames = ['ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC', 'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR', 'Kohinoor', 'UAM FOOTWEAR'];
+
 // Cards config
 const paragonCards = [
   { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'] },
   { id: 'PARALITE', label: 'Paralite', groupNames: ['PARALITE', 'PARALITE OLD', 'P-TOES PARALITE'] },
+  { id: 'LoosePacking', label: 'Loose Packing', groupNames: looseGroupNames },
+  { id: 'BoxPacking', label: 'Box Packing', groupNames: boxGroupNames },
   { id: 'PARAGON GENTS', label: 'Paragon Gents', groupNames: ['PARAGON GENTS', 'PARAGON GENTS 40%'] },
   { id: 'PARAGON LADIES', label: 'Paragon Ladies', groupNames: ['PARAGON LADIES'] },
   { id: 'P-TOES PARALITE', label: 'P-Toes', groupNames: ['P-TOES PARALITE'] },
@@ -757,9 +766,6 @@ const midBrandCards = [
   { id: 'ASHU', label: 'Ashu', groupNames: ['ASHU'], icon: 'fa-solid fa-leaf' },
   { id: 'ADDOXY', label: 'Addoxy', groupNames: ['ADDOXY'], icon: 'fa-solid fa-shield' },
 ];
-
-const looseGroupNames = ['ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS', 'AAGAM POLYMER', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS', 'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY', 'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC'];
-const boxGroupNames = ['ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC', 'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR', 'Kohinoor', 'UAM FOOTWEAR'];
 </script>
 
 <style scoped>
