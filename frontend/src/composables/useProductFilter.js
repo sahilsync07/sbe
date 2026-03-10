@@ -118,6 +118,26 @@ export function useProductFilter(stockData, config) {
                 const allowedSubgroups = config.value.brandGroups[groupKey].map(g => normalize(g));
                 filtered = filtered.filter(g => allowedSubgroups.includes(normalize(g.groupName)));
             }
+            // Special Logic for Max Card
+            else if (groupKey === "Max") {
+                const maxProducts = [];
+                const maxRegex = /\bmax\b/i;
+                filtered.forEach(group => {
+                    group.products.forEach(p => {
+                        const name = p.productName || '';
+                        const desc = p.description || '';
+
+                        // Check if name or description contains the exact word "max" validation
+                        if (maxRegex.test(name) || maxRegex.test(desc)) {
+                            maxProducts.push(p);
+                        }
+                    });
+                });
+                filtered = maxProducts.length > 0 ? [{
+                    groupName: "Max",
+                    products: maxProducts
+                }] : [];
+            }
             // Check if it's a Custom Filter
             else if (config.value?.customFilters && config.value.customFilters[groupKey]) {
                 const keywords = config.value.customFilters[groupKey];
