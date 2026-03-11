@@ -657,50 +657,45 @@ const getBrandProducts = (groupNames) => {
     return products.slice(0, 15);
 };
 
-import Boot1 from '../../assets/Carousal Pics/Boot-1.jpg';
-import Boot2 from '../../assets/Carousal Pics/Boot-2.jpg';
-import Eeken1 from '../../assets/Carousal Pics/Eeken-1.jpg';
-import Eeken2 from '../../assets/Carousal Pics/Eeken-2.jpg';
-import Eeken3 from '../../assets/Carousal Pics/Eeken-3.jpg';
-import Eeken4 from '../../assets/Carousal Pics/Eeken-4.jpg';
-import Eeken5 from '../../assets/Carousal Pics/Eeken-5.jpg';
-import Eeken6 from '../../assets/Carousal Pics/Eeken-6.jpg';
-import Eeken7 from '../../assets/Carousal Pics/Eeken-7.jpg';
-import Eeken8 from '../../assets/Carousal Pics/Eeken-8.jpg';
-import EscouteImg from '../../assets/Carousal Pics/Escoute.jpg';
-import Fender from '../../assets/Carousal Pics/Fender.jpg';
-import Max1 from '../../assets/Carousal Pics/Max.jpg';
-import Ptoes from '../../assets/Carousal Pics/P-toes.jpg';
-import ParagonGents1 from '../../assets/Carousal Pics/Paragon-gents-1.jpg';
-import ParagonGents2 from '../../assets/Carousal Pics/Paragon-gents-2.jpg';
-import ParagonGents3 from '../../assets/Carousal Pics/Paragon-gents-3.jpg';
-import ParagonGents4 from '../../assets/Carousal Pics/Paragon-gents-4.jpg';
-import ParagonLadies1 from '../../assets/Carousal Pics/Paragon-ladies-1.jpg';
-import ParagonLadies2 from '../../assets/Carousal Pics/Paragon-ladies-2.jpg';
-import ParagonLadies3 from '../../assets/Carousal Pics/Paragon-ladies-3.jpg';
-import ParagonSchool from '../../assets/Carousal Pics/paragon-school.jpg';
-import Paralite from '../../assets/Carousal Pics/Paralite.jpg';
-import Walkaholic from '../../assets/Carousal Pics/Walkaholic.jpg';
-import Paragon50Logo from '../../assets/Carousal Pics/Paragon 50 years logo.png';
-import BoxPack from '../../assets/Carousal Pics/box.png';
-import LoosePack from '../../assets/Carousal Pics/loose.png';
+// Local image imports removed in favor of Cloudinary URLs
 
 // Assets using Cloudinary optimized URLs
 const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp';
 
 const localCarousals = {
-  'EEKEN': [Eeken1, Eeken2, Eeken3, Eeken4, Eeken5, Eeken6, Eeken7, Eeken8],
-  'PARALITE': [Paralite],
-  'PARAGON GENTS': [ParagonGents1, ParagonGents2, ParagonGents3, ParagonGents4],
-  'PARAGON LADIES': [ParagonLadies1, ParagonLadies2, ParagonLadies3],
-  'P-TOES PARALITE': [Ptoes],
-  'Safety': [Boot1, Boot2],
-  'School': [ParagonSchool],
-  'Walkaholic': [Walkaholic],
-  'Max': [Max1],
-  'Escoute': [EscouteImg],
-  'LoosePacking': [LoosePack],
-  'BoxPacking': [BoxPack]
+  'EEKEN': [
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257404/Eeken-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257406/Eeken-2.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257408/Eeken-3.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257409/Eeken-4.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257411/Eeken-5.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257413/Eeken-6.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257415/Eeken-7.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257416/Eeken-8.jpg'
+  ],
+  'PARALITE': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257450/Paralite.jpg'],
+  'PARAGON GENTS': [
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257435/Paragon-gents-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257437/Paragon-gents-2.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257439/Paragon-gents-3.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257440/Paragon-gents-4.jpg'
+  ],
+  'PARAGON LADIES': [
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257442/Paragon-ladies-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257444/Paragon-ladies-2.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257446/Paragon-ladies-3.jpg'
+  ],
+  'P-TOES PARALITE': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257431/P-toes.png'],
+  'Safety': [
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257394/Boot-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257396/Boot-2.jpg'
+  ],
+  'School': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257448/paragon-school.jpg'],
+  'Walkaholic': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257463/Walkaholic.png'],
+  'Max': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257426/Max.jpg'],
+  'Escoute': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257418/Escoute.jpg'],
+  'LoosePacking': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257424/loose.png'],
+  'BoxPacking': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257402/box.png']
 };
 
 const getParagonImages = (card) => {
