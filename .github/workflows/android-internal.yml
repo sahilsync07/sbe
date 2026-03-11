@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "21"
           distribution: "temurin"
@@ -47,7 +47,7 @@ jobs:
         run: echo "code=$(( ${{ github.run_number }} + 100000 ))" >> $GITHUB_OUTPUT
 
       - name: Bump Version Code
-        uses: chkfung/android-version-actions@v1.2.1
+        uses: chkfung/android-version-actions@v1.2.3
         with:
           gradlePath: frontend/android/app/build.gradle
           versionCode: ${{ steps.version_code.outputs.code }}
