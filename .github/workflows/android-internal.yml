@@ -65,7 +65,6 @@ jobs:
           releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
           track: internal # Changed to internal for closed testing/instant deployment
           status: completed
-          changesNotSentForReview: true
           # inAppUpdatePriority: 2
           # userFraction: 0.33
 
