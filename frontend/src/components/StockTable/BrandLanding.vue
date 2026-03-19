@@ -194,6 +194,31 @@
        </div>
     </div>
 
+    <!-- PARAGON 40% DISCOUNT STRIP -->
+    <div 
+      class="w-full mt-2 mb-6 h-16 sm:h-20 rounded-2xl overflow-hidden relative cursor-pointer bg-gradient-to-r from-red-600 to-red-700 shadow-lg flex items-center group transition-transform duration-300 hover:scale-[1.01]"
+      @click="$emit('select-category', 'ParagonDiscount')"
+    >
+      <!-- Logo Section -->
+      <div class="w-1/4 sm:w-1/5 min-w-[80px] h-full bg-white flex items-center justify-center rounded-r-[30px] border-r-4 border-red-800 z-10 shadow-[4px_0_10px_rgba(0,0,0,0.2)]">
+        <CachedImage
+          :src="ParagonLogo"
+          alt="Paragon"
+          class="h-2/3 w-auto object-contain"
+          transformations="w_200,c_fit"
+        />
+      </div>
+      
+      <!-- Moving Text Section (Marquee) -->
+      <div class="flex-1 h-full overflow-hidden flex items-center relative">
+        <div class="marquee-content text-white font-black font-['Clash_Display'] text-xl sm:text-2xl lg:text-3xl tracking-wider uppercase drop-shadow-md flex whitespace-nowrap">
+          <span class="mx-4">🌟 40% DISCOUNT ON SELECTED ARTICLES - CLICK HERE 🌟</span>
+          <span class="mx-4">🌟 40% DISCOUNT ON SELECTED ARTICLES - CLICK HERE 🌟</span>
+          <span class="mx-4">🌟 40% DISCOUNT ON SELECTED ARTICLES - CLICK HERE 🌟</span>
+        </div>
+      </div>
+    </div>
+
     <!-- BRAND PARAGONS GRID -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
       <SlideshowCard
@@ -783,5 +808,16 @@ const midBrandCards = [
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shine 3s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-33.33%); }
+}
+.marquee-content {
+  animation: marquee 8s linear infinite;
+}
+.group:hover .marquee-content {
+  animation-play-state: paused;
 }
 </style>

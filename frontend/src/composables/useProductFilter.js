@@ -113,6 +113,11 @@ export function useProductFilter(stockData, config) {
                     isSpecial: true
                 }] : [];
             }
+            // Paragon 40% Discount Logic
+            else if (groupKey === "ParagonDiscount") {
+                const targetGroups = ['PARAGON GENTS 40%', 'SOLEA DISC 40% OFFER'].map(n => normalize(n));
+                filtered = filtered.filter(g => targetGroups.includes(normalize(g.groupName)));
+            }
             // Check if it's a Brand Group (e.g. Paragon, Florex)
             else if (config.value?.brandGroups && config.value.brandGroups[groupKey]) {
                 const allowedSubgroups = config.value.brandGroups[groupKey].map(g => normalize(g));
