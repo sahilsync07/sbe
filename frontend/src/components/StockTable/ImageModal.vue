@@ -153,7 +153,7 @@
                             <!-- Cart Button -->
                             <button
                                 v-if="cartQty === 0"
-                                @click.stop="$emit('addToCart', currentProduct)"
+                                @click.stop="addToCart(currentProduct)"
                                 class="flex-1 py-3.5 bg-white text-black font-['Clash_Display'] font-bold text-base rounded-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 shadow-xl"
                             >
                                 <i class="fa-solid fa-plus text-sm"></i>
@@ -162,11 +162,11 @@
 
                             <!-- Quantity Controls -->
                             <div v-else class="flex-1 flex items-center bg-white/10 rounded-xl border border-white/10 h-12">
-                                <button @click.stop="$emit('updateCart', currentProduct, -1)" class="w-14 h-full flex items-center justify-center text-white text-xl font-bold active:scale-90 transition-all">
+                                <button @click.stop="updateCart(currentProduct, -1)" class="w-14 h-full flex items-center justify-center text-white text-xl font-bold active:scale-90 transition-all">
                                     <i class="fa-solid fa-minus"></i>
                                 </button>
                                 <span class="flex-1 text-center text-xl font-['Clash_Display'] font-black text-white">{{ cartQty }}</span>
-                                <button @click.stop="$emit('updateCart', currentProduct, 1)" class="w-14 h-full flex items-center justify-center text-white text-xl font-bold active:scale-90 transition-all">
+                                <button @click.stop="updateCart(currentProduct, 1)" class="w-14 h-full flex items-center justify-center text-white text-xl font-bold active:scale-90 transition-all">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
@@ -233,7 +233,7 @@
                    <div class="grid grid-cols-[1fr,auto] gap-3">
                        <button
                           v-if="cartQty === 0"
-                          @click="$emit('addToCart', currentProduct)"
+                          @click="addToCart(currentProduct)"
                           class="bg-black text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-black/20 hover:bg-neutral-800 active:scale-95 transition-all flex items-center justify-center gap-2"
                        >
                           <i class="fa-solid fa-bag-shopping"></i>
@@ -242,11 +242,11 @@
 
                        <!-- Quantity Controls (Only if in cart) -->
                        <div v-else class="flex items-center gap-3 bg-slate-100 rounded-2xl px-2 w-full">
-                           <button @click="$emit('updateCart', currentProduct, -1)" class="w-12 h-full flex items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm active:scale-95">
+                           <button @click="updateCart(currentProduct, -1)" class="w-12 h-full flex items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm active:scale-95">
                                <i class="fa-solid fa-minus"></i>
                            </button>
                            <span class="text-xl font-bold flex-1 text-center">{{ cartQty }}</span>
-                           <button @click="$emit('updateCart', currentProduct, 1)" class="w-12 h-full flex items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm active:scale-95">
+                           <button @click="updateCart(currentProduct, 1)" class="w-12 h-full flex items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm active:scale-95">
                                <i class="fa-solid fa-plus"></i>
                            </button>
                        </div>
@@ -278,6 +278,10 @@
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { extractColor } from '../../utils/colors';
 
+import { useCart } from '../../composables/useCart';
+
+const { getCartQty, addToCart, updateCart } = useCart();
+
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 
 const props = defineProps({
@@ -285,11 +289,15 @@ const props = defineProps({
     currentProduct: Object,
     currentProductIndex: Number,
     isLastProduct: Boolean, 
-    currentGroupName: String,
-    cartQty: Number 
+    currentGroupName: String
 });
 
-const emit = defineEmits(['close', 'navigate', 'addToCart', 'updateCart']);
+const cartQty = computed(() => {
+    if (!props.currentProduct) return 0;
+    return getCartQty(props.currentProduct);
+});
+
+const emit = defineEmits(['close', 'navigate']);
 
 // Touch swipe handling
 const touchStartX = ref(0);

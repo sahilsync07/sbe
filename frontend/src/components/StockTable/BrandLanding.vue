@@ -83,11 +83,11 @@
 
                       <!-- Floating Cart Controls -->
                       <div v-if="getCartQty(product) > 0" class="absolute bottom-2 right-2 z-20 flex items-center gap-0.5 p-0.5 bg-white/95 backdrop-blur rounded-full shadow-md border border-blue-100 animate-fade-in-up" @click.stop>
-                          <button @click.stop="$emit('update-cart', product, -1)" class="w-6 h-6 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+                          <button @click.stop="updateCart(product, -1)" class="w-6 h-6 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
                               <i class="fa-solid fa-minus text-[10px]"></i>
                           </button>
                           <span class="w-4 text-center text-xs font-bold text-slate-800">{{ getCartQty(product) }}</span>
-                          <button @click.stop="$emit('update-cart', product, 1)" class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
+                          <button @click.stop="updateCart(product, 1)" class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
                               <i class="fa-solid fa-plus text-[10px]"></i>
                           </button>
                       </div>
@@ -137,7 +137,7 @@
 
                     <button 
                          v-if="product.quantity > 0"
-                         @click.stop="$emit('add-to-cart', product)"
+                         @click.stop="addToCart(product)"
                          class="absolute top-2 right-2 z-20 w-6 h-6 flex items-center justify-center rounded-full bg-white text-slate-600 shadow border border-slate-100 hover:bg-blue-600 hover:text-white transition-all hover:scale-110 active:scale-95"
                          title="Add to Cart"
                     >
@@ -306,11 +306,11 @@
 
                       <!-- Floating Cart Controls -->
                       <div v-if="getCartQty(product) > 0" class="absolute bottom-2 right-2 z-20 flex items-center gap-0.5 p-0.5 bg-white/95 backdrop-blur rounded-full shadow-md border border-blue-100 animate-fade-in-up" @click.stop>
-                          <button @click.stop="$emit('update-cart', product, -1)" class="w-6 h-6 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+                          <button @click.stop="updateCart(product, -1)" class="w-6 h-6 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
                               <i class="fa-solid fa-minus text-[10px]"></i>
                           </button>
                           <span class="w-4 text-center text-xs font-bold text-slate-800">{{ getCartQty(product) }}</span>
-                          <button @click.stop="$emit('update-cart', product, 1)" class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
+                          <button @click.stop="updateCart(product, 1)" class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
                               <i class="fa-solid fa-plus text-[10px]"></i>
                           </button>
                       </div>
@@ -360,7 +360,7 @@
 
                     <button 
                          v-if="product.quantity > 0"
-                         @click.stop="$emit('add-to-cart', product)"
+                         @click.stop="addToCart(product)"
                          class="absolute top-2 right-2 z-20 w-6 h-6 flex items-center justify-center rounded-full bg-white text-slate-600 shadow border border-slate-100 hover:bg-blue-600 hover:text-white transition-all hover:scale-110 active:scale-95"
                          title="Add to Cart"
                     >
@@ -512,16 +512,17 @@ import SlideshowCard from './SlideshowCard.vue';
 import { isNewArrival, getOptimizedImageUrl, formatProductName } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 
+import { useAdmin } from '../../composables/useAdmin';
+import { useStockData } from '../../composables/useStockData';
+import { useCart } from '../../composables/useCart';
+
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 
-const props = defineProps({
-  stockData: { type: Array, default: () => [] },
-  cart: { type: Array, default: () => [] },
-  isAdmin: { type: Boolean, default: false },
-  isSuperAdmin: { type: Boolean, default: false }
-});
+const { isAdmin, isSuperAdmin } = useAdmin();
+const { stockData } = useStockData();
+const { getCartQty, addToCart, updateCart } = useCart();
 
-defineEmits(['select-category', 'add-to-cart', 'update-cart', 'open-image-popup', 'open-catalog-gen']);
+defineEmits(['select-category', 'open-image-popup', 'open-catalog-gen']);
 
 const windowWidth = ref(window.innerWidth);
 const updateWidth = () => { windowWidth.value = window.innerWidth; };
@@ -626,16 +627,11 @@ const getCleanProductName = (name) => {
     return formatProductName(clean.replace(/\s+/g, ' ').trim());
 };
 
-const getCartQty = (product) => {
-    const item = props.cart.find(i => i.product.productName === product.productName);
-    return item ? item.quantity : 0;
-};
-
 // Data Collection Functions
 const getNewArrivalProducts = () => {
     let products = [];
-    if (!props.stockData) return products;
-    for (const group of props.stockData) {
+    if (!stockData.value) return products;
+    for (const group of stockData.value) {
         if (group.products) {
             for (const p of group.products) {
                 if (isNewArrival(p) && p.imageUrl) products.push(p);
@@ -651,8 +647,8 @@ const getNewArrivalProducts = () => {
 
 const getNewArrivalCount = () => {
     let count = 0;
-    if (!props.stockData) return 0;
-    for (const group of props.stockData) {
+    if (!stockData.value) return 0;
+    for (const group of stockData.value) {
         if (group.products) {
             for (const p of group.products) {
                 if (isNewArrival(p) && p.imageUrl) count++;
@@ -670,9 +666,9 @@ const getHeroImage = () => {
 
 const getBrandProducts = (groupNames) => {
     let products = [];
-    if (!props.stockData || !groupNames) return products;
+    if (!stockData.value || !groupNames) return products;
     const lower = groupNames.map(n => n.toLowerCase());
-    for (const group of props.stockData) {
+    for (const group of stockData.value) {
         if (lower.includes(group.groupName.toLowerCase()) && group.products) {
             for (const p of group.products) {
                 if (p.imageUrl) products.push(p);
@@ -732,10 +728,10 @@ const getImages = (groupNames, limit=5) => {
 };
 
 const getCount = (groupNames) => {
-  if (!props.stockData || !groupNames) return 0;
+  if (!stockData.value || !groupNames) return 0;
   let count = 0;
   const lower = groupNames.map(n => n.toLowerCase());
-  props.stockData.forEach(g => {
+  stockData.value.forEach(g => {
     if (lower.includes(g.groupName.toLowerCase())) {
       count += g.products ? g.products.length : 0;
     }

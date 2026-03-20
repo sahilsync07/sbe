@@ -27,11 +27,11 @@
         
         <!-- Floating Cart Controls (On Image) -->
         <div v-if="getCartQty(product) > 0" class="absolute bottom-3 right-3 z-20 flex items-center gap-1 p-1 bg-white/95 backdrop-blur rounded-full shadow-lg border border-blue-100 animate-fade-in-up" @click.stop>
-            <button @click.stop="$emit('update-cart', product, -1)" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+            <button @click.stop="updateCart(product, -1)" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
                 <i class="fa-solid fa-minus text-xs"></i>
             </button>
             <span class="w-6 text-center text-sm font-bold text-slate-800">{{ getCartQty(product) }}</span>
-            <button @click.stop="$emit('update-cart', product, 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
+            <button @click.stop="updateCart(product, 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
                 <i class="fa-solid fa-plus text-xs"></i>
             </button>
         </div>
@@ -51,12 +51,12 @@
                >
                   <i class="fa-solid fa-camera text-sm"></i>
                   <span class="text-xs font-bold uppercase tracking-wide">Add Photo</span>
-                  <input type="file" accept="image/*" @change="(e) => $emit('handle-file-change', e, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
+                  <input type="file" accept="image/*" @change="(e) => handleFileChange(e, product.productName)" class="hidden" :disabled="uploading[product.productName]" />
                </label>
                
                <!-- State B: File Selected -> Upload Action -->
                <button v-else 
-                       @click.stop="$emit('upload-image', product.productName)" 
+                       @click.stop="uploadImage(product.productName)" 
                        class="w-full py-2.5 bg-blue-600 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 hover:bg-blue-700 transition-all font-bold text-xs flex items-center justify-center gap-2 uppercase tracking-wide"
                        :disabled="uploading[product.productName]"
                >
@@ -67,7 +67,7 @@
 
            <!-- Case 2: Has Image - Remove Button -->
            <div v-else class="pointer-events-auto absolute top-2 right-2">
-             <button @click.stop="$emit('delete-image', product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-sm" title="Remove Image">
+             <button @click.stop="deleteImage(product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-sm" title="Remove Image">
                <i class="fa-solid fa-trash text-xs"></i>
              </button>
            </div>
@@ -120,7 +120,7 @@
 
         <button 
              v-if="product.quantity > 0"
-             @click.stop="$emit('add-to-cart', product)"
+             @click.stop="addToCart(product)"
              class="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 shadow-sm border border-slate-200 hover:bg-blue-600 hover:text-white transition-all hover:scale-110 active:scale-95"
              title="Add to Cart"
         >
@@ -132,29 +132,25 @@
 
 <script setup>
 import { computed } from 'vue';
-import { getOptimizedImageUrl, getCleanProductName } from '../../utils/formatters';
+import { getOptimizedImageUrl, getCleanProductName, isNewArrival } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 import CachedImage from './CachedImage.vue';
 
+// Composables
+import { useAdmin } from '../../composables/useAdmin';
+import { useStockData } from '../../composables/useStockData';
+import { useCart } from '../../composables/useCart';
+
+const { isAdmin, isSuperAdmin } = useAdmin();
+const { uploading, imageFiles, handleFileChange, uploadImage, deleteImage } = useStockData();
+const { getCartQty, addToCart, updateCart } = useCart();
+
 const props = defineProps({
   product: { type: Object, required: true },
-  index: { type: Number, required: true },
-  isAdmin: Boolean,
-  isSuperAdmin: Boolean,
-  imageFiles: { type: Object, default: () => ({}) },
-  uploading: { type: Object, default: () => ({}) },
-  getCartQty: { type: Function, required: true },
-  isNewArrival: { type: Function, required: true }
+  index: { type: Number, required: true }
 });
 
-const emit = defineEmits([
-  'open-image-popup',
-  'update-cart',
-  'add-to-cart',
-  'handle-file-change',
-  'upload-image',
-  'delete-image'
-]);
+const emit = defineEmits(['open-image-popup']);
 
 const getProductColor = (name) => extractColor(name);
 

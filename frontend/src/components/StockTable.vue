@@ -63,13 +63,7 @@
         <!-- Brand Landing Page -->
         <BrandLanding
           v-else-if="showLanding && !searchQuery"
-          :stock-data="stockData"
-          :cart="cart"
-          :is-admin="isAdmin"
-          :is-super-admin="isSuperAdmin"
           @select-category="handleCategorySelect"
-          @add-to-cart="addToCart"
-          @update-cart="updateCart"
           @open-image-popup="openImagePopup"
           @open-catalog-gen="showCatalogGen = true"
         />
@@ -152,18 +146,7 @@
                         :key="product.productName"
                         :product="product"
                         :index="index"
-                        :isAdmin="isAdmin"
-                        :isSuperAdmin="isSuperAdmin"
-                        :imageFiles="imageFiles"
-                        :uploading="uploading"
-                        :getCartQty="getCartQty"
-                        :isNewArrival="isNewArrival"
                         @open-image-popup="(p, i) => openImagePopup(p, i)"
-                        @update-cart="(p, qty) => updateCart(p, qty)"
-                        @handle-file-change="(e, name) => handleFileChange(e, name)"
-                        @upload-image="(name) => uploadImage(name)"
-                        @delete-image="(name) => deleteImage(name)"
-                        @add-to-cart="(p) => addToCart(p)"
                       />
                     </div>
                   </div>
@@ -191,11 +174,8 @@
       :current-product-index="currentProductIndex"
       :is-last-product="currentProductIndex >= currentGroupProducts.length - 1"
       :current-group-name="currentGroupName"
-      :cart-qty="getCartQty(currentProduct)"
       @close="closeImagePopup"
       @navigate="navigateImage"
-      @addToCart="addToCart"
-      @updateCart="updateCart"
     />
 
     <!-- Order Details Modal -->
