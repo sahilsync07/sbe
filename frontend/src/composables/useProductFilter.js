@@ -1,11 +1,14 @@
 
 import { ref, computed } from 'vue';
 import { BRAND_LISTS, DEFAULT_MIN_DATE, NEW_ARRIVAL_MONTHS } from '../utils/constants';
+import { useAppStore } from '../stores/appStore';
+import { storeToRefs } from 'pinia';
 
 export function useProductFilter(stockData, config) {
-    const searchQuery = ref("");
+    const appStore = useAppStore();
+    const { searchQuery, cleanView } = storeToRefs(appStore);
+    
     const selectedGroup = ref("All");
-    const cleanView = ref(true); // Default ON
     const hideOldArticles = ref(true);
 
     // Helper: Normalize strings for comparison

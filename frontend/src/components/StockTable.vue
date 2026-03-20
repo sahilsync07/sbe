@@ -2,29 +2,19 @@
 <template>
   <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800 pb-20">
     <DesktopToolbar
-      :is-admin="isAdmin"
-      :is-super-admin="isSuperAdmin"
       :loading="loading"
-      :is-refreshing="isRefreshing"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"
       :show-cart="showCart"
       :company-name="companyName"
-      :last-refresh="lastRefresh"
-      :cart-total-items="cartTotalItems"
-      :search-query="searchQuery"
-      :clean-view="cleanView"
       :cloud-name="cloudName"
       @toggleSidebar="toggleSidebar"
       @toggleCart="toggleCart"
       @updateStockData="updateStockData"
       @toggleLedgerView="toggleLedgerView"
       @promptAdminLogin="promptAdminLogin"
-      @update:searchQuery="searchQuery = $event"
-      @update:cleanView="handleCleanViewToggle($event)"
       @cacheImages="handleCacheImages"
       @refreshData="refreshStockData"
-      :stock-data="stockData"
     />
 
     <Transition
@@ -52,14 +42,7 @@
       <!-- Cart Sidebar -->
       <CartSidebar
         :show-cart="showCart"
-        :cart="cart"
-        :filtered-cart="cart" 
-        :cart-total-items="cartTotalItems"
-        :cart-item-count="cartItemCount"
         @closeCart="showCart = false"
-        @clearCart="clearCart"
-        @updateCartQuantity="updateCartQuantity"
-        @removeFromCart="removeFromCart"
         @sendOrderToWhatsapp="sendOrderToWhatsapp"
       />
 

@@ -2,13 +2,15 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { toast } from 'vue3-toastify';
+import { useAppStore } from '../stores/appStore';
+import { storeToRefs } from 'pinia';
 
 export function useStockData(isLocal) {
-    const stockData = ref([]);
+    const appStore = useAppStore();
+    const { stockData, isRefreshing, lastSyncTime: lastRefresh } = storeToRefs(appStore);
+    
     const loading = ref(false);
-    const isRefreshing = ref(false);
     const error = ref(null);
-    const lastRefresh = ref(null);
     const uploading = ref({});
     const uploadErrors = ref({});
     const imageFiles = ref({});

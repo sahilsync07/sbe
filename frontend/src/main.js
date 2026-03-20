@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
 import { Capacitor } from '@capacitor/core';
 import Vue3Toasty from "vue3-toastify";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -28,6 +29,7 @@ import "./style.css";
   }
 
   const app = createApp(App);
+  app.use(createPinia());
   app.use(router);
   app.use(Vue3Toasty, {
     autoClose: 3000,

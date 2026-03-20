@@ -18,7 +18,7 @@
          <div class="flex items-center gap-3">
              <button 
                v-if="cartItemCount > 0"
-               @click="$emit('clearCart')"
+               @click="cartStore.clearCart()"
                class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all"
                title="Clear Cart"
              >
@@ -54,7 +54,7 @@
          <!-- Item List -->
          <transition-group name="list" tag="div" class="space-y-4" v-else>
             <div 
-                v-for="(item, index) in filteredCart" 
+                v-for="(item, index) in cart" 
                 :key="item.product.productName" 
                 class="flex gap-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
             >
@@ -73,7 +73,7 @@
                               {{ item.product.productName }}
                           </h4>
                           <button 
-                              @click="$emit('removeFromCart', index)" 
+                              @click="cartStore.removeFromCart(index)" 
                               class="shrink-0 w-6 h-6 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
                           >
                              <i class="fa-solid fa-xmark"></i>
@@ -87,14 +87,14 @@
                   <div class="flex items-center justify-between mt-2">
                       <div class="flex items-center bg-slate-50 rounded-full p-1 border border-slate-200/60">
                          <button 
-                             @click="$emit('updateCartQuantity', index, -1)" 
+                             @click="cartStore.updateCartQuantity(index, -1)" 
                              class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-full shadow-sm hover:bg-slate-50 active:scale-90 transition-all"
                          >
                              <i class="fa-solid fa-minus text-[10px]"></i>
                          </button>
                          <span class="text-sm font-bold text-slate-800 w-8 text-center">{{ item.quantity }}</span>
                          <button 
-                             @click="$emit('updateCartQuantity', index, 1)" 
+                             @click="cartStore.updateCartQuantity(index, 1)" 
                              class="w-7 h-7 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-md hover:bg-slate-800 active:scale-90 transition-all"
                          >
                              <i class="fa-solid fa-plus text-[10px]"></i>
@@ -143,19 +143,18 @@
 </template>
 
 <script setup>
+import { useCartStore } from '../../stores/cartStore';
+import { storeToRefs } from 'pinia';
+
+const cartStore = useCartStore();
+const { cart, cartTotalItems, cartItemCount } = storeToRefs(cartStore);
+
 defineProps({
-    showCart: Boolean,
-    cart: Array,
-    filteredCart: Array,
-    cartTotalItems: {
-        type: Number,
-        default: 0
-    },
-    cartItemCount: Number
+    showCart: Boolean
 });
 
 defineEmits([
-    'closeCart', 'clearCart', 'updateCartQuantity', 'removeFromCart', 'sendOrderToWhatsapp'
+    'closeCart', 'sendOrderToWhatsapp'
 ]);
 
 const getOptimizedUrl = (imageUrl) => {

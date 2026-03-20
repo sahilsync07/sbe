@@ -153,7 +153,7 @@
            <!-- Toggles -->
            <div class="flex items-center gap-2">
                <button 
-                  @click="$emit('update:cleanView', !cleanView)"
+                  @click="cleanView = !cleanView"
                   class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
                   :class="cleanView ? 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400 text-black shadow-md' : 'bg-neutral-900 border-white/5 text-slate-400 hover:bg-neutral-800 hover:text-slate-200'"
                   title="Clean View (Images Only & In Stock)"
@@ -344,7 +344,7 @@
                </button>
 
                <button 
-                  @click="$emit('update:cleanView', !cleanView)"
+                  @click="cleanView = !cleanView"
                   class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border overflow-hidden"
                   :class="cleanView ? 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400 text-black shadow-md' : 'bg-neutral-900 border-white/10 text-slate-400'"
                   title="Clean View"
@@ -362,9 +362,27 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { extractColor } from '../../utils/colors';
 
+// Pinia global stores
+import { useAppStore } from '../../stores/appStore';
+import { useCartStore } from '../../stores/cartStore';
+import { storeToRefs } from 'pinia';
+
+const appStore = useAppStore();
+const cartStore = useCartStore();
+
+const { 
+  isAdmin, 
+  isSuperAdmin, 
+  isRefreshing, 
+  lastSyncTime: lastRefresh, 
+  searchQuery, 
+  cleanView, 
+  stockData 
+} = storeToRefs(appStore);
+
+const { cartTotalItems } = storeToRefs(cartStore);
+
 const props = defineProps({
-  isAdmin: Boolean,
-  isSuperAdmin: Boolean,
   loading: Boolean,
   showSidePanel: Boolean,
   showCart: Boolean,
@@ -372,22 +390,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  lastRefresh: [Date, String, Object],
-  cartTotalItems: Number,
-  searchQuery: String,
-  cleanView: Boolean,
   cloudName: String,
-  isRefreshing: {
-    type: Boolean,
-    default: false
-  },
   isCachingImages: {
     type: Boolean,
     default: false
-  },
-  stockData: {
-    type: Array,
-    default: () => []
   }
 });
 
@@ -397,8 +403,6 @@ const emit = defineEmits([
   'updateStockData', 
   'toggleLedgerView', 
   'promptAdminLogin',
-  'update:searchQuery',
-  'update:cleanView',
   'cacheImages',
   'refreshData'
 ]);
@@ -410,8 +414,8 @@ const companyRestName = computed(() => {
   return rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
 });
 const formattedLastRefresh = computed(() => {
-  if (!props.lastRefresh) return "";
-  const date = new Date(props.lastRefresh);
+  if (!lastRefresh.value) return "";
+  const date = new Date(lastRefresh.value);
   const now = new Date();
   const diffInHours = (now - date) / (1000 * 60 * 60);
   const diffInDays = Math.floor(diffInHours / 24);
@@ -430,8 +434,8 @@ const formattedLastRefresh = computed(() => {
 });
 
 const statusColor = computed(() => {
-  if (!props.lastRefresh) return "bg-rose-500"; // Offline/No Data
-  const date = new Date(props.lastRefresh);
+  if (!lastRefresh.value) return "bg-rose-500"; // Offline/No Data
+  const date = new Date(lastRefresh.value);
   const now = new Date();
   const diffInHours = (now - date) / (1000 * 60 * 60);
   const diffInDays = diffInHours / 24;
@@ -444,7 +448,7 @@ const statusColor = computed(() => {
 
 
 // --- Smart Dropdown Search Logic ---
-const localQuery = ref(props.searchQuery);
+const localQuery = ref(searchQuery.value || '');
 const showDesktopDropdown = ref(false);
 const showMobileDropdown = ref(false);
 const desktopSearchRef = ref(null);
@@ -531,8 +535,8 @@ const searchSuggestions = computed(() => {
   const maxSuggestions = 8;
   
   // Search through nested stockData
-  if (props.stockData && Array.isArray(props.stockData)) {
-    for (const group of props.stockData) {
+  if (stockData.value && Array.isArray(stockData.value)) {
+    for (const group of stockData.value) {
       if (group.products && Array.isArray(group.products)) {
         for (const product of group.products) {
           if (product.productName) {
@@ -559,10 +563,10 @@ const executeSearch = (itemOrQuery) => {
   } else if (itemOrQuery && itemOrQuery.productName) {
     query = itemOrQuery.productName;
     const isClean = !!itemOrQuery.imageUrl && Number(itemOrQuery.quantity) >= 4;
-    emit('update:cleanView', isClean);
+    cleanView.value = isClean; // Update Pinia directly
   }
   
-  emit('update:searchQuery', query);
+  searchQuery.value = query; // Update Pinia directly
   localQuery.value = ''; // Empty the search bar instead of pasting the result
   showDesktopDropdown.value = false;
   showMobileDropdown.value = false;
@@ -601,7 +605,7 @@ onUnmounted(() => {
 });
 
 // Sync external changes (e.g. clear search from parent)
-watch(() => props.searchQuery, (newVal) => {
+watch(() => searchQuery.value, (newVal) => {
   if (newVal === '') {
     localQuery.value = '';
   }
