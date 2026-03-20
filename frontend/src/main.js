@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { Capacitor } from '@capacitor/core';
 import Vue3Toasty from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./style.css";
 
@@ -32,9 +33,11 @@ import "./style.css";
   app.use(createPinia());
   app.use(router);
   app.use(Vue3Toasty, {
-    autoClose: 3000,
-    position: "bottom-right",
-    theme: "dark",
+    autoClose: 2500,
+    position: "bottom-center", 
+    hideProgressBar: true,
+    closeButton: false,
+    icon: true,
   });
   app.mount("#app");
 })();

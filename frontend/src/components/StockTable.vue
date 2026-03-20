@@ -222,7 +222,6 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'vue3-toastify';
-import "vue3-toastify/dist/index.css";
 // Constants & Utils
 import { FILTER_DELAY_MS } from '../utils/constants';
 import { formatProductName, normalizeId, getOptimizedImageUrl, isNewArrival } from '../utils/formatters';

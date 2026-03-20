@@ -9,15 +9,25 @@
             <p class="text-sm text-slate-500 mb-6">Enter the password to access admin features.</p>
             
             <div class="space-y-4">
-               <div>
+                <div>
                   <label class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
-                  <input 
-                    v-model="password"
-                    type="password" 
-                    placeholder="Enter password"
-                    @keyup.enter="handleLogin"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
-                  >
+                  <div class="relative">
+                    <input 
+                      ref="passwordInput"
+                      v-model="password"
+                      :type="showPassword ? 'text' : 'password'" 
+                      placeholder="Enter password"
+                      @keyup.enter="handleLogin"
+                      class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400 pr-12"
+                    >
+                    <button 
+                      type="button"
+                      @click="showPassword = !showPassword"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <i :class="['fas', showPassword ? 'fa-eye-slash' : 'fa-eye']"></i>
+                    </button>
+                  </div>
                </div>
             </div>
 
@@ -42,15 +52,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 
-defineProps({
+const props = defineProps({
     show: Boolean
 });
 
 const emit = defineEmits(['close', 'login']);
 
 const password = ref('');
+const showPassword = ref(false);
+const passwordInput = ref(null);
+
+// Auto-focus when modal opens
+watch(() => props.show, (newVal) => {
+    if (newVal) {
+        nextTick(() => {
+            passwordInput.value?.focus();
+        });
+    } else {
+        showPassword.value = false; // Reset toggle on close
+    }
+});
 
 const handleLogin = () => {
     emit('login', password.value);
