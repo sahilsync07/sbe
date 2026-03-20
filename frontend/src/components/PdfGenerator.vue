@@ -548,8 +548,6 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import axios from "axios";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-
-import { jsPDF } from "jspdf";
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
@@ -677,6 +675,7 @@ const generatePdfBlob = async (targetBrands) => {
     const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
     
     // 2. Setup PDF
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({
         orientation: "portrait",
         unit: "pt", // using points to match pdfkit somewhat closer (72 dpi vs pdfkit default)

@@ -1,3 +1,5 @@
+import { extractColor } from './colors.js';
+
 /**
  * Format product name to title case
  * @param {string} name - Product name to format
@@ -65,4 +67,36 @@ export function isNewArrival(product) {
  */
 export function normalizeName(name) {
     return name ? name.toLowerCase().trim() : '';
+}
+
+/**
+ * Get a clean product name by stripping sizes, prices, and colors
+ * @param {string} name - Name to clean
+ * @returns {string} Cleaned name
+ */
+export function getCleanProductName(name) {
+    if (!name) return '';
+    let clean = name;
+    
+    // Remove Colors
+    const colorData = extractColor(name);
+    if (colorData && colorData.originalTokens) {
+        colorData.originalTokens.forEach(token => {
+            const regex = new RegExp(`\\b${token}\\b`, 'gi');
+            clean = clean.replace(regex, '');
+        });
+    }
+
+    // Remove Price pattern
+    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    // Remove Size pattern
+    clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
+    
+    clean = clean.replace(/\(\s*\)/g, '');
+    clean = clean.replace(/[\/\-\.]+\s*$/g, '') 
+                 .replace(/^\s*[\/\-\.]+/g, '') 
+                 .replace(/\s*[\/\-\.]+\s*/g, ' '); 
+    
+    const cleanedString = clean.replace(/\s+/g, ' ').trim();
+    return formatProductName(cleanedString);
 }

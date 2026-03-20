@@ -1,5 +1,3 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { formatProductName, normalizeId } from "./formatters";
 import { extractColor } from "./colors";
 
@@ -51,8 +49,10 @@ const getProductColor = (name) => {
     return data ? data.text : '-';
 };
 
-export const generateOrderPDF = (cart, customerDetails) => {
+export const generateOrderPDF = async (cart, customerDetails) => {
     try {
+        const { default: jsPDF } = await import("jspdf");
+        const { default: autoTable } = await import("jspdf-autotable");
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
 

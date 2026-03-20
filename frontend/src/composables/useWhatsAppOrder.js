@@ -46,7 +46,7 @@ export function useWhatsAppOrder(cart, config) {
         if (Capacitor.getPlatform() === 'android') {
             try {
                 // 1. Generate Base64 PDF
-                const pdfBase64 = generateOrderPDF(cart.value, {
+                const pdfBase64 = await generateOrderPDF(cart.value, {
                     name: customerName.value,
                     phone: customerPhone.value,
                     returnBase64: true
@@ -78,7 +78,7 @@ export function useWhatsAppOrder(cart, config) {
         // WEB: Download PDF -> Open WhatsApp Text
         else {
             // Generate & Download PDF
-            generateOrderPDF(cart.value, {
+            await generateOrderPDF(cart.value, {
                 name: customerName.value,
                 phone: customerPhone.value
             });
