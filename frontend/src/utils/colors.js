@@ -63,6 +63,7 @@ export const COLOR_MAP = {
     'YELLOW': { color: '#eab308', label: 'Yellow' },
     'MUSTARD': { color: '#ca8a04', label: 'Mustard' }, // Yellow-600
     'MST': { color: '#ca8a04', label: 'Mustard' },
+    'MSD': { color: '#ca8a04', label: 'Mustard' },
     'LEMON': { color: '#facc15', label: 'Lemon' }, // Yellow-400
 
     // PINKS/PURPLES
@@ -89,7 +90,8 @@ export const COLOR_MAP = {
     'CHIKKU': { color: '#a16d48', label: 'Chikoo' },
     'CHIKU': { color: '#a16d48', label: 'Chikoo' },
     'CAMEL': { color: '#d97706', label: 'Camel' }, // Amber-600
-    'KHAKI': { color: '#a3a3a3', label: 'Khaki' },
+    'KHAKI': { color: '#c3b091', label: 'Khaki' },
+    'KKI': { color: '#c3b091', label: 'Khaki' },
     'CRM': { color: '#d4d4d4', label: 'Cream' }, // Neutral-300 (darker for text)
     'CREAM': { color: '#d4d4d4', label: 'Cream' },
     'S.TAN': { color: '#d4a373', label: 'S.Tan' },
