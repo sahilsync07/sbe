@@ -64,7 +64,7 @@
                 leave-to-class="translate-y-2 opacity-0"
               >
                 <div v-if="showDesktopDropdown && localQuery.trim().length > 0" 
-                     class="absolute top-full left-0 right-0 mt-3 bg-neutral-900 border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-[70] max-h-[60vh] flex flex-col">
+                     class="fixed top-[84px] left-4 right-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-[800px] max-w-full bg-neutral-900 border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-[70] max-h-[60vh] flex flex-col">
                   <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 custom-scrollbar">
                     <button 
                       @click="executeSearch(localQuery)"
@@ -85,18 +85,22 @@
                       v-for="product in searchSuggestions"
                       :key="product.productName"
                       @click="executeSearch(product.productName)"
-                      class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3 border border-transparent hover:border-white/5"
+                      class="w-full text-left px-5 py-4 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-4 border border-transparent hover:border-white/5"
                     >
-                       <div class="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
-                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-80" />
-                          <i v-else class="fa-solid fa-box text-slate-500 text-xs"></i>
+                       <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
+                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-90" />
+                          <i v-else class="fa-solid fa-box text-slate-500 text-lg"></i>
                        </div>
                        <div class="flex-1 overflow-hidden">
-                          <div class="text-white font-medium truncate text-sm">{{ formatProductNameToolbar(product.productName) }}</div>
-                          <div class="text-slate-400 text-xs mt-0.5 truncate flex items-center gap-2">
+                          <div class="text-white font-['Clash_Display'] font-bold tracking-wide truncate text-lg">{{ formatProductNameToolbar(product.productName) }}</div>
+                          <div class="text-slate-300 font-medium text-sm mt-1 truncate flex items-center gap-2.5">
                             <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
                               <span class="w-2.5 h-2.5 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
                               <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
+                              <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            </span>
+                            <span v-if="getProductSize(product.productName)" class="flex items-center gap-1">
+                              <span class="font-bold text-slate-300">Size {{ getProductSize(product.productName) }}</span>
                               <span class="w-1 h-1 rounded-full bg-slate-600"></span>
                             </span>
                             <span v-if="product.quantity > 0" class="text-emerald-400">{{ product.quantity }} pairs</span>
@@ -272,7 +276,7 @@
                 leave-to-class="translate-y-2 opacity-0"
               >
                 <div v-if="showMobileDropdown && localQuery.trim().length > 0" 
-                     class="absolute bottom-full left-0 right-0 mb-3 bg-neutral-900 border border-white/20 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-[70] max-h-[60vh] flex flex-col">
+                     class="fixed bottom-[calc(max(env(safe-area-inset-bottom),12px)+74px)] left-3 right-3 bg-neutral-900 border border-white/20 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-[70] max-h-[60vh] flex flex-col">
                   <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 custom-scrollbar">
                     <button 
                       @click="executeSearch(localQuery)"
@@ -292,18 +296,22 @@
                       v-for="product in searchSuggestions"
                       :key="product.productName"
                       @click="executeSearch(product.productName)"
-                      class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3"
+                      class="w-full text-left px-4 py-3.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3.5"
                     >
-                       <div class="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
-                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-80" />
-                          <i v-else class="fa-solid fa-box text-slate-500 text-xs"></i>
+                       <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
+                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-90" />
+                          <i v-else class="fa-solid fa-box text-slate-500 text-base"></i>
                        </div>
                        <div class="flex-1 overflow-hidden">
-                          <div class="text-white font-medium truncate text-sm leading-tight">{{ formatProductNameToolbar(product.productName) }}</div>
-                          <div class="text-slate-400 text-[10px] mt-0.5 truncate flex items-center gap-1.5">
+                          <div class="text-white font-['Clash_Display'] font-bold tracking-wide truncate text-base leading-tight">{{ formatProductNameToolbar(product.productName) }}</div>
+                          <div class="text-slate-300 font-medium text-xs sm:text-sm mt-1.5 truncate flex items-center gap-2">
                             <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
                               <span class="w-2 h-2 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
                               <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
+                              <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            </span>
+                            <span v-if="getProductSize(product.productName)" class="flex items-center gap-1">
+                              <span class="font-bold text-slate-300">Size {{ getProductSize(product.productName) }}</span>
                               <span class="w-1 h-1 rounded-full bg-slate-600"></span>
                             </span>
                             <span v-if="product.quantity > 0" class="text-emerald-400">{{ product.quantity }} prs</span>
@@ -479,6 +487,20 @@ const formatProductNameToolbar = (fullName) => {
 
 // Extract color info from product name
 const getProductColor = (name) => extractColor(name);
+
+// Extract size info from product name
+const getProductSize = (name) => {
+    if (!name) return null;
+    const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
+    if (match) {
+        const n1 = parseInt(match[1]);
+        const n2 = parseInt(match[2]);
+        const low = Math.min(n1, n2);
+        const high = Math.max(n1, n2);
+        return `${low}x${high}`;
+    }
+    return null;
+};
 
 // Extract price info using regex (matches StockTable.vue logic)
 const getPriceInfo = (name) => {
