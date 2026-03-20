@@ -84,7 +84,7 @@
                     <button
                       v-for="product in searchSuggestions"
                       :key="product.productName"
-                      @click="executeSearch(product.productName)"
+                      @click="executeSearch(product)"
                       class="w-full text-left px-5 py-4 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-4 border border-transparent hover:border-white/5"
                     >
                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
@@ -295,7 +295,7 @@
                     <button
                       v-for="product in searchSuggestions"
                       :key="product.productName"
-                      @click="executeSearch(product.productName)"
+                      @click="executeSearch(product)"
                       class="w-full text-left px-4 py-3.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3.5"
                     >
                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
@@ -551,7 +551,17 @@ const searchSuggestions = computed(() => {
   return matches;
 });
 
-const executeSearch = (query) => {
+const executeSearch = (itemOrQuery) => {
+  let query = '';
+  
+  if (typeof itemOrQuery === 'string') {
+    query = itemOrQuery;
+  } else if (itemOrQuery && itemOrQuery.productName) {
+    query = itemOrQuery.productName;
+    const isClean = !!itemOrQuery.imageUrl && Number(itemOrQuery.quantity) >= 4;
+    emit('update:cleanView', isClean);
+  }
+  
   emit('update:searchQuery', query);
   localQuery.value = ''; // Empty the search bar instead of pasting the result
   showDesktopDropdown.value = false;

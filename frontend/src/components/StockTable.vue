@@ -1015,6 +1015,8 @@ const handleClubClick = (clubName) => {
 
 
 const handleCleanViewToggle = (newValue) => {
+  if (cleanView.value === newValue) return;
+  
   isFiltering.value = true;
   
   // Use setTimeout to allow the loader to render before the heavy filter operation
