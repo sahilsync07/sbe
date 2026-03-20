@@ -57,13 +57,14 @@ export function useProductFilter(stockData, config) {
 
         // Filter by Search Query
         if (searchQuery.value) {
-            const q = searchQuery.value.toLowerCase();
+            const queryParts = searchQuery.value.toLowerCase().split(/\s+/).filter(Boolean);
             filtered = filtered
                 .map((group) => ({
                     ...group,
-                    products: group.products.filter((product) =>
-                        product.productName.toLowerCase().includes(q)
-                    ),
+                    products: group.products.filter((product) => {
+                        const productName = product.productName.toLowerCase();
+                        return queryParts.every(part => productName.includes(part));
+                    }),
                 }))
                 .filter((group) => group.products.length > 0);
         }
@@ -183,7 +184,11 @@ export function useProductFilter(stockData, config) {
 
             stockData.value.forEach(g => {
                 g.products.forEach(p => {
-                    if (searchQuery.value && !p.productName.toLowerCase().includes(searchQuery.value.toLowerCase())) return;
+                    if (searchQuery.value) {
+                        const queryParts = searchQuery.value.toLowerCase().split(/\s+/).filter(Boolean);
+                        const productName = p.productName.toLowerCase();
+                        if (!queryParts.every(part => productName.includes(part))) return;
+                    }
 
                     // Clean View Logic for New Arrivals
                     if (cleanView.value) {

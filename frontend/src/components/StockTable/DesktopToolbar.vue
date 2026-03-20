@@ -526,6 +526,7 @@ const searchSuggestions = computed(() => {
   const query = localQuery.value.trim().toLowerCase();
   if (!query) return [];
   
+  const queryParts = query.split(/\s+/).filter(Boolean);
   const matches = [];
   const maxSuggestions = 8;
   
@@ -534,10 +535,13 @@ const searchSuggestions = computed(() => {
     for (const group of props.stockData) {
       if (group.products && Array.isArray(group.products)) {
         for (const product of group.products) {
-          if (product.productName && product.productName.toLowerCase().includes(query)) {
-            matches.push(product);
-            if (matches.length >= maxSuggestions) {
-              return matches;
+          if (product.productName) {
+            const productName = product.productName.toLowerCase();
+            if (queryParts.every(part => productName.includes(part))) {
+              matches.push(product);
+              if (matches.length >= maxSuggestions) {
+                return matches;
+              }
             }
           }
         }
