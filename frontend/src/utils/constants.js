@@ -69,7 +69,8 @@ export const BRAND_LISTS = {
         'GOKUL FOOTWEAR',
         'NEXGEN FOOTWEAR',
         'KOHINOOR',
-        'UAM FOOTWEAR'
+        'UAM FOOTWEAR',
+        'BROCKKIE'
     ]
 };
 
