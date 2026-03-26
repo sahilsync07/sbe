@@ -63,6 +63,7 @@ onMounted(async () => {
   --toastify-color-success: rgba(15, 23, 42, 0.95) !important;
   --toastify-color-warning: rgba(15, 23, 42, 0.95) !important;
   --toastify-color-error: rgba(15, 23, 42, 0.95) !important;
+  --toastify-icon-color-success: #22c55e !important; /* Green */
 }
 
 /* Container Adjustments */
