@@ -143,6 +143,11 @@ export const COLOR_MAP = {
     'BBG': { color: '#292524', label: 'Black Beige' },
     'FGN': { color: '#15803d', label: 'Forest Green' },
     'BKR': { color: '#450a0a', label: 'Black Red' },
+    'LGY': { color: '#d4d4d4', label: 'Light Grey' },
+    'ORG': { color: '#f97316', label: 'Orange' },
+    'OGN': { color: '#65a30d', label: 'Olive Green' },
+    'CPR': { color: '#b45309', label: 'Copper' },
+    'LVY': { color: '#3b5998', label: 'Light Navy' },
 };
 
 export const COLOR_KEYS = Object.keys(COLOR_MAP).sort((a, b) => b.length - a.length); // Match longest first
