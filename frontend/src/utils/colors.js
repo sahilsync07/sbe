@@ -148,6 +148,15 @@ export const COLOR_MAP = {
     'OGN': { color: '#65a30d', label: 'Olive Green' },
     'CPR': { color: '#b45309', label: 'Copper' },
     'LVY': { color: '#3b5998', label: 'Light Navy' },
+    'RYB': { color: '#2563eb', label: 'Royal Blue' },
+    'MOV': { color: '#6b7243', label: 'Mouse Olive' },
+    'SAG': { color: '#6ee7b7', label: 'Sage Green' },
+    'DKG': { color: '#166534', label: 'Dark Green' },
+    'TQUN': { color: '#0e4c6e', label: 'Turquoise Navy' },
+    'GNY': { color: '#374c6b', label: 'Grey Navy Blue' },
+    'KAKKI': { color: '#c3b091', label: 'Khaki' },
+    'SLB': { color: '#6366f1', label: 'Slate Blue' },
+    'BRB': { color: '#3b1a0a', label: 'Brown Black' },
 };
 
 export const COLOR_KEYS = Object.keys(COLOR_MAP).sort((a, b) => b.length - a.length); // Match longest first
