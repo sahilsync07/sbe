@@ -118,3 +118,5 @@ export const NEW_ARRIVAL_MONTHS = 1;
 
 // Artificial delay for visual loading state during filtering (reduced from 1500 to 50 for speed)
 export const FILTER_DELAY_MS = 50;
+
+

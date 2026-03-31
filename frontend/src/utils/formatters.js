@@ -100,3 +100,4 @@ export function getCleanProductName(name) {
     const cleanedString = clean.replace(/\s+/g, ' ').trim();
     return formatProductName(cleanedString);
 }
+
