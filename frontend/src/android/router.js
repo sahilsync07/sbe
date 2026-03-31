@@ -20,6 +20,10 @@ const routes = [
     {
         path: '/latest-stock',
         component: LatestStock
+    },
+    {
+        path: '/ledger',
+        component: () => import('../views/LedgerView.vue')
     }
 ];
 

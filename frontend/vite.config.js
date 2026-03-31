@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024
       },
       manifest: {
         name: 'Sita Rama Motors',

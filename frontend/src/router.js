@@ -2,11 +2,13 @@ import { createRouter, createWebHistory } from "vue-router";
 import StockTable from "./components/StockTable.vue";
 import ImageUpload from "./components/ImageUpload.vue";
 import PdfGenerator from "./components/PdfGenerator.vue";
+import LedgerView from "./views/LedgerView.vue";
 
 const routes = [
   { path: "/", component: StockTable },
   { path: "/upload", component: ImageUpload },
   { path: "/pdf-gen", component: PdfGenerator },
+  { path: "/ledger", component: LedgerView },
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];
 

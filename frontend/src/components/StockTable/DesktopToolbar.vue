@@ -31,7 +31,7 @@
             </button>
              <button
               v-if="isSuperAdmin"
-              @click="$emit('toggleLedgerView')"
+              @click="$router.push('/ledger')"
               class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 transition-colors border border-white/5"
               title="Ledger View"
             >

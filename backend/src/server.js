@@ -20,6 +20,10 @@ const stockDataPath = path.resolve(
   __dirname,
   "../../frontend/public/assets/stock-data.json"
 );
+const ledgerDataPath = path.resolve(
+  __dirname,
+  "../../frontend/public/assets/ledger-data.json"
+);
 const tallyTimeout = 30000;
 
 const tallyRequestXML = `<?xml version="1.0"?>
@@ -38,6 +42,73 @@ const tallyRequestXML = `<?xml version="1.0"?>
         </STATICVARIABLES>
       </REQUESTDESC>
     </EXPORTDATA>
+  </BODY>
+</ENVELOPE>`;
+
+// Fetch all ledgers with their parent group and balances
+const ledgerListXML = `<?xml version="1.0"?>
+<ENVELOPE>
+  <HEADER>
+    <VERSION>1</VERSION>
+    <TALLYREQUEST>Export</TALLYREQUEST>
+    <TYPE>Collection</TYPE>
+    <ID>AllLedgers</ID>
+  </HEADER>
+  <BODY>
+    <DESC>
+      <STATICVARIABLES>
+        <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
+      </STATICVARIABLES>
+      <TDL>
+        <TDLMESSAGE>
+          <COLLECTION NAME="AllLedgers">
+            <TYPE>Ledger</TYPE>
+            <NATIVEMETHOD>Name</NATIVEMETHOD>
+            <NATIVEMETHOD>Parent</NATIVEMETHOD>
+            <NATIVEMETHOD>OpeningBalance</NATIVEMETHOD>
+            <NATIVEMETHOD>ClosingBalance</NATIVEMETHOD>
+          </COLLECTION>
+        </TDLMESSAGE>
+      </TDL>
+    </DESC>
+  </BODY>
+</ENVELOPE>`;
+
+// Server-side aggregation: GROUP BY (LedgerName, VoucherType, Date, VoucherNo) SUM(Amount)
+// Uses Tally's Aggr Compute to aggregate INSIDE Tally — returns ~7MB vs 92MB raw
+const voucherSummaryXML = `<?xml version="1.0"?>
+<ENVELOPE>
+  <HEADER>
+    <VERSION>1</VERSION>
+    <TALLYREQUEST>Export</TALLYREQUEST>
+    <TYPE>Collection</TYPE>
+    <ID>LedgerSummary</ID>
+  </HEADER>
+  <BODY>
+    <DESC>
+      <STATICVARIABLES>
+        <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
+        <SVFROMDATE>20250401</SVFROMDATE>
+        <SVTODATE>20260331</SVTODATE>
+      </STATICVARIABLES>
+      <TDL>
+        <TDLMESSAGE>
+          <COLLECTION NAME="AllVch" ISINITIALIZE="Yes">
+            <TYPE>Voucher</TYPE>
+            <FETCH>VoucherTypeName, Date, VoucherNumber</FETCH>
+          </COLLECTION>
+          <COLLECTION NAME="LedgerSummary">
+            <SOURCECOLLECTION>AllVch</SOURCECOLLECTION>
+            <WALK>Ledger Entries</WALK>
+            <BY>LdgName : $LedgerName</BY>
+            <BY>VchType : $..VoucherTypeName</BY>
+            <BY>VchDate : $..Date</BY>
+            <BY>VchNo : $..VoucherNumber</BY>
+            <AGGRCOMPUTE>TotalAmt : Sum : $Amount</AGGRCOMPUTE>
+          </COLLECTION>
+        </TDLMESSAGE>
+      </TDL>
+    </DESC>
   </BODY>
 </ENVELOPE>`;
 
@@ -168,6 +239,204 @@ async function fetchTallyData() {
   }
 }
 
+// ============================================================
+//  LEDGER DATA FUNCTIONS
+// ============================================================
+
+async function fetchLedgerData() {
+  try {
+    console.log("📒 Fetching ledger data from Tally...");
+
+    // ---- Step 1: Fetch all ledgers with parent group ----
+    console.log("  → Step 1: Fetching ledger list...");
+    const ledgerResponse = await axios.post(tallyUrl, ledgerListXML, {
+      headers: { "Content-Type": "text/xml" },
+      timeout: tallyTimeout,
+    });
+
+    if (!ledgerResponse.data || !ledgerResponse.data.toString().trim()) {
+      throw new Error("Empty ledger list response from Tally");
+    }
+
+    const ledgerParsed = parser.parse(ledgerResponse.data);
+    // Tally returns structure: ENVELOPE > BODY > DATA > COLLECTION > LEDGER
+    const ledgerCollection =
+      ledgerParsed?.ENVELOPE?.BODY?.DATA?.COLLECTION?.LEDGER ||
+      ledgerParsed?.ENVELOPE?.COLLECTION?.LEDGER ||
+      ledgerParsed?.ENVELOPE?.LEDGER;
+
+    if (!ledgerCollection) {
+      console.error("Ledger parsed keys:", JSON.stringify(Object.keys(ledgerParsed?.ENVELOPE || {})));
+      throw new Error("No ledger data found in Tally response");
+    }
+
+    const ledgers = Array.isArray(ledgerCollection)
+      ? ledgerCollection
+      : [ledgerCollection];
+
+    console.log(`  ✅ Found ${ledgers.length} ledgers`);
+
+    // Build group → ledgers map
+    const groupMap = {};
+    ledgers.forEach((ledger) => {
+      // Tally puts name in @_NAME attribute
+      const name = ledger["@_NAME"] || ledger.NAME || "Unknown";
+      const parent = typeof ledger.PARENT === "object" ? (ledger.PARENT["#text"] || "Ungrouped") : (ledger.PARENT || "Ungrouped");
+      const openingBalRaw = typeof ledger.OPENINGBALANCE === "object" ? (ledger.OPENINGBALANCE["#text"] || "0") : (ledger.OPENINGBALANCE || "0");
+      const closingBalRaw = typeof ledger.CLOSINGBALANCE === "object" ? (ledger.CLOSINGBALANCE["#text"] || "0") : (ledger.CLOSINGBALANCE || "0");
+      const openingBal = parseFloat(openingBalRaw);
+      const closingBal = parseFloat(closingBalRaw);
+
+      if (!groupMap[parent]) {
+        groupMap[parent] = [];
+      }
+      groupMap[parent].push({
+        ledgerName: name,
+        openingBalance: openingBal,
+        closingBalance: closingBal,
+        entries: [],
+      });
+    });
+
+    // ---- Step 2: Fetch aggregated voucher summaries (server-side via Aggr Compute) ----
+    try {
+      console.log("  → Step 2: Fetching voucher summaries (server-side aggregation)...");
+      const voucherResponse = await axios.post(tallyUrl, voucherSummaryXML, {
+        headers: { "Content-Type": "text/xml" },
+        timeout: tallyTimeout * 2,
+      });
+
+      if (voucherResponse.data && voucherResponse.data.toString().trim()) {
+        const voucherParsed = parser.parse(voucherResponse.data);
+
+        // Tally returns aggregated data as OBJECT entries inside BODY > DATA > COLLECTION
+        const summaryCollection =
+          voucherParsed?.ENVELOPE?.BODY?.DATA?.COLLECTION?.OBJECT ||
+          voucherParsed?.ENVELOPE?.COLLECTION?.OBJECT ||
+          voucherParsed?.ENVELOPE?.BODY?.DATA?.COLLECTION?.LEDGERSUMMARY ||
+          voucherParsed?.ENVELOPE?.COLLECTION?.LEDGERSUMMARY;
+
+        if (summaryCollection) {
+          const entries = Array.isArray(summaryCollection)
+            ? summaryCollection
+            : [summaryCollection];
+
+          console.log(`  ✅ Found ${entries.length} aggregated voucher entries`);
+
+          // Helper: extract text value from Tally field (handles TYPE attribute objects)
+          const getVal = (obj) => {
+            if (obj === null || obj === undefined) return "";
+            if (typeof obj === "object") return obj["#text"] || "";
+            return obj.toString();
+          };
+
+          // Build map: ledgerName → [{ date, voucherNo, type, amount, drCr }]
+          const ledgerEntriesMap = {};
+
+          entries.forEach((entry) => {
+            const ledgerName = getVal(entry.LDGNAME) || "Unknown";
+            const voucherType = getVal(entry.VCHTYPE) || "Other";
+            const voucherDate = getVal(entry.VCHDATE) || "";
+            const voucherNo = getVal(entry.VCHNO) || "";
+            const totalAmt = parseFloat(getVal(entry.TOTALAMT) || "0");
+
+            // Tally convention: negative = Dr, positive = Cr
+            const drCr = totalAmt < 0 ? "Dr" : "Cr";
+            const amount = Math.round(Math.abs(totalAmt) * 100) / 100;
+
+            if (!ledgerEntriesMap[ledgerName]) {
+              ledgerEntriesMap[ledgerName] = [];
+            }
+
+            ledgerEntriesMap[ledgerName].push({
+              date: voucherDate,
+              voucherNo,
+              type: voucherType,
+              amount,
+              drCr,
+            });
+          });
+
+          // Merge entries into the groupMap
+          Object.values(groupMap).forEach((ledgerList) => {
+            ledgerList.forEach((ledger) => {
+              if (ledgerEntriesMap[ledger.ledgerName]) {
+                ledger.entries = ledgerEntriesMap[ledger.ledgerName];
+              }
+            });
+          });
+
+          console.log(`  ✅ Merged voucher data for ${Object.keys(ledgerEntriesMap).length} ledgers`);
+        } else {
+          console.warn("  ⚠️ No aggregated voucher data in response");
+        }
+      }
+    } catch (voucherErr) {
+      console.warn(`  ⚠️ Voucher summary fetch failed (${voucherErr.code || voucherErr.message}), continuing without entries`);
+    }
+
+    // ---- Build final structure ----
+    const ledgerData = Object.entries(groupMap).map(([groupName, ledgerList]) => ({
+      groupName,
+      ledgers: ledgerList,
+    }));
+
+    // Sort groups alphabetically
+    ledgerData.sort((a, b) => a.groupName.localeCompare(b.groupName));
+
+    console.log(`📒 Ledger data processed: ${ledgerData.length} groups`);
+    return ledgerData;
+  } catch (error) {
+    if (error.code === "ECONNREFUSED") {
+      console.error(`❌ Cannot connect to Tally at ${tallyUrl} for ledger data`);
+      throw new Error("Tally connection refused. Ensure Tally is running with web server enabled on port 9000.");
+    } else if (error.code === "ETIMEDOUT" || error.code === "ECONNABORTED") {
+      console.error(`❌ Tally connection timeout for ledger data`);
+      throw new Error("Tally connection timeout. Tally may be unresponsive.");
+    } else {
+      console.error("Error fetching ledger data:", error.message);
+      throw error;
+    }
+  }
+}
+
+async function syncLedgerToFile() {
+  console.log("📒 Syncing ledger data to file...");
+
+  let ledgerData;
+  try {
+    ledgerData = await fetchLedgerData();
+  } catch (err) {
+    console.error("⚠️ Ledger fetch failed:", err.message);
+    // Try to use existing data
+    try {
+      const existing = await fs.readFile(ledgerDataPath, "utf-8");
+      if (existing.trim() && existing.trim() !== "[]") {
+        console.log("📋 Using existing ledger data as fallback");
+        return { success: false, fallback: true, error: err.message };
+      }
+    } catch (_) { /* no existing file */ }
+    return { success: false, fallback: false, error: err.message };
+  }
+
+  // Add metadata
+  const lastSyncTime = new Date().toISOString();
+  ledgerData.unshift({
+    groupName: "_META_DATA_",
+    lastSync: lastSyncTime,
+    ledgers: [],
+  });
+
+  try {
+    await fs.writeFile(ledgerDataPath, JSON.stringify(ledgerData, null, 2));
+    console.log("✅ Updated ledger-data.json at:", ledgerDataPath);
+    return { success: true, groups: ledgerData.length - 1, lastSync: lastSyncTime };
+  } catch (err) {
+    console.error("Error writing ledger-data.json:", err.message);
+    throw new Error(`Cannot write to ledger-data.json: ${err.message}`);
+  }
+}
+
 app.get("/api/stock", async (req, res) => {
   try {
     const stockData = await fetchTallyData();
@@ -180,7 +449,43 @@ app.get("/api/stock", async (req, res) => {
   }
 });
 
-// ... (all imports, constants, fetchTallyData, other routes unchanged)
+// --- Ledger endpoints ---
+
+app.get("/api/ledger", async (req, res) => {
+  try {
+    const ledgerData = await fetchLedgerData();
+    res.json(ledgerData);
+  } catch (error) {
+    console.error("Error in /api/ledger:", error.message);
+    res.status(500).json({ error: `Failed to fetch ledger data: ${error.message}` });
+  }
+});
+
+app.post("/api/updateLedgerData", async (req, res) => {
+  try {
+    const result = await syncLedgerToFile();
+    if (result.success) {
+      res.json({
+        message: "Ledger data updated successfully from Tally",
+        groups: result.groups,
+        lastSync: result.lastSync,
+      });
+    } else if (result.fallback) {
+      res.json({
+        message: "Tally unavailable - using existing ledger data",
+        tallyError: result.error,
+      });
+    } else {
+      res.status(503).json({
+        error: "Tally unavailable and no existing ledger data found",
+        message: result.error,
+      });
+    }
+  } catch (error) {
+    console.error("Error in /api/updateLedgerData:", error.message);
+    res.status(500).json({ error: `Failed to update ledger data: ${error.message}` });
+  }
+});
 
 app.post("/api/updateStockData", async (req, res) => {
   try {
@@ -307,9 +612,20 @@ app.post("/api/updateStockData", async (req, res) => {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
     }
 
+    // ---- 9. Also sync ledger data ------------------------------------------------
+    let ledgerResult = { success: false, error: "Not attempted" };
+    try {
+      ledgerResult = await syncLedgerToFile();
+      console.log("📒 Ledger sync result:", ledgerResult.success ? "✅ Success" : "⚠️ " + ledgerResult.error);
+    } catch (ledgerErr) {
+      console.error("⚠️ Ledger sync error (non-fatal):", ledgerErr.message);
+      ledgerResult = { success: false, error: ledgerErr.message };
+    }
+
     res.json({
       message: "Stock data updated successfully from Tally",
       data: stockData,
+      ledgerSync: ledgerResult,
     });
   } catch (error) {
     console.error("Error in updateStockData:", error.message, error.stack);
