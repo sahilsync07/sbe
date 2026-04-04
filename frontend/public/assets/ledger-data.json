@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-04-03T15:00:21.591Z",
+    "lastSync": "2026-04-04T14:18:23.136Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10368586.9,
-        "closingBalance": 10450705.86,
+        "closingBalance": 10458457.1,
         "entries": []
       }
     ]
@@ -1106,13 +1106,20 @@
       {
         "ledgerName": "MURALI FANCY, KOLNARA",
         "openingBalance": -29519,
-        "closingBalance": -54269,
+        "closingBalance": -56225,
         "entries": [
           {
             "date": "1-Apr-26",
             "voucherNo": "4/26-27",
             "type": "Tax Invoice",
             "amount": 24750,
+            "drCr": "Dr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "39/26-27",
+            "type": "Tax Invoice",
+            "amount": 1956,
             "drCr": "Dr"
           }
         ]
@@ -1227,7 +1234,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467697.01,
-        "closingBalance": 2479145.39,
+        "closingBalance": 2480256.79,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -1458,6 +1465,48 @@
             "voucherNo": "35/26-27",
             "type": "Tax Invoice",
             "amount": 35.57,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "36/26-27",
+            "type": "Tax Invoice",
+            "amount": 555.92,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "37/26-27",
+            "type": "Tax Invoice",
+            "amount": 325.83,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "38/26-27",
+            "type": "Tax Invoice",
+            "amount": 22.86,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "39/26-27",
+            "type": "Tax Invoice",
+            "amount": 46.57,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "40/26-27",
+            "type": "Tax Invoice",
+            "amount": 5.71,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "41/26-27",
+            "type": "Tax Invoice",
+            "amount": 154.51,
             "drCr": "Cr"
           }
         ]
@@ -1498,7 +1547,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468698.26,
-        "closingBalance": 2480146.64,
+        "closingBalance": 2481258.04,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -1729,6 +1778,48 @@
             "voucherNo": "35/26-27",
             "type": "Tax Invoice",
             "amount": 35.57,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "36/26-27",
+            "type": "Tax Invoice",
+            "amount": 555.92,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "37/26-27",
+            "type": "Tax Invoice",
+            "amount": 325.83,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "38/26-27",
+            "type": "Tax Invoice",
+            "amount": 22.86,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "39/26-27",
+            "type": "Tax Invoice",
+            "amount": 46.57,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "40/26-27",
+            "type": "Tax Invoice",
+            "amount": 5.71,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "41/26-27",
+            "type": "Tax Invoice",
+            "amount": 154.51,
             "drCr": "Cr"
           }
         ]
@@ -2775,7 +2866,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": -0.13,
+        "closingBalance": 0.27,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -3020,6 +3111,48 @@
             "voucherNo": "35/26-27",
             "type": "Tax Invoice",
             "amount": 0.02,
+            "drCr": "Dr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "36/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.5,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "37/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.03,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "38/26-27",
+            "type": "Tax Invoice",
+            "amount": 0,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "39/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.02,
+            "drCr": "Dr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "40/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.01,
+            "drCr": "Cr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "41/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.12,
             "drCr": "Dr"
           }
         ]
@@ -3398,8 +3531,23 @@
       {
         "ledgerName": "S Mouli, Amalapeta",
         "openingBalance": -750,
-        "closingBalance": -750,
-        "entries": []
+        "closingBalance": -8200,
+        "entries": [
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "38/26-27",
+            "type": "Tax Invoice",
+            "amount": 960,
+            "drCr": "Dr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "41/26-27",
+            "type": "Tax Invoice",
+            "amount": 6490,
+            "drCr": "Dr"
+          }
+        ]
       },
       {
         "ledgerName": "S Narasingh Rao, Kottapeta",
@@ -3545,8 +3693,16 @@
       {
         "ledgerName": "GHASI KHONDRIA, SIKARPAI",
         "openingBalance": -20884,
-        "closingBalance": -20884,
-        "entries": []
+        "closingBalance": -34569,
+        "entries": [
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "37/26-27",
+            "type": "Tax Invoice",
+            "amount": 13685,
+            "drCr": "Dr"
+          }
+        ]
       },
       {
         "ledgerName": "G.KAMESWEAR RAO, SIKARPAI",
@@ -5320,13 +5476,20 @@
       {
         "ledgerName": "D SANTOSH KUMAR, RAYAGADA",
         "openingBalance": -385624,
-        "closingBalance": -432069,
+        "closingBalance": -455418,
         "entries": [
           {
             "date": "2-Apr-26",
             "voucherNo": "22/26-27",
             "type": "Tax Invoice",
             "amount": 46445,
+            "drCr": "Dr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "36/26-27",
+            "type": "Tax Invoice",
+            "amount": 23349,
             "drCr": "Dr"
           }
         ]
@@ -5865,7 +6028,7 @@
       {
         "ledgerName": "RETAL",
         "openingBalance": -45635,
-        "closingBalance": -46918,
+        "closingBalance": -47158,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -5886,6 +6049,13 @@
             "voucherNo": "30/26-27",
             "type": "Tax Invoice",
             "amount": 260,
+            "drCr": "Dr"
+          },
+          {
+            "date": "4-Apr-26",
+            "voucherNo": "40/26-27",
+            "type": "Tax Invoice",
+            "amount": 240,
             "drCr": "Dr"
           }
         ]
@@ -6193,7 +6363,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 535201.97,
+        "closingBalance": 579658.77,
         "entries": []
       },
       {
