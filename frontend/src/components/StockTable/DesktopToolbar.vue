@@ -248,8 +248,11 @@
     </header>
 
 
-    <!-- Mobile Bottom Bar (Fixed) -->
-    <div class="lg:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl">
+    <!-- Mobile Bottom Bar (Fixed) — hidden on routes like ledger/daybook -->
+    <div
+      v-if="!hideMobileBottomBar"
+      class="lg:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl"
+    >
        <div class="flex items-center gap-3">
           <!-- Search -->
           <div class="relative flex-1" ref="mobileSearchRef">
@@ -392,6 +395,11 @@ const props = defineProps({
   },
   cloudName: String,
   isCachingImages: {
+    type: Boolean,
+    default: false
+  },
+  /** Hide fixed mobile bottom bar (product search + quick toggles) — use on ledger/daybook etc. */
+  hideMobileBottomBar: {
     type: Boolean,
     default: false
   }

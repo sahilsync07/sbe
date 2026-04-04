@@ -1,9 +1,11 @@
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAppStore } from '../stores/appStore';
 import { toast } from 'vue3-toastify';
 import { Preferences } from '@capacitor/preferences';
 
 let initialized = false;
+const isLoginModalOpen = ref(false);
 
 const hashPassword = async (msg) => {
     const encoder = new TextEncoder();
@@ -37,12 +39,13 @@ export function useAdmin() {
     // Call immediately (it will only run once)
     checkAdminState();
 
-    const promptAdminLogin = async () => {
-        // If already admin, skip
+    const openAdminLogin = () => {
         if (isAdmin.value || isSuperAdmin.value) return;
+        isLoginModalOpen.value = true;
+    };
 
-        const password = prompt("Enter admin password:");
-        if (!password) return;
+    const login = async (password) => {
+        if (!password) return false;
 
         const hash = await hashPassword(password);
 
@@ -51,20 +54,27 @@ export function useAdmin() {
             appStore.setSuperAdmin(false);
             await Preferences.set({ key: 'sbe_admin_role', value: 'admin' });
             toast.success("Admin Mode Enabled", { autoClose: 2000 });
+            isLoginModalOpen.value = false;
+            return true;
         } else if (hash === "889a3a791b3875cfae413574b53da4bb8a90d53e7bfb616a1b24479e390c29ed") {
             appStore.setAdmin(false);
             appStore.setSuperAdmin(true);
             await Preferences.set({ key: 'sbe_admin_role', value: 'superadmin' });
             toast.success("Super Admin Mode Enabled", { autoClose: 2000 });
+            isLoginModalOpen.value = false;
+            return true;
         } else {
             toast.error("Incorrect password", { autoClose: 3000 });
+            return false;
         }
     };
 
     return {
         isAdmin,
         isSuperAdmin,
-        promptAdminLogin,
+        isLoginModalOpen,
+        openAdminLogin,
+        login,
         checkAdminState
     };
 }

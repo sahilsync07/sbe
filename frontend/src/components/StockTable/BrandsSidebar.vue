@@ -27,6 +27,49 @@
 
         <div class="p-4 overflow-y-auto overscroll-contain flex-1 pb-24">
           <nav class="space-y-6">
+            
+            <!-- Accounting Reports (Admin Only) -->
+            <div v-if="isAdmin || isSuperAdmin" class="px-1 space-y-2">
+               <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Accounting Reports</h3>
+               
+               <div class="grid grid-cols-1 gap-2">
+                  <button 
+                    @click="router.push('/')"
+                    class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border group/nav"
+                    :class="route.path === '/' ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-100 text-slate-600 hover:border-blue-200 hover:bg-blue-50/50'"
+                  >
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center transition-colors" :class="route.path === '/' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover/nav:bg-blue-100 group-hover/nav:text-blue-600'">
+                       <i class="fa-solid fa-layer-group text-sm"></i>
+                    </div>
+                    <span class="font-bold text-sm">Brand Catalog</span>
+                  </button>
+
+                  <button 
+                    @click="router.push('/ledger')"
+                    class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border group/nav"
+                    :class="route.path === '/ledger' ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/50'"
+                  >
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center transition-colors" :class="route.path === '/ledger' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover/nav:bg-indigo-100 group-hover/nav:text-indigo-600'">
+                       <i class="fa-solid fa-book text-sm"></i>
+                    </div>
+                    <span class="font-bold text-sm">Ledger View</span>
+                  </button>
+
+                  <button 
+                    @click="router.push('/daybook')"
+                    class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border group/nav"
+                    :class="route.path === '/daybook' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:bg-emerald-50/50'"
+                  >
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center transition-colors" :class="route.path === '/daybook' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover/nav:bg-emerald-100 group-hover/nav:text-emerald-600'">
+                       <i class="fa-solid fa-calendar-day text-sm"></i>
+                    </div>
+                    <span class="font-bold text-sm">Daybook View</span>
+                  </button>
+               </div>
+
+               <div class="h-px bg-slate-100 mx-2 mt-4"></div>
+            </div>
+
           
                   <!-- Paragon Legend -->
           <div v-if="groupedSidebar.paragon && groupedSidebar.paragon.length > 0" class="p-3 bg-red-50/50 border border-red-100 rounded-2xl">
@@ -234,6 +277,13 @@
 
 <script setup>
 import { computed, defineAsyncComponent } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useAdmin } from '../../composables/useAdmin';
+
+const router = useRouter();
+const route = useRoute();
+const { isAdmin, isSuperAdmin } = useAdmin();
+
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 

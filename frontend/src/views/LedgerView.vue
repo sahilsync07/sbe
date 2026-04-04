@@ -1,187 +1,230 @@
 <template>
-  <div class="h-screen w-full bg-slate-50 flex flex-col font-sans text-slate-800 overflow-hidden">
-    
-    <!-- Header Area -->
-    <header class="bg-white border-b border-slate-200 px-4 lg:px-6 py-4 flex-shrink-0 z-10 shadow-sm relative">
-      <div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
-        
-        <div class="flex items-center gap-4 min-w-0">
-          <button @click="handleBack" class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors shadow-sm active:scale-95 border border-slate-200" title="Back">
-             <i class="fa-solid fa-arrow-left"></i>
-          </button>
+  <div class="ledger-shell min-h-screen w-full font-sans text-slate-800">
+    <DesktopToolbar
+      :loading="loading || stockLoading"
+      :company-name="companyName"
+      hide-mobile-bottom-bar
+      @toggleSidebar="showSidePanel = !showSidePanel"
+      @toggleCart="showCart = !showCart"
+    />
+
+    <BrandsSidebar
+      :show-side-panel="showSidePanel"
+      :grouped-sidebar="groupedSidebar"
+      :active-scroll-group="activeScrollGroup"
+      @update:showSidePanel="showSidePanel = $event"
+      @sidebarClick="handleSidebarClick"
+      @clubClick="handleClubClick"
+    />
+
+    <!-- Cart Sidebar -->
+    <CartSidebar
+      :show-cart="showCart"
+      @closeCart="showCart = false"
+    />
+
+    <main class="w-full pt-[54px] lg:pt-[72px] min-h-screen flex flex-col transition-all duration-300">
+      
+      <div class="ledger-header-sticky sticky top-[54px] lg:top-[72px] z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10">
+        <div class="ledger-header-card mx-auto flex w-full max-w-7xl flex-col gap-2.5 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-5 lg:mx-0 lg:max-w-none">
           
-          <div class="min-w-0">
-            <h1 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight leading-none truncate" :title="displayMode === 'GROUP_LEDGERS' ? selectedGroup.groupName : (displayMode === 'SEARCH' ? 'Search Results' : 'Ledger Categories')">
-                {{ displayMode === 'GROUP_LEDGERS' ? selectedGroup.groupName : (displayMode === 'SEARCH' ? 'Search Results' : 'Ledger Categories') }}
-            </h1>
-            <p v-if="!loading" class="text-[10px] sm:text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wider truncate">
-                {{ currentItemList.length }} {{ displayMode === 'GROUPS' ? 'Categories' : 'Accounts' }}
-            </p>
+          <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+            <button 
+              type="button"
+              @click="handleBack" 
+              class="ledger-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-600 transition-all duration-200 active:scale-95 sm:h-12 sm:w-12" 
+              title="Back"
+            >
+               <i class="fa-solid fa-arrow-left text-sm sm:text-[15px]"></i>
+            </button>
+            
+            <div class="min-w-0 flex-1">
+              <span class="mb-0.5 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500/15 to-violet-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-indigo-500/20 sm:mb-1 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-[11px]">
+                <i class="fa-solid fa-book-open text-[9px] sm:text-[10px]"></i>
+                Ledger
+              </span>
+              <h1 class="mt-0.5 truncate text-lg font-semibold tracking-tight text-slate-950 sm:mt-1 sm:text-2xl lg:text-3xl" 
+                  :title="displayMode === 'GROUP_LEDGERS' ? selectedGroup.groupName : (displayMode === 'SEARCH' ? 'Search' : 'Categories')">
+                  {{ displayMode === 'GROUP_LEDGERS' ? toTitleCase(selectedGroup.groupName) : (displayMode === 'SEARCH' ? 'Search results' : 'All categories') }}
+              </h1>
+              <p v-if="!loading" class="mt-0.5 text-xs text-slate-500 tabular-nums sm:text-sm">
+                  <span class="font-semibold text-indigo-600">{{ currentItemList.length }}</span>
+                  {{ displayMode === 'GROUPS' ? ' categories' : ' accounts' }}
+              </p>
+            </div>
+          </div>
+          
+          <div class="w-full sm:max-w-sm sm:flex-shrink-0">
+             <div class="group relative">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
+                   <i class="fa-solid fa-magnifying-glass text-slate-400 transition-colors group-focus-within:text-indigo-500 text-sm sm:text-[15px]"></i>
+                </div>
+                <input 
+                  type="search" 
+                  v-model="searchQuery"
+                  autocomplete="off"
+                  class="ledger-search h-10 w-full rounded-full border-0 pl-9 pr-9 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 sm:h-12 sm:pl-11 sm:pr-11 sm:text-[15px]" 
+                  placeholder="Search…" 
+                />
+                <button 
+                  v-if="searchQuery" 
+                  type="button"
+                  @click="searchQuery = ''"
+                  class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 transition-colors hover:text-indigo-600 sm:pr-3.5"
+                >
+                   <i class="fa-solid fa-circle-xmark text-lg sm:text-xl"></i>
+                </button>
+             </div>
           </div>
         </div>
-        
-        <!-- Search Bar -->
-        <div class="flex-1 max-w-md hidden sm:block">
-           <div class="relative group">
-              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                 <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-              </div>
-              <input 
-                type="text" 
-                v-model="searchQuery"
-                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block pl-10 p-2.5 transition-all outline-none" 
-                placeholder="Search ledgers by name or group..." 
-              />
-              <button 
-                v-if="searchQuery" 
-                @click="searchQuery = ''"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 outline-none"
-              >
-                 <i class="fa-solid fa-circle-xmark"></i>
-              </button>
-           </div>
-        </div>
-
       </div>
-      
-      <!-- Mobile Search (shows below header on small screens) -->
-      <div class="sm:hidden w-full mt-4">
-          <div class="relative group">
-              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                 <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-              </div>
-              <input 
-                type="text" 
-                v-model="searchQuery"
-                class="w-full bg-slate-100 border-none text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 block pl-10 p-3 transition-all outline-none" 
-                placeholder="Search ledgers..." 
-              />
-               <button 
-                v-if="searchQuery" 
-                @click="searchQuery = ''"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 outline-none"
-              >
-                 <i class="fa-solid fa-circle-xmark"></i>
-              </button>
-           </div>
-      </div>
-    </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto w-full custom-scrollbar relative">
-      <div class="max-w-7xl mx-auto w-full p-4 lg:p-6 pb-24 h-full relative">
-        
-        <!-- Loading State -->
-        <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-10">
-           <div class="w-16 h-16 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-           <p class="font-bold text-slate-600 animate-pulse text-lg">Loading Directory...</p>
-        </div>
+      <div class="flex-1 px-2.5 pb-28 pt-1.5 sm:px-5 sm:pb-32 sm:pt-2 lg:px-6 xl:px-10 lg:pt-3">
+        <div class="mx-auto h-full w-full max-w-7xl relative lg:mx-0 lg:max-w-none">
+          
+          <div v-if="loading" class="ledger-state-card absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[2rem] sm:rounded-[2.25rem]">
+             <div class="relative mb-8">
+               <div class="absolute inset-0 scale-150 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 opacity-25 blur-3xl animate-pulse"></div>
+               <div class="relative flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-slate-200/80 border-t-indigo-600 animate-spin"></div>
+             </div>
+             <p class="text-lg font-semibold text-slate-800">Loading ledger</p>
+             <p class="mt-1 text-sm text-slate-500">Hang tight…</p>
+          </div>
 
-        <!-- Error State -->
-        <div v-else-if="error" class="h-full flex flex-col items-center justify-center text-center px-4">
-           <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-sm">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-           </div>
-           <h2 class="text-xl font-bold text-slate-800 mb-2">Data Unavailable</h2>
-           <p class="text-slate-500 max-w-md">{{ error }}</p>
-           <button @click="loadLedgerData" class="mt-6 px-6 py-2.5 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-colors">
-              Retry Sync
-           </button>
-        </div>
+          <div v-else-if="error" class="ledger-state-card flex h-[min(60vh,520px)] flex-col items-center justify-center rounded-[2rem] px-6 py-12 text-center sm:rounded-[2.25rem]">
+             <div class="mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-orange-50 text-4xl text-rose-500 shadow-[0_20px_60px_-15px_rgba(244,63,94,0.35)]">
+                <i class="fa-solid fa-plug-circle-xmark"></i>
+             </div>
+             <h2 class="mb-2 text-2xl font-semibold text-slate-950">Couldn’t load data</h2>
+             <p class="max-w-md leading-relaxed text-slate-600">{{ error }}</p>
+             <button type="button" @click="loadLedgerData" class="ledger-pill-btn mt-10 rounded-full px-10 py-4 text-[15px] font-semibold text-white active:scale-[0.98]">
+                Try again
+             </button>
+          </div>
 
-        <!-- Empty Results -->
-        <div v-else-if="currentItemList.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-            <div class="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-3xl mb-4">
-              <i class="fa-solid fa-magnifying-glass"></i>
-           </div>
-           <h3 class="text-lg font-bold text-slate-700 mb-1">No results found</h3>
-           <p class="text-sm text-slate-500">Try adjusting your search query.</p>
-        </div>
+          <div v-else-if="currentItemList.length === 0" class="ledger-state-card flex flex-col items-center justify-center rounded-[2rem] px-6 py-20 text-center sm:rounded-[2.25rem] sm:py-28">
+              <div class="mb-8 flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 via-white to-indigo-50 text-5xl text-indigo-400 shadow-inner ring-1 ring-slate-200/60">
+                <i class="fa-solid fa-magnifying-glass"></i>
+             </div>
+             <h3 class="mb-2 text-2xl font-semibold text-slate-950">Nothing here</h3>
+             <p class="max-w-sm text-slate-600">Adjust your search or step back a level.</p>
+          </div>
 
-        <!-- Ledger/Group List -->
-        <div v-else class="flex flex-col gap-2">
-           <div 
-              v-for="(item, idx) in paginatedItems" 
-              :key="displayMode === 'GROUPS' ? item.groupName : item.ledgerName + '_' + idx"
-              @click="handleItemClick(item)"
-              class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex items-center justify-between gap-2 sm:gap-4 group"
-           >
-              <!-- GROUP ITEM VIEW -->
-              <template v-if="displayMode === 'GROUPS'">
-                  <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
-                          <i class="fa-solid fa-folder"></i>
+          <div v-else class="flex flex-col gap-3 pb-6 sm:gap-5 sm:pb-8">
+             
+             <div class="space-y-2.5 sm:hidden">
+                <div 
+                  v-for="(item, idx) in paginatedItems" 
+                  :key="'m-'+idx"
+                  @click="handleItemClick(item)"
+                  class="ledger-float-card touch-manipulation rounded-2xl p-3.5 active:scale-[0.99] sm:rounded-[1.75rem] sm:p-5"
+                >
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex min-w-0 items-center gap-2.5">
+                      <div 
+                        v-if="displayMode === 'GROUPS'" 
+                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm text-white shadow-md shadow-indigo-500/30 sm:h-14 sm:w-14 sm:text-lg sm:shadow-lg"
+                      >
+                          <i class="fa-solid fa-folder-tree text-[13px] sm:text-base"></i>
                       </div>
-                      <div class="flex flex-col min-w-0">
-                         <h3 class="text-sm sm:text-base font-bold text-slate-800 leading-tight group-hover:text-blue-700 transition-colors truncate" :title="item.groupName">
-                            {{ item.groupName }}
-                         </h3>
-                         <p class="text-[10px] sm:text-xs font-semibold text-slate-400 mt-0.5 uppercase tracking-wider truncate">
-                            {{ item.ledgers ? item.ledgers.length : 0 }} Accounts
-                         </p>
+                      <div 
+                        v-else 
+                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-100 text-sm text-slate-600 ring-1 ring-slate-200/80 sm:h-14 sm:w-14 sm:text-lg"
+                      >
+                          <i class="fa-solid fa-file-invoice-dollar text-[13px] sm:text-base"></i>
                       </div>
+                      <div class="min-w-0">
+                        <h3 class="break-words text-sm font-semibold leading-snug text-slate-950 sm:text-lg">
+                          {{ displayMode === 'GROUPS' ? toTitleCase(item.groupName) : toTitleCase(item.ledgerName) }}
+                        </h3>
+                        <p class="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">
+                          {{ displayMode === 'GROUPS' ? (item.ledgers ? item.ledgers.length + ' accounts' : 'Empty') : toTitleCase(item.groupName) }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 sm:h-10 sm:w-10">
+                       <i class="fa-solid fa-chevron-right text-[10px] sm:text-xs"></i>
+                    </div>
                   </div>
 
-                  <div class="flex items-center gap-4 sm:gap-6 flex-shrink-0 border-l border-slate-100 pl-4 sm:pl-6">
-                     <div class="hidden md:block text-right">
-                         <span class="text-[9px] uppercase font-bold tracking-widest text-slate-400 mb-0.5 block">Net Opening</span>
-                         <span class="text-xs sm:text-sm font-bold block" :class="getBalanceColor(item.openingTotal)">
-                            {{ formatAmount(item.openingTotal) }} {{ getDrCr(item.openingTotal) }}
-                         </span>
-                     </div>
-                     <div class="text-right">
-                         <span class="text-[9px] uppercase font-bold tracking-widest text-slate-400 mb-0.5 block">Net Closing</span>
-                         <span class="text-sm sm:text-base font-black block" :class="getBalanceColor(item.closingTotal)">
-                            {{ formatAmount(item.closingTotal) }} {{ getDrCr(item.closingTotal) }}
-                         </span>
-                     </div>
-                     <div class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                     </div>
+                  <div class="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3">
+                    <div class="rounded-xl bg-slate-50/90 px-3 py-2 sm:rounded-2xl sm:px-4 sm:py-3">
+                      <span class="mb-0.5 block text-[10px] font-medium text-slate-500 sm:mb-1 sm:text-xs">Opening</span>
+                      <p :class="[getBalanceColor(displayMode === 'GROUPS' ? item.openingTotal : item.openingBalance), 'font-mono text-xs font-semibold tabular-nums tracking-tight sm:text-sm']">
+                         ₹{{ formatAmount(displayMode === 'GROUPS' ? item.openingTotal : item.openingBalance) }} <span class="text-[10px] font-sans font-medium opacity-80 sm:text-xs">{{ getDrCr(displayMode === 'GROUPS' ? item.openingTotal : item.openingBalance) }}</span>
+                      </p>
+                    </div>
+                    <div class="rounded-xl bg-indigo-50/80 px-3 py-2 text-right ring-1 ring-indigo-100/50 sm:rounded-2xl sm:px-4 sm:py-3">
+                      <span class="mb-0.5 block text-[10px] font-medium text-indigo-600/80 sm:mb-1 sm:text-xs">Closing</span>
+                      <p :class="[getBalanceColor(displayMode === 'GROUPS' ? item.closingTotal : item.closingBalance), 'font-mono text-sm font-semibold tabular-nums tracking-tight sm:text-base']">
+                         ₹{{ formatAmount(displayMode === 'GROUPS' ? item.closingTotal : item.closingBalance) }} <span class="text-[10px] font-sans font-medium opacity-80 sm:text-xs">{{ getDrCr(displayMode === 'GROUPS' ? item.closingTotal : item.closingBalance) }}</span>
+                      </p>
+                    </div>
                   </div>
-              </template>
+                </div>
+             </div>
 
-              <!-- LEDGER ITEM VIEW -->
-              <template v-else>
-                  <div class="flex flex-col flex-1 min-w-0">
-                     <h3 class="text-sm sm:text-base font-bold text-slate-800 leading-tight group-hover:text-blue-700 transition-colors truncate" :title="item.ledgerName">
-                        {{ item.ledgerName }}
-                     </h3>
-                     <p class="text-[10px] sm:text-xs font-semibold text-slate-400 mt-0.5 uppercase tracking-wider truncate">
-                        {{ item.groupName }}
-                     </p>
+             <div class="hidden flex-col gap-3 sm:flex sm:flex-col sm:gap-4">
+                <div 
+                  v-for="(item, idx) in paginatedItems" 
+                  :key="'d-'+idx"
+                  @click="handleItemClick(item)"
+                  class="ledger-float-card group flex cursor-pointer items-center justify-between gap-4 rounded-[1.35rem] px-4 py-3.5 transition-all duration-300 hover:-translate-y-0.5 sm:gap-6 sm:rounded-[1.75rem] sm:px-6 sm:py-5"
+                >
+                  <div class="flex min-w-0 flex-1 items-center gap-5">
+                    <div 
+                      v-if="displayMode === 'GROUPS'" 
+                      class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xl text-white shadow-lg shadow-indigo-500/25 transition-transform duration-300 group-hover:scale-105"
+                    >
+                        <i class="fa-solid fa-folder-tree"></i>
+                    </div>
+                    <div 
+                      v-else 
+                      class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-50 text-lg text-slate-600 ring-1 ring-slate-200/80 transition-colors group-hover:from-indigo-100 group-hover:to-violet-50 group-hover:text-indigo-700"
+                    >
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="min-w-0 py-0.5">
+                      <h3 class="truncate text-lg font-semibold text-slate-950 transition-colors group-hover:text-indigo-700" :title="displayMode === 'GROUPS' ? item.groupName : item.ledgerName">
+                        {{ displayMode === 'GROUPS' ? toTitleCase(item.groupName) : toTitleCase(item.ledgerName) }}
+                      </h3>
+                      <p class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                        <span v-if="displayMode === 'GROUPS'" class="inline-flex items-center rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-600">{{ item.ledgers ? item.ledgers.length : 0 }} accounts</span>
+                        <span v-else class="text-indigo-600/90">{{ toTitleCase(item.groupName) }}</span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div class="flex items-center gap-4 sm:gap-6 flex-shrink-0 border-l border-slate-100 pl-4 sm:pl-6">
-                     <div class="hidden md:block text-right">
-                         <span class="text-[9px] uppercase font-bold tracking-widest text-slate-400 mb-0.5 block">Opening</span>
-                         <span class="text-xs sm:text-sm font-bold block" :class="getBalanceColor(item.openingBalance)">
-                            {{ formatAmount(item.openingBalance) }} {{ getDrCr(item.openingBalance) }}
+                  <div class="flex flex-shrink-0 items-center gap-6 sm:gap-10">
+                     <div class="hidden text-right sm:block">
+                         <span class="mb-1 block text-xs font-medium text-slate-500">Opening</span>
+                         <span class="font-mono text-sm font-semibold tabular-nums tracking-tight" :class="getBalanceColor(displayMode === 'GROUPS' ? item.openingTotal : item.openingBalance)">
+                            ₹{{ formatAmount(displayMode === 'GROUPS' ? item.openingTotal : item.openingBalance) }} <span class="text-xs font-sans font-medium">{{ getDrCr(displayMode === 'GROUPS' ? item.openingTotal : item.openingBalance) }}</span>
                          </span>
                      </div>
-                     <div class="text-right">
-                         <span class="text-[9px] uppercase font-bold tracking-widest text-slate-400 mb-0.5 block">Closing</span>
-                         <span class="text-sm sm:text-base font-black block" :class="getBalanceColor(item.closingBalance)">
-                            {{ formatAmount(item.closingBalance) }} {{ getDrCr(item.closingBalance) }}
+                     <div class="min-w-[128px] text-right sm:min-w-[140px]">
+                         <span class="mb-1 block text-xs font-medium text-indigo-600/80">Closing</span>
+                         <span class="font-mono text-xl font-semibold tabular-nums tracking-tight" :class="getBalanceColor(displayMode === 'GROUPS' ? item.closingTotal : item.closingBalance)">
+                            ₹{{ formatAmount(displayMode === 'GROUPS' ? item.closingTotal : item.closingBalance) }} <span class="text-sm font-sans font-medium">{{ getDrCr(displayMode === 'GROUPS' ? item.closingTotal : item.closingBalance) }}</span>
                          </span>
                      </div>
-                     <div class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                     <div class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-all duration-200 group-hover:bg-indigo-100 group-hover:text-indigo-600">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
                      </div>
                   </div>
-              </template>
-           </div>
+                </div>
+             </div>
+
+             <div v-if="hasMore" ref="loadMoreRef" class="flex w-full flex-col items-center gap-4 py-16">
+                 <div class="h-11 w-11 rounded-full border-2 border-slate-200/80 border-t-indigo-600 animate-spin"></div>
+                 <p class="text-sm font-medium text-slate-500">Loading more…</p>
+             </div>
+          </div>
         </div>
-
-        <!-- Pagination Observer / Loader -->
-        <div v-if="hasMore" ref="loadMoreRef" class="w-full py-8 flex justify-center">
-            <div class="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-        </div>
-
       </div>
     </main>
 
-    <!-- Detail Modal Component -->
+    <!-- Detail Modal -->
     <LedgerDetailModal 
       v-if="selectedLedger" 
       :ledger="selectedLedger" 
@@ -195,13 +238,38 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLedgerData } from '../composables/useLedgerData';
 import LedgerDetailModal from '../components/LedgerDetailModal.vue';
+import DesktopToolbar from '../components/StockTable/DesktopToolbar.vue';
+import BrandsSidebar from '../components/StockTable/BrandsSidebar.vue';
+import CartSidebar from '../components/StockTable/CartSidebar.vue';
+import { useAdmin } from '../composables/useAdmin';
+import { useStockData } from '../composables/useStockData';
+import { useCart } from '../composables/useCart';
+import { useBrandGroups } from '../composables/useBrandGroups';
+import { useAppStore } from '../stores/appStore';
+import { storeToRefs } from 'pinia';
 import { useIntersectionObserver } from '@vueuse/core';
 
 const router = useRouter();
-const { ledgerData, allLedgers, loading, error, loadLedgerData } = useLedgerData();
+const appStore = useAppStore();
+const { stockData, config } = storeToRefs(appStore);
+
+const { ledgerData, allLedgers, loading: ledgerLoading, error, loadLedgerData } = useLedgerData();
+const { isAdmin, isSuperAdmin } = useAdmin();
+const companyName = ref('SBE Rayagada');
+
+const { loading: stockLoading } = useStockData();
+const { cartTotalItems } = useCart();
+
+// Sidebar & Search glue
 const searchQuery = ref('');
+const { groupedSidebar } = useBrandGroups(stockData, config, searchQuery);
+const activeScrollGroup = ref('');
+
 const selectedGroup = ref(null);
 const selectedLedger = ref(null);
+const showSidePanel = ref(false);
+const showCart = ref(false);
+const loading = computed(() => ledgerLoading.value);
 
 // Pagination
 const itemsPerPage = 30;
@@ -210,6 +278,10 @@ const loadMoreRef = ref(null);
 
 // Load data on mount
 onMounted(() => {
+  if (!isAdmin.value && !isSuperAdmin.value) {
+    router.replace('/');
+    return;
+  }
   loadLedgerData();
 });
 
@@ -291,6 +363,16 @@ const handleBack = () => {
     }
 };
 
+const handleSidebarClick = (group) => {
+    router.push({ path: '/', query: { brand: group.groupName } });
+    showSidePanel.value = false;
+};
+
+const handleClubClick = (clubName) => {
+    router.push({ path: '/', query: { club: clubName } });
+    showSidePanel.value = false;
+};
+
 const handleItemClick = (item) => {
     if (displayMode.value === 'GROUPS') {
         selectedGroup.value = item;
@@ -320,4 +402,90 @@ const formatAmount = (amount) => {
     maximumFractionDigits: 2
   }).format(Math.abs(amount));
 };
+
+const toTitleCase = (str) => {
+  if (!str) return '';
+  // Remove "as per details"
+  let clean = str.replace(/as per details/gi, '').trim();
+  return clean.toLowerCase().split(' ').map(word => {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(' ');
+};
 </script>
+
+<style scoped>
+.ledger-shell {
+  background-color: #f4f4f5;
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(129, 140, 248, 0.22), transparent 55%),
+    radial-gradient(900px 500px at -10% 30%, rgba(167, 139, 250, 0.14), transparent 50%),
+    radial-gradient(700px 400px at 50% 100%, rgba(99, 102, 241, 0.08), transparent 45%);
+}
+
+.ledger-header-sticky {
+  pointer-events: none;
+}
+.ledger-header-sticky > * {
+  pointer-events: auto;
+}
+
+.ledger-header-card {
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 24px 48px -20px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.ledger-back-btn {
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.9);
+}
+.ledger-back-btn:hover {
+  color: rgb(67 56 202);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(165, 180, 252, 0.6);
+}
+
+.ledger-search {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(226, 232, 240, 0.9);
+}
+.ledger-search:focus {
+  box-shadow:
+    0 8px 28px rgba(99, 102, 241, 0.12),
+    0 0 0 3px rgba(129, 140, 248, 0.35);
+}
+
+.ledger-state-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 24px 48px -18px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.ledger-float-card {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 20px 40px -18px rgba(15, 23, 42, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset,
+    0 1px 0 rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.ledger-float-card:hover {
+  box-shadow:
+    0 28px 56px -20px rgba(99, 102, 241, 0.22),
+    0 0 0 1px rgba(199, 210, 254, 0.5) inset;
+}
+
+.ledger-pill-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+  box-shadow: 0 12px 32px -8px rgba(79, 70, 229, 0.55);
+}
+.ledger-pill-btn:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 16px 40px -8px rgba(79, 70, 229, 0.65);
+}
+</style>

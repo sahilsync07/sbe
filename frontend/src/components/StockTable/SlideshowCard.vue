@@ -6,15 +6,14 @@
       :class="[aspectClass, roundedClass]"
     >
       <!-- Image Slider -->
-      <transition-group name="tile" tag="div" class="absolute inset-0 z-0 flex whitespace-nowrap overflow-hidden">
+      <Transition name="tile">
         <div
-          v-for="(chunk, idx) in slideChunks"
-          :key="idx"
-          v-show="idx === currentIndex"
+          v-if="slideChunks.length > 0"
+          :key="currentIndex"
           class="absolute inset-0 w-full h-full bg-slate-50 flex items-stretch"
         >
           <!-- Loop through items inside the chunk -->
-          <div v-for="slide in chunk" :key="slide.id" class="flex-1 h-full relative overflow-hidden">
+          <div v-for="slide in slideChunks[currentIndex]" :key="slide.id" class="flex-1 h-full relative overflow-hidden">
             <div class="w-full h-full flex items-center justify-center transition-transform duration-[800ms] group-hover:scale-110 ease-[cubic-bezier(0.25,1,0.5,1)]">
               
               <!-- Logo/Icon Slide -->
@@ -41,7 +40,7 @@
             </div>
           </div>
         </div>
-      </transition-group>
+      </Transition>
 
       <!-- Glassmorphic Floating Label REMOVED -->
 
@@ -110,19 +109,23 @@ const slideChunks = computed(() => {
 });
 
 const currentIndex = ref(0);
+let timeout = null;
 let interval = null;
 
 onMounted(() => {
   if (slideChunks.value.length > 1) {
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       interval = setInterval(() => {
-        currentIndex.value = (currentIndex.value + 1) % slideChunks.value.length;
+        if (slideChunks.value.length > 0) {
+          currentIndex.value = (currentIndex.value + 1) % slideChunks.value.length;
+        }
       }, 5000 + Math.random() * 2000);
     }, Math.random() * 1500);
   }
 });
 
 onUnmounted(() => {
+  if (timeout) clearTimeout(timeout);
   if (interval) clearInterval(interval);
 });
 </script>

@@ -1,11 +1,13 @@
 <template>
   <div class="min-h-screen">
     <router-view></router-view>
+    <AdminLoginModal />
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue';
+import AdminLoginModal from './components/AdminLoginModal.vue';
 import { useAdmin } from './composables/useAdmin';
 import { performDeltaSync } from './utils/nativeCache';
 import { setupDailySyncNotification } from './utils/notifications';

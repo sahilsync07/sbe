@@ -1,44 +1,42 @@
 <template>
-  <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-0 sm:p-4 transition-all">
+  <div class="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-xl sm:items-center sm:p-5">
     
-    <!-- Modal Container -->
     <div 
-      class="bg-white w-full sm:max-w-4xl h-[90vh] sm:h-[85vh] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-zoom-in"
+      class="ledger-modal-sheet flex h-[92vh] w-full max-h-[940px] flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.35)] sm:h-[86vh] sm:max-w-4xl sm:rounded-[2rem] animate-slide-up sm:animate-zoom-in"
       @click.stop
     >
       
-      <!-- Modal Header -->
-      <header class="px-6 py-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/50">
-        <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-tight">{{ ledger.ledgerName }}</h2>
-          <div class="flex items-center gap-3 mt-1.5 relative">
-            <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest">{{ ledger.groupName }}</span>
-            <span class="text-xs font-semibold text-slate-500">{{ (ledger.entries || []).length }} Transactions</span>
+      <header class="relative flex items-start justify-between gap-4 px-5 pb-5 pt-6 sm:px-8 sm:pb-6 sm:pt-8">
+        <div class="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-b-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 opacity-95"></div>
+        <div class="min-w-0 pt-1">
+          <h2 class="text-xl font-semibold leading-tight tracking-tight text-slate-950 sm:text-2xl">{{ ledger.ledgerName }}</h2>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-800 ring-1 ring-indigo-500/20">{{ ledger.groupName }}</span>
+            <span class="text-sm text-slate-500">{{ (ledger.entries || []).length }} lines</span>
           </div>
         </div>
-        <button @click="$emit('close')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors shadow-sm">
+        <button type="button" @click="$emit('close')" class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </header>
 
-      <!-- Balances Summary Bar -->
-      <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100 bg-white shadow-sm z-10">
-         <div class="p-4 flex flex-col justify-center items-center text-center group">
-            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Opening</span>
-            <span class="text-xl font-bold" :class="getBalanceColor(ledger.openingBalance)">
-               {{ formatAmount(ledger.openingBalance) }} <span class="text-sm">{{ getDrCr(ledger.openingBalance) }}</span>
+      <div class="grid grid-cols-2 gap-3 px-5 pb-4 sm:gap-4 sm:px-8 sm:pb-5">
+         <div class="rounded-2xl bg-slate-50/90 px-4 py-4 text-center ring-1 ring-slate-100 sm:py-5">
+            <span class="mb-1 block text-xs font-medium text-slate-500">Opening</span>
+            <span class="text-lg font-semibold sm:text-xl" :class="getBalanceColor(ledger.openingBalance)">
+               {{ formatAmount(ledger.openingBalance) }} <span class="text-sm font-medium">{{ getDrCr(ledger.openingBalance) }}</span>
             </span>
          </div>
-         <div class="p-4 flex flex-col justify-center items-center text-center group">
-            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Closing</span>
-            <span class="text-xl font-bold" :class="getBalanceColor(ledger.closingBalance)">
-               {{ formatAmount(ledger.closingBalance) }} <span class="text-sm">{{ getDrCr(ledger.closingBalance) }}</span>
+         <div class="rounded-2xl bg-gradient-to-br from-indigo-50/80 to-violet-50/50 px-4 py-4 text-center ring-1 ring-indigo-100/60 sm:py-5">
+            <span class="mb-1 block text-xs font-medium text-indigo-700/80">Closing</span>
+            <span class="text-lg font-semibold sm:text-xl" :class="getBalanceColor(ledger.closingBalance)">
+               {{ formatAmount(ledger.closingBalance) }} <span class="text-sm font-medium">{{ getDrCr(ledger.closingBalance) }}</span>
             </span>
          </div>
       </div>
 
       <!-- Transactions List (Scrollable) -->
-      <div class="flex-1 overflow-y-auto bg-slate-50/30 p-4 sm:p-6 custom-scrollbar">
+      <div class="flex-1 overflow-y-auto bg-gradient-to-b from-slate-50/80 to-white p-4 sm:p-6 custom-scrollbar">
          
          <div v-if="processedEntries.filter(e => e.type === 'entry').length === 0" class="h-full flex flex-col items-center justify-center text-center opacity-60">
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-2xl text-slate-400 mb-4">
@@ -48,10 +46,10 @@
             <p class="text-xs text-slate-400">for the defined period.</p>
          </div>
 
-         <div v-else class="w-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[600px]">
+         <div v-else class="w-full overflow-x-auto rounded-2xl bg-white/95 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 custom-scrollbar sm:rounded-[1.35rem]">
+            <table class="w-full min-w-[600px] border-collapse text-left">
                <thead>
-                  <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-slate-200">
+                  <tr class="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold uppercase tracking-wide text-slate-500">
                      <th class="p-3 sm:p-4 w-28">Date</th>
                      <th class="p-3 sm:p-4">Particulars</th>
                      <th class="p-3 sm:p-4 w-24">Vch No.</th>
@@ -96,11 +94,12 @@
       </div>
 
       <!-- Action Footer -->
-      <footer class="p-4 border-t border-slate-200 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.03)] z-10 shrink-0">
+      <footer class="z-10 shrink-0 border-t border-slate-100 bg-white/95 p-4 backdrop-blur-md sm:p-6">
          <button 
+           type="button"
            @click="handleDownloadPDF" 
            :disabled="isGenerating || processedEntries.filter(e => e.type === 'entry').length === 0"
-           class="w-full py-4 bg-slate-900 hover:bg-black disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+           class="flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 py-4 text-base font-semibold text-white shadow-[0_12px_32px_-8px_rgba(15,23,42,0.45)] transition-all hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:text-lg"
          >
            <span v-if="isGenerating" class="flex items-center gap-2">
               <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>

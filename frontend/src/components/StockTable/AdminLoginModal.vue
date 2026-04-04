@@ -8,16 +8,23 @@
             <h3 class="text-xl font-bold text-slate-800 mb-2">Admin Login</h3>
             <p class="text-sm text-slate-500 mb-6">Enter the password to access admin features.</p>
             
-            <div class="space-y-4">
+            <form class="space-y-4" autocomplete="off" @submit.prevent="handleLogin">
                 <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
+                  <label for="stock-admin-login-password" class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
                   <div class="relative">
                     <input 
                       ref="passwordInput"
+                      id="stock-admin-login-password"
+                      name="password"
                       v-model="password"
                       :type="showPassword ? 'text' : 'password'" 
                       placeholder="Enter password"
-                      @keyup.enter="handleLogin"
+                      autocomplete="current-password"
+                      autocapitalize="off"
+                      spellcheck="false"
+                      data-bwignore="true"
+                      data-lpignore="true"
+                      data-1p-ignore="true"
                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400 pr-12"
                     >
                     <button 
@@ -29,22 +36,23 @@
                     </button>
                   </div>
                </div>
-            </div>
 
-            <div class="flex gap-3 mt-8">
-               <button 
-                 @click="$emit('close')"
-                 class="flex-1 py-3 px-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
-               >
-                 Cancel
-               </button>
-               <button 
-                 @click="handleLogin"
-                 class="flex-1 py-3 px-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 shadow-lg shadow-slate-900/10 transition-all active:scale-95"
-               >
-                 Login
-               </button>
-            </div>
+               <div class="flex gap-3 mt-8">
+                 <button 
+                   type="button"
+                   @click="$emit('close')"
+                   class="flex-1 py-3 px-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                 >
+                   Cancel
+                 </button>
+                 <button 
+                   type="submit"
+                   class="flex-1 py-3 px-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 shadow-lg shadow-slate-900/10 transition-all active:scale-95"
+                 >
+                   Login
+                 </button>
+               </div>
+            </form>
           </div>
         </div>
       </div>

@@ -220,6 +220,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'vue3-toastify';
 // Constants & Utils
@@ -248,6 +249,9 @@ const AdminLoginModal = defineAsyncComponent(() => import('./StockTable/AdminLog
 const CachedImage = defineAsyncComponent(() => import('./StockTable/CachedImage.vue'));
 const BrandLanding = defineAsyncComponent(() => import('./StockTable/BrandLanding.vue'));
 const LatestStock = defineAsyncComponent(() => import('../android/components/LatestStock.vue'));
+
+const route = useRoute();
+const router = useRouter();
 
 // Init Core State
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -393,6 +397,24 @@ const {
   searchQuery, selectedGroup, cleanView, hideOldArticles,
   filteredStockData, sortedStockDataForDropdown 
 } = useProductFilter(stockData, config);
+
+// Lifecycle: Handle Query Navigation
+onMounted(() => {
+    const brand = route.query.brand;
+    const club = route.query.club;
+    
+    if (brand) {
+        showLanding.value = false;
+        // Wait for data to load and components to mount
+        setTimeout(() => {
+            scrollToGroup(brand, 'instant');
+        }, 800);
+    } else if (club) {
+        showLanding.value = false;
+        selectedGroup.value = club;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+});
 
 // 5. Sidebar Groups
 // Note: Sidebar uses a subset of logic but needs connection to stockData & search.
