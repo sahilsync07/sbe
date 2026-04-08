@@ -194,7 +194,22 @@ export function useStockData(isLocal) {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`
             );
-            let data = response.data.data;
+            
+            const resData = response.data;
+            let data = resData.data;
+
+            // Check if backend returned a Tally-down fallback
+            if (resData.tallyError || resData.message?.includes('existing data') || resData.message?.includes('Tally unavailable')) {
+                toast.warning('Tally is offline — showing cached data', { autoClose: 4000 });
+                loading.value = false;
+                return;
+            }
+
+            if (!data || !Array.isArray(data)) {
+                toast.error('Unexpected response from server', { autoClose: 3000 });
+                loading.value = false;
+                return;
+            }
 
             const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
             if (metaIndex !== -1) {
@@ -208,17 +223,32 @@ export function useStockData(isLocal) {
             }
 
             stockData.value = processCustomGroups(data);
-            // Update Cache on Admin Sync too
             localStorage.setItem(CACHE_KEY, JSON.stringify(data));
 
-            toast.success("Stock data updated successfully!", { autoClose: 2500 });
+            // Show appropriate toast for ledger sync status
+            const ledgerOk = resData.ledgerSync?.success;
+            if (ledgerOk) {
+                toast.success('Stock & Ledger synced from Tally!', { autoClose: 2500 });
+            } else {
+                toast.success('Stock synced from Tally!', { autoClose: 2500 });
+                if (resData.ledgerSync?.error) {
+                    toast.warning('Ledger sync failed: ' + resData.ledgerSync.error, { autoClose: 4000 });
+                }
+            }
         } catch (err) {
-            error.value = err.response?.data?.error || "Failed to update stock data";
-            toast.error(error.value, { autoClose: 3000 });
+            // Network error or 5xx from backend
+            const serverMsg = err.response?.data?.error;
+            if (serverMsg?.includes('Tally') || serverMsg?.includes('connection refused')) {
+                toast.error('Tally is not running. Start Tally and try again.', { autoClose: 5000 });
+            } else {
+                toast.error(serverMsg || 'Sync failed. Check backend server.', { autoClose: 4000 });
+            }
+            error.value = serverMsg || 'Sync failed';
         } finally {
             loading.value = false;
         }
     };
+
 
     // Image Upload
     const handleFileChange = (event, productName) => {
