@@ -1,27 +1,11 @@
 <template>
   <div class="daybook-shell min-h-screen w-full font-sans text-slate-800">
-    <DesktopToolbar
-      :loading="loading || stockLoading"
-      :company-name="companyName"
-      hide-mobile-bottom-bar
-      @toggleSidebar="showSidePanel = !showSidePanel"
-      @toggleCart="showCart = !showCart"
-    />
+    
 
-    <BrandsSidebar
-      :show-side-panel="showSidePanel"
-      :grouped-sidebar="groupedSidebar"
-      :active-scroll-group="activeScrollGroup"
-      @update:showSidePanel="showSidePanel = $event"
-      @sidebarClick="handleSidebarClick"
-      @clubClick="handleClubClick"
-    />
+    
 
-    <!-- Cart Sidebar -->
-    <CartSidebar
-      :show-cart="showCart"
-      @closeCart="showCart = false"
-    />
+    
+    
 
     <main class="w-full pt-[54px] lg:pt-[72px] min-h-screen flex flex-col">
       <div class="daybook-header-sticky sticky top-[54px] lg:top-[72px] z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10">
@@ -194,9 +178,6 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLedgerData } from '../composables/useLedgerData';
 import ModernDatePicker from '../components/ModernDatePicker.vue';
-import DesktopToolbar from '../components/StockTable/DesktopToolbar.vue';
-import BrandsSidebar from '../components/StockTable/BrandsSidebar.vue';
-import CartSidebar from '../components/StockTable/CartSidebar.vue';
 import { useAdmin } from '../composables/useAdmin';
 import { useStockData } from '../composables/useStockData';
 import { useCart } from '../composables/useCart';

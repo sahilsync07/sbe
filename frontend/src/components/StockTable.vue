@@ -1,21 +1,7 @@
 
 <template>
   <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800 pb-20">
-    <DesktopToolbar
-      :loading="loading"
-      :is-caching-images="isCaching"
-      :show-side-panel="showSidePanel"
-      :show-cart="showCart"
-      :company-name="companyName"
-      :cloud-name="cloudName"
-      @toggleSidebar="toggleSidebar"
-      @toggleCart="toggleCart"
-      @updateStockData="updateStockData"
-      @toggleLedgerView="toggleLedgerView"
-      @promptAdminLogin="promptAdminLogin"
-      @cacheImages="handleCacheImages"
-      @refreshData="refreshStockData"
-    />
+    
 
     <Transition
       enter-active-class="transition-opacity duration-300 ease-out"
@@ -29,22 +15,10 @@
     </Transition>
 
     <div class="flex w-full">
-      <BrandsSidebar
-        :show-side-panel="showSidePanel"
-        :grouped-sidebar="groupedSidebar"
-        :active-scroll-group="activeScrollGroup"
-        :selected-group="selectedGroup"
-        @update:showSidePanel="showSidePanel = $event"
-        @sidebarClick="handleSidebarClick"
-        @clubClick="handleClubClick"
-      />
+      
 
-      <!-- Cart Sidebar -->
-      <CartSidebar
-        :show-cart="showCart"
-        @closeCart="showCart = false"
-        @sendOrderToWhatsapp="sendOrderToWhatsapp"
-      />
+      
+      
 
       <main 
          class="flex-1 w-full px-2 sm:px-4 lg:px-6 space-y-8 min-w-0 transition-all duration-300 main-content-offset"
@@ -236,9 +210,6 @@ import { useAdmin } from '../composables/useAdmin';
 import { useImageCache } from '../composables/useImageCache';
 import { extractColor } from '../utils/colors'; 
 // Components
-import DesktopToolbar from './StockTable/DesktopToolbar.vue';
-import BrandsSidebar from './StockTable/BrandsSidebar.vue';
-import CartSidebar from './StockTable/CartSidebar.vue';
 import ProductCard from './StockTable/ProductCard.vue';
 import { defineAsyncComponent } from 'vue';
 

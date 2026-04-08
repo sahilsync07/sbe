@@ -1,27 +1,11 @@
 <template>
   <div class="ledger-shell min-h-screen w-full font-sans text-slate-800">
-    <DesktopToolbar
-      :loading="loading || stockLoading"
-      :company-name="companyName"
-      hide-mobile-bottom-bar
-      @toggleSidebar="showSidePanel = !showSidePanel"
-      @toggleCart="showCart = !showCart"
-    />
+    
 
-    <BrandsSidebar
-      :show-side-panel="showSidePanel"
-      :grouped-sidebar="groupedSidebar"
-      :active-scroll-group="activeScrollGroup"
-      @update:showSidePanel="showSidePanel = $event"
-      @sidebarClick="handleSidebarClick"
-      @clubClick="handleClubClick"
-    />
+    
 
-    <!-- Cart Sidebar -->
-    <CartSidebar
-      :show-cart="showCart"
-      @closeCart="showCart = false"
-    />
+    
+    
 
     <main class="w-full pt-[54px] lg:pt-[72px] min-h-screen flex flex-col transition-all duration-300">
       
@@ -238,9 +222,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLedgerData } from '../composables/useLedgerData';
 import LedgerDetailModal from '../components/LedgerDetailModal.vue';
-import DesktopToolbar from '../components/StockTable/DesktopToolbar.vue';
-import BrandsSidebar from '../components/StockTable/BrandsSidebar.vue';
-import CartSidebar from '../components/StockTable/CartSidebar.vue';
 import { useAdmin } from '../composables/useAdmin';
 import { useStockData } from '../composables/useStockData';
 import { useCart } from '../composables/useCart';
