@@ -14,9 +14,9 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024
       },
       manifest: {
-        name: 'Sita Rama Motors',
-        short_name: 'SRM App',
-        description: 'Sita Rama Motors Catalog Application',
+        name: 'Sri Brundabana Enterprises',
+        short_name: 'SBE App',
+        description: 'Sri Brundabana Enterprises Application',
         theme_color: '#ffffff',
         icons: [
           {
