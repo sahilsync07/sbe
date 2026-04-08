@@ -4,6 +4,7 @@ const { XMLParser } = require("fast-xml-parser");
 const cors = require("cors");
 const fs = require("fs/promises");
 const path = require("path");
+const { exec } = require("child_process");
 
 const app = express();
 const port = 3000;
@@ -25,6 +26,60 @@ const ledgerDataPath = path.resolve(
   "../../frontend/public/assets/ledger-data.json"
 );
 const tallyTimeout = 30000;
+const repoRoot = path.resolve(__dirname, "../../");
+
+// ============================================================
+//  GIT AUTO-COMMIT & PUSH
+// ============================================================
+
+/**
+ * Runs git add, commit, and push in the repo root directory.
+ * This is fire-and-forget — errors are logged but never block the API response.
+ * @param {string} commitMessage - The commit message to use
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+async function gitCommitAndPush(commitMessage) {
+  return new Promise((resolve) => {
+    const cmd = `git add -A && git commit -m "${commitMessage}" && git push`;
+    console.log(`🚀 Git: Running in ${repoRoot}`);
+    console.log(`   Command: ${cmd}`);
+
+    exec(cmd, { cwd: repoRoot, timeout: 30000 }, (error, stdout, stderr) => {
+      if (error) {
+        // "nothing to commit" is not a real error
+        if (stderr?.includes("nothing to commit") || stdout?.includes("nothing to commit")) {
+          console.log("✅ Git: Nothing to commit (data unchanged)");
+          resolve({ success: true, message: "Nothing to commit" });
+          return;
+        }
+        console.error("❌ Git commit/push failed:", error.message);
+        console.error("   stderr:", stderr);
+        resolve({ success: false, message: error.message });
+        return;
+      }
+      console.log("✅ Git: Committed and pushed successfully");
+      if (stdout) console.log("   stdout:", stdout.trim());
+      resolve({ success: true, message: "Committed and pushed" });
+    });
+  });
+}
+
+/**
+ * Formats the current date/time into a readable commit timestamp.
+ * Example: "08-Apr-2026 08:35 AM"
+ */
+function getCommitTimestamp() {
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mmm = months[now.getMonth()];
+  const yyyy = now.getFullYear();
+  let hh = now.getHours();
+  const ampm = hh >= 12 ? 'PM' : 'AM';
+  hh = hh % 12 || 12;
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  return `${dd}-${mmm}-${yyyy} ${String(hh).padStart(2, '0')}:${mm} ${ampm}`;
+}
 
 const tallyRequestXML = `<?xml version="1.0"?>
 <ENVELOPE>
@@ -621,6 +676,16 @@ app.post("/api/updateStockData", async (req, res) => {
       console.error("⚠️ Ledger sync error (non-fatal):", ledgerErr.message);
       ledgerResult = { success: false, error: ledgerErr.message };
     }
+
+    // ---- 10. Git commit & push (fire-and-forget) ----------------------------
+    const timestamp = getCommitTimestamp();
+    const commitMsg = `Stock Data Update ${timestamp}`;
+    // Don't await — let git run in the background so the response is instant
+    gitCommitAndPush(commitMsg).then((gitResult) => {
+      if (!gitResult.success) {
+        console.warn(`⚠️ Git push failed (non-fatal): ${gitResult.message}`);
+      }
+    });
 
     res.json({
       message: "Stock data updated successfully from Tally",
