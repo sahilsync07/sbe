@@ -44,7 +44,16 @@ async function gitCommitAndPush(commitMessage) {
     console.log(`🚀 Git: Running in ${repoRoot}`);
     console.log(`   Command: ${cmd}`);
 
-    exec(cmd, { cwd: repoRoot, timeout: 30000 }, (error, stdout, stderr) => {
+    exec(cmd, {
+      cwd: repoRoot,
+      timeout: 30000,
+      env: {
+        ...process.env,
+        GIT_EDITOR: 'true',           // Prevent editor from opening
+        GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
+        GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
+      }
+    }, (error, stdout, stderr) => {
       if (error) {
         // "nothing to commit" is not a real error
         if (stderr?.includes("nothing to commit") || stdout?.includes("nothing to commit")) {
