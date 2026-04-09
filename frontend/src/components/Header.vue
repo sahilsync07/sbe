@@ -13,7 +13,7 @@
 
       <!-- Center: Logo (Absolute) -->
       <div class="absolute left-1/2 top-safe -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none w-full max-w-[60%]">
-          <div class="flex items-center gap-1.5 justify-center w-full">
+          <div @click="$emit('admin-toggle')" class="flex items-center gap-1.5 justify-center w-full pointer-events-auto cursor-pointer">
             <span class="text-lg font-black tracking-tighter text-slate-900 truncate">SBE</span>
             <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase bg-slate-100 px-1.5 py-0.5 rounded-sm shrink-0">Rayagada</span>
           </div>
