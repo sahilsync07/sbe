@@ -9,6 +9,7 @@ export const useAppStore = defineStore('app', {
     lastSyncTime: null,
     searchQuery: '',
     cleanView: true,
+    config: {},
   }),
   actions: {
     setAdmin(status) {
