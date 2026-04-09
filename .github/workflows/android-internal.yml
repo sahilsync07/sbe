@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: google-play-deploy-sbe
+  cancel-in-progress: false
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
