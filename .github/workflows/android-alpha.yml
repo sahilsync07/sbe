@@ -59,7 +59,7 @@ jobs:
 
       - name: Build Release Bundle
         working-directory: frontend/android
-        run: ./gradlew bundleRelease
+        run: chmod +x ./gradlew && ./gradlew bundleRelease
 
 
       - name: Upload to Play Store (Alpha)
