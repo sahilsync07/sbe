@@ -10,7 +10,7 @@
 
     <!-- Side Panel -->
     <aside
-      class="fixed inset-y-0 left-0 w-full sm:w-96 lg:w-96 border-r border-slate-200 z-[80] transform transition-transform duration-300 ease-in-out bg-white shadow-2xl safe-area-top"
+      class="fixed inset-y-0 left-0 w-[85%] max-w-sm sm:w-96 lg:w-96 border-r border-slate-200 z-[80] transform transition-transform duration-300 ease-in-out bg-white shadow-2xl safe-area-top"
       :class="showSidePanel ? 'translate-x-0' : '-translate-x-full'"
     >
       <div class="h-full flex flex-col">
@@ -34,7 +34,7 @@
                
                <div class="grid grid-cols-1 gap-2">
                   <button 
-                    @click="router.push('/')"
+                    @click="router.push('/'); $emit('update:showSidePanel', false)"
                     class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border group/nav"
                     :class="route.path === '/' ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-100 text-slate-600 hover:border-blue-200 hover:bg-blue-50/50'"
                   >
@@ -45,7 +45,7 @@
                   </button>
 
                   <button 
-                    @click="router.push('/ledger')"
+                    @click="router.push('/ledger'); $emit('update:showSidePanel', false)"
                     class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border group/nav"
                     :class="route.path === '/ledger' ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/50'"
                   >
@@ -56,7 +56,7 @@
                   </button>
 
                   <button 
-                    @click="router.push('/daybook')"
+                    @click="router.push('/daybook'); $emit('update:showSidePanel', false)"
                     class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border group/nav"
                     :class="route.path === '/daybook' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:bg-emerald-50/50'"
                   >
