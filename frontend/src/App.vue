@@ -61,7 +61,7 @@ import { AppUpdate } from '@capawesome/capacitor-app-update';
 import { toast } from 'vue3-toastify';
 import { storeToRefs } from 'pinia';
 
-import AdminLoginModal from './components/AdminLoginModal.vue';
+import AdminLoginModal from './components/StockTable/AdminLoginModal.vue';
 import DesktopToolbar from './components/StockTable/DesktopToolbar.vue';
 import BrandsSidebar from './components/StockTable/BrandsSidebar.vue';
 import CartSidebar from './components/StockTable/CartSidebar.vue';
