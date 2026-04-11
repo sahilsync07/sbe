@@ -722,6 +722,25 @@ watch(cart, (val) => {
     localStorage.setItem('sbe_cart', JSON.stringify(val));
 }, { deep: true });
 
+// React to brand query param changes (e.g. sidebar clicks from App.vue)
+watch(() => route.query.brand, (newBrand) => {
+    if (newBrand) {
+        showLanding.value = false;
+        nextTick(() => {
+            scrollToGroup(newBrand, 'instant');
+        });
+    }
+});
+
+// React to club query param changes
+watch(() => route.query.club, (newClub) => {
+    if (newClub) {
+        showLanding.value = false;
+        selectedGroup.value = newClub;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+});
+
 watch(selectedGroup, (newVal) => {
     const url = new URL(window.location);
     if (newVal && newVal !== 'All') {
