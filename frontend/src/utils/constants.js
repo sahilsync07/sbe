@@ -52,7 +52,8 @@ export const BRAND_LISTS = {
         'KRishna Agency',
         'SHYAM',
         'AVTAR V V POLYMERS',
-        'ATHARV PLASTIC'
+        'ATHARV PLASTIC',
+        'SALASAR BALAJI'
     ],
     generalBoxPacking: [
         'ADDA',
