@@ -726,9 +726,11 @@ watch(cart, (val) => {
 watch(() => route.query.brand, (newBrand) => {
     if (newBrand) {
         showLanding.value = false;
-        nextTick(() => {
+        // Use setTimeout to allow the product list DOM to fully render
+        // after the landing page is hidden (v-else transition needs time)
+        setTimeout(() => {
             scrollToGroup(newBrand, 'instant');
-        });
+        }, 400);
     }
 });
 
@@ -822,12 +824,10 @@ const getCleanProductName = (name) => {
 const scrollToGroup = (groupName, behavior = 'instant') => {
     expandedGroups.value[groupName] = true;
 
-    const currentList = filteredStockData.value.map(g => g.groupName);
-    if (!currentList.includes(groupName)) {
-        selectedGroup.value = 'All'; 
-    }
+    // Always show all products so the page redirects to the brand within the all products list
+    selectedGroup.value = 'All'; 
 
-    nextTick(() => {
+    setTimeout(() => {
         const id = 'group-grid-' + normalizeId(groupName);
         const element = document.getElementById(id);
         if (element) {
@@ -843,7 +843,7 @@ const scrollToGroup = (groupName, behavior = 'instant') => {
                  showSidePanel.value = false;
              }
         }
-    });
+    }, 150); // Small timeout allows Vue to finish rendering the massive all-products list
 };
 
 const handleSidebarClick = (group) => {
