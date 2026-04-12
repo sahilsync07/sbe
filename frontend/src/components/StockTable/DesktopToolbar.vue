@@ -9,13 +9,12 @@
       <div class="h-[72px] flex items-center justify-between px-6">
        <!-- Left Section: Sidebar, Sync, Search -->
        <div class="flex items-center gap-4 flex-1 min-w-0 mr-4">
-          <!-- Sidebar Toggle -->
           <button
             @click="$emit('toggleSidebar')"
             class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95 shrink-0"
             :class="{ 'opacity-0 pointer-events-none': showCart }"
           >
-             <i v-if="showSidePanel" class="fa-solid fa-house text-sm"></i>
+             <i v-if="showSidePanel" class="fa-solid fa-xmark text-sm"></i>
              <i v-else class="fa-solid fa-bars text-sm"></i>
           </button>
 
@@ -193,18 +192,17 @@
                @click="$emit('toggleSidebar')"
                class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all"
             >
-               <i v-if="showSidePanel" class="fa-solid fa-house text-sm"></i>
+               <i v-if="showSidePanel" class="fa-solid fa-xmark text-sm"></i>
                <i v-else class="fa-solid fa-bars text-sm"></i>
             </button>
 
-            <!-- Latest Stock Button (Android Only + Admin Only) -->
+            <!-- Home Button -->
             <button
-               v-if="isAdmin || isSuperAdmin"
-               @click="$router.push('/latest-stock')"
-               class="android-only-btn w-9 h-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md active:scale-95 transition-all"
-               title="Latest Stock"
+               @click="$router.push('/')"
+               class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all shadow-sm"
+               title="Home"
             >
-               <i class="fa-solid fa-bolt text-sm"></i>
+               <i class="fa-solid fa-house text-sm"></i>
             </button>
          </div>
 
