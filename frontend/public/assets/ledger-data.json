@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-04-24T13:24:16.387Z",
+    "lastSync": "2026-04-24T14:04:30.284Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10358246.21,
-        "closingBalance": 10551308.87,
+        "closingBalance": 10551308.71,
         "entries": []
       }
     ]
@@ -3261,13 +3261,20 @@
       {
         "ledgerName": "Transport Charges(Services)",
         "openingBalance": -1551231,
-        "closingBalance": -1557781,
+        "closingBalance": -1562371,
         "entries": [
           {
             "date": "20-Apr-26",
             "voucherNo": 21,
             "type": "Purchase",
             "amount": 6550,
+            "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": 29,
+            "type": "Purchase",
+            "amount": 4590,
             "drCr": "Dr"
           }
         ]
@@ -4885,7 +4892,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -2982816.78,
+        "closingBalance": -2987907.61,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -5116,6 +5123,13 @@
             "voucherNo": 27,
             "type": "Purchase",
             "amount": 1300.95,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-Apr-26",
+            "voucherNo": 28,
+            "type": "Purchase",
+            "amount": 5090.83,
             "drCr": "Dr"
           }
         ]
@@ -12910,13 +12924,13 @@
       {
         "ledgerName": "PURCHASE@GST",
         "openingBalance": 0,
-        "closingBalance": -1365778.63,
+        "closingBalance": -1467595.64,
         "entries": []
       },
       {
         "ledgerName": "ROUND OFF",
         "openingBalance": 0,
-        "closingBalance": -0.02,
+        "closingBalance": -0.18,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -13091,6 +13105,13 @@
             "voucherNo": 27,
             "type": "Purchase",
             "amount": 0.01,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-Apr-26",
+            "voucherNo": 28,
+            "type": "Purchase",
+            "amount": 0.16,
             "drCr": "Dr"
           }
         ]
@@ -16020,7 +16041,7 @@
       {
         "ledgerName": "A R C Limited",
         "openingBalance": 24273,
-        "closingBalance": 12421,
+        "closingBalance": 17011,
         "entries": [
           {
             "date": "12-Apr-26",
@@ -16028,6 +16049,13 @@
             "type": "Payment",
             "amount": 11852,
             "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": 29,
+            "type": "Purchase",
+            "amount": 4590,
+            "drCr": "Cr"
           }
         ]
       },
@@ -16663,6 +16691,20 @@
         "openingBalance": 101244,
         "closingBalance": 101244,
         "entries": []
+      },
+      {
+        "ledgerName": "PEE AAR INDUSTRIES",
+        "openingBalance": 0,
+        "closingBalance": 106908,
+        "entries": [
+          {
+            "date": "22-Apr-26",
+            "voucherNo": 28,
+            "type": "Purchase",
+            "amount": 106908,
+            "drCr": "Cr"
+          }
+        ]
       },
       {
         "ledgerName": "POPULAR MOBILES",
