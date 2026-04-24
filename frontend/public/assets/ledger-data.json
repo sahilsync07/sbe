@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-04-24T14:04:30.284Z",
+    "lastSync": "2026-04-24T14:53:12.078Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10358246.21,
-        "closingBalance": 10551308.71,
+        "closingBalance": 10555411.35,
         "entries": []
       }
     ]
@@ -59,7 +59,7 @@
       {
         "ledgerName": "AMBIKA FOOTWEAR, LAXMIPUR",
         "openingBalance": -25897,
-        "closingBalance": -17897,
+        "closingBalance": -37939,
         "entries": [
           {
             "date": "14-Apr-26",
@@ -67,6 +67,13 @@
             "type": "Receipt",
             "amount": 8000,
             "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "173/26-27",
+            "type": "Tax Invoice",
+            "amount": 20042,
+            "drCr": "Dr"
           }
         ]
       },
@@ -3271,7 +3278,7 @@
             "drCr": "Dr"
           },
           {
-            "date": "24-Apr-26",
+            "date": "22-Apr-26",
             "voucherNo": 29,
             "type": "Purchase",
             "amount": 4590,
@@ -3717,7 +3724,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2536885.87,
+        "closingBalance": 2537437.36,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -4879,6 +4886,34 @@
             "voucherNo": "169/26-27",
             "type": "Tax Invoice",
             "amount": 185.25,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "170/26-27",
+            "type": "Tax Invoice",
+            "amount": 8.69,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "171/26-27",
+            "type": "Tax Invoice",
+            "amount": 40.75,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "172/26-27",
+            "type": "Tax Invoice",
+            "amount": 28.43,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "173/26-27",
+            "type": "Tax Invoice",
+            "amount": 473.62,
             "drCr": "Cr"
           }
         ]
@@ -5143,7 +5178,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2537887.12,
+        "closingBalance": 2538438.61,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -6305,6 +6340,34 @@
             "voucherNo": "169/26-27",
             "type": "Tax Invoice",
             "amount": 185.25,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "170/26-27",
+            "type": "Tax Invoice",
+            "amount": 8.69,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "171/26-27",
+            "type": "Tax Invoice",
+            "amount": 40.75,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "172/26-27",
+            "type": "Tax Invoice",
+            "amount": 28.43,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "173/26-27",
+            "type": "Tax Invoice",
+            "amount": 473.62,
             "drCr": "Cr"
           }
         ]
@@ -7730,7 +7793,7 @@
       {
         "ledgerName": "PACKING & TRANSPORTATING EXPENSES",
         "openingBalance": 0,
-        "closingBalance": 15700,
+        "closingBalance": 15850,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -8025,6 +8088,13 @@
             "type": "Tax Invoice",
             "amount": 200,
             "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "173/26-27",
+            "type": "Tax Invoice",
+            "amount": 150,
+            "drCr": "Cr"
           }
         ]
       },
@@ -8111,7 +8181,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": -2.1,
+        "closingBalance": -1.78,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -9329,6 +9399,34 @@
             "voucherNo": "169/26-27",
             "type": "Tax Invoice",
             "amount": 0.16,
+            "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "170/26-27",
+            "type": "Tax Invoice",
+            "amount": 0,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "171/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.48,
+            "drCr": "Cr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "172/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.09,
+            "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "173/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.07,
             "drCr": "Dr"
           }
         ]
@@ -13503,7 +13601,7 @@
       {
         "ledgerName": "DASH FOOTWEAR, RAYAGADA",
         "openingBalance": -44861,
-        "closingBalance": -50157,
+        "closingBalance": -53063,
         "entries": [
           {
             "date": "3-Apr-26",
@@ -13517,6 +13615,20 @@
             "voucherNo": "77/26-27",
             "type": "Tax Invoice",
             "amount": 3802,
+            "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "171/26-27",
+            "type": "Tax Invoice",
+            "amount": 1712,
+            "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "172/26-27",
+            "type": "Tax Invoice",
+            "amount": 1194,
             "drCr": "Dr"
           }
         ]
@@ -15448,7 +15560,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 2962521.73,
+        "closingBalance": 2984581.43,
         "entries": []
       },
       {
@@ -15525,7 +15637,7 @@
       {
         "ledgerName": "Aparna Mallik,Staff Rgda",
         "openingBalance": -18778,
-        "closingBalance": -31528,
+        "closingBalance": -31893,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -15553,6 +15665,13 @@
             "voucherNo": 86,
             "type": "Payment",
             "amount": 3250,
+            "drCr": "Dr"
+          },
+          {
+            "date": "24-Apr-26",
+            "voucherNo": "170/26-27",
+            "type": "Tax Invoice",
+            "amount": 365,
             "drCr": "Dr"
           }
         ]
@@ -16051,7 +16170,7 @@
             "drCr": "Dr"
           },
           {
-            "date": "24-Apr-26",
+            "date": "22-Apr-26",
             "voucherNo": 29,
             "type": "Purchase",
             "amount": 4590,
