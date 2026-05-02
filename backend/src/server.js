@@ -577,10 +577,9 @@ app.post("/api/updateStockData", async (req, res) => {
       existingData = [];
     }
 
-    // ---- 3. Preserve images + zero-stock products that have images ----------
-    // ---- 3. Preserve images, timestamps & zero-stock products with images ----------
+    // ---- 3. Preserve images, timestamps & all products with images ----------
     const productMeta = {};               // productName → { imageUrl, imageUploadedAt, firstSeenAt }
-    const zeroStockProducts = {};           // groupName → [product,…]
+    const imageProducts = {};             // groupName → { productName → product }
 
     existingData.forEach((group) => {
       if (!group.products) return;
@@ -593,14 +592,16 @@ app.post("/api/updateStockData", async (req, res) => {
           firstSeenAt: product.firstSeenAt || null
         };
 
-        if (product.quantity === 0 && product.imageUrl) {
+        // Save ALL products with images (not just zero-qty ones)
+        // so we can re-inject them if Tally stops returning them
+        if (product.imageUrl) {
           const { rate, amount, ...cleanProduct } = product; // Remove sensitive data
-          (zeroStockProducts[group.groupName] ??= []).push(cleanProduct);
+          (imageProducts[group.groupName] ??= {})[product.productName] = cleanProduct;
         }
       });
     });
     console.log("Preserved existing product metadata:", Object.keys(productMeta).length);
-    console.log("Preserved zero-stock products with images:", Object.keys(zeroStockProducts).length);
+    console.log("Preserved products with images:", Object.values(imageProducts).reduce((sum, g) => sum + Object.keys(g).length, 0));
 
     // ---- 4. Fetch fresh data from Tally --------------------------------------
     let stockData;
@@ -645,9 +646,14 @@ app.post("/api/updateStockData", async (req, res) => {
         }
       });
 
-      // bring back zero-stock items that had an image
-      if (zeroStockProducts[group.groupName]) {
-        group.products.push(...zeroStockProducts[group.groupName]);
+      // Re-inject products that had images but are missing from fresh Tally data
+      const freshNames = new Set(group.products.map(p => p.productName));
+      if (imageProducts[group.groupName]) {
+        Object.values(imageProducts[group.groupName]).forEach(oldProduct => {
+          if (!freshNames.has(oldProduct.productName)) {
+            group.products.push({ ...oldProduct, quantity: 0 });
+          }
+        });
       }
 
       const seen = new Set();
