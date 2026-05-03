@@ -433,6 +433,27 @@
                        </span>
                     </button>
 
+                    <!-- One Touch Mode Button -->
+                    <button 
+                      @click="openOneTouchModal"
+                      :disabled="isGenerating"
+                      class="w-full mt-3 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+                    >
+                       <i class="fa-solid fa-bolt"></i>
+                       ⚡ One Touch Mode
+                    </button>
+
+                    <!-- One Touch Progress Area -->
+                    <div v-if="isGenerating && isOneTouchSharing" class="mt-4 p-4 bg-violet-50/50 border border-violet-100 rounded-xl space-y-2">
+                        <div class="flex justify-between text-xs font-bold text-violet-800 uppercase tracking-widest">
+                           <span>{{ oneTouchCurrentGroup }} ({{ oneTouchGroupIndex }}/{{ oneTouchTotalGroups }})</span>
+                        </div>
+                        <div class="h-2 w-full bg-violet-100 rounded-full overflow-hidden">
+                           <div class="h-full bg-violet-500 rounded-full transition-all duration-300" :style="{ width: `${(oneTouchGroupIndex / oneTouchTotalGroups) * 100}%` }"></div>
+                        </div>
+                        <div class="text-[10px] text-violet-600/70 text-center font-medium">{{ oneTouchProgress }}</div>
+                    </div>
+
                     <!-- Progress Bar -->
                     <div v-if="isGenerating" class="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2">
                         <div class="flex justify-between text-xs font-bold text-blue-800 uppercase tracking-widest">
