@@ -444,7 +444,7 @@
 
                     <!-- One Touch Mode Button (Admin + Native Only) -->
                     <button 
-                      v-if="isNativeApp && (isAdmin || isSuperAdmin)"
+                      v-if="isAdmin || isSuperAdmin"
                       @click="openOneTouchModal"
                       :disabled="isGenerating"
                       class="w-full mt-3 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
