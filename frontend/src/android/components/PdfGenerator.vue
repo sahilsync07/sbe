@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col lg:flex-row h-screen w-full bg-slate-50 font-sans text-slate-800 overflow-hidden">
+  <div class="flex flex-col lg:flex-row h-screen w-full bg-slate-50 font-sans text-slate-800 overflow-hidden pt-[74px] lg:pt-[72px]">
     <!-- Sidebar -->
     <aside 
       class="border-r border-slate-200 bg-white flex-shrink-0 flex-col h-full z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 w-full lg:w-[480px]"
@@ -441,6 +441,17 @@
                        <i class="fa-solid fa-bolt"></i>
                        Latest Stock
                     </button>
+
+                    <!-- One Touch Mode Button (Admin + Native Only) -->
+                    <button 
+                      v-if="isNativeApp && (isAdmin || isSuperAdmin)"
+                      @click="openOneTouchModal"
+                      :disabled="isGenerating"
+                      class="w-full mt-3 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+                    >
+                       <i class="fa-solid fa-bolt"></i>
+                       ⚡ One Touch Mode
+                    </button>
                     <!-- Progress Bar -->
                     <div v-if="isGenerating" class="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2">
                         <div class="flex justify-between text-xs font-bold text-blue-800 uppercase tracking-widest">
@@ -548,6 +559,131 @@
         </div>
     </div>
 
+    <!-- One Touch Config Modal -->
+    <div v-if="showOneTouchModal" class="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-bolt text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800">One Touch Mode</h3>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Auto-share all groups</p>
+                    </div>
+                </div>
+                <button @click="showOneTouchModal = false" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Global Filters -->
+            <div class="px-5 py-3 border-b border-slate-100 space-y-2 flex-shrink-0 bg-slate-50/50">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" v-model="oneTouchOnlyWithPhotos" class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300" />
+                    <span class="text-sm font-medium text-slate-700">Only with photos</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" v-model="oneTouchMinQtyEnabled" class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300" />
+                    <span class="text-sm font-medium text-slate-700">Minimum quantity filter</span>
+                </label>
+            </div>
+
+            <!-- Group List -->
+            <div class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 custom-scrollbar">
+                <div 
+                    v-for="(group, idx) in oneTouchGroups" 
+                    :key="idx"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all"
+                    :class="group.enabled ? 'bg-violet-50/50 border-violet-200' : 'bg-slate-50 border-slate-100 opacity-60'"
+                >
+                    <input 
+                        type="checkbox" 
+                        v-model="group.enabled" 
+                        class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0" 
+                    />
+                    <span class="text-lg flex-shrink-0">{{ group.icon }}</span>
+                    <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{ group.label }}</span>
+                    <div class="flex items-center gap-1 flex-shrink-0" :class="{ 'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled }">
+                        <span class="text-[10px] text-slate-400 font-bold">MIN</span>
+                        <input 
+                            type="number" 
+                            v-model.number="group.minQty" 
+                            class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-5 py-4 border-t border-slate-100 flex-shrink-0 space-y-2">
+                <button 
+                    @click="startOneTouchShare"
+                    class="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
+                >
+                    <i class="fa-brands fa-whatsapp text-2xl"></i>
+                    Share on WhatsApp
+                </button>
+                <p class="text-[10px] text-slate-400 text-center font-medium">{{ oneTouchGroups.filter(g => g.enabled).length }} groups selected • Batches of 99 images</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- One Touch Batch Share Modal -->
+    <div v-if="showOneTouchBatchModal" class="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-5">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-brands fa-whatsapp text-3xl text-[#25D366]"></i>
+                </div>
+                <h3 class="text-lg font-black text-slate-800">{{ oneTouchCurrentGroup }}</h3>
+                <p class="text-slate-500 text-sm font-medium">
+                    Batch {{ oneTouchBatchIndex + 1 }} of {{ oneTouchBatchList.length }}
+                    <br><span class="text-xs">({{ oneTouchBatchList[oneTouchBatchIndex]?.length || 0 }} images)</span>
+                </p>
+            </div>
+
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-violet-500 rounded-full transition-all duration-300" :style="{ width: `${((oneTouchBatchIndex) / oneTouchBatchList.length) * 100}%` }"></div>
+            </div>
+
+            <button 
+                @click="executeOneTouchBatchShare"
+                class="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
+            >
+                <span>Share Batch {{ oneTouchBatchIndex + 1 }}</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <button @click="cancelOneTouchShare" class="w-full py-3 text-slate-400 font-bold hover:text-slate-600">
+                Skip Group
+            </button>
+        </div>
+    </div>
+
+    <!-- One Touch Progress Overlay -->
+    <div v-if="isOneTouchSharing && !showOneTouchBatchModal" class="fixed inset-0 z-[85] bg-black/70 flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-5">
+            <div class="text-center space-y-3">
+                <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto">
+                    <svg class="animate-spin h-8 w-8 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </div>
+                <h3 class="text-lg font-black text-slate-800">{{ oneTouchCurrentGroup }}</h3>
+                <p class="text-sm text-slate-500 font-medium">{{ oneTouchProgress }}</p>
+            </div>
+            <div class="space-y-1">
+                <div class="flex justify-between text-xs font-bold text-slate-400">
+                    <span>Group {{ oneTouchGroupIndex }} / {{ oneTouchTotalGroups }}</span>
+                    <span>{{ Math.round((oneTouchGroupIndex / oneTouchTotalGroups) * 100) }}%</span>
+                </div>
+                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-violet-500 rounded-full transition-all duration-300" :style="{ width: `${(oneTouchGroupIndex / oneTouchTotalGroups) * 100}%` }"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
   </div>
 </template>
 
@@ -564,14 +700,34 @@ import { App } from '@capacitor/app';
 import { ref } from 'vue';
 import { useBrandGroups } from '../../composables/useBrandGroups';
 import { useStockData } from '../../composables/useStockData';
+import { useAdmin } from '../../composables/useAdmin';
+import { BRAND_LISTS } from '../../utils/constants';
+
+// One Touch Mode group definitions (SBE-specific brand names)
+const ONE_TOUCH_GROUPS = [
+  { label: 'Paragon', brands: ['Max', 'PARAGON GENTS'], icon: '👞', defaultMinQty: 10 },
+  { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
+  { label: 'Eeken', brands: ['EEKEN'], icon: '🏃', defaultMinQty: 10 },
+  { label: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], icon: '👟', defaultMinQty: 10 },
+  { label: 'Florex', brands: ['Florex (Swastik)'], icon: '🌸', defaultMinQty: 10 },
+  { label: 'Action', brands: ['ACTION'], icon: '⚡', defaultMinQty: 10 },
+  { label: 'Reliance', brands: ['RELIANCE FOOTWEAR'], icon: '🔷', defaultMinQty: 10 },
+  { label: 'General Box Packing', brands: [...BRAND_LISTS.generalBoxPacking], icon: '📥', defaultMinQty: 10 },
+  { label: 'General Loose Packing', brands: [...BRAND_LISTS.generalLoosePacking], icon: '📦', defaultMinQty: 10 },
+  { label: 'P-Toes Paralite', brands: ['P-TOES PARALITE'], icon: '🟠', defaultMinQty: 10 },
+  { label: 'Paragon Ladies 40% Discount', brands: ['SOLEA DISC 40% OFFER'], icon: '🏷️', defaultMinQty: 10 },
+  { label: 'Paragon Gents 40% Discount', brands: ['PARAGON GENTS 40%'], icon: '🏷️', defaultMinQty: 10 },
+  { label: 'Socks', brands: ['Barun', 'Pareek Soucks', 'LEO'], icon: '🧦', defaultMinQty: 10 },
+];
 
 export default {
   setup() {
     const { stockData, loadStockData } = useStockData(ref(false));
     const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
     const brands = ref([]);
+    const { isAdmin, isSuperAdmin } = useAdmin();
     
-    return { stockData, loadStockData, groupedSidebar, brands };
+    return { stockData, loadStockData, groupedSidebar, brands, isAdmin, isSuperAdmin };
   },
   data() {
     return {
@@ -597,6 +753,21 @@ export default {
       completedCount: 0,
       showToast: false,
       toastMessage: "",
+
+      // One Touch Mode State
+      showOneTouchModal: false,
+      oneTouchGroups: ONE_TOUCH_GROUPS.map(g => ({ ...g, enabled: true, minQty: g.defaultMinQty })),
+      oneTouchOnlyWithPhotos: true,
+      oneTouchMinQtyEnabled: true,
+      isOneTouchSharing: false,
+      oneTouchCurrentGroup: '',
+      oneTouchGroupIndex: 0,
+      oneTouchTotalGroups: 0,
+      oneTouchBatchList: [],
+      oneTouchBatchIndex: 0,
+      oneTouchProgress: '',
+      showOneTouchBatchModal: false,
+      oneTouchResolveShare: null,
     };
   },
 
@@ -1135,6 +1306,197 @@ export default {
         } finally {
             this.currentBrand = "";
         }
+    },
+
+    // ─── ONE TOUCH MODE METHODS ─────────────────────────────────────────
+    openOneTouchModal() {
+        // Reset all groups to defaults
+        this.oneTouchGroups = ONE_TOUCH_GROUPS.map(g => ({ ...g, enabled: true, minQty: g.defaultMinQty }));
+        this.oneTouchOnlyWithPhotos = true;
+        this.oneTouchMinQtyEnabled = true;
+        this.showOneTouchModal = true;
+    },
+
+    async generatePdfBlobForOneTouch(targetBrands, onlyWithPhotos, minQty) {
+        const data = this.stockData;
+        const normalize = s => s ? s.toLowerCase().trim() : '';
+        const filteredGroups = data.filter(g => targetBrands.some(b => normalize(b) === normalize(g.groupName)));
+        
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        let hasAddedPage = false;
+        let pageCount = 0;
+
+        for (const group of filteredGroups) {
+            let isFirst = true;
+            for (const product of group.products) {
+                if (onlyWithPhotos && !product.imageUrl) continue;
+                if (minQty > 0 && product.quantity < minQty) continue;
+
+                if (hasAddedPage) doc.addPage();
+                hasAddedPage = true;
+                pageCount++;
+
+                doc.setFillColor('#faf8f6');
+                doc.rect(0, 0, pageWidth, pageHeight, 'F');
+                doc.setDrawColor('#e0e0e0');
+                doc.setLineWidth(3);
+                doc.path([{op:'m',c:[0,0]},{op:'l',c:[200,80]},{op:'c',c:[266,26,400,33,600,100]}]);
+                doc.stroke();
+                doc.path([{op:'m',c:[0,pageHeight]},{op:'l',c:[250,pageHeight-100]},{op:'c',c:[316,pageHeight-33,433,pageHeight-16,600,pageHeight-50]}]);
+                doc.stroke();
+
+                if (isFirst) {
+                    doc.setTextColor(200,200,200);
+                    doc.setFont('helvetica','bold');
+                    doc.setFontSize(28);
+                    doc.text(group.groupName, pageWidth/2, 35, {align:'center'});
+                    isFirst = false;
+                }
+
+                if (product.imageUrl) {
+                    try {
+                        const imgData = await this.fetchImageAsBase64(product.imageUrl);
+                        const dims = await this.getImageDimensions(imgData);
+                        const maxW = pageWidth - 40, maxH = pageHeight - 150;
+                        const scale = Math.min(maxW/dims.width, maxH/dims.height, 1);
+                        const fw = dims.width*scale, fh = dims.height*scale;
+                        const x = (pageWidth-fw)/2, y = 60;
+                        doc.addImage(imgData,'JPEG',x,y,fw,fh);
+                        const textY = y + fh + 25;
+                        doc.setTextColor(0,0,0);
+                        doc.setFont('helvetica','bold');
+                        doc.setFontSize(16);
+                        doc.text(product.productName, pageWidth/2, textY, {align:'center'});
+                        doc.setTextColor(212,0,0);
+                        doc.setFontSize(18);
+                        doc.text(`Qty: ${product.quantity}`, pageWidth/2, textY+30, {align:'center'});
+                    } catch {
+                        doc.setTextColor(0); doc.setFontSize(16);
+                        doc.text('Image Load Failed', pageWidth/2, pageHeight/2, {align:'center'});
+                    }
+                } else {
+                    doc.setTextColor(0); doc.setFontSize(20);
+                    doc.text(product.productName, pageWidth/2, pageHeight/2-20, {align:'center'});
+                    doc.text(`Qty: ${product.quantity}`, pageWidth/2, pageHeight/2+20, {align:'center'});
+                }
+            }
+        }
+        return { blob: pageCount > 0 ? doc.output('blob') : null, pageCount };
+    },
+
+    async startOneTouchShare() {
+        const checkedGroups = this.oneTouchGroups.filter(g => g.enabled);
+        if (checkedGroups.length === 0) {
+            this.showToast = true;
+            this.toastMessage = 'Select at least one group';
+            setTimeout(() => this.showToast = false, 3000);
+            return;
+        }
+
+        this.showOneTouchModal = false;
+        this.isOneTouchSharing = true;
+        this.isGenerating = true;
+        this.oneTouchTotalGroups = checkedGroups.length;
+        this.oneTouchGroupIndex = 0;
+
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+        for (const group of checkedGroups) {
+            this.oneTouchGroupIndex++;
+            this.oneTouchCurrentGroup = group.label;
+            this.oneTouchProgress = `Generating images for ${group.label}...`;
+            this.currentBrand = `One Touch: ${group.label}`;
+
+            try {
+                const effectiveMinQty = this.oneTouchMinQtyEnabled ? group.minQty : 0;
+                const { blob, pageCount } = await this.generatePdfBlobForOneTouch(
+                    group.brands, this.oneTouchOnlyWithPhotos, effectiveMinQty
+                );
+                if (!blob || pageCount === 0) {
+                    this.oneTouchProgress = `${group.label}: No products found, skipping...`;
+                    await new Promise(r => setTimeout(r, 500));
+                    continue;
+                }
+
+                // Render PDF to images
+                this.oneTouchProgress = `Rendering ${pageCount} images for ${group.label}...`;
+                const pdfUrl = URL.createObjectURL(blob);
+                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                const fileUris = [];
+
+                for (let p = 1; p <= pdf.numPages; p++) {
+                    const page = await pdf.getPage(p);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    const b64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g,'')}_${p}.jpg`;
+                    const saved = await Filesystem.writeFile({ path: fileName, data: b64, directory: Directory.Cache });
+                    fileUris.push(saved.uri);
+                    this.oneTouchProgress = `${group.label}: ${p}/${pdf.numPages} images`;
+                }
+                URL.revokeObjectURL(pdfUrl);
+
+                // Chunk into batches of 99 (per group, never mix)
+                const chunkSize = 99;
+                const batches = [];
+                for (let i = 0; i < fileUris.length; i += chunkSize) {
+                    batches.push(fileUris.slice(i, i + chunkSize));
+                }
+
+                // Share each batch for this group
+                for (let bIdx = 0; bIdx < batches.length; bIdx++) {
+                    if (batches.length === 1 && batches[0].length <= 99) {
+                        this.oneTouchProgress = `Sharing ${group.label} (${batches[0].length} images)...`;
+                        try { await Share.share({ files: batches[0] }); } catch(e) {
+                            if (e.message === 'Share canceled') { /* user cancelled, continue */ }
+                        }
+                    } else {
+                        // Show batch modal and wait for user to tap share for each batch
+                        this.oneTouchBatchList = batches;
+                        this.oneTouchBatchIndex = bIdx;
+                        this.oneTouchProgress = `${group.label}: Batch ${bIdx+1}/${batches.length}`;
+                        this.showOneTouchBatchModal = true;
+                        // Wait for user to share this batch
+                        await new Promise(resolve => { this.oneTouchResolveShare = resolve; });
+                        this.showOneTouchBatchModal = false;
+                    }
+                }
+            } catch (err) {
+                console.error(`One Touch failed for ${group.label}:`, err);
+            }
+        }
+
+        this.isOneTouchSharing = false;
+        this.isGenerating = false;
+        this.currentBrand = '';
+        this.oneTouchCurrentGroup = '';
+        this.oneTouchProgress = '';
+        this.showToast = true;
+        this.toastMessage = `One Touch complete! ${checkedGroups.length} groups processed.`;
+        setTimeout(() => this.showToast = false, 4000);
+    },
+
+    async executeOneTouchBatchShare() {
+        try {
+            await Share.share({ files: this.oneTouchBatchList[this.oneTouchBatchIndex] });
+        } catch(e) { console.error('One touch batch share error', e); }
+        // Advance to next batch or resolve
+        this.oneTouchBatchIndex++;
+        if (this.oneTouchBatchIndex >= this.oneTouchBatchList.length) {
+            if (this.oneTouchResolveShare) { this.oneTouchResolveShare(); this.oneTouchResolveShare = null; }
+        }
+    },
+
+    cancelOneTouchShare() {
+        this.showOneTouchBatchModal = false;
+        if (this.oneTouchResolveShare) { this.oneTouchResolveShare(); this.oneTouchResolveShare = null; }
     },
 
     async executeBatchShare() {
