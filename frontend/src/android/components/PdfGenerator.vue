@@ -1390,78 +1390,88 @@ export default {
         return 'bg-slate-100';
     },
 
-    oneTouchBatchBtnClass(status) {
-        if (status === 'shared') return 'bg-green-50 border-green-300 text-green-700';
-        if (status === 'sharing') return 'bg-slate-100 border-slate-300 text-slate-400 cursor-wait';
-        return 'bg-[#25D366] border-[#25D366] text-white hover:bg-[#128C7E] hover:border-[#128C7E]';
-    },
-
     async generatePdfBlobForOneTouch(targetBrands, onlyWithPhotos, minQty) {
         const data = this.stockData;
         const normalize = s => s ? s.toLowerCase().trim() : '';
         const filteredGroups = data.filter(g => targetBrands.some(b => normalize(b) === normalize(g.groupName)));
         
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
+        // Fixed dimensions for all images: tall portrait
+        const PAGE_W = 800;
+        const PAGE_H = 1100;
+        
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PAGE_W, PAGE_H] });
         let hasAddedPage = false;
         let pageCount = 0;
 
+        const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
         for (const group of filteredGroups) {
-            let isFirst = true;
             for (const product of group.products) {
                 if (onlyWithPhotos && !product.imageUrl) continue;
                 if (minQty > 0 && product.quantity < minQty) continue;
 
-                if (hasAddedPage) doc.addPage();
+                if (hasAddedPage) {
+                    doc.addPage([PAGE_W, PAGE_H]);
+                }
                 hasAddedPage = true;
                 pageCount++;
 
-                doc.setFillColor('#faf8f6');
-                doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                doc.setDrawColor('#e0e0e0');
-                doc.setLineWidth(3);
-                doc.path([{op:'m',c:[0,0]},{op:'l',c:[200,80]},{op:'c',c:[266,26,400,33,600,100]}]);
-                doc.stroke();
-                doc.path([{op:'m',c:[0,pageHeight]},{op:'l',c:[250,pageHeight-100]},{op:'c',c:[316,pageHeight-33,433,pageHeight-16,600,pageHeight-50]}]);
-                doc.stroke();
+                // 1. Solid Black Background
+                doc.setFillColor('#000000');
+                doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
 
-                if (isFirst) {
-                    doc.setTextColor(200,200,200);
-                    doc.setFont('helvetica','bold');
-                    doc.setFontSize(28);
-                    doc.text(group.groupName, pageWidth/2, 35, {align:'center'});
-                    isFirst = false;
-                }
-
+                // 2. Smart Photo Scaling & Centering
                 if (product.imageUrl) {
                     try {
                         const imgData = await this.fetchImageAsBase64(product.imageUrl);
                         const dims = await this.getImageDimensions(imgData);
-                        const maxW = pageWidth - 40, maxH = pageHeight - 150;
-                        const scale = Math.min(maxW/dims.width, maxH/dims.height, 1);
-                        const fw = dims.width*scale, fh = dims.height*scale;
-                        const x = (pageWidth-fw)/2, y = 60;
-                        doc.addImage(imgData,'JPEG',x,y,fw,fh);
-                        const textY = y + fh + 25;
-                        doc.setTextColor(0,0,0);
-                        doc.setFont('helvetica','bold');
-                        doc.setFontSize(16);
-                        doc.text(product.productName, pageWidth/2, textY, {align:'center'});
-                        doc.setTextColor(212,0,0);
-                        doc.setFontSize(18);
-                        doc.text(`Qty: ${product.quantity}`, pageWidth/2, textY+30, {align:'center'});
-                    } catch {
-                        doc.setTextColor(0); doc.setFontSize(16);
-                        doc.text('Image Load Failed', pageWidth/2, pageHeight/2, {align:'center'});
+                        
+                        // Max allowed photo space (guarantees minimum 120px space for top & bottom text)
+                        const MAX_W = 800;
+                        const MAX_H = 860; 
+                        
+                        const scale = Math.min(MAX_W / dims.width, MAX_H / dims.height);
+                        const fw = dims.width * scale;
+                        const fh = dims.height * scale;
+                        
+                        // Perfect centering
+                        const x = (PAGE_W - fw) / 2;
+                        const y = (PAGE_H - fh) / 2;
+                        
+                        doc.addImage(imgData, 'JPEG', x, y, fw, fh);
+                    } catch (e) {
+                        doc.setTextColor(255); doc.setFontSize(16);
+                        doc.text('Image Load Failed', PAGE_W/2, PAGE_H/2, {align:'center'});
                     }
                 } else {
-                    doc.setTextColor(0); doc.setFontSize(20);
-                    doc.text(product.productName, pageWidth/2, pageHeight/2-20, {align:'center'});
-                    doc.text(`Qty: ${product.quantity}`, pageWidth/2, pageHeight/2+20, {align:'center'});
+                    doc.setTextColor(255); doc.setFontSize(24);
+                    doc.text('No Photo Available', PAGE_W/2, PAGE_H/2, {align:'center'});
                 }
+
+                // 3. Top Extension (Header) - On every page
+                doc.setTextColor(255, 255, 255); // White
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(26);
+                doc.text("Sri Brundabana Enterprises, Rayagada", PAGE_W/2, 55, {align:'center'});
+                
+                doc.setTextColor(180, 180, 180); // Light Grey
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(18);
+                doc.text(`${dateStr}  •  ${group.groupName}`, PAGE_W/2, 90, {align:'center'});
+
+                // 4. Bottom Extension (Footer)
+                doc.setTextColor(255, 255, 255); // White
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(28);
+                doc.text(product.productName, PAGE_W/2, PAGE_H - 90, {align:'center'});
+                
+                doc.setTextColor(255, 204, 0); // Yellow/Gold for Qty
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(24);
+                doc.text(`Qty: ${product.quantity}`, PAGE_W/2, PAGE_H - 45, {align:'center'});
             }
         }
+        
         return { blob: pageCount > 0 ? doc.output('blob') : null, pageCount };
     },
 
