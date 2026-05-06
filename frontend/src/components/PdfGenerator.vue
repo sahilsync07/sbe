@@ -1138,8 +1138,14 @@ const downloadAsZip = async () => {
           const target = isCombined ? zip : zip.folder(brand);
 
           for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                // Yield to main thread every 10 pages to allow GC
+                if (pageNum % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 20));
+                }
+
                 const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 2.0 }); 
+                // Scale 1.0 is sufficient and prevents OOM crashes
+                const viewport = page.getViewport({ scale: 1.0 }); 
 
                 const canvas = document.createElement("canvas");
                 canvas.width = viewport.width;
@@ -1147,7 +1153,15 @@ const downloadAsZip = async () => {
                 const context = canvas.getContext("2d");
                 await page.render({ canvasContext: context, viewport }).promise;
 
-                const imgBlob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
+                // Lower quality to 0.75
+                const imgBlob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.75));
+                
+                // Memory Cleanup - CRITICAL for WebView/Browser stability!
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.width = 0;
+                canvas.height = 0;
+                page.cleanup();
+                
                 if (isCombined) {
                     globalPageCounter++;
                     if (zipBatchMode.value) {
@@ -1208,9 +1222,14 @@ const shareViaNativeApp = async () => {
                 const pdf = await loadingTask.promise;
                 
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        // Yield to main thread every 10 pages to allow GC
+                        if (pageNum % 10 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 20));
+                        }
+
                         const page = await pdf.getPage(pageNum);
-                        // Scale 1.5 is good balance for WhatsApp (lighter than print)
-                        const viewport = page.getViewport({ scale: 1.5 });
+                        // Scale 1.0 is sufficient for 1080x2400 and prevents OOM crashes
+                        const viewport = page.getViewport({ scale: 1.0 });
 
                         const canvas = document.createElement("canvas");
                         canvas.width = viewport.width;
@@ -1218,9 +1237,15 @@ const shareViaNativeApp = async () => {
                         const context = canvas.getContext("2d");
                         await page.render({ canvasContext: context, viewport }).promise;
 
-                        // Convert to Base64 (needed for Filesystem.writeFile)
-                        const base64 = canvas.toDataURL("image/jpeg", 0.8).split(',')[1];
+                        // Convert to Base64 (lower quality to 0.75 for smaller bridge payload)
+                        const base64 = canvas.toDataURL("image/jpeg", 0.75).split(',')[1];
                         const fileName = `${brand.replace(/[^a-zA-Z0-9]/g, "")}_${pageNum}.jpg`;
+                        
+                        // Memory Cleanup - CRITICAL for WebView stability!
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        canvas.width = 0;
+                        canvas.height = 0;
+                        page.cleanup();
                         
                         // Save to Cache Directory
                         const savedFile = await Filesystem.writeFile({
@@ -1495,15 +1520,30 @@ const prepareOneTouch = async () => {
 
                 for (let p = 1; p <= pdf.numPages; p++) {
                     if (cancelOneTouch.value) break;
+                    
+                    // Yield to main thread every 10 pages to allow UI updates and Garbage Collection
+                    if (p % 10 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 20));
+                    }
+
                     const page = await pdf.getPage(p);
-                    const viewport = page.getViewport({ scale: 1.5 });
+                    const viewport = page.getViewport({ scale: 1.0 }); // Changed from 1.5 to 1.0 to save memory
                     const canvas = document.createElement('canvas');
                     canvas.width = viewport.width;
                     canvas.height = viewport.height;
                     const ctx = canvas.getContext('2d');
+                    
                     await page.render({ canvasContext: ctx, viewport }).promise;
-                    const b64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    
+                    // Extract Base64 (lower quality to 0.75 for smaller payload over Capacitor bridge)
+                    const b64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
                     const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g,'')}_${p}.jpg`;
+                    
+                    // Memory Cleanup - CRITICAL to prevent Webview crash!
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    canvas.width = 0;
+                    canvas.height = 0;
+                    page.cleanup(); // Free pdf.js internal memory for this page
                     
                     if (isNativeApp.value) {
                         const saved = await Filesystem.writeFile({ path: fileName, data: b64, directory: Directory.Cache });
@@ -1514,7 +1554,7 @@ const prepareOneTouch = async () => {
                         a.href = `data:image/jpeg;base64,${b64}`;
                         a.download = fileName;
                         a.click();
-                        await new Promise(r => setTimeout(r, 100));
+                        await new Promise(r => setTimeout(r, 100)); // Rate limit downloads on Web
                         currentBatchUris.push(fileName);
                         fileUris.push(fileName);
                     }
