@@ -440,7 +440,7 @@
                       class="w-full mt-3 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
                     >
                        <i class="fa-solid fa-bolt"></i>
-                       ⚡ One Touch Mode
+                       One Touch Mode
                     </button>
 
                     <!-- One Touch Progress Area -->
@@ -567,75 +567,96 @@
                 <div 
                     v-for="(group, idx) in oneTouchGroups" 
                     :key="idx"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all"
+                    class="rounded-xl border transition-all overflow-hidden"
                     :class="group.enabled ? 'bg-violet-50/50 border-violet-200' : 'bg-slate-50 border-slate-100 opacity-60'"
                 >
-                    <input 
-                        type="checkbox" 
-                        v-model="group.enabled" 
-                        class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0" 
-                    />
-                    <span class="text-lg flex-shrink-0">{{ group.icon }}</span>
-                    <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{ group.label }}</span>
-                    <div class="flex items-center gap-1 flex-shrink-0" :class="{ 'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled }">
-                        <span class="text-[10px] text-slate-400 font-bold">MIN</span>
+                    <div class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-black/5" @click="group.isExpanded = !group.isExpanded">
                         <input 
-                            type="number" 
-                            v-model="group.minQty" 
-                            class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                            type="checkbox" 
+                            v-model="group.enabled" 
+                            @click.stop
+                            class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0" 
                         />
+                        <span class="text-lg flex-shrink-0">{{ group.icon }}</span>
+                        <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{ group.label }}</span>
+                        
+                        <!-- Status Indicator -->
+                        <div v-if="group.status === 'preparing'" class="flex-shrink-0">
+                            <svg class="animate-spin h-4 w-4 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </div>
+                        <div v-else-if="group.status === 'ready'" class="flex-shrink-0 text-emerald-500">
+                            <i class="fa-solid fa-check-circle text-lg"></i>
+                        </div>
+
+                        <div class="flex items-center gap-1 flex-shrink-0 mx-2" :class="{ 'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled }" @click.stop>
+                            <span class="text-[10px] text-slate-400 font-bold">MIN</span>
+                            <input 
+                                type="number" 
+                                v-model="group.minQty" 
+                                class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                            />
+                        </div>
+
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform" :class="{'rotate-180': group.isExpanded}"></i>
+                    </div>
+
+                    <!-- Accordion Dropdown -->
+                    <div v-if="group.isExpanded" class="px-3 pb-3 pt-1 border-t border-violet-100 bg-white/50">
+                        <div v-if="group.batches.length === 0" class="text-xs text-slate-400 text-center py-2 font-medium">
+                            No batches yet. Click Prepare.
+                        </div>
+                        <div v-else class="grid grid-cols-2 gap-2 mt-2">
+                            <button 
+                                v-for="(batch, bIdx) in group.batches" 
+                                :key="bIdx"
+                                @click="shareBatchDirectly(batch)"
+                                :disabled="batch.status !== 'ready'"
+                                class="py-2.5 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                                :class="{
+                                    'bg-slate-100 text-slate-400 cursor-not-allowed': batch.status === 'pending',
+                                    'bg-blue-100 text-blue-700 cursor-not-allowed': batch.status === 'preparing',
+                                    'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 active:scale-95 cursor-pointer border border-emerald-200': batch.status === 'ready'
+                                }"
+                            >
+                                <svg v-if="batch.status === 'preparing'" class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                <i v-else-if="batch.status === 'ready'" class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>Batch {{ bIdx + 1 }} {{ batch.status === 'pending' ? '' : (batch.status === 'preparing' ? 'Preparing...' : 'Ready') }}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Footer -->
             <div class="px-5 py-4 border-t border-slate-100 flex-shrink-0 space-y-2">
-                <button 
-                    @click="startOneTouchShare"
-                    class="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
-                >
-                    <i class="fa-brands fa-whatsapp text-2xl"></i>
-                    Share on WhatsApp
-                </button>
+                <div class="flex gap-2 w-full">
+                    <button 
+                        v-if="isOneTouchPreparing"
+                        @click="handleCancelOneTouch"
+                        class="w-1/3 py-4 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-xl shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                    >
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                    </button>
+                    <button 
+                        @click="prepareOneTouch"
+                        :disabled="isOneTouchPreparing"
+                        class="py-4 bg-slate-900 hover:bg-black disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+                        :class="isOneTouchPreparing ? 'w-2/3' : 'w-full'"
+                    >
+                        <span v-if="isOneTouchPreparing" class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            Preparing... 
+                            <span class="font-mono text-sm ml-1 bg-black/20 px-2 py-0.5 rounded">{{ formattedOneTouchTime }}</span>
+                        </span>
+                        <span v-else class="flex items-center gap-2">
+                            <i class="fa-solid fa-bolt"></i>
+                            Prepare
+                            <span v-if="oneTouchElapsedTime > 0" class="font-mono text-sm ml-1 bg-black/20 px-2 py-0.5 rounded">{{ formattedOneTouchTime }}</span>
+                        </span>
+                    </button>
+                </div>
                 <p class="text-[10px] text-slate-400 text-center font-medium">{{ oneTouchGroups.filter(g => g.enabled).length }} groups selected • Batches of 99 images</p>
             </div>
-        </div>
-    </div>
-
-    <!-- One Touch Batch Share Modal -->
-    <div v-if="showOneTouchBatchModal" class="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-5">
-            <div class="text-center space-y-2">
-                <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i class="fa-brands fa-whatsapp text-3xl text-[#25D366]"></i>
-                </div>
-                <h3 class="text-lg font-black text-slate-800">{{ oneTouchCurrentGroup }}</h3>
-                <p class="text-sm text-slate-500 font-medium">Batch {{ oneTouchBatchIndex + 1 }} of {{ oneTouchBatchList.length }}</p>
-                <p class="text-xs text-violet-600 font-bold mt-1 bg-violet-50 inline-block px-3 py-1 rounded-full">Group {{ oneTouchGroupIndex }} of {{ oneTouchTotalGroups }}</p>
-            </div>
-
-            <!-- Progress -->
-            <div class="space-y-1">
-                <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
-                    <span>Progress</span>
-                    <span>{{ Math.round((oneTouchBatchIndex / oneTouchBatchList.length) * 100) }}%</span>
-                </div>
-                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-[#25D366] rounded-full transition-all duration-300" :style="{ width: `${((oneTouchBatchIndex) / oneTouchBatchList.length) * 100}%` }"></div>
-                </div>
-            </div>
-
-            <button 
-                @click="executeOneTouchBatchShare" 
-                class="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
-            >
-                <span>Share Batch {{ oneTouchBatchIndex + 1 }}</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            
-            <button @click="cancelOneTouchShare" class="w-full py-3 text-red-400 font-bold hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
-                Cancel Remaining
-            </button>
         </div>
     </div>
 
@@ -673,7 +694,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import axios from "axios";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -724,18 +745,37 @@ const currentBatchIndex = ref(0);
 const { isAdmin, isSuperAdmin } = useAdmin();
 
 const showOneTouchModal = ref(false);
-const oneTouchGroups = ref(ONE_TOUCH_GROUPS.map(g => ({ ...g, enabled: true, minQty: g.defaultMinQty })));
+const oneTouchGroups = ref(ONE_TOUCH_GROUPS.map(g => ({ ...g, enabled: true, minQty: g.defaultMinQty, isExpanded: false, status: 'idle', batches: [] })));
 const oneTouchOnlyWithPhotos = ref(true);
 const oneTouchMinQtyEnabled = ref(true);
 const isOneTouchSharing = ref(false);
+const isOneTouchPreparing = ref(false);
+const cancelOneTouch = ref(false);
+
+const handleCancelOneTouch = () => {
+    cancelOneTouch.value = true;
+};
 const oneTouchCurrentGroup = ref('');
 const oneTouchGroupIndex = ref(0);
 const oneTouchTotalGroups = ref(0);
-const oneTouchBatchList = ref([]);
-const oneTouchBatchIndex = ref(0);
 const oneTouchProgress = ref('');
-const showOneTouchBatchModal = ref(false);
-let oneTouchResolveShare = null;
+const oneTouchCache = ref(JSON.parse(localStorage.getItem('sbe_onetouch_cache') || '{}'));
+watch(oneTouchCache, (newVal) => {
+    localStorage.setItem('sbe_onetouch_cache', JSON.stringify(newVal));
+}, { deep: true });
+
+const oneTouchElapsedTime = ref(0);
+let oneTouchTimerInterval = null;
+
+const formattedOneTouchTime = computed(() => {
+    const mins = Math.floor(oneTouchElapsedTime.value / 60);
+    const secs = oneTouchElapsedTime.value % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+});
+
+watch(stockData, () => {
+    oneTouchCache.value = {};
+}, { deep: true });
 
 const mobileTab = ref('brands');
 const currentBrand = ref("");
@@ -1355,7 +1395,7 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
     return { blob: hasAddedPage ? doc.output("blob") : null, pageCount };
 };
 
-const startOneTouchShare = async () => {
+const prepareOneTouch = async () => {
     const checkedGroups = oneTouchGroups.value.filter(g => g.enabled);
     if (checkedGroups.length === 0) {
         showToast.value = true;
@@ -1364,120 +1404,164 @@ const startOneTouchShare = async () => {
         return;
     }
 
-    showOneTouchModal.value = false;
-    isOneTouchSharing.value = true;
+    isOneTouchPreparing.value = true;
     isGenerating.value = true;
-    oneTouchTotalGroups.value = checkedGroups.length;
-    oneTouchGroupIndex.value = 0;
+    cancelOneTouch.value = false;
+    
+    oneTouchElapsedTime.value = 0;
+    if (oneTouchTimerInterval) clearInterval(oneTouchTimerInterval);
+    oneTouchTimerInterval = setInterval(() => {
+        oneTouchElapsedTime.value++;
+    }, 1000);
+
+    // Reset all groups status
+    oneTouchGroups.value.forEach(g => {
+        g.status = 'idle';
+        g.batches = [];
+    });
 
     const pdfjsLib = await import('pdfjs-dist');
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
     for (const group of checkedGroups) {
-        oneTouchGroupIndex.value++;
-        oneTouchCurrentGroup.value = group.label;
-        oneTouchProgress.value = `Generating images for ${group.label}...`;
-        currentBrand.value = `One Touch: ${group.label}`;
+        if (cancelOneTouch.value) break;
+        group.status = 'preparing';
+        group.isExpanded = true;
 
         try {
             const effectiveMinQty = oneTouchMinQtyEnabled.value ? group.minQty : 0;
-            const { blob, pageCount } = await generatePdfBlobForOneTouch(
-                group.brands, oneTouchOnlyWithPhotos.value, effectiveMinQty
-            );
             
-            if (!blob || pageCount === 0) {
-                oneTouchProgress.value = `${group.label}: No products found, skipping...`;
-                await new Promise(r => setTimeout(r, 500));
+            // Pre-calculate batches
+            let productCount = 0;
+            const data = stockData.value;
+            const filteredGroups = data.filter((g) => {
+                return group.brands.some(tb => tb.toLowerCase() === g.groupName.toLowerCase());
+            });
+            for (const fg of filteredGroups) {
+                for (const product of fg.products) {
+                    if (oneTouchOnlyWithPhotos.value && !product.imageUrl) continue;
+                    if (product.quantity <= effectiveMinQty) continue;
+                    productCount++;
+                }
+            }
+
+            if (productCount === 0) {
+                group.status = 'ready';
                 continue;
             }
 
-            oneTouchProgress.value = `Rendering ${pageCount} images for ${group.label}...`;
-            const pdfUrl = URL.createObjectURL(blob);
-            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-            const fileUris = [];
-
-            for (let p = 1; p <= pdf.numPages; p++) {
-                const page = await pdf.getPage(p);
-                const viewport = page.getViewport({ scale: 1.5 });
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport }).promise;
-                const b64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-                const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g,'')}_${p}.jpg`;
-                
-                // If native use Capacitor
-                if (isNativeApp.value) {
-                    const saved = await Filesystem.writeFile({ path: fileName, data: b64, directory: Directory.Cache });
-                    fileUris.push(saved.uri);
-                } else {
-                    // Just download the file
-                    const a = document.createElement('a');
-                    a.href = `data:image/jpeg;base64,${b64}`;
-                    a.download = fileName;
-                    a.click();
-                    // Let's delay slightly to not overwhelm browser
-                    await new Promise(r => setTimeout(r, 100));
-                }
-                
-                oneTouchProgress.value = `${group.label}: ${p}/${pdf.numPages} images`;
+            const totalBatches = Math.ceil(productCount / 99);
+            for (let i = 0; i < totalBatches; i++) {
+                group.batches.push({ id: i, status: 'pending', fileUris: [] });
             }
-            URL.revokeObjectURL(pdfUrl);
 
-            if (isNativeApp.value) {
+            const cacheKey = `${group.label}_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}`;
+            let fileUris = [];
+
+            if (oneTouchCache.value[cacheKey]) {
+                fileUris = oneTouchCache.value[cacheKey];
+                await new Promise(r => setTimeout(r, 300));
+                
+                // Distribute to batches
                 const chunkSize = 99;
-                const batches = [];
+                let bIdx = 0;
                 for (let i = 0; i < fileUris.length; i += chunkSize) {
-                    batches.push(fileUris.slice(i, i + chunkSize));
+                    if (group.batches[bIdx]) {
+                        group.batches[bIdx].fileUris = fileUris.slice(i, i + chunkSize);
+                        group.batches[bIdx].status = 'ready';
+                    }
+                    bIdx++;
+                }
+                group.status = 'ready';
+            } else {
+                if (group.batches.length > 0) {
+                    group.batches[0].status = 'preparing';
                 }
 
-                for (let bIdx = 0; bIdx < batches.length; bIdx++) {
-                    if (batches.length === 1 && batches[0].length <= 99) {
-                        oneTouchProgress.value = `Sharing ${group.label} (${batches[0].length} images)...`;
-                        try { await Share.share({ files: batches[0] }); } catch(e) {}
+                const { blob, pageCount } = await generatePdfBlobForOneTouch(
+                    group.brands, oneTouchOnlyWithPhotos.value, effectiveMinQty
+                );
+                
+                if (!blob || pageCount === 0) {
+                    group.status = 'ready';
+                    continue;
+                }
+
+                const pdfUrl = URL.createObjectURL(blob);
+                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+
+                let currentBatchIndex = 0;
+                let currentBatchUris = [];
+
+                for (let p = 1; p <= pdf.numPages; p++) {
+                    if (cancelOneTouch.value) break;
+                    const page = await pdf.getPage(p);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    const b64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g,'')}_${p}.jpg`;
+                    
+                    if (isNativeApp.value) {
+                        const saved = await Filesystem.writeFile({ path: fileName, data: b64, directory: Directory.Cache });
+                        currentBatchUris.push(saved.uri);
+                        fileUris.push(saved.uri);
                     } else {
-                        oneTouchBatchList.value = batches;
-                        oneTouchBatchIndex.value = bIdx;
-                        oneTouchProgress.value = `${group.label}: Batch ${bIdx+1}/${batches.length}`;
-                        showOneTouchBatchModal.value = true;
-                        await new Promise(resolve => { oneTouchResolveShare = resolve; });
-                        showOneTouchBatchModal.value = false;
+                        const a = document.createElement('a');
+                        a.href = `data:image/jpeg;base64,${b64}`;
+                        a.download = fileName;
+                        a.click();
+                        await new Promise(r => setTimeout(r, 100));
+                        currentBatchUris.push(fileName);
+                        fileUris.push(fileName);
+                    }
+                    
+                    // If we hit 99 in current batch or it's the very last page
+                    if (currentBatchUris.length === 99 || p === pdf.numPages) {
+                        if (group.batches[currentBatchIndex]) {
+                            group.batches[currentBatchIndex].fileUris = [...currentBatchUris];
+                            group.batches[currentBatchIndex].status = 'ready';
+                        }
+                        currentBatchUris = [];
+                        currentBatchIndex++;
+                        if (currentBatchIndex < group.batches.length) {
+                            group.batches[currentBatchIndex].status = 'preparing';
+                        }
                     }
                 }
-            } else {
-                 oneTouchProgress.value = `${group.label}: Downloaded ${pdf.numPages} images.`;
-                 await new Promise(r => setTimeout(r, 1000));
+                URL.revokeObjectURL(pdfUrl);
+                
+                if (!cancelOneTouch.value && isNativeApp.value && fileUris.length > 0) {
+                    oneTouchCache.value[cacheKey] = fileUris;
+                }
+                group.status = cancelOneTouch.value ? 'idle' : 'ready';
             }
+
         } catch (err) {
             console.error(`One Touch failed for ${group.label}:`, err);
+            group.status = 'idle';
         }
     }
+    
+    if (oneTouchTimerInterval) clearInterval(oneTouchTimerInterval);
 
-    isOneTouchSharing.value = false;
+    isOneTouchPreparing.value = false;
     isGenerating.value = false;
-    currentBrand.value = '';
-    oneTouchCurrentGroup.value = '';
-    oneTouchProgress.value = '';
     showToast.value = true;
-    toastMessage.value = `One Touch complete! ${checkedGroups.length} groups processed.`;
+    toastMessage.value = cancelOneTouch.value ? 'One Touch Preparation Cancelled' : 'One Touch Preparation complete!';
     setTimeout(() => showToast.value = false, 4000);
 };
 
-const executeOneTouchBatchShare = async () => {
+const shareBatchDirectly = async (batch) => {
+    if (batch.status !== 'ready') return;
     try {
-        await Share.share({ files: oneTouchBatchList.value[oneTouchBatchIndex.value] });
-    } catch(e) { console.error('One touch batch share error', e); }
-    
-    oneTouchBatchIndex.value++;
-    if (oneTouchBatchIndex.value >= oneTouchBatchList.value.length) {
-        if (oneTouchResolveShare) { oneTouchResolveShare(); oneTouchResolveShare = null; }
+        await Share.share({ files: batch.fileUris });
+    } catch(e) {
+        console.error('Share failed or cancelled', e);
     }
-};
-
-const cancelOneTouchShare = () => {
-    showOneTouchBatchModal.value = false;
-    if (oneTouchResolveShare) { oneTouchResolveShare(); oneTouchResolveShare = null; }
 };
 
 </script>

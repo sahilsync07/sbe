@@ -439,7 +439,7 @@
                       class="w-full mt-3 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
                     >
                        <i class="fa-solid fa-bolt"></i>
-                       ⚡ One Touch Mode
+                       One Touch Mode
                     </button>
                     <!-- Progress Bar -->
                     <div v-if="isGenerating" class="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2">
@@ -696,7 +696,7 @@
                     class="w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
                 >
                     <i class="fa-solid fa-bolt"></i>
-                    ⚡ Start One Touch
+                    Start One Touch
                 </button>
                 <p v-if="!oneTouchStarted" class="text-[10px] text-slate-400 text-center font-medium mt-2">{{ oneTouchGroups.filter(g => g.enabled).length }} groups selected • Batches of 99 images</p>
                 

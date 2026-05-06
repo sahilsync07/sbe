@@ -141,7 +141,6 @@
        <div class="flex items-center gap-4 flex-1 justify-end ml-4">
            <!-- PDF Gen -->
            <button
-              v-if="isAdmin"
               @click="$router.push('/pdf-gen')"
               class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 hover:text-red-500 transition-all border border-white/5 shrink-0"
               title="Generate PDF"
@@ -227,7 +226,6 @@
 
 
             <button
-               v-if="isAdmin"
                @click="$router.push('/pdf-gen')"
                class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 border border-white/10"
             >
