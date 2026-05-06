@@ -833,121 +833,82 @@ const scrollToGenerate = () => {
 
 // --- PDF GENERATION LOGIC (Frontend Only) ---
 const generatePdfBlob = async (targetBrands) => {
-    // 1. Use Cached Data
     const data = stockData.value;
     const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
     
-    // 2. Setup PDF
     const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "pt", // using points to match pdfkit somewhat closer (72 dpi vs pdfkit default)
-        format: "a4"
-    });
+    const { clashDisplayBoldBase64 } = await import("../utils/fonts.js");
     
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+    const PAGE_W = 1080;
+    const PAGE_H = 2400;
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: [PAGE_W, PAGE_H] });
+    
+    // Add custom font
+    doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
+    doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
     
     let hasAddedPage = false;
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
     for (const group of filteredGroups) {
-        let isFirstProductInBrand = true;
-
         for (const product of group.products) {
             if (onlyWithPhotos.value && !product.imageUrl) continue;
             if (minQtyEnabled.value && product.quantity <= minQty.value) continue;
 
-            if (hasAddedPage) {
-                doc.addPage();
-            }
+            if (hasAddedPage) { doc.addPage([PAGE_W, PAGE_H]); }
             hasAddedPage = true;
 
-            // A. Background (Light beige)
-            doc.setFillColor("#faf8f6");
-            doc.rect(0, 0, pageWidth, pageHeight, "F");
+            doc.setFillColor("#000000");
+            doc.rect(0, 0, PAGE_W, PAGE_H, "F");
 
-            // B. Waves
-            doc.setDrawColor("#e0e0e0");
-            doc.setLineWidth(3);
-
-            // Top Wave
-            doc.path([
-                { op: 'm', c: [0, 0] },
-                { op: 'l', c: [200, 80] },
-                { op: 'c', c: [266, 26, 400, 33, 600, 100] }
-            ]);
-            doc.stroke();
-
-            // Bottom Wave
-            const h = pageHeight;
-            doc.path([
-                { op: 'm', c: [0, h] },
-                { op: 'l', c: [250, h - 100] },
-                { op: 'c', c: [316, h - 33, 433, h - 16, 600, h - 50] }
-            ]);
-            doc.stroke();
-
-            // C. Brand Name (First product only)
-            if (isFirstProductInBrand) {
-                doc.setTextColor(0, 0, 0); // Black
-                // doc.setFillOpacity(0.2); // jsPDF doesn't handle fillOpacity easily for text, using light grey instead
-                doc.setTextColor(200, 200, 200); // Light Grey to simulate opacity
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(28);
-                doc.text(group.groupName, pageWidth / 2, 35, { align: "center" });
-                isFirstProductInBrand = false;
-            }
-
-            // D. Product Image
             if (product.imageUrl) {
                 try {
-                    // Fetch image as blobs
                     const imgData = await fetchImageAsBase64(product.imageUrl);
-                    
-                    // Dimensions
-                    const maxWidth = pageWidth - 40;
-                    const maxHeight = pageHeight - 150; 
-                    
-                    // We need image dimensions. 
-                    // With Base64, we can load it into a temporary Image object to get dims
                     const dims = await getImageDimensions(imgData);
                     
-                    const scale = Math.min(maxWidth / dims.width, maxHeight / dims.height, 1);
-                    const finalWidth = dims.width * scale;
-                    const finalHeight = dims.height * scale;
-                    
-                    const x = (pageWidth - finalWidth) / 2;
-                    const y = 60; 
+                    const finalWidth = PAGE_W;
+                    const finalHeight = dims.height * (PAGE_W / dims.width);
+                    const x = 0;
+                    const y = (PAGE_H - finalHeight) / 2;
                     
                     doc.addImage(imgData, "JPEG", x, y, finalWidth, finalHeight);
-
-                    const textY = y + finalHeight + 25;
-
-                    // E. Text
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(16);
-                    doc.text(product.productName, pageWidth / 2, textY, { align: "center" });
-
-                    doc.setTextColor(212, 0, 0); // #d40000
-                    doc.setFontSize(18);
-                    doc.text(`Qty: ${product.quantity}`, pageWidth / 2, textY + 30, { align: "center" });
-
                 } catch (imgErr) {
-                    console.error(`Image failed: ${product.productName}`, imgErr);
-                    doc.setTextColor(0);
-                    doc.setFontSize(16);
-                    doc.text("Image Load Failed", pageWidth / 2, pageHeight / 2, { align: "center" });
+                    doc.setTextColor(255);
+                    doc.setFont("Clash Display", "bold");
+                    doc.setFontSize(24);
+                    doc.text("Image Load Failed", PAGE_W / 2, PAGE_H / 2, { align: "center" });
                 }
             } else {
-                doc.setTextColor(0);
-                doc.setFontSize(20);
-                doc.text(product.productName, pageWidth / 2, pageHeight / 2 - 20, { align: "center" });
-                doc.text(`Qty: ${product.quantity}`, pageWidth / 2, pageHeight / 2 + 20, { align: "center" });
+                doc.setTextColor(255);
+                doc.setFont("Clash Display", "bold");
+                doc.setFontSize(36);
+                doc.text("No Photo Available", PAGE_W / 2, PAGE_H / 2, { align: "center" });
             }
+
+            // HEADER
+            doc.setTextColor(180, 180, 180);
+            doc.setFont("Clash Display", "bold");
+            doc.setFontSize(38);
+            doc.text(dateStr, 50, 80, { align: "left" });
+            doc.text(group.groupName, PAGE_W - 50, 80, { align: "right" });
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(60);
+            doc.text("Sri Brundabana Enterprises", PAGE_W / 2, 160, { align: "center" });
+            
+            doc.setFontSize(50);
+            doc.text("Rayagada", PAGE_W / 2, 230, { align: "center" });
+            
+            // FOOTER
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(64);
+            doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: "center" });
+            
+            doc.setTextColor(255, 215, 0); // Muted gold
+            doc.setFontSize(54);
+            doc.text(`Qty: ${product.quantity}`, PAGE_W / 2, PAGE_H - 80, { align: "center" });
         }
     }
-    
     return doc.output("blob");
 };
 
@@ -1318,76 +1279,79 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
     if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
 
     const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+    const { clashDisplayBoldBase64 } = await import("../utils/fonts.js");
+    
+    const PAGE_W = 1080;
+    const PAGE_H = 2400;
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: [PAGE_W, PAGE_H] });
+    
+    doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
+    doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
     
     let hasAddedPage = false;
     let pageCount = 0;
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
     for (const group of filteredGroups) {
-        let isFirstProductInBrand = true;
         for (const product of group.products) {
             if (onlyWithPhotosFlag && !product.imageUrl) continue;
             if (product.quantity <= minQtyValue) continue;
 
-            if (hasAddedPage) { doc.addPage(); }
+            if (hasAddedPage) { doc.addPage([PAGE_W, PAGE_H]); }
             hasAddedPage = true;
             pageCount++;
 
-            doc.setFillColor("#faf8f6");
-            doc.rect(0, 0, pageWidth, pageHeight, "F");
-
-            doc.setDrawColor("#e0e0e0");
-            doc.setLineWidth(3);
-            doc.path([{ op: 'm', c: [0, 0] }, { op: 'l', c: [200, 80] }, { op: 'c', c: [266, 26, 400, 33, 600, 100] }]);
-            doc.stroke();
-
-            const h = pageHeight;
-            doc.path([{ op: 'm', c: [0, h] }, { op: 'l', c: [250, h - 100] }, { op: 'c', c: [316, h - 33, 433, h - 16, 600, h - 50] }]);
-            doc.stroke();
-
-            if (isFirstProductInBrand) {
-                doc.setTextColor(200, 200, 200);
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(28);
-                doc.text(group.groupName, pageWidth / 2, 35, { align: "center" });
-                isFirstProductInBrand = false;
-            }
+            doc.setFillColor("#000000");
+            doc.rect(0, 0, PAGE_W, PAGE_H, "F");
 
             if (product.imageUrl) {
                 try {
                     const imgData = await fetchImageAsBase64(product.imageUrl);
                     const dims = await getImageDimensions(imgData);
-                    const scale = Math.min((pageWidth - 40) / dims.width, (pageHeight - 150) / dims.height, 1);
-                    const finalWidth = dims.width * scale;
-                    const finalHeight = dims.height * scale;
-                    const x = (pageWidth - finalWidth) / 2;
-                    const y = 60; 
+                    
+                    const finalWidth = PAGE_W;
+                    const finalHeight = dims.height * (PAGE_W / dims.width);
+                    const x = 0;
+                    const y = (PAGE_H - finalHeight) / 2;
+                    
                     doc.addImage(imgData, "JPEG", x, y, finalWidth, finalHeight);
-
-                    const textY = y + finalHeight + 25;
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(16);
-                    doc.text(product.productName, pageWidth / 2, textY, { align: "center" });
-                    doc.setTextColor(212, 0, 0);
-                    doc.setFontSize(18);
-                    doc.text(`Qty: ${product.quantity}`, pageWidth / 2, textY + 30, { align: "center" });
                 } catch (imgErr) {
-                    doc.setTextColor(0);
-                    doc.setFontSize(16);
-                    doc.text("Image Load Failed", pageWidth / 2, pageHeight / 2, { align: "center" });
+                    doc.setTextColor(255);
+                    doc.setFont("Clash Display", "bold");
+                    doc.setFontSize(24);
+                    doc.text("Image Load Failed", PAGE_W / 2, PAGE_H / 2, { align: "center" });
                 }
             } else {
-                doc.setTextColor(0);
-                doc.setFontSize(20);
-                doc.text(product.productName, pageWidth / 2, pageHeight / 2 - 20, { align: "center" });
-                doc.text(`Qty: ${product.quantity}`, pageWidth / 2, pageHeight / 2 + 20, { align: "center" });
+                doc.setTextColor(255);
+                doc.setFont("Clash Display", "bold");
+                doc.setFontSize(36);
+                doc.text("No Photo Available", PAGE_W / 2, PAGE_H / 2, { align: "center" });
             }
+
+            // HEADER
+            doc.setTextColor(180, 180, 180);
+            doc.setFont("Clash Display", "bold");
+            doc.setFontSize(38);
+            doc.text(dateStr, 50, 80, { align: "left" });
+            doc.text(group.groupName, PAGE_W - 50, 80, { align: "right" });
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(60);
+            doc.text("Sri Brundabana Enterprises", PAGE_W / 2, 160, { align: "center" });
+            
+            doc.setFontSize(50);
+            doc.text("Rayagada", PAGE_W / 2, 230, { align: "center" });
+            
+            // FOOTER
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(64);
+            doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: "center" });
+            
+            doc.setTextColor(255, 215, 0); // Muted gold
+            doc.setFontSize(54);
+            doc.text(`Qty: ${product.quantity}`, PAGE_W / 2, PAGE_H - 80, { align: "center" });
         }
     }
-    
     return { blob: hasAddedPage ? doc.output("blob") : null, pageCount };
 };
 

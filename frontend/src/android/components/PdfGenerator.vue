@@ -1395,14 +1395,20 @@ export default {
         const normalize = s => s ? s.toLowerCase().trim() : '';
         const filteredGroups = data.filter(g => targetBrands.some(b => normalize(b) === normalize(g.groupName)));
         
-        // Fixed dimensions for all images: tall portrait
-        const PAGE_W = 800;
-        const PAGE_H = 1100;
+        if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+
+        const { jsPDF } = await import("jspdf");
+        const { clashDisplayBoldBase64 } = await import("../../utils/fonts.js");
         
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PAGE_W, PAGE_H] });
+        const PAGE_W = 1080;
+        const PAGE_H = 2400;
+        const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: [PAGE_W, PAGE_H] });
+        
+        doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
+        doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
+        
         let hasAddedPage = false;
         let pageCount = 0;
-
         const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
         for (const group of filteredGroups) {
@@ -1410,69 +1416,62 @@ export default {
                 if (onlyWithPhotos && !product.imageUrl) continue;
                 if (minQty > 0 && product.quantity < minQty) continue;
 
-                if (hasAddedPage) {
-                    doc.addPage([PAGE_W, PAGE_H]);
-                }
+                if (hasAddedPage) { doc.addPage([PAGE_W, PAGE_H]); }
                 hasAddedPage = true;
                 pageCount++;
 
-                // 1. Solid Black Background
-                doc.setFillColor('#000000');
-                doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+                doc.setFillColor("#000000");
+                doc.rect(0, 0, PAGE_W, PAGE_H, "F");
 
-                // 2. Smart Photo Scaling & Centering
                 if (product.imageUrl) {
                     try {
                         const imgData = await this.fetchImageAsBase64(product.imageUrl);
                         const dims = await this.getImageDimensions(imgData);
                         
-                        // Max allowed photo space (guarantees minimum 120px space for top & bottom text)
-                        const MAX_W = 800;
-                        const MAX_H = 860; 
+                        const finalWidth = PAGE_W;
+                        const finalHeight = dims.height * (PAGE_W / dims.width);
+                        const x = 0;
+                        const y = (PAGE_H - finalHeight) / 2;
                         
-                        const scale = Math.min(MAX_W / dims.width, MAX_H / dims.height);
-                        const fw = dims.width * scale;
-                        const fh = dims.height * scale;
-                        
-                        // Perfect centering
-                        const x = (PAGE_W - fw) / 2;
-                        const y = (PAGE_H - fh) / 2;
-                        
-                        doc.addImage(imgData, 'JPEG', x, y, fw, fh);
-                    } catch (e) {
-                        doc.setTextColor(255); doc.setFontSize(16);
-                        doc.text('Image Load Failed', PAGE_W/2, PAGE_H/2, {align:'center'});
+                        doc.addImage(imgData, "JPEG", x, y, finalWidth, finalHeight);
+                    } catch (imgErr) {
+                        doc.setTextColor(255);
+                        doc.setFont("Clash Display", "bold");
+                        doc.setFontSize(24);
+                        doc.text("Image Load Failed", PAGE_W / 2, PAGE_H / 2, { align: "center" });
                     }
                 } else {
-                    doc.setTextColor(255); doc.setFontSize(24);
-                    doc.text('No Photo Available', PAGE_W/2, PAGE_H/2, {align:'center'});
+                    doc.setTextColor(255);
+                    doc.setFont("Clash Display", "bold");
+                    doc.setFontSize(36);
+                    doc.text("No Photo Available", PAGE_W / 2, PAGE_H / 2, { align: "center" });
                 }
 
-                // 3. Top Extension (Header) - On every page
-                doc.setTextColor(255, 255, 255); // White
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(26);
-                doc.text("Sri Brundabana Enterprises, Rayagada", PAGE_W/2, 55, {align:'center'});
-                
-                doc.setTextColor(180, 180, 180); // Light Grey
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(18);
-                doc.text(`${dateStr}  •  ${group.groupName}`, PAGE_W/2, 90, {align:'center'});
+                // HEADER
+                doc.setTextColor(180, 180, 180);
+                doc.setFont("Clash Display", "bold");
+                doc.setFontSize(38);
+                doc.text(dateStr, 50, 80, { align: "left" });
+                doc.text(group.groupName, PAGE_W - 50, 80, { align: "right" });
 
-                // 4. Bottom Extension (Footer)
-                doc.setTextColor(255, 255, 255); // White
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(28);
-                doc.text(product.productName, PAGE_W/2, PAGE_H - 90, {align:'center'});
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(60);
+                doc.text("Sri Brundabana Enterprises", PAGE_W / 2, 160, { align: "center" });
                 
-                doc.setTextColor(255, 204, 0); // Yellow/Gold for Qty
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(24);
-                doc.text(`Qty: ${product.quantity}`, PAGE_W/2, PAGE_H - 45, {align:'center'});
+                doc.setFontSize(50);
+                doc.text("Rayagada", PAGE_W / 2, 230, { align: "center" });
+                
+                // FOOTER
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(64);
+                doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: "center" });
+                
+                doc.setTextColor(255, 215, 0); // Muted gold
+                doc.setFontSize(54);
+                doc.text(`Qty: ${product.quantity}`, PAGE_W / 2, PAGE_H - 80, { align: "center" });
             }
         }
-        
-        return { blob: pageCount > 0 ? doc.output('blob') : null, pageCount };
+        return { blob: pageCount > 0 ? doc.output("blob") : null, pageCount };
     },
 
     async startOneTouchShare() {
