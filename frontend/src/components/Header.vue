@@ -13,7 +13,16 @@
 
       <!-- Center: Logo (Absolute) -->
       <div class="absolute left-1/2 top-safe -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none w-full max-w-[60%]">
-          <div @click="$emit('admin-toggle')" class="flex items-center gap-1.5 justify-center w-full pointer-events-auto cursor-pointer">
+          <div 
+            @mousedown="logoStartPress"
+            @mouseup="logoEndPress"
+            @mouseleave="logoCancelPress"
+            @touchstart.prevent="logoStartPress"
+            @touchend.prevent="logoEndPress"
+            @touchcancel="logoCancelPress"
+            @contextmenu.prevent
+            class="flex items-center gap-1.5 justify-center w-full pointer-events-auto cursor-pointer select-none"
+          >
             <span class="text-lg font-black tracking-tighter text-slate-900 truncate">SBE</span>
             <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase bg-slate-100 px-1.5 py-0.5 rounded-sm shrink-0">Rayagada</span>
           </div>
@@ -93,7 +102,32 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['menu-click', 'cart-click', 'search-change', 'admin-toggle']);
+const emit = defineEmits(['menu-click', 'cart-click', 'search-change', 'admin-toggle', 'go-home']);
+
+// --- Long Press Logic for Logo ---
+// Single tap → Home, Long press (600ms) → Admin Login
+let logoPressTimer = null;
+let logoDidLongPress = false;
+
+const logoStartPress = () => {
+    logoDidLongPress = false;
+    logoPressTimer = setTimeout(() => {
+        logoDidLongPress = true;
+        emit('admin-toggle');
+        if (navigator.vibrate) navigator.vibrate(50);
+    }, 600);
+};
+
+const logoEndPress = () => {
+    clearTimeout(logoPressTimer);
+    if (!logoDidLongPress) {
+        emit('go-home');
+    }
+};
+
+const logoCancelPress = () => {
+    clearTimeout(logoPressTimer);
+};
 
 const lastSyncFormatted = computed(() => {
     if (!props.lastSyncTime) return null;

@@ -124,8 +124,14 @@
        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 pointer-events-none">
           <h1 
                class="text-2xl font-semibold tracking-tighter text-white select-none pointer-events-auto cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
-               @click="$emit('promptAdminLogin')"
-               title="Admin Login"
+               @mousedown="logoStartPress"
+               @mouseup="logoEndPress"
+               @mouseleave="logoCancelPress"
+               @touchstart.prevent="logoStartPress"
+               @touchend.prevent="logoEndPress"
+               @touchcancel="logoCancelPress"
+               @contextmenu.prevent
+               title="Tap: Home • Long Press: Admin"
              >
                <span class="text-white font-['Clash_Display'] font-bold text-3xl tracking-wide uppercase">{{ companyFirstName }}</span>
                <span class="text-slate-400 font-['Clash_Display'] font-light text-3xl tracking-wide ml-1.5">{{ companyRestName }}</span>
@@ -210,7 +216,13 @@
             <h1 
                class="text-lg font-semibold tracking-tighter text-white select-none flex items-center gap-1 pointer-events-auto cursor-pointer transition-all"
                :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'"
-               @click="$emit('promptAdminLogin')"
+               @mousedown="logoStartPress"
+               @mouseup="logoEndPress"
+               @mouseleave="logoCancelPress"
+               @touchstart.prevent="logoStartPress"
+               @touchend.prevent="logoEndPress"
+               @touchcancel="logoCancelPress"
+               @contextmenu.prevent
              >
                <span class="text-white font-['Clash_Display'] font-bold tracking-wide uppercase" :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'">{{ companyFirstName }}</span>
                <span class="text-slate-400 font-['Clash_Display'] font-light tracking-wide ml-1" :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'">{{ companyRestName }}</span>
@@ -359,6 +371,7 @@
 
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { extractColor } from '../../utils/colors';
 
 // Pinia global stores
@@ -368,6 +381,7 @@ import { storeToRefs } from 'pinia';
 
 const appStore = useAppStore();
 const cartStore = useCartStore();
+const router = useRouter();
 
 const { 
   isAdmin, 
@@ -449,6 +463,32 @@ const statusColor = computed(() => {
   return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]";                           // Old (> 3 days) - Red
 });
 
+// --- Long Press Logic for Logo ---
+// Single tap → Home, Long press (600ms) → Admin Login
+let logoPressTimer = null;
+let logoDidLongPress = false;
+
+const logoStartPress = () => {
+    logoDidLongPress = false;
+    logoPressTimer = setTimeout(() => {
+        logoDidLongPress = true;
+        emit('promptAdminLogin');
+        // Haptic-like visual feedback
+        if (navigator.vibrate) navigator.vibrate(50);
+    }, 600);
+};
+
+const logoEndPress = () => {
+    clearTimeout(logoPressTimer);
+    if (!logoDidLongPress) {
+        // Short tap → navigate home
+        router.push('/');
+    }
+};
+
+const logoCancelPress = () => {
+    clearTimeout(logoPressTimer);
+};
 
 
 // --- Smart Dropdown Search Logic ---
