@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-05-07T15:12:46.014Z",
+    "lastSync": "2026-05-08T05:53:43.670Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10581446.72,
-        "closingBalance": 10743475.03,
+        "closingBalance": 10743567.62,
         "entries": []
       }
     ]
@@ -5419,7 +5419,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2532847.58,
+        "closingBalance": 2532791.87,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -7240,6 +7240,13 @@
             "type": "Tax Invoice",
             "amount": 218.67,
             "drCr": "Cr"
+          },
+          {
+            "date": "8-May-26",
+            "voucherNo": 12,
+            "type": "Credit Note",
+            "amount": 55.71,
+            "drCr": "Dr"
           }
         ]
       },
@@ -7252,7 +7259,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -2983251.41,
+        "closingBalance": -2983141.89,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -7608,7 +7615,7 @@
             "date": "7-May-26",
             "voucherNo": "259/26-27",
             "type": "Tax Invoice",
-            "amount": 1419.05,
+            "amount": 1528.57,
             "drCr": "Cr"
           }
         ]
@@ -7622,7 +7629,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2533848.83,
+        "closingBalance": 2533793.12,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -9443,6 +9450,13 @@
             "type": "Tax Invoice",
             "amount": 218.67,
             "drCr": "Cr"
+          },
+          {
+            "date": "8-May-26",
+            "voucherNo": 12,
+            "type": "Credit Note",
+            "amount": 55.71,
+            "drCr": "Dr"
           }
         ]
       }
@@ -11759,7 +11773,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": 0.91,
+        "closingBalance": 0.85,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -13649,6 +13663,13 @@
             "voucherNo": "259/26-27",
             "type": "Tax Invoice",
             "amount": 0.04,
+            "drCr": "Dr"
+          },
+          {
+            "date": "8-May-26",
+            "voucherNo": 12,
+            "type": "Credit Note",
+            "amount": 0.06,
             "drCr": "Dr"
           }
         ]
@@ -16856,7 +16877,7 @@
       {
         "ledgerName": "AYAPA FOOWEAR, MAKUVA",
         "openingBalance": 0,
-        "closingBalance": -29800,
+        "closingBalance": -32100,
         "entries": [
           {
             "date": "4-Apr-26",
@@ -16890,7 +16911,7 @@
             "date": "7-May-26",
             "voucherNo": "259/26-27",
             "type": "Tax Invoice",
-            "amount": 29800,
+            "amount": 32100,
             "drCr": "Dr"
           }
         ]
@@ -18153,7 +18174,7 @@
       {
         "ledgerName": "Monalisha Footwear, Phulbani",
         "openingBalance": -41884,
-        "closingBalance": -37680,
+        "closingBalance": -35340,
         "entries": [
           {
             "date": "9-Apr-26",
@@ -18181,6 +18202,13 @@
             "voucherNo": 197,
             "type": "Receipt",
             "amount": 20000,
+            "drCr": "Cr"
+          },
+          {
+            "date": "8-May-26",
+            "voucherNo": 12,
+            "type": "Credit Note",
+            "amount": 2340,
             "drCr": "Cr"
           }
         ]
@@ -21960,7 +21988,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 5357290.58,
+        "closingBalance": 5357252.54,
         "entries": []
       },
       {
