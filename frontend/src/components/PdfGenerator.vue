@@ -1360,7 +1360,7 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
     for (const group of filteredGroups) {
         for (const product of group.products) {
             if (onlyWithPhotosFlag && !product.imageUrl) continue;
-            if (product.quantity <= minQtyValue) continue;
+            if (product.quantity < minQtyValue) continue;
 
             if (hasAddedPage) { doc.addPage([PAGE_W, PAGE_H]); }
             hasAddedPage = true;
@@ -1465,7 +1465,7 @@ const prepareOneTouch = async () => {
             for (const fg of filteredGroups) {
                 for (const product of fg.products) {
                     if (oneTouchOnlyWithPhotos.value && !product.imageUrl) continue;
-                    if (product.quantity <= effectiveMinQty) continue;
+                    if (product.quantity < effectiveMinQty) continue;
                     productCount++;
                 }
             }
@@ -1573,11 +1573,15 @@ const prepareOneTouch = async () => {
                     }
                 }
                 URL.revokeObjectURL(pdfUrl);
+                pdf.destroy();
                 
                 if (!cancelOneTouch.value && isNativeApp.value && fileUris.length > 0) {
                     oneTouchCache.value[cacheKey] = fileUris;
                 }
                 group.status = cancelOneTouch.value ? 'idle' : 'ready';
+                
+                // Yield to event loop between group processing
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
 
         } catch (err) {
