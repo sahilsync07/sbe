@@ -46,6 +46,14 @@
                    Cancel
                  </button>
                  <button 
+                   type="button"
+                   @click="goHome"
+                   class="flex items-center justify-center w-14 py-3 bg-gradient-to-br from-sky-500 to-cyan-600 text-white rounded-xl hover:from-sky-600 hover:to-cyan-700 shadow-lg shadow-sky-500/20 transition-all active:scale-95"
+                   title="Hub"
+                 >
+                   <i class="fa-solid fa-house text-lg"></i>
+                 </button>
+                 <button 
                    type="submit"
                    class="flex-1 py-3 px-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 shadow-lg shadow-slate-900/10 transition-all active:scale-95"
                  >
@@ -61,6 +69,9 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const props = defineProps({
     show: Boolean
@@ -86,5 +97,10 @@ watch(() => props.show, (newVal) => {
 const handleLogin = () => {
     emit('login', password.value);
     password.value = ''; // Clear after attempt
+};
+
+const goHome = () => {
+    emit('close');
+    router.push('/home');
 };
 </script>
