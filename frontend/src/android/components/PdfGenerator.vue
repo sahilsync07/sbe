@@ -2098,15 +2098,12 @@ export default {
           doc.text(group.groupName, PAGE_W - 50, 80, { align: 'right' });
 
           doc.setTextColor(255, 255, 255);
-          doc.setFontSize(60);
-          doc.text('Sri Brundabana Enterprises', PAGE_W / 2, 160, { align: 'center' });
-
-          doc.setFontSize(50);
-          doc.text('Rayagada', PAGE_W / 2, 230, { align: 'center' });
+          doc.setFontSize(90);
+          doc.text('SBE Rayagada', PAGE_W / 2, 200, { align: 'center' });
 
           // FOOTER
           doc.setTextColor(255, 255, 255);
-          doc.setFontSize(64);
+          doc.setFontSize(40);
           doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center' });
 
           doc.setTextColor(255, 215, 0); // Muted gold

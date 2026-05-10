@@ -577,19 +577,21 @@ app.post("/api/updateStockData", async (req, res) => {
       existingData = [];
     }
 
-    // ---- 3. Preserve images, timestamps & all products with images ----------
-    const productMeta = {};               // productName → { imageUrl, imageUploadedAt, firstSeenAt }
+    // ---- 3. Preserve images, timestamps, history & all products with images ----------
+    const productMeta = {};               // productName → { imageUrl, imageUploadedAt, firstSeenAt, oldQty, productHistory }
     const imageProducts = {};             // groupName → { productName → product }
 
     existingData.forEach((group) => {
       if (!group.products) return;
 
       group.products.forEach((product) => {
-        // Save metadata for ALL known products to track "first seen"
+        // Save metadata for ALL known products to track "first seen" and history
         productMeta[product.productName] = {
           imageUrl: product.imageUrl || null,
           imageUploadedAt: product.imageUploadedAt || null,
-          firstSeenAt: product.firstSeenAt || null
+          firstSeenAt: product.firstSeenAt || null,
+          oldQty: product.quantity ?? 0,
+          productHistory: product.productHistory || []
         };
 
         // Save ALL products with images (not just zero-qty ones)
@@ -629,20 +631,39 @@ app.post("/api/updateStockData", async (req, res) => {
       });
     }
 
-    // ---- 5. Re-attach images, timestamps & re-inject zero-stock items --------
+    // ---- 5. Re-attach images, timestamps, history & re-inject zero-stock items --------
     // ---- 6. De-duplicate by productName ------------------------------------
+    const syncTimestamp = new Date().toISOString();
+    const HISTORY_CAP = 50;
+    let historyEntriesAdded = 0;
+
     stockData.forEach((group) => {
-      // attach saved info to live products
+      // attach saved info to live products + compute history deltas
       group.products.forEach((p) => {
         const saved = productMeta[p.productName];
         if (saved) {
           p.imageUrl = saved.imageUrl;
           p.imageUploadedAt = saved.imageUploadedAt;
           p.firstSeenAt = saved.firstSeenAt; // Preserve original seen time
+
+          // --- Product History Tracking ---
+          const history = [...saved.productHistory];
+          const delta = p.quantity - saved.oldQty;
+          if (delta > 0) {
+            history.push({ date: syncTimestamp, type: "purchased", qty: delta, newTotal: p.quantity });
+            historyEntriesAdded++;
+          } else if (delta < 0) {
+            history.push({ date: syncTimestamp, type: "sold", qty: Math.abs(delta), newTotal: p.quantity });
+            historyEntriesAdded++;
+          }
+          // Cap history at last N entries to prevent file bloat
+          p.productHistory = history.slice(-HISTORY_CAP);
         } else {
           // New product from Tally!
           p.imageUrl = null;
-          p.firstSeenAt = new Date().toISOString(); // Mark as new
+          p.firstSeenAt = syncTimestamp;
+          p.productHistory = [{ date: syncTimestamp, type: "initial", qty: p.quantity }];
+          historyEntriesAdded++;
         }
       });
 
@@ -651,7 +672,18 @@ app.post("/api/updateStockData", async (req, res) => {
       if (imageProducts[group.groupName]) {
         Object.values(imageProducts[group.groupName]).forEach(oldProduct => {
           if (!freshNames.has(oldProduct.productName)) {
-            group.products.push({ ...oldProduct, quantity: 0 });
+            // Product disappeared from Tally — re-inject with qty 0 and track history
+            const saved = productMeta[oldProduct.productName];
+            const history = saved ? [...saved.productHistory] : (oldProduct.productHistory ? [...oldProduct.productHistory] : []);
+            if (saved && saved.oldQty > 0) {
+              history.push({ date: syncTimestamp, type: "sold", qty: saved.oldQty, newTotal: 0 });
+              historyEntriesAdded++;
+            }
+            group.products.push({
+              ...oldProduct,
+              quantity: 0,
+              productHistory: history.slice(-HISTORY_CAP)
+            });
           }
         });
       }
@@ -663,10 +695,11 @@ app.post("/api/updateStockData", async (req, res) => {
         return true;
       });
     });
+    console.log(`📊 Product history: ${historyEntriesAdded} changes tracked this sync`);
 
     // ---- 7. Inject Last Sync Metadata ---------------------------------------
     // Add metadata at the start of the array or as a special entry
-    const lastSyncTime = new Date().toISOString();
+    const lastSyncTime = syncTimestamp;
     stockData.unshift({
       groupName: "_META_DATA_",
       lastSync: lastSyncTime,
