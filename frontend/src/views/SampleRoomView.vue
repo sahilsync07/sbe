@@ -118,6 +118,7 @@ import { storeToRefs } from 'pinia';
 import { useStockData } from '../composables/useStockData';
 import { generateSampleRoomPDF } from '../utils/pdfSampleRoom';
 import axios from 'axios';
+import { toast } from 'vue3-toastify';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -188,7 +189,7 @@ const persistToBackend = async (updates) => {
     saving.value = true;
     await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/updateSampleRoom`, { updates });
   } catch (err) {
-    console.warn('Backend save failed (offline?):', err.message);
+    toast.error('Server not running — changes won\'t be saved', { autoClose: 3000, toastId: 'sr-offline' });
   } finally {
     saving.value = false;
   }
