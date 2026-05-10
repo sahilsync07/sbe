@@ -222,7 +222,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLedgerData } from '../composables/useLedgerData';
 import LedgerDetailModal from '../components/LedgerDetailModal.vue';
-import { useAdmin } from '../composables/useAdmin';
 import { useStockData } from '../composables/useStockData';
 import { useCart } from '../composables/useCart';
 import { useBrandGroups } from '../composables/useBrandGroups';
@@ -235,7 +234,6 @@ const appStore = useAppStore();
 const { stockData, config } = storeToRefs(appStore);
 
 const { ledgerData, allLedgers, loading: ledgerLoading, error, loadLedgerData } = useLedgerData();
-const { isAdmin, isSuperAdmin } = useAdmin();
 const companyName = ref('SBE Rayagada');
 
 const { loading: stockLoading } = useStockData();
@@ -259,10 +257,6 @@ const loadMoreRef = ref(null);
 
 // Load data on mount
 onMounted(() => {
-  if (!isAdmin.value && !isSuperAdmin.value) {
-    router.replace('/');
-    return;
-  }
   loadLedgerData();
 });
 
