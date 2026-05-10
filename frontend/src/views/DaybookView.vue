@@ -222,10 +222,6 @@ const getTodayStr = () => {
 const selectedDate = ref(getTodayStr());
 
 onMounted(() => {
-  if (!isAdmin.value && !isSuperAdmin.value) {
-    router.replace('/');
-    return;
-  }
   loadLedgerData().then(() => {
     if (allFlattenedEntries.value.length > 0) {
       const sorted = [...allFlattenedEntries.value]
