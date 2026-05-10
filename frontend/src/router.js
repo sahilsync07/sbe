@@ -5,7 +5,7 @@ import PdfGenerator from "./components/PdfGenerator.vue";
 import LedgerView from "./views/LedgerView.vue";
 import DaybookView from "./views/DaybookView.vue";
 import StockTrendView from "./views/StockTrendView.vue";
-
+import SampleRoomView from "./views/SampleRoomView.vue";
 
 const routes = [
   { path: "/", component: StockTable },
@@ -14,6 +14,7 @@ const routes = [
   { path: "/ledger", component: LedgerView },
   { path: "/daybook", component: DaybookView },
   { path: "/stock-trend", component: StockTrendView },
+  { path: "/sample-room", component: SampleRoomView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];

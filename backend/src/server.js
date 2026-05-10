@@ -591,7 +591,8 @@ app.post("/api/updateStockData", async (req, res) => {
           imageUploadedAt: product.imageUploadedAt || null,
           firstSeenAt: product.firstSeenAt || null,
           oldQty: product.quantity ?? 0,
-          productHistory: product.productHistory || []
+          productHistory: product.productHistory || [],
+          inSampleRoom: product.inSampleRoom || false
         };
 
         // Save ALL products with images (not just zero-qty ones)
@@ -645,6 +646,7 @@ app.post("/api/updateStockData", async (req, res) => {
           p.imageUrl = saved.imageUrl;
           p.imageUploadedAt = saved.imageUploadedAt;
           p.firstSeenAt = saved.firstSeenAt; // Preserve original seen time
+          p.inSampleRoom = saved.inSampleRoom; // Preserve sample room flag
 
           // --- Product History Tracking ---
           const history = [...saved.productHistory];
@@ -858,6 +860,37 @@ app.post("/api/removeImage", async (req, res) => {
   } catch (error) {
     console.error("Error in removeImage:", error.message, error.stack);
     res.status(500).json({ error: `Failed to remove image: ${error.message}` });
+  }
+});
+
+// ===== SAMPLE ROOM FLAG =====
+app.post("/api/updateSampleRoom", async (req, res) => {
+  try {
+    const { updates } = req.body; // { "productName": true/false, ... }
+    if (!updates || typeof updates !== "object") {
+      return res.status(400).json({ error: "Missing updates object" });
+    }
+
+    const stockPath = path.join(frontendAssetsPath, "stock-data.json");
+    const raw = await fs.readFile(stockPath, "utf-8");
+    const stockData = JSON.parse(raw);
+
+    let changed = 0;
+    stockData.forEach((group) => {
+      if (!group.products) return;
+      group.products.forEach((product) => {
+        if (product.productName in updates) {
+          product.inSampleRoom = !!updates[product.productName];
+          changed++;
+        }
+      });
+    });
+
+    await fs.writeFile(stockPath, JSON.stringify(stockData, null, 2));
+    res.json({ message: `Updated ${changed} products`, changed });
+  } catch (error) {
+    console.error("Error in updateSampleRoom:", error.message);
+    res.status(500).json({ error: `Failed to update: ${error.message}` });
   }
 });
 
