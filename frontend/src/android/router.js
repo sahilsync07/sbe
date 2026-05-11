@@ -24,6 +24,26 @@ const routes = [
     {
         path: '/ledger',
         component: () => import('../views/LedgerView.vue')
+    },
+    {
+        path: '/stock-trend',
+        component: () => import('../views/StockTrendView.vue')
+    },
+    {
+        path: '/sample-room',
+        component: () => import('../views/SampleRoomView.vue')
+    },
+    {
+        path: '/home',
+        component: () => import('../views/HomeView.vue')
+    },
+    {
+        path: '/daybook',
+        component: () => import('../views/DaybookView.vue')
+    },
+    { 
+        path: "/:pathMatch(.*)*", 
+        redirect: "/" 
     }
 ];
 
