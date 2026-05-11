@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-05-11T06:19:14.274Z",
+    "lastSync": "2026-05-11T12:01:06.379Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10581446.72,
-        "closingBalance": 10764462.12,
+        "closingBalance": 10782059.1,
         "entries": []
       }
     ]
@@ -1379,7 +1379,7 @@
       {
         "ledgerName": "SAHIL BHAI FOOTWEAR, GOVINDPALI",
         "openingBalance": -11190,
-        "closingBalance": -690,
+        "closingBalance": -22095,
         "entries": [
           {
             "date": "11-Apr-26",
@@ -1401,6 +1401,13 @@
             "type": "Receipt",
             "amount": 2500,
             "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "279/26-27",
+            "type": "Tax Invoice",
+            "amount": 21405,
+            "drCr": "Dr"
           }
         ]
       },
@@ -1446,7 +1453,7 @@
       {
         "ledgerName": "SANTI ROY CHOUDHURY, KHAIRPUT",
         "openingBalance": -41717,
-        "closingBalance": -21717,
+        "closingBalance": -67258,
         "entries": [
           {
             "date": "13-Apr-26",
@@ -1461,6 +1468,13 @@
             "type": "Receipt",
             "amount": 10000,
             "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "280/26-27",
+            "type": "Tax Invoice",
+            "amount": 45541,
+            "drCr": "Dr"
           }
         ]
       },
@@ -5764,7 +5778,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2540684.25,
+        "closingBalance": 2542941.05,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -7703,6 +7717,27 @@
             "voucherNo": "277/26-27",
             "type": "Tax Invoice",
             "amount": 279.65,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "278/26-27",
+            "type": "Tax Invoice",
+            "amount": 691.47,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "279/26-27",
+            "type": "Tax Invoice",
+            "amount": 502.49,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "280/26-27",
+            "type": "Tax Invoice",
+            "amount": 1062.84,
             "drCr": "Cr"
           }
         ]
@@ -8170,7 +8205,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2541685.5,
+        "closingBalance": 2543942.3,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -10109,6 +10144,27 @@
             "voucherNo": "277/26-27",
             "type": "Tax Invoice",
             "amount": 279.65,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "278/26-27",
+            "type": "Tax Invoice",
+            "amount": 691.47,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "279/26-27",
+            "type": "Tax Invoice",
+            "amount": 502.49,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "280/26-27",
+            "type": "Tax Invoice",
+            "amount": 1062.84,
             "drCr": "Cr"
           }
         ]
@@ -11829,7 +11885,7 @@
       {
         "ledgerName": "PACKING & TRANSPORTATING EXPENSES",
         "openingBalance": 0,
-        "closingBalance": 32000,
+        "closingBalance": 33200,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -12411,6 +12467,20 @@
             "type": "Tax Invoice",
             "amount": 300,
             "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "279/26-27",
+            "type": "Tax Invoice",
+            "amount": 300,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "280/26-27",
+            "type": "Tax Invoice",
+            "amount": 900,
+            "drCr": "Cr"
           }
         ]
       },
@@ -12517,7 +12587,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": -0.08,
+        "closingBalance": 0.35,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -14548,6 +14618,27 @@
             "type": "Tax Invoice",
             "amount": 0.14,
             "drCr": "Dr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "278/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.25,
+            "drCr": "Dr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "279/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.27,
+            "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "280/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.41,
+            "drCr": "Cr"
           }
         ]
       },
@@ -23146,7 +23237,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 5698486.82,
+        "closingBalance": 5788758.79,
         "entries": []
       },
       {
@@ -26361,7 +26452,7 @@
       {
         "ledgerName": "NARASINGH NAYAK, TIKIRI",
         "openingBalance": -22530,
-        "closingBalance": -28125,
+        "closingBalance": -57165,
         "entries": [
           {
             "date": "19-Apr-26",
@@ -26383,6 +26474,13 @@
             "type": "Receipt",
             "amount": 5000,
             "drCr": "Cr"
+          },
+          {
+            "date": "11-May-26",
+            "voucherNo": "278/26-27",
+            "type": "Tax Invoice",
+            "amount": 29040,
+            "drCr": "Dr"
           }
         ]
       },
