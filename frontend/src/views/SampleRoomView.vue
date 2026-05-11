@@ -30,8 +30,12 @@
               <button @click="selectAll" class="sr-action-btn rounded-full px-3 py-1.5 text-xs font-semibold sm:px-4 sm:py-2 sm:text-sm">All</button>
               <button @click="selectNone" class="sr-action-btn rounded-full px-3 py-1.5 text-xs font-semibold sm:px-4 sm:py-2 sm:text-sm">None</button>
             </template>
+            <!-- Sort by Qty -->
+            <button v-if="selectedGroup" @click="sortByQty = !sortByQty" class="sr-action-btn flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:px-4 sm:py-2 sm:text-sm active:scale-[0.97]" :class="sortByQty ? 'ring-2 ring-indigo-500 ring-offset-1 text-indigo-700' : ''">
+              <i class="fa-solid" :class="sortByQty ? 'fa-arrow-down-9-1' : 'fa-sort'"></i> Sort Qty
+            </button>
             <!-- Print -->
-            <button v-if="selectedGroup && checkedCount > 0" @click="printPDF" class="sr-print-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white sm:px-5 sm:py-2 sm:text-sm active:scale-[0.97]">
+            <button v-if="selectedGroup" @click="printPDF" class="sr-print-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white sm:px-5 sm:py-2 sm:text-sm active:scale-[0.97]">
               <i class="fa-solid fa-print text-[11px] sm:text-xs"></i> Print
             </button>
           </div>
@@ -160,7 +164,7 @@
           <!-- Product Checklist (brand selected) -->
           <div v-else>
             <div class="space-y-1.5 sm:space-y-2">
-              <label v-for="(product, idx) in selectedGroup.products" :key="idx"
+              <label v-for="(product, idx) in sortedGroupProducts" :key="idx"
                 class="sr-check-card flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-all sm:rounded-2xl sm:p-4"
                 :class="checkedMap[product.productName] ? 'sr-check-active' : ''">
                 <div class="relative flex-shrink-0">
@@ -234,6 +238,16 @@ const selectedGroup = ref(null);
 const checkedMap = ref({});
 const brandSearch = ref('');
 const globalSearchQuery = ref('');
+const sortByQty = ref(false);
+
+const sortedGroupProducts = computed(() => {
+  if (!selectedGroup.value) return [];
+  const arr = [...selectedGroup.value.products];
+  if (sortByQty.value) {
+    arr.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
+  }
+  return arr;
+});
 
 // Lightbox state
 const lightboxOpen = ref(false);
@@ -371,7 +385,7 @@ const selectNone = () => {
 };
 
 const printPDF = async () => {
-  const products = selectedGroup.value.products.map(p => ({
+  const products = sortedGroupProducts.value.map(p => ({
     productName: p.productName,
     quantity: p.quantity || 0,
     present: !!checkedMap.value[p.productName],

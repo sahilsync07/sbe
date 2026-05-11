@@ -112,7 +112,7 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         getProductSize(p.productName),
         getProductColor(p.productName),
         `${p.quantity || 0}`,
-        p.present ? "\u2713 YES" : "\u2717 NO",
+        p.present ? "\u2713" : "",
     ]);
 
     autoTable(doc, {
@@ -150,13 +150,12 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             5: { cellWidth: 24, halign: 'center', fontStyle: 'bold' },
         },
         didParseCell: (data) => {
-            // Color the SAMPLE column: green for YES, red for NO
+            // Make the checkmark a bit larger and green if present
             if (data.section === 'body' && data.column.index === 5) {
                 const val = data.cell.raw;
-                if (typeof val === 'string' && val.includes('YES')) {
-                    data.cell.styles.textColor = [22, 163, 74]; // green
-                } else {
-                    data.cell.styles.textColor = [220, 38, 38]; // red
+                if (typeof val === 'string' && val.includes('\u2713')) {
+                    data.cell.styles.textColor = [0, 0, 0]; // Keep it black/neat like order sheet
+                    data.cell.styles.fontSize = 12;
                 }
             }
         }
