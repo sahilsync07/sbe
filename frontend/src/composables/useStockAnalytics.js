@@ -71,12 +71,31 @@ export function useStockAnalytics(stockData, lookbackDays) {
         let categoryColor = 'mint';
         let urgency = 3; // For sorting (lower = more urgent)
 
+        // Minimum data points needed for reliable classification
+        // Industry standard: at least 2 weeks of tracked data points
+        const minEntries = lookbackDays.value <= 7 ? 2 : (lookbackDays.value <= 30 ? 3 : 5);
+        const hasEnoughData = windowEntries.length >= minEntries;
+
         if (!hasHistory) {
           category = 'no-data';
           categoryLabel = 'No Data';
           categoryIcon = 'fa-clock';
           categoryColor = 'slate';
+          urgency = 6;
+        } else if (!hasEnoughData) {
+          // Has some history but not enough data points for reliable analysis
+          category = 'insufficient';
+          categoryLabel = 'Insufficient Data';
+          categoryIcon = 'fa-hourglass-start';
+          categoryColor = 'slate';
           urgency = 5;
+        } else if (currentQty === 0 && totalSold === 0 && totalPurchased === 0) {
+          // Zero stock, zero movement — out of stock
+          category = 'dead';
+          categoryLabel = 'Dead Stock';
+          categoryIcon = 'fa-box-archive';
+          categoryColor = 'slate';
+          urgency = 4;
         } else if (totalSold === 0 && totalPurchased === 0 && currentQty > 0) {
           // No movement at all in window, but has stock
           category = 'dead';
@@ -153,6 +172,7 @@ export function useStockAnalytics(stockData, lookbackDays) {
       dead: products.filter(p => p.category === 'dead').length,
       healthy: products.filter(p => p.category === 'healthy').length,
       noData: products.filter(p => p.category === 'no-data').length,
+      insufficient: products.filter(p => p.category === 'insufficient').length,
     };
   });
 

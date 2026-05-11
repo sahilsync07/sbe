@@ -9,18 +9,21 @@
               <i class="fa-solid fa-arrow-left text-sm sm:text-[15px]"></i>
             </button>
             <div class="min-w-0 flex-1">
-              <span class="mb-0.5 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-800 ring-1 ring-amber-500/25 sm:mb-1 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-[11px]">
+              <span class="mb-0.5 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500/15 to-violet-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-indigo-500/20 sm:mb-1 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-[11px]">
                 <i class="fa-solid fa-chart-line text-[9px] sm:text-[10px]"></i>
                 Stock Trends
               </span>
               <h1 class="mt-0.5 text-lg font-semibold tracking-tight text-slate-950 sm:mt-1 sm:text-2xl lg:text-3xl">Movement Insights</h1>
               <p v-if="!loading" class="mt-0.5 text-xs text-slate-500 sm:text-sm">
-                <span class="font-semibold text-amber-700">{{ summary.total }}</span> products tracked
+                <span class="font-semibold text-indigo-600">{{ summary.total }}</span> products tracked
               </p>
             </div>
           </div>
           <!-- Lookback Selector -->
           <div class="flex items-center gap-1.5 sm:gap-2">
+            <button @click="showInfoModal = true" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-slate-500 hover:text-indigo-600 transition-all sm:h-9 sm:w-9" title="How it works">
+              <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
             <button v-for="opt in lookbackOptions" :key="opt.value" @click="lookbackDays = opt.value"
               :class="[lookbackDays === opt.value ? 'trend-period-active' : 'trend-period-inactive', 'rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:px-4 sm:py-2 sm:text-sm']">
               {{ opt.label }}
@@ -44,17 +47,17 @@
 
           <div v-else>
             <!-- Summary Cards -->
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 lg:gap-4 mb-3 sm:mb-4">
+            <div class="grid grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 lg:gap-4 mb-3 sm:mb-4">
               <button v-for="card in summaryCards" :key="card.key" @click="toggleFilter(card.key)"
                 :class="[activeFilter === card.key ? 'ring-2 ring-offset-2 scale-[1.02]' : '', 'trend-summary-card group flex flex-col rounded-2xl p-3 text-left transition-all duration-200 active:scale-[0.97] sm:rounded-[1.5rem] sm:p-4 lg:p-5']"
                 :style="{ '--card-accent': card.accentColor, 'ring-color': card.ringColor }">
                 <div class="mb-2 flex items-center justify-between sm:mb-3">
-                  <div class="flex h-9 w-9 items-center justify-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl" :style="{ background: card.iconBg }">
-                    <i :class="['fa-solid', card.icon, 'text-sm sm:text-base']" :style="{ color: card.iconColor }"></i>
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg sm:h-11 sm:w-11 sm:rounded-2xl" :style="{ background: card.iconBg }">
+                    <i :class="['fa-solid', card.icon, 'text-xs sm:text-base']" :style="{ color: card.iconColor }"></i>
                   </div>
-                  <span v-if="activeFilter === card.key" class="text-[10px] font-semibold text-amber-600 sm:text-xs">Active</span>
+                  <span v-if="activeFilter === card.key" class="text-[10px] font-semibold text-indigo-600 sm:text-xs">Active</span>
                 </div>
-                <p class="font-mono text-2xl font-bold tabular-nums tracking-tight text-slate-900 sm:text-3xl">{{ card.count }}</p>
+                <p class="font-mono text-xl font-bold tabular-nums tracking-tight text-slate-900 sm:text-3xl">{{ card.count }}</p>
                 <p class="mt-0.5 text-[11px] font-medium text-slate-500 sm:mt-1 sm:text-xs">{{ card.label }}</p>
               </button>
             </div>
@@ -92,10 +95,16 @@
               <div class="sm:hidden space-y-2">
                 <div v-for="(p, idx) in paginatedProducts" :key="'m-'+idx"
                   class="trend-float-card rounded-2xl p-3 active:scale-[0.99]">
-                  <div class="flex items-start justify-between gap-2 mb-2">
+                  <div class="flex items-start gap-2.5 mb-2">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-slate-100 ring-1 ring-slate-200/60 cursor-pointer" @click="openLightbox(p)">
+                      <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="Product" class="w-full h-full object-cover" />
+                      <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-sm"></i></div>
+                    </div>
                     <div class="min-w-0 flex-1">
                       <h4 class="text-[13px] font-semibold leading-snug text-slate-950">{{ toTitleCase(p.productName) }}</h4>
-                      <p class="mt-0.5 text-[10px] text-slate-400">{{ toTitleCase(p.groupName) }}</p>
+                      <span class="mt-0.5 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700 ring-1 ring-indigo-200/60">
+                        <i class="fa-solid fa-tag text-[7px]"></i>{{ toTitleCase(p.groupName) }}
+                      </span>
                     </div>
                     <span :class="getCategoryBadgeClass(p)" class="flex-shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1">
                       <i :class="['fa-solid', p.categoryIcon, 'text-[8px]']"></i>
@@ -111,9 +120,9 @@
                       <span class="block text-[9px] font-medium text-rose-400">Sold</span>
                       <span class="font-mono text-sm font-bold tabular-nums text-rose-700">{{ p.totalSold }}</span>
                     </div>
-                    <div class="rounded-lg bg-amber-50/80 px-2 py-1.5 text-center">
-                      <span class="block text-[9px] font-medium text-amber-500">Days Left</span>
-                      <span class="font-mono text-sm font-bold tabular-nums" :class="p.daysOfStock !== null && p.daysOfStock < 7 ? 'text-red-600' : 'text-amber-700'">
+                    <div class="rounded-lg bg-indigo-50/80 px-2 py-1.5 text-center">
+                      <span class="block text-[9px] font-medium text-indigo-500">Days Left</span>
+                      <span class="font-mono text-sm font-bold tabular-nums" :class="p.daysOfStock !== null && p.daysOfStock < 7 ? 'text-red-600' : 'text-indigo-700'">
                         {{ p.daysOfStock !== null ? p.daysOfStock + 'd' : '—' }}
                       </span>
                     </div>
@@ -136,10 +145,18 @@
                       </tr>
                     </thead>
                     <tbody class="text-xs sm:text-sm">
-                      <tr v-for="(p, idx) in paginatedProducts" :key="idx" class="group border-t border-slate-100/80 transition-colors first:border-t-0 hover:bg-amber-50/30">
+                      <tr v-for="(p, idx) in paginatedProducts" :key="idx" class="group border-t border-slate-100/80 transition-colors first:border-t-0 hover:bg-indigo-50/30">
                         <td class="min-w-[220px] px-3 py-2.5 sm:px-5 sm:py-3.5">
-                          <span class="font-semibold text-slate-950 group-hover:text-amber-800 transition-colors">{{ toTitleCase(p.productName) }}</span>
-                          <span class="mt-0.5 block text-[10px] text-slate-400 sm:text-xs">{{ toTitleCase(p.groupName) }}</span>
+                          <div class="flex items-center gap-3">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-xl overflow-hidden bg-slate-100 ring-1 ring-slate-200/60 cursor-pointer" @click="openLightbox(p)">
+                              <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="" class="w-full h-full object-cover" />
+                              <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-xs"></i></div>
+                            </div>
+                            <div>
+                              <span class="font-semibold text-slate-950 group-hover:text-indigo-700 transition-colors">{{ toTitleCase(p.productName) }}</span>
+                              <span class="mt-0.5 flex items-center gap-1 text-[10px] sm:text-xs"><span class="inline-flex items-center gap-0.5 rounded-full bg-indigo-50 px-1.5 py-0.5 text-indigo-700 font-semibold ring-1 ring-indigo-200/60"><i class="fa-solid fa-tag text-[7px]"></i>{{ toTitleCase(p.groupName) }}</span></span>
+                            </div>
+                          </div>
                         </td>
                         <td class="whitespace-nowrap px-3 py-2.5 text-center font-mono font-semibold tabular-nums sm:px-5 sm:py-3.5" :class="p.currentQty === 0 ? 'text-red-500' : 'text-slate-700'">{{ p.currentQty }}</td>
                         <td class="whitespace-nowrap px-3 py-2.5 text-center font-mono font-semibold tabular-nums text-rose-600 sm:px-5 sm:py-3.5">{{ p.totalSold || '—' }}</td>
@@ -179,6 +196,35 @@
         </div>
       </div>
     </main>
+
+    <!-- Image Lightbox -->
+    <ImageLightbox :show="lightboxOpen" :src="lightboxSrc" :title="lightboxTitle" :subtitle="lightboxSubtitle" @close="lightboxOpen = false" />
+
+    <!-- Info Modal -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="showInfoModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" @click.self="showInfoModal = false">
+          <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-bold text-slate-900">How Categories Work</h3>
+              <button @click="showInfoModal = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm text-slate-700">
+              <div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-cart-shopping text-amber-600 text-xs"></i></span><div><strong class="text-amber-800">Need Reorder</strong><p class="text-xs text-slate-500 mt-0.5">Products selling well but will run out in &lt;7 days at current sell rate. Action: restock immediately.</p></div></div>
+              <div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bolt text-rose-600 text-xs"></i></span><div><strong class="text-rose-800">Fast Moving</strong><p class="text-xs text-slate-500 mt-0.5">High turnover (&ge;60%) or &ge;3 sales events in the period. These are your best sellers.</p></div></div>
+              <div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hourglass-half text-violet-600 text-xs"></i></span><div><strong class="text-violet-800">Slow Moving</strong><p class="text-xs text-slate-500 mt-0.5">Turnover &lt;20% with some movement. Consider promotions or price adjustments.</p></div></div>
+              <div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-box-archive text-slate-600 text-xs"></i></span><div><strong class="text-slate-800">Dead Stock</strong><p class="text-xs text-slate-500 mt-0.5">Zero movement (no sales or purchases) in the lookback period despite having stock.</p></div></div>
+              <div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-check-circle text-emerald-600 text-xs"></i></span><div><strong class="text-emerald-800">Healthy</strong><p class="text-xs text-slate-500 mt-0.5">Moderate movement with sufficient stock. No action needed.</p></div></div>
+              <div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hourglass-start text-slate-500 text-xs"></i></span><div><strong class="text-slate-700">Low Data</strong><p class="text-xs text-slate-500 mt-0.5">Not enough sync data points yet for reliable classification. Minimum 3 data points needed for 30-day analysis.</p></div></div>
+            </div>
+            <div class="bg-indigo-50 rounded-2xl p-4 text-xs text-indigo-800">
+              <p class="font-semibold mb-1"><i class="fa-solid fa-lightbulb mr-1"></i> Tip</p>
+              <p>Sync stock from Tally regularly to improve accuracy. More data points = better classification.</p>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -190,6 +236,9 @@ import { storeToRefs } from 'pinia';
 import { useStockData } from '../composables/useStockData';
 import { useStockAnalytics } from '../composables/useStockAnalytics';
 import { useIntersectionObserver } from '@vueuse/core';
+import { getOptimizedImageUrl } from '../utils/formatters';
+import CachedImage from '../components/StockTable/CachedImage.vue';
+import ImageLightbox from '../components/ImageLightbox.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -203,6 +252,21 @@ const lookbackDays = ref(30);
 const itemsPerPage = 40;
 const page = ref(1);
 const loadMoreRef = ref(null);
+const showInfoModal = ref(false);
+
+// Lightbox state
+const lightboxOpen = ref(false);
+const lightboxSrc = ref(null);
+const lightboxTitle = ref('');
+const lightboxSubtitle = ref('');
+
+const openLightbox = (p) => {
+  if (!p.imageUrl) return;
+  lightboxSrc.value = p.imageUrl;
+  lightboxTitle.value = toTitleCase(p.productName);
+  lightboxSubtitle.value = toTitleCase(p.groupName);
+  lightboxOpen.value = true;
+};
 
 const lookbackOptions = [
   { label: '7d', value: 7 },
@@ -226,12 +290,18 @@ const summaryCards = computed(() => [
   { key: 'fast', label: 'Fast Moving', count: summary.value.fast, icon: 'fa-bolt', iconBg: 'rgba(251, 113, 133, 0.15)', iconColor: '#e11d48', accentColor: '#fb7185', ringColor: '#fb7185' },
   { key: 'slow', label: 'Slow Moving', count: summary.value.slow, icon: 'fa-hourglass-half', iconBg: 'rgba(167, 139, 250, 0.15)', iconColor: '#7c3aed', accentColor: '#a78bfa', ringColor: '#a78bfa' },
   { key: 'dead', label: 'Dead Stock', count: summary.value.dead, icon: 'fa-box-archive', iconBg: 'rgba(148, 163, 184, 0.15)', iconColor: '#64748b', accentColor: '#94a3b8', ringColor: '#94a3b8' },
+  { key: 'healthy', label: 'Healthy', count: summary.value.healthy, icon: 'fa-check-circle', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669', accentColor: '#34d399', ringColor: '#34d399' },
+  { key: 'insufficient', label: 'Low Data', count: summary.value.insufficient + summary.value.noData, icon: 'fa-hourglass-start', iconBg: 'rgba(203, 213, 225, 0.2)', iconColor: '#94a3b8', accentColor: '#cbd5e1', ringColor: '#cbd5e1' },
 ]);
 
 const filteredProducts = computed(() => {
   let list = analyzedProducts.value;
   if (activeFilter.value) {
-    list = list.filter(p => p.category === activeFilter.value);
+    if (activeFilter.value === 'insufficient') {
+      list = list.filter(p => p.category === 'insufficient' || p.category === 'no-data');
+    } else {
+      list = list.filter(p => p.category === activeFilter.value);
+    }
   }
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
@@ -259,6 +329,7 @@ const getCategoryBadgeClass = (p) => {
     reorder: 'bg-gradient-to-r from-amber-500/20 to-yellow-500/10 text-amber-900 ring-amber-300/40',
     fast: 'bg-gradient-to-r from-rose-500/15 to-pink-500/10 text-rose-900 ring-rose-300/40',
     slow: 'bg-gradient-to-r from-violet-500/15 to-purple-500/10 text-violet-900 ring-violet-200/40',
+    insufficient: 'bg-gradient-to-r from-slate-300/15 to-slate-400/10 text-slate-600 ring-slate-200/40',
     dead: 'bg-gradient-to-r from-slate-400/15 to-slate-500/10 text-slate-700 ring-slate-300/40',
     healthy: 'bg-gradient-to-r from-emerald-500/15 to-teal-500/10 text-emerald-900 ring-emerald-300/40',
     'no-data': 'bg-gradient-to-r from-slate-300/15 to-slate-400/10 text-slate-600 ring-slate-200/40',
@@ -274,61 +345,61 @@ const toTitleCase = (str) => {
 
 <style scoped>
 .trend-shell {
-  background-color: #fefce8;
+  background-color: #f4f4f5;
   background-image:
-    radial-gradient(1100px 560px at 20% -10%, rgba(251, 191, 36, 0.18), transparent 52%),
-    radial-gradient(900px 480px at 90% 25%, rgba(252, 165, 165, 0.12), transparent 48%),
-    radial-gradient(600px 400px at 50% 100%, rgba(245, 158, 11, 0.06), transparent 45%);
+    radial-gradient(1100px 560px at 20% -10%, rgba(129, 140, 248, 0.2), transparent 52%),
+    radial-gradient(900px 480px at 90% 25%, rgba(167, 139, 250, 0.14), transparent 48%),
+    radial-gradient(600px 400px at 50% 100%, rgba(99, 102, 241, 0.08), transparent 45%);
 }
 .trend-header-sticky { pointer-events: none; }
 .trend-header-sticky > * { pointer-events: auto; }
 .trend-header-card {
   border-radius: 1.75rem;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(20px) saturate(1.35);
-  -webkit-backdrop-filter: blur(20px) saturate(1.35);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 24px 48px -20px rgba(15,23,42,0.14), 0 0 0 1px rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 24px 48px -20px rgba(15,23,42,0.18), 0 0 0 1px rgba(255,255,255,0.5);
 }
 .trend-back-btn {
   background: #fff;
   box-shadow: 0 4px 14px rgba(15,23,42,0.08), 0 0 0 1px rgba(226,232,240,0.9);
 }
-.trend-back-btn:hover { color: #b45309; box-shadow: 0 8px 24px rgba(245,158,11,0.2), 0 0 0 1px rgba(252,211,77,0.5); }
+.trend-back-btn:hover { color: rgb(67 56 202); box-shadow: 0 8px 24px rgba(99,102,241,0.2), 0 0 0 1px rgba(165,180,252,0.6); }
 .trend-period-active {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: white;
-  box-shadow: 0 4px 12px rgba(245,158,11,0.35);
+  box-shadow: 0 4px 12px rgba(79,70,229,0.35);
 }
 .trend-period-inactive {
   background: rgba(255,255,255,0.9);
-  color: #78716c;
+  color: #64748b;
   box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 0 0 1px rgba(226,232,240,0.7);
 }
-.trend-period-inactive:hover { color: #b45309; background: rgba(255,255,255,1); }
+.trend-period-inactive:hover { color: rgb(67 56 202); background: rgba(255,255,255,1); }
 .trend-state-card {
   background: rgba(255,255,255,0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 24px 48px -18px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.6);
+  box-shadow: 0 24px 48px -18px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,0.6);
 }
 .trend-summary-card {
   background: rgba(255,255,255,0.88);
   box-shadow: 0 12px 28px -12px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,0.8) inset;
   cursor: pointer;
 }
-.trend-summary-card:hover { box-shadow: 0 16px 36px -12px rgba(245,158,11,0.18), 0 0 0 1px rgba(252,211,77,0.3) inset; }
+.trend-summary-card:hover { box-shadow: 0 16px 36px -12px rgba(99,102,241,0.18), 0 0 0 1px rgba(199,210,254,0.4) inset; }
 .trend-search {
   background: rgba(255,255,255,0.95);
   box-shadow: 0 4px 20px rgba(15,23,42,0.06), 0 0 0 1px rgba(226,232,240,0.9);
 }
-.trend-search:focus { box-shadow: 0 8px 28px rgba(245,158,11,0.12), 0 0 0 3px rgba(251,191,36,0.3); }
+.trend-search:focus { box-shadow: 0 8px 28px rgba(99,102,241,0.12), 0 0 0 3px rgba(129,140,248,0.35); }
 .trend-float-card {
   background: rgba(255,255,255,0.92);
   box-shadow: 0 16px 36px -16px rgba(15,23,42,0.15), 0 0 0 1px rgba(255,255,255,0.85) inset;
 }
 .trend-table-shell {
-  background: linear-gradient(145deg, rgba(254,243,199,0.7) 0%, rgba(255,251,235,0.4) 100%);
-  box-shadow: 0 20px 50px -24px rgba(245,158,11,0.2), 0 0 0 1px rgba(252,211,77,0.25);
+  background: linear-gradient(145deg, rgba(224,231,255,0.5) 0%, rgba(238,242,255,0.3) 100%);
+  box-shadow: 0 20px 50px -24px rgba(99,102,241,0.2), 0 0 0 1px rgba(165,180,252,0.25);
 }
 .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
