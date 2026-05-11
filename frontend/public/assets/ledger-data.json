@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-05-10T08:12:50.602Z",
+    "lastSync": "2026-05-11T06:19:14.274Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10581446.72,
-        "closingBalance": 10764462.52,
+        "closingBalance": 10764462.12,
         "entries": []
       }
     ]
@@ -7716,7 +7716,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -3001408.95,
+        "closingBalance": -3008128.5,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -8101,6 +8101,20 @@
             "voucherNo": 52,
             "type": "Purchase",
             "amount": 6273.07,
+            "drCr": "Dr"
+          },
+          {
+            "date": "5-May-26",
+            "voucherNo": 53,
+            "type": "Purchase",
+            "amount": 3314.38,
+            "drCr": "Dr"
+          },
+          {
+            "date": "5-May-26",
+            "voucherNo": 54,
+            "type": "Purchase",
+            "amount": 3405.17,
             "drCr": "Dr"
           },
           {
@@ -19374,13 +19388,13 @@
       {
         "ledgerName": "PURCHASE@GST",
         "openingBalance": 0,
-        "closingBalance": -4572808.16,
+        "closingBalance": -4707199.37,
         "entries": []
       },
       {
         "ledgerName": "ROUND OFF",
         "openingBalance": 0,
-        "closingBalance": -0.16,
+        "closingBalance": -0.4,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -19716,6 +19730,20 @@
             "voucherNo": 52,
             "type": "Purchase",
             "amount": 0.34,
+            "drCr": "Dr"
+          },
+          {
+            "date": "5-May-26",
+            "voucherNo": 53,
+            "type": "Purchase",
+            "amount": 0,
+            "drCr": "Cr"
+          },
+          {
+            "date": "5-May-26",
+            "voucherNo": 54,
+            "type": "Purchase",
+            "amount": 0.24,
             "drCr": "Dr"
           }
         ]
@@ -24640,7 +24668,7 @@
       {
         "ledgerName": "PARAGON POLYMER PRODUCTS PVT LTD(HARYANA)",
         "openingBalance": 165631,
-        "closingBalance": 258230,
+        "closingBalance": 329739,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -24683,13 +24711,20 @@
             "type": "Purchase",
             "amount": 35020,
             "drCr": "Cr"
+          },
+          {
+            "date": "5-May-26",
+            "voucherNo": 54,
+            "type": "Purchase",
+            "amount": 71509,
+            "drCr": "Cr"
           }
         ]
       },
       {
         "ledgerName": "Paragon Polymer Products Pvt.Ltd(Kerala)",
         "openingBalance": 1879707,
-        "closingBalance": 2143036,
+        "closingBalance": 2212638,
         "entries": [
           {
             "date": "8-Apr-26",
@@ -24724,6 +24759,13 @@
             "voucherNo": 31,
             "type": "Purchase",
             "amount": 77872,
+            "drCr": "Cr"
+          },
+          {
+            "date": "5-May-26",
+            "voucherNo": 53,
+            "type": "Purchase",
+            "amount": 69602,
             "drCr": "Cr"
           }
         ]
