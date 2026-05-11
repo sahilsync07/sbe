@@ -17,7 +17,7 @@
                 {{ selectedGroup ? toTitleCase(selectedGroup.groupName) : (globalSearchQuery ? 'Search Results' : 'Select Brand') }}
               </h1>
               <p v-if="selectedGroup" class="mt-0.5 text-xs text-slate-500 sm:text-sm">
-                <span class="font-semibold text-indigo-600">{{ checkedCount }}</span> / {{ selectedGroup.products.length }} present
+                <span class="font-semibold text-indigo-600">{{ checkedCount }}</span> / {{ selectedGroup?.products?.length || 0 }} present
               </p>
               <p v-else-if="globalSearchQuery && globalSearchResults.length > 0" class="mt-0.5 text-xs text-slate-500 sm:text-sm">
                 <span class="font-semibold text-indigo-600">{{ globalSearchResults.length }}</span> products found
@@ -94,9 +94,9 @@
                     <i class="fa-solid fa-tag"></i>
                   </div>
                   <div class="min-w-0">
-                    <h3 class="text-sm font-semibold text-slate-950 sm:text-lg">{{ toTitleCase(group.groupName) }}</h3>
+                    <h3 class="text-sm font-semibold text-slate-950 sm:text-lg">{{ toTitleCase(group?.groupName || '') }}</h3>
                     <p class="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
-                      {{ group.products.length }} products ·
+                      {{ group?.products?.length || 0 }} products ·
                       <span class="text-indigo-600 font-semibold">{{ countCheckedInGroup(group) }} present</span>
                     </p>
                   </div>
@@ -319,6 +319,7 @@ const globalSearchResults = computed(() => {
 });
 
 const countCheckedInGroup = (group) => {
+  if (!group || !group.products) return 0;
   return group.products.filter(p => checkedMap.value[p.productName]).length;
 };
 
