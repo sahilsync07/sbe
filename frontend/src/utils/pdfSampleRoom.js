@@ -1,41 +1,8 @@
 import { formatProductName } from "./formatters";
-import { extractColor } from "./colors";
-
-const getCleanProductName = (name) => {
-    if (!name) return '';
-    let clean = name;
-    const colorData = extractColor(name);
-    if (colorData && colorData.originalTokens) {
-        colorData.originalTokens.forEach(token => {
-            const regex = new RegExp(`\\b${token}\\b`, 'gi');
-            clean = clean.replace(regex, '');
-        });
-    }
-    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
-    clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
-    clean = clean.replace(/\(\s*\)/g, '');
-    clean = clean.replace(/[\/\-]+\s*$/g, '').replace(/^\s*[\/\-]+/g, '').replace(/\s*[\/\-]+\s*/g, ' ');
-    return formatProductName(clean.replace(/\s+/g, ' ').trim());
-};
-
-const getProductSize = (name) => {
-    if (!name) return '-';
-    const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
-    if (match) {
-        const low = Math.min(parseInt(match[1]), parseInt(match[2]));
-        const high = Math.max(parseInt(match[1]), parseInt(match[2]));
-        return `${low}x${high}`;
-    }
-    return '-';
-};
-
-const getProductColor = (name) => {
-    const data = extractColor(name);
-    return data ? data.text : '-';
-};
 
 /**
  * Generate a Sample Room PDF listing which products are present / absent.
+ * Layout: 2-column split (6 columns total per page) to maximize space.
  * @param {string} brandName - The brand/group name
  * @param {Array<{productName: string, quantity: number, present: boolean}>} products
  */
@@ -45,123 +12,159 @@ export const generateSampleRoomPDF = async (brandName, products) => {
     const doc = new jsPDF();
     const pw = doc.internal.pageSize.width;
 
-    // Header
+    // --- Compact Header ---
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(16);
     doc.setTextColor(0, 0, 0);
-    doc.text("SRI BRUNDABANA ENTERPRISES", pw / 2, 20, { align: "center" });
+    doc.text("SRI BRUNDABANA ENTERPRISES", pw / 2, 14, { align: "center" });
 
-    doc.setFontSize(10);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(80);
-    doc.text("RAYAGADA \u2022 ODISHA", pw / 2, 27, { align: "center" });
+    doc.text("RAYAGADA \u2022 ODISHA", pw / 2, 18, { align: "center" });
 
-    // Badge
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(pw / 2 - 30, 33, 60, 9, 2, 2, 'S');
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
-    doc.text("SAMPLE ROOM CHECKLIST", pw / 2, 39, { align: "center" });
+    doc.text("SAMPLE ROOM CHECKLIST", pw / 2, 24, { align: "center" });
 
-    // Divider
-    doc.setLineWidth(1.5);
-    doc.line(14, 48, pw - 14, 48);
+    doc.setLineWidth(1.0);
+    doc.line(14, 28, pw - 14, 28);
 
-    // Details
+    // --- Details ---
     const date = new Date().toLocaleDateString('en-IN', {
         day: 'numeric', month: 'short', year: 'numeric'
     });
-    const sy = 56;
+    const sy = 34;
 
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(100);
     doc.setFont("helvetica", "bold");
     doc.text("BRAND", 14, sy);
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(brandName.toUpperCase(), 14, sy + 6);
+    doc.text(brandName.toUpperCase(), 14, sy + 5);
 
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(100);
     doc.setFont("helvetica", "bold");
     doc.text("DATE", pw - 14, sy, { align: "right" });
-    doc.setFontSize(12);
+    doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
-    doc.text(date, pw - 14, sy + 6, { align: "right" });
+    doc.text(date, pw - 14, sy + 5, { align: "right" });
 
     const presentCount = products.filter(p => p.present).length;
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy + 12, { align: "right" });
+    doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy + 10, { align: "right" });
 
-    // Table
+    // --- Table Data Generation ---
+    // Chunk into two halves for a side-by-side 6-column layout
+    const half = Math.ceil(products.length / 2);
+    const rows = [];
+    
+    for (let i = 0; i < half; i++) {
+        const left = products[i];
+        const right = products[i + half];
+
+        const row = [
+            formatProductName(left.productName), // Full name
+            `${left.quantity || 0}`,
+            left.present ? "\u2713" : ""
+        ];
+
+        if (right) {
+            row.push(
+                formatProductName(right.productName),
+                `${right.quantity || 0}`,
+                right.present ? "\u2713" : ""
+            );
+        } else {
+            row.push("", "", ""); // Empty slots if odd number
+        }
+        rows.push(row);
+    }
+
     const tableColumn = [
-        { content: "#", styles: { halign: 'center' } },
         { content: "ARTICLE", styles: { halign: 'left' } },
-        { content: "SIZE", styles: { halign: 'center' } },
-        { content: "COLOR", styles: { halign: 'left' } },
-        { content: "STOCK", styles: { halign: 'center' } },
-        { content: "SAMPLE", styles: { halign: 'center' } },
+        { content: "QTY", styles: { halign: 'center' } },
+        { content: "SMPL", styles: { halign: 'center' } },
+        { content: "ARTICLE", styles: { halign: 'left' } },
+        { content: "QTY", styles: { halign: 'center' } },
+        { content: "SMPL", styles: { halign: 'center' } },
     ];
-
-    const rows = products.map((p, i) => [
-        i + 1,
-        getCleanProductName(p.productName),
-        getProductSize(p.productName),
-        getProductColor(p.productName),
-        `${p.quantity || 0}`,
-        p.present ? "\u2713" : "",
-    ]);
 
     autoTable(doc, {
         head: [tableColumn],
         body: rows,
-        startY: sy + 20,
+        startY: sy + 14,
         theme: 'plain',
         styles: {
-            fontSize: 9,
-            cellPadding: 3,
+            fontSize: 7.5,
+            cellPadding: 2.5,
             valign: 'middle',
             font: 'helvetica',
             textColor: [0, 0, 0],
             overflow: 'linebreak',
-            lineWidth: 0,
+            lineWidth: 0.1, // Light cell borders
+            lineColor: [220, 220, 220]
+        },
+        alternateRowStyles: {
+            fillColor: [248, 248, 248] // Very light grey stripe view
         },
         headStyles: {
-            fillColor: false,
+            fillColor: [240, 240, 240],
             textColor: [0, 0, 0],
             fontStyle: 'bold',
-            fontSize: 9,
-            lineWidth: { bottom: 1.5 },
-            lineColor: [0, 0, 0],
-        },
-        bodyStyles: {
-            lineColor: [200, 200, 200],
-            lineWidth: { bottom: 0.1 },
+            fontSize: 8,
+            lineWidth: 0.1,
+            lineColor: [200, 200, 200]
         },
         columnStyles: {
-            0: { cellWidth: 10, halign: 'center', fontStyle: 'bold', textColor: [100] },
-            1: { cellWidth: 'auto', fontStyle: 'bold' },
-            2: { cellWidth: 22, halign: 'center' },
-            3: { cellWidth: 30, halign: 'left' },
-            4: { cellWidth: 22, halign: 'center' },
-            5: { cellWidth: 24, halign: 'center', fontStyle: 'bold' },
+            0: { cellWidth: 'auto', fontStyle: 'bold' },
+            1: { cellWidth: 16, halign: 'center' },
+            2: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
+            3: { cellWidth: 'auto', fontStyle: 'bold' },
+            4: { cellWidth: 16, halign: 'center' },
+            5: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
         },
         didParseCell: (data) => {
-            // Make the checkmark a bit larger and green if present
-            if (data.section === 'body' && data.column.index === 5) {
-                const val = data.cell.raw;
-                if (typeof val === 'string' && val.includes('\u2713')) {
-                    data.cell.styles.textColor = [0, 0, 0]; // Keep it black/neat like order sheet
-                    data.cell.styles.fontSize = 12;
+            // Make checkmarks bigger
+            if (data.section === 'body') {
+                if (data.column.index === 2 || data.column.index === 5) {
+                    const val = data.cell.raw;
+                    if (typeof val === 'string' && val.includes('\u2713')) {
+                        data.cell.styles.textColor = [0, 0, 0];
+                        data.cell.styles.fontSize = 11;
+                    }
                 }
+            }
+        },
+        didDrawCell: (data) => {
+            // Draw a thick bold line right after the 3rd column to separate the two halves
+            if (data.column.index === 2) {
+                doc.setLineWidth(1.0);
+                doc.setDrawColor(0, 0, 0);
+                doc.line(
+                    data.cell.x + data.cell.width, 
+                    data.cell.y, 
+                    data.cell.x + data.cell.width, 
+                    data.cell.y + data.cell.height
+                );
+            }
+            // Draw thick border for the header row
+            if (data.section === 'head') {
+                doc.setLineWidth(1.0);
+                doc.setDrawColor(0, 0, 0);
+                // Top header border
+                doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
+                // Bottom header border
+                doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
             }
         }
     });
 
-    // Footer
+    // --- Footer ---
     const finalY = doc.lastAutoTable.finalY + 12;
     doc.setLineWidth(0.5);
     doc.setDrawColor(200);
