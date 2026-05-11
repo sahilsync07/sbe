@@ -871,8 +871,7 @@ app.post("/api/updateSampleRoom", async (req, res) => {
       return res.status(400).json({ error: "Missing updates object" });
     }
 
-    const stockPath = path.join(frontendAssetsPath, "stock-data.json");
-    const raw = await fs.readFile(stockPath, "utf-8");
+    const raw = await fs.readFile(stockDataPath, "utf-8");
     const stockData = JSON.parse(raw);
 
     let changed = 0;
@@ -886,7 +885,7 @@ app.post("/api/updateSampleRoom", async (req, res) => {
       });
     });
 
-    await fs.writeFile(stockPath, JSON.stringify(stockData, null, 2));
+    await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
     res.json({ message: `Updated ${changed} products`, changed });
   } catch (error) {
     console.error("Error in updateSampleRoom:", error.message);
