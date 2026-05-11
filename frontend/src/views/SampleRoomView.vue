@@ -50,23 +50,23 @@
             <p class="text-lg font-semibold text-slate-800">Loading</p>
           </div>
 
-          <!-- Brand Selection (no group selected, no global search) -->
-          <div v-else-if="!selectedGroup && !globalSearchQuery">
-            <!-- Global Product Search -->
-            <div class="mb-3 sm:mb-4">
-              <div class="group relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
-                  <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 text-sm"></i>
-                </div>
-                <input type="search" v-model="globalSearchQuery" autocomplete="off"
-                  class="sr-search h-10 w-full rounded-full border-0 pl-9 pr-9 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:h-12 sm:pl-11 sm:text-[15px]"
-                  placeholder="Search all products…" />
-                <button v-if="globalSearchQuery" type="button" @click="globalSearchQuery = ''" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-indigo-600">
-                  <i class="fa-solid fa-circle-xmark text-lg"></i>
-                </button>
+          <!-- Global Product Search (always visible when no group selected) -->
+          <div v-if="!selectedGroup && !loading" class="mb-3 sm:mb-4">
+            <div class="group relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 text-sm"></i>
               </div>
+              <input type="search" v-model="globalSearchQuery" autocomplete="off" ref="globalSearchRef"
+                class="sr-search h-10 w-full rounded-full border-0 pl-9 pr-9 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:h-12 sm:pl-11 sm:text-[15px]"
+                placeholder="Search all products…" />
+              <button v-if="globalSearchQuery" type="button" @click="globalSearchQuery = ''" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-indigo-600">
+                <i class="fa-solid fa-circle-xmark text-lg"></i>
+              </button>
             </div>
+          </div>
 
+          <!-- Brand Selection (no group selected, no global search) -->
+          <div v-if="!selectedGroup && !globalSearchQuery && !loading">
             <!-- Brand Search (secondary, below global) -->
             <div class="mb-3 sm:mb-4">
               <div class="group relative">
@@ -105,22 +105,7 @@
           </div>
 
           <!-- Global Search Results (flat product list across all brands) -->
-          <div v-else-if="!selectedGroup && globalSearchQuery">
-            <!-- Search bar (sticky when in search mode) -->
-            <div class="mb-3 sm:mb-4">
-              <div class="group relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
-                  <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 text-sm"></i>
-                </div>
-                <input type="search" v-model="globalSearchQuery" autocomplete="off"
-                  class="sr-search h-10 w-full rounded-full border-0 pl-9 pr-9 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:h-12 sm:pl-11 sm:text-[15px]"
-                  placeholder="Search all products…" />
-                <button v-if="globalSearchQuery" type="button" @click="globalSearchQuery = ''" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-indigo-600">
-                  <i class="fa-solid fa-circle-xmark text-lg"></i>
-                </button>
-              </div>
-            </div>
-
+          <div v-else-if="!selectedGroup && globalSearchQuery && !loading">
             <!-- Empty search state -->
             <div v-if="globalSearchResults.length === 0" class="sr-state-card flex flex-col items-center justify-center rounded-[2rem] px-6 py-16 text-center">
               <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-indigo-50 text-4xl text-indigo-400 shadow-inner">
