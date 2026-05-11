@@ -14,12 +14,12 @@
                 Sample Room
               </span>
               <h1 class="mt-0.5 truncate text-lg font-semibold tracking-tight text-slate-950 sm:mt-1 sm:text-2xl lg:text-3xl">
-                {{ selectedGroup ? toTitleCase(selectedGroup.groupName) : (globalSearchQuery ? 'Search Results' : 'Select Brand') }}
+                {{ selectedGroup ? toTitleCase(selectedGroup.groupName) : (searchQuery ? 'Search Results' : 'Select Brand') }}
               </h1>
               <p v-if="selectedGroup" class="mt-0.5 text-xs text-slate-500 sm:text-sm">
                 <span class="font-semibold text-indigo-600">{{ checkedCount }}</span> / {{ selectedGroup?.products?.length || 0 }} present
               </p>
-              <p v-else-if="globalSearchQuery && globalSearchResults.length > 0" class="mt-0.5 text-xs text-slate-500 sm:text-sm">
+              <p v-else-if="searchQuery && globalSearchResults.length > 0" class="mt-0.5 text-xs text-slate-500 sm:text-sm">
                 <span class="font-semibold text-indigo-600">{{ globalSearchResults.length }}</span> products found
               </p>
             </div>
@@ -54,38 +54,23 @@
             <p class="text-lg font-semibold text-slate-800">Loading</p>
           </div>
 
-          <!-- Global Product Search (always visible when no group selected) -->
-          <div v-if="!selectedGroup && !loading" class="mb-3 sm:mb-4">
+          <!-- Global Product Search (always visible except loading) -->
+          <div v-if="!loading" class="mb-3 sm:mb-4">
             <div class="group relative">
               <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 text-sm"></i>
               </div>
-              <input type="search" v-model="globalSearchQuery" autocomplete="off" ref="globalSearchRef"
+              <input type="search" v-model="searchQuery" autocomplete="off" ref="globalSearchRef"
                 class="sr-search h-10 w-full rounded-full border-0 pl-9 pr-9 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:h-12 sm:pl-11 sm:text-[15px]"
-                placeholder="Search all products…" />
-              <button v-if="globalSearchQuery" type="button" @click="globalSearchQuery = ''" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-indigo-600">
+                :placeholder="selectedGroup ? 'Search ' + toTitleCase(selectedGroup.groupName) + '…' : 'Search all products…'" />
+              <button v-if="searchQuery" type="button" @click="searchQuery = ''" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-indigo-600">
                 <i class="fa-solid fa-circle-xmark text-lg"></i>
               </button>
             </div>
           </div>
 
           <!-- Brand Selection (no group selected, no global search) -->
-          <div v-if="!selectedGroup && !globalSearchQuery && !loading">
-            <!-- Brand Search (secondary, below global) -->
-            <div class="mb-3 sm:mb-4">
-              <div class="group relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
-                  <i class="fa-solid fa-tag text-slate-400 group-focus-within:text-indigo-500 text-xs"></i>
-                </div>
-                <input type="search" v-model="brandSearch" autocomplete="off"
-                  class="sr-search h-9 w-full rounded-full border-0 pl-9 pr-9 text-xs text-slate-900 outline-none placeholder:text-slate-400 sm:h-10 sm:pl-11 sm:text-sm"
-                  placeholder="Filter by brand…" />
-                <button v-if="brandSearch" type="button" @click="brandSearch = ''" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-indigo-600">
-                  <i class="fa-solid fa-circle-xmark text-base"></i>
-                </button>
-              </div>
-            </div>
-
+          <div v-if="!selectedGroup && !searchQuery && !loading">
             <div class="space-y-2 sm:space-y-2.5">
               <div v-for="group in filteredGroups" :key="group.groupName" @click="selectGroup(group)"
                 class="sr-float-card flex cursor-pointer items-center justify-between gap-3 rounded-2xl p-3 active:scale-[0.99] sm:rounded-[1.5rem] sm:p-4 lg:p-5 transition-all hover:-translate-y-0.5">
@@ -109,7 +94,7 @@
           </div>
 
           <!-- Global Search Results (flat product list across all brands) -->
-          <div v-else-if="!selectedGroup && globalSearchQuery && !loading">
+          <div v-else-if="!selectedGroup && searchQuery && !loading">
             <!-- Empty search state -->
             <div v-if="globalSearchResults.length === 0" class="sr-state-card flex flex-col items-center justify-center rounded-[2rem] px-6 py-16 text-center">
               <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-indigo-50 text-4xl text-indigo-400 shadow-inner">
@@ -162,8 +147,17 @@
           </div>
 
           <!-- Product Checklist (brand selected) -->
-          <div v-else>
-            <div class="space-y-1.5 sm:space-y-2">
+          <div v-else-if="selectedGroup">
+            <!-- Empty search state within brand -->
+            <div v-if="sortedGroupProducts.length === 0" class="sr-state-card flex flex-col items-center justify-center rounded-[2rem] px-6 py-16 text-center">
+              <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-indigo-50 text-4xl text-indigo-400 shadow-inner">
+                <i class="fa-solid fa-ghost"></i>
+              </div>
+              <h3 class="mb-2 text-xl font-semibold text-slate-950">No products found</h3>
+              <p class="max-w-sm text-sm text-slate-500">Try a different search term within this brand.</p>
+            </div>
+
+            <div v-else class="space-y-1.5 sm:space-y-2">
               <label v-for="(product, idx) in sortedGroupProducts" :key="idx"
                 class="sr-check-card flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-all sm:rounded-2xl sm:p-4"
                 :class="checkedMap[product.productName] ? 'sr-check-active' : ''">
@@ -236,13 +230,19 @@ const loading = ref(true);
 const saving = ref(false);
 const selectedGroup = ref(null);
 const checkedMap = ref({});
-const brandSearch = ref('');
-const globalSearchQuery = ref('');
+const searchQuery = ref('');
 const sortByQty = ref(false);
 
 const sortedGroupProducts = computed(() => {
   if (!selectedGroup.value) return [];
-  const arr = [...selectedGroup.value.products];
+  let arr = [...selectedGroup.value.products];
+  if (searchQuery.value) {
+    const qParts = searchQuery.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    arr = arr.filter(p => {
+      const name = p.productName.toLowerCase();
+      return qParts.every(part => name.includes(part));
+    });
+  }
   if (sortByQty.value) {
     arr.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
   }
@@ -295,15 +295,13 @@ const groups = computed(() => {
 });
 
 const filteredGroups = computed(() => {
-  if (!brandSearch.value) return groups.value;
-  const q = brandSearch.value.toLowerCase();
-  return groups.value.filter(g => g.groupName.toLowerCase().includes(q));
+  return groups.value;
 });
 
 // Global search: flat list of products across all groups
 const globalSearchResults = computed(() => {
-  if (!globalSearchQuery.value) return [];
-  const q = globalSearchQuery.value.toLowerCase().trim();
+  if (!searchQuery.value) return [];
+  const q = searchQuery.value.toLowerCase().trim();
   if (!q) return [];
   const queryParts = q.split(/\s+/).filter(Boolean);
   const results = [];
@@ -328,13 +326,17 @@ const checkedCount = computed(() => {
   return selectedGroup.value.products.filter(p => checkedMap.value[p.productName]).length;
 });
 
-const selectGroup = (group) => { selectedGroup.value = group; };
+const selectGroup = (group) => { 
+  selectedGroup.value = group; 
+  searchQuery.value = '';
+};
 
 const handleBack = () => {
   if (selectedGroup.value) {
     selectedGroup.value = null;
-  } else if (globalSearchQuery.value) {
-    globalSearchQuery.value = '';
+    searchQuery.value = '';
+  } else if (searchQuery.value) {
+    searchQuery.value = '';
   } else {
     router.push('/');
   }
