@@ -59,30 +59,36 @@ export const generateSampleRoomPDF = async (brandName, products) => {
     doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy + 10, { align: "right" });
 
     // --- Table Data Generation ---
-    // Chunk into two halves for a side-by-side 6-column layout
-    const half = Math.ceil(products.length / 2);
+    // Chunk into pages to maintain sequential Left -> Right reading order per page.
+    // By fixing ROWS_PER_PAGE, we ensure Page 1 reads 1-35 (Left), then 36-70 (Right).
+    const ROWS_PER_PAGE = 35;
+    const ITEMS_PER_PAGE = ROWS_PER_PAGE * 2;
     const rows = [];
     
-    for (let i = 0; i < half; i++) {
-        const left = products[i];
-        const right = products[i + half];
+    for (let pageStart = 0; pageStart < products.length; pageStart += ITEMS_PER_PAGE) {
+        const pageProducts = products.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+        
+        for (let i = 0; i < ROWS_PER_PAGE; i++) {
+            const left = pageProducts[i];
+            const right = pageProducts[i + ROWS_PER_PAGE];
 
-        const row = [
-            formatProductName(left.productName), // Full name
-            `${left.quantity || 0}`,
-            left.present ? "\u2713" : ""
-        ];
+            // If neither left nor right exists, we've exhausted this page's products
+            if (!left && !right) break;
 
-        if (right) {
+            const row = [
+                left ? formatProductName(left.productName) : "", 
+                left ? `${left.quantity || 0}` : "",
+                left ? (left.present ? "\u2713" : "") : ""
+            ];
+
             row.push(
-                formatProductName(right.productName),
-                `${right.quantity || 0}`,
-                right.present ? "\u2713" : ""
+                right ? formatProductName(right.productName) : "",
+                right ? `${right.quantity || 0}` : "",
+                right ? (right.present ? "\u2713" : "") : ""
             );
-        } else {
-            row.push("", "", ""); // Empty slots if odd number
+            
+            rows.push(row);
         }
-        rows.push(row);
     }
 
     const tableColumn = [
