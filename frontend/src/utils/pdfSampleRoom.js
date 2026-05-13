@@ -78,13 +78,13 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             const row = [
                 left ? formatProductName(left.productName) : "", 
                 left ? `${left.quantity || 0}` : "",
-                left ? (left.present ? "\u2713" : "") : ""
+                left ? (left.present ? "YES" : "") : ""
             ];
 
             row.push(
                 right ? formatProductName(right.productName) : "",
                 right ? `${right.quantity || 0}` : "",
-                right ? (right.present ? "\u2713" : "") : ""
+                right ? (right.present ? "YES" : "") : ""
             );
             
             rows.push(row);
@@ -129,19 +129,19 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         columnStyles: {
             0: { cellWidth: 'auto', fontStyle: 'bold' },
             1: { cellWidth: 16, halign: 'center' },
-            2: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
+            2: { cellWidth: 18, halign: 'center', fontStyle: 'bold', textColor: [0, 0, 0] },
             3: { cellWidth: 'auto', fontStyle: 'bold' },
             4: { cellWidth: 16, halign: 'center' },
-            5: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
+            5: { cellWidth: 18, halign: 'center', fontStyle: 'bold', textColor: [0, 0, 0] },
         },
         didParseCell: (data) => {
-            // Make checkmarks bigger
+            // Keep YES bold and neat
             if (data.section === 'body') {
                 if (data.column.index === 2 || data.column.index === 5) {
                     const val = data.cell.raw;
-                    if (typeof val === 'string' && val.includes('\u2713')) {
+                    if (typeof val === 'string' && val === 'YES') {
                         data.cell.styles.textColor = [0, 0, 0];
-                        data.cell.styles.fontSize = 11;
+                        data.cell.styles.fontSize = 8;
                     }
                 }
             }
