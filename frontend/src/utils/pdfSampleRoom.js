@@ -95,6 +95,23 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy + 10, { align: "right" });
     };
 
+    const drawSmallHeader = (doc) => {
+        const sy = 14;
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.text(brandName.toUpperCase(), 14, sy);
+
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.setFont("helvetica", "normal");
+        doc.text(date, pw / 2, sy, { align: "center" });
+
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy, { align: "right" });
+    };
+
     const drawFooter = (doc, pageNum, totalPages) => {
         const finalY = 282; // Fixed position near bottom
         doc.setLineWidth(0.5);
@@ -106,16 +123,6 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         doc.text(`Sample Room Checklist - ${brandName} - ${date}  (Page ${pageNum} of ${totalPages})`, pw / 2, finalY + 5, { align: "center" });
     };
 
-    const ROWS_PER_PAGE = 22; 
-    const ITEMS_PER_PAGE = ROWS_PER_PAGE * 2;
-    let totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
-
-    // Check if we need to add a page for the summary
-    const remainingItems = products.length % ITEMS_PER_PAGE || ITEMS_PER_PAGE;
-    const remainingRows = Math.ceil(remainingItems / 2);
-    const summaryNeedsNewPage = remainingRows > 16; 
-    const totalPagesWithSummary = summaryNeedsNewPage ? totalPages + 1 : totalPages;
-
     const tableColumn = [
         { content: "ARTICLE", styles: { halign: 'left' } },
         { content: "QTY", styles: { halign: 'center' } },
@@ -125,52 +132,73 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         { content: "SMPL", styles: { halign: 'center' } },
     ];
 
-    for (let page = 0; page < totalPages; page++) {
+    // --- Dynamic Pagination ---
+    const pagesData = [];
+    let currentIndex = 0;
+    while (currentIndex < products.length) {
+        const isFirstPage = pagesData.length === 0;
+        const rowsForPage = isFirstPage ? 22 : 25;
+        const itemsForPage = rowsForPage * 2;
+        
+        pagesData.push({
+            isFirst: isFirstPage,
+            rowsPer: rowsForPage,
+            startY: isFirstPage ? 48 : 20,
+            products: products.slice(currentIndex, currentIndex + itemsForPage)
+        });
+        currentIndex += itemsForPage;
+    }
+
+    // User requested a dedicated summary page at the end always
+    const totalPages = pagesData.length + 1;
+
+    for (let page = 0; page < pagesData.length; page++) {
+        const pageInfo = pagesData[page];
+
         if (page > 0) {
             doc.addPage();
         }
-        drawHeader(doc, page + 1, totalPagesWithSummary);
 
-        const pageStart = page * ITEMS_PER_PAGE;
-        const pageProducts = products.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+        if (pageInfo.isFirst) {
+            drawHeader(doc, page + 1, totalPages);
+        } else {
+            drawSmallHeader(doc);
+        }
+
         const rows = [];
-        
-        for (let i = 0; i < ROWS_PER_PAGE; i++) {
-            const left = pageProducts[i];
-            const right = pageProducts[i + ROWS_PER_PAGE];
+        for (let i = 0; i < pageInfo.rowsPer; i++) {
+            const left = pageInfo.products[i];
+            const right = pageInfo.products[i + pageInfo.rowsPer];
 
-            // If neither exists, we are done with this page
             if (!left && !right) break;
 
-            const row = [
+            rows.push([
                 left ? formatProductName(left.productName) : "", 
                 left ? `${left.quantity || 0}` : "",
                 left ? (left.present ? "4" : "") : "",
                 right ? formatProductName(right.productName) : "",
                 right ? `${right.quantity || 0}` : "",
                 right ? (right.present ? "4" : "") : ""
-            ];
-            
-            rows.push(row);
+            ]);
         }
 
         autoTable(doc, {
             head: [tableColumn],
             body: rows,
-            startY: 48,
+            startY: pageInfo.startY,
             theme: 'plain',
             styles: {
                 fontSize: 8,
-                cellPadding: 2.5, // Restored spacious padding
+                cellPadding: 2.5, 
                 valign: 'middle',
                 font: 'helvetica',
                 textColor: [0, 0, 0],
-                overflow: 'ellipsize', // CRITICAL: Forces 1-line rows so height is perfectly predictable
+                overflow: 'ellipsize', 
                 lineWidth: 0.1,
                 lineColor: [220, 220, 220]
             },
             alternateRowStyles: {
-                fillColor: [248, 248, 248] // Light grey stripe
+                fillColor: [248, 248, 248] 
             },
             headStyles: {
                 fillColor: [240, 240, 240],
@@ -189,7 +217,6 @@ export const generateSampleRoomPDF = async (brandName, products) => {
                 5: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 8, textColor: [0, 120, 0] },
             },
             didDrawCell: (data) => {
-                // Draw thick bold line right after the 3rd column
                 if (data.column.index === 2) {
                     doc.setLineWidth(1.0);
                     doc.setDrawColor(0, 0, 0);
@@ -200,7 +227,6 @@ export const generateSampleRoomPDF = async (brandName, products) => {
                         data.cell.y + data.cell.height
                     );
                 }
-                // Draw thick border for the header row
                 if (data.section === 'head') {
                     doc.setLineWidth(1.0);
                     doc.setDrawColor(0, 0, 0);
@@ -210,18 +236,15 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             }
         });
 
-        drawFooter(doc, page + 1, totalPagesWithSummary);
+        drawFooter(doc, page + 1, totalPages);
     }
 
-    // --- Draw Summary ---
-    let summaryY = doc.lastAutoTable.finalY + 15;
-    if (summaryNeedsNewPage) {
-        doc.addPage();
-        drawHeader(doc, totalPagesWithSummary, totalPagesWithSummary);
-        drawFooter(doc, totalPagesWithSummary, totalPagesWithSummary);
-        summaryY = 48;
-    }
-
+    // --- Dedicated Summary Page ---
+    doc.addPage();
+    drawHeader(doc, totalPages, totalPages);
+    drawFooter(doc, totalPages, totalPages);
+    
+    const summaryY = 48;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
