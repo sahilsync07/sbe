@@ -17,6 +17,40 @@ export const generateSampleRoomPDF = async (brandName, products) => {
     });
     const presentCount = products.filter(p => p.present).length;
 
+    // --- Calculate Stats ---
+    const stats = { zero: 0, one: 0, two: 0, three: 0, four: 0, five: 0, under24: 0, under48: 0, under72: 0, over72: 0 };
+    products.forEach(p => {
+        const q = p.quantity || 0;
+        if (q < 1) stats.zero++;
+        else if (q < 2) stats.one++;
+        else if (q < 3) stats.two++;
+        else if (q < 4) stats.three++;
+        else if (q < 5) stats.four++;
+        else if (q < 6) stats.five++;
+        else if (q < 24) stats.under24++;
+        else if (q < 48) stats.under48++;
+        else if (q < 72) stats.under72++;
+        else stats.over72++;
+    });
+
+    const summaryLeft = [
+        `Less than < 1 Qty Product Count : ${stats.zero}`,
+        `Less than < 2 Qty Product Count : ${stats.one}`,
+        `Less than < 3 Qty Product Count : ${stats.two}`,
+        `Less than < 4 Qty Product Count : ${stats.three}`,
+        `Less than < 5 Qty Product Count : ${stats.four}`,
+        `Less than < 6 Qty Product Count : ${stats.five}`
+    ];
+
+    const summaryRight = [
+        `< 24 Qty Count : ${stats.under24}`,
+        `> 24 but < 48 Qty Count : ${stats.under48}`,
+        `> 48 and < 72 Qty Count : ${stats.under72}`,
+        `Greater than > 72 Qty Count : ${stats.over72}`,
+        ``,
+        `TOTAL PRODUCTS : ${products.length}`
+    ];
+
     const drawHeader = (doc, pageNum, totalPages) => {
         // --- Compact Header ---
         doc.setFont("helvetica", "bold");
@@ -61,14 +95,26 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy + 10, { align: "right" });
     };
 
-    // We explicitly calculate pages to guarantee perfect Left-Right chronological flow per page.
-    // Why fix the rows? Because in a sequential 2-column layout (Page 1 Left -> Page 1 Right), 
-    // we MUST know exactly when to start the Right column. If we let it flow automatically, 
-    // it would print Left column across all 10 pages before starting the Right column!
-    // By keeping the header on every page and forcing 1-line rows ('ellipsize'), every page has exact equal space.
-    const ROWS_PER_PAGE = 25; // Restored spacious visibility!
+    const drawFooter = (doc, pageNum, totalPages) => {
+        const finalY = 282; // Fixed position near bottom
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(200);
+        doc.line(14, finalY, pw - 14, finalY);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(120);
+        doc.text(`Sample Room Checklist - ${brandName} - ${date}  (Page ${pageNum} of ${totalPages})`, pw / 2, finalY + 5, { align: "center" });
+    };
+
+    const ROWS_PER_PAGE = 25; 
     const ITEMS_PER_PAGE = ROWS_PER_PAGE * 2;
-    const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
+    let totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
+
+    // Check if we need to add a page for the summary
+    const remainingItems = products.length % ITEMS_PER_PAGE || ITEMS_PER_PAGE;
+    const remainingRows = Math.ceil(remainingItems / 2);
+    const summaryNeedsNewPage = remainingRows > 18; 
+    const totalPagesWithSummary = summaryNeedsNewPage ? totalPages + 1 : totalPages;
 
     const tableColumn = [
         { content: "ARTICLE", styles: { halign: 'left' } },
@@ -83,7 +129,7 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         if (page > 0) {
             doc.addPage();
         }
-        drawHeader(doc, page + 1, totalPages);
+        drawHeader(doc, page + 1, totalPagesWithSummary);
 
         const pageStart = page * ITEMS_PER_PAGE;
         const pageProducts = products.slice(pageStart, pageStart + ITEMS_PER_PAGE);
@@ -164,15 +210,34 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             }
         });
 
-        // --- Footer ---
-        const finalY = doc.lastAutoTable.finalY + 8;
-        doc.setLineWidth(0.5);
-        doc.setDrawColor(200);
-        doc.line(14, finalY, pw - 14, finalY);
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "italic");
-        doc.setTextColor(120);
-        doc.text(`Sample Room Checklist - ${brandName} - ${date}  (Page ${page + 1} of ${totalPages})`, pw / 2, finalY + 5, { align: "center" });
+        drawFooter(doc, page + 1, totalPagesWithSummary);
+    }
+
+    // --- Draw Summary ---
+    let summaryY = doc.lastAutoTable.finalY + 15;
+    if (summaryNeedsNewPage) {
+        doc.addPage();
+        drawHeader(doc, totalPagesWithSummary, totalPagesWithSummary);
+        drawFooter(doc, totalPagesWithSummary, totalPagesWithSummary);
+        summaryY = 48;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("INVENTORY QUANTITY SUMMARY", 14, summaryY);
+    
+    doc.setLineWidth(0.5);
+    doc.line(14, summaryY + 2, 75, summaryY + 2);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(50, 50, 50);
+    
+    let sySummary = summaryY + 8;
+    for (let i = 0; i < 6; i++) {
+        doc.text(summaryLeft[i], 14, sySummary + (i * 6));
+        doc.text(summaryRight[i], pw / 2 + 10, sySummary + (i * 6));
     }
 
     doc.save(`SampleRoom_${brandName.replace(/\s+/g, '_')}_${Date.now()}.pdf`);
