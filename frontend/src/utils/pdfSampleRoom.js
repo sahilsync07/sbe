@@ -186,7 +186,6 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             head: [tableColumn],
             body: rows,
             startY: pageInfo.startY,
-            margin: { bottom: 15 },
             theme: 'plain',
             styles: {
                 fontSize: 8,
