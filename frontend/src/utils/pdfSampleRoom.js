@@ -61,9 +61,12 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         doc.text(`PRESENT: ${presentCount} / ${products.length}`, pw - 14, sy + 10, { align: "right" });
     };
 
-    // --- Table Data Generation ---
     // We explicitly calculate pages to guarantee perfect Left-Right chronological flow per page.
-    const ROWS_PER_PAGE = 38; // Fits perfectly on A4 without causing jsPDF-autotable to break the page
+    // Why fix the rows? Because in a sequential 2-column layout (Page 1 Left -> Page 1 Right), 
+    // we MUST know exactly when to start the Right column. If we let it flow automatically, 
+    // it would print Left column across all 10 pages before starting the Right column!
+    // By keeping the header on every page and forcing 1-line rows ('ellipsize'), every page has exact equal space.
+    const ROWS_PER_PAGE = 25; // Restored spacious visibility!
     const ITEMS_PER_PAGE = ROWS_PER_PAGE * 2;
     const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
 
@@ -112,11 +115,11 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             theme: 'plain',
             styles: {
                 fontSize: 8,
-                cellPadding: 1.5,
+                cellPadding: 2.5, // Restored spacious padding
                 valign: 'middle',
                 font: 'helvetica',
                 textColor: [0, 0, 0],
-                overflow: 'ellipsize', // Prevents wrapping which breaks predictable row height
+                overflow: 'ellipsize', // CRITICAL: Forces 1-line rows so height is perfectly predictable
                 lineWidth: 0.1,
                 lineColor: [220, 220, 220]
             },
