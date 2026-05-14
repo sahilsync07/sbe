@@ -96,10 +96,10 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             const row = [
                 left ? formatProductName(left.productName) : "", 
                 left ? `${left.quantity || 0}` : "",
-                left ? (left.present ? "TRUE" : "FALSE") : "",
+                left ? (left.present ? "4" : "") : "",
                 right ? formatProductName(right.productName) : "",
                 right ? `${right.quantity || 0}` : "",
-                right ? (right.present ? "TRUE" : "FALSE") : ""
+                right ? (right.present ? "4" : "") : ""
             ];
             
             rows.push(row);
@@ -134,18 +134,10 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             columnStyles: {
                 0: { cellWidth: 63, fontStyle: 'bold' },
                 1: { cellWidth: 14, halign: 'center' },
-                2: { cellWidth: 14, halign: 'center' },
+                2: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 10, textColor: [0, 120, 0] },
                 3: { cellWidth: 63, fontStyle: 'bold' },
                 4: { cellWidth: 14, halign: 'center' },
-                5: { cellWidth: 14, halign: 'center' },
-            },
-            didParseCell: (data) => {
-                // Clear the TRUE/FALSE text so it doesn't print
-                if (data.section === 'body') {
-                    if (data.column.index === 2 || data.column.index === 5) {
-                        data.cell.text = [];
-                    }
-                }
+                5: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 10, textColor: [0, 120, 0] },
             },
             didDrawCell: (data) => {
                 // Draw thick bold line right after the 3rd column
@@ -165,20 +157,6 @@ export const generateSampleRoomPDF = async (brandName, products) => {
                     doc.setDrawColor(0, 0, 0);
                     doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
                     doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
-                }
-                // Draw vector checkmarks manually to avoid unicode font issues
-                if (data.section === 'body') {
-                    if (data.column.index === 2 || data.column.index === 5) {
-                        if (data.cell.raw === "TRUE") {
-                            const cx = data.cell.x + data.cell.width / 2;
-                            const cy = data.cell.y + data.cell.height / 2;
-                            doc.setLineWidth(1.0);
-                            doc.setDrawColor(0, 0, 0); // Neat black checkmark
-                            // Draw V shape
-                            doc.line(cx - 2, cy, cx - 0.5, cy + 2);
-                            doc.line(cx - 0.5, cy + 2, cx + 2.5, cy - 2.5);
-                        }
-                    }
                 }
             }
         });
