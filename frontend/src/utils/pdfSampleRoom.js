@@ -137,9 +137,9 @@ export const generateSampleRoomPDF = async (brandName, products) => {
     let currentIndex = 0;
     while (currentIndex < products.length) {
         const isFirstPage = pagesData.length === 0;
-        const rowsForPage = isFirstPage ? 25 : 28;
+        const rowsForPage = isFirstPage ? 27 : 30;
         const itemsForPage = rowsForPage * 2;
-        
+
         pagesData.push({
             isFirst: isFirstPage,
             rowsPer: rowsForPage,
@@ -173,7 +173,7 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             if (!left && !right) break;
 
             rows.push([
-                left ? formatProductName(left.productName) : "", 
+                left ? formatProductName(left.productName) : "",
                 left ? `${left.quantity || 0}` : "",
                 left ? (left.present ? "4" : "") : "",
                 right ? formatProductName(right.productName) : "",
@@ -190,16 +190,16 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             theme: 'plain',
             styles: {
                 fontSize: 8,
-                cellPadding: 2.5, 
+                cellPadding: 2.5,
                 valign: 'middle',
                 font: 'helvetica',
                 textColor: [0, 0, 0],
-                overflow: 'ellipsize', 
+                overflow: 'ellipsize',
                 lineWidth: 0.1,
                 lineColor: [220, 220, 220]
             },
             alternateRowStyles: {
-                fillColor: [248, 248, 248] 
+                fillColor: [248, 248, 248]
             },
             headStyles: {
                 fillColor: [240, 240, 240],
@@ -222,9 +222,9 @@ export const generateSampleRoomPDF = async (brandName, products) => {
                     doc.setLineWidth(1.0);
                     doc.setDrawColor(0, 0, 0);
                     doc.line(
-                        data.cell.x + data.cell.width, 
-                        data.cell.y, 
-                        data.cell.x + data.cell.width, 
+                        data.cell.x + data.cell.width,
+                        data.cell.y,
+                        data.cell.x + data.cell.width,
                         data.cell.y + data.cell.height
                     );
                 }
@@ -244,20 +244,20 @@ export const generateSampleRoomPDF = async (brandName, products) => {
     doc.addPage();
     drawHeader(doc, totalPages, totalPages);
     drawFooter(doc, totalPages, totalPages);
-    
+
     const summaryY = 48;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text("INVENTORY QUANTITY SUMMARY", 14, summaryY);
-    
+
     doc.setLineWidth(0.5);
     doc.line(14, summaryY + 2, 75, summaryY + 2);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(50, 50, 50);
-    
+
     let sySummary = summaryY + 8;
     for (let i = 0; i < 6; i++) {
         doc.text(summaryLeft[i], 14, sySummary + (i * 6));
