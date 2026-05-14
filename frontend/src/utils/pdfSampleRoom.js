@@ -137,7 +137,7 @@ export const generateSampleRoomPDF = async (brandName, products) => {
     let currentIndex = 0;
     while (currentIndex < products.length) {
         const isFirstPage = pagesData.length === 0;
-        const rowsForPage = isFirstPage ? 22 : 25;
+        const rowsForPage = isFirstPage ? 25 : 28;
         const itemsForPage = rowsForPage * 2;
         
         pagesData.push({
@@ -186,6 +186,7 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             head: [tableColumn],
             body: rows,
             startY: pageInfo.startY,
+            margin: { bottom: 15 },
             theme: 'plain',
             styles: {
                 fontSize: 8,
