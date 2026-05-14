@@ -106,14 +106,14 @@ export const generateSampleRoomPDF = async (brandName, products) => {
         doc.text(`Sample Room Checklist - ${brandName} - ${date}  (Page ${pageNum} of ${totalPages})`, pw / 2, finalY + 5, { align: "center" });
     };
 
-    const ROWS_PER_PAGE = 25; 
+    const ROWS_PER_PAGE = 22; 
     const ITEMS_PER_PAGE = ROWS_PER_PAGE * 2;
     let totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
 
     // Check if we need to add a page for the summary
     const remainingItems = products.length % ITEMS_PER_PAGE || ITEMS_PER_PAGE;
     const remainingRows = Math.ceil(remainingItems / 2);
-    const summaryNeedsNewPage = remainingRows > 18; 
+    const summaryNeedsNewPage = remainingRows > 16; 
     const totalPagesWithSummary = summaryNeedsNewPage ? totalPages + 1 : totalPages;
 
     const tableColumn = [
@@ -183,10 +183,10 @@ export const generateSampleRoomPDF = async (brandName, products) => {
             columnStyles: {
                 0: { cellWidth: 63, fontStyle: 'bold' },
                 1: { cellWidth: 14, halign: 'center' },
-                2: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 10, textColor: [0, 120, 0] },
+                2: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 8, textColor: [0, 120, 0] },
                 3: { cellWidth: 63, fontStyle: 'bold' },
                 4: { cellWidth: 14, halign: 'center' },
-                5: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 10, textColor: [0, 120, 0] },
+                5: { cellWidth: 14, halign: 'center', font: 'zapfdingbats', fontSize: 8, textColor: [0, 120, 0] },
             },
             didDrawCell: (data) => {
                 // Draw thick bold line right after the 3rd column
