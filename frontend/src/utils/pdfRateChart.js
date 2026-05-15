@@ -150,8 +150,8 @@ export const generateRateChartPDF = async (brandName, products) => {
     }));
 
     // Pad with empty rows to fill page
-    // Using 15 rows per page for bigger readable text
-    const rowsPerPage = 15;
+    // Using 14 rows per page for bigger readable text
+    const rowsPerPage = 14;
     const minRows = Math.ceil(rowsData.length / rowsPerPage) * rowsPerPage;
     const finalRowsCount = Math.max(minRows, rowsPerPage); // At least 1 page
     
