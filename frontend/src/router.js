@@ -8,6 +8,8 @@ import StockTrendView from "./views/StockTrendView.vue";
 import SampleRoomView from "./views/SampleRoomView.vue";
 import HomeView from "./views/HomeView.vue";
 
+import RateChartView from "./views/RateChartView.vue";
+
 const routes = [
   { path: "/", component: StockTable },
   { path: "/upload", component: ImageUpload },
@@ -16,6 +18,7 @@ const routes = [
   { path: "/daybook", component: DaybookView },
   { path: "/stock-trend", component: StockTrendView },
   { path: "/sample-room", component: SampleRoomView },
+  { path: "/rate-chart", component: RateChartView },
   { path: "/home", component: HomeView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /

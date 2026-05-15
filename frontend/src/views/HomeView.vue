@@ -90,6 +90,14 @@ const links = [
     gradient: 'linear-gradient(135deg, #64748b, #475569)',
     shadow: '0 8px 24px -4px rgba(100,116,139,0.4)',
   },
+  {
+    path: '/rate-chart',
+    label: 'Rate Chart',
+    desc: 'Print brand price lists',
+    icon: 'fa-file-invoice-dollar',
+    gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+    shadow: '0 8px 24px -4px rgba(236,72,153,0.4)',
+  },
 ];
 </script>
 
