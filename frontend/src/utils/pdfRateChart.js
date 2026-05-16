@@ -2,23 +2,40 @@ import { getCleanProductName } from "./formatters";
 import { extractColor } from "./colors";
 
 /**
- * Fetch and convert an image URL to a base64 string
+ * Fetch and convert an image URL to a base64 string using Canvas
  * @param {string} url - Image URL
  * @returns {Promise<string|null>} Base64 string or null if failed
  */
-const getBase64Image = async (url) => {
-    if (!url) return null;
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-        });
-    } catch (e) {
-        return null;
-    }
+const getBase64Image = (url) => {
+    return new Promise((resolve) => {
+        if (!url) return resolve(null);
+        
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            
+            // Fill background with white for transparent images
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.drawImage(img, 0, 0);
+            // Always return JPEG to ensure compatibility with jsPDF
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        
+        img.onerror = () => {
+            console.error('RateChart: Failed to load image:', url);
+            resolve(null);
+        };
+        
+        // Add cache-breaker to bypass strict CORS cache issues (especially for older photos)
+        img.src = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+    });
 };
 
 /**

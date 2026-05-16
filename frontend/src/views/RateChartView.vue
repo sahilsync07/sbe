@@ -34,6 +34,13 @@
           </div>
 
           <div v-else>
+            <div class="mb-4 sm:mb-6 bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between gap-4">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" v-model="onlyWithPhotos" class="w-5 h-5 rounded text-pink-600 focus:ring-pink-500 border-gray-300 transition-colors" />
+                <span class="font-medium text-slate-700 text-sm sm:text-base">Only include products with photos in the PDF</span>
+              </label>
+            </div>
+
             <div class="space-y-2 sm:space-y-2.5">
               <div v-for="group in filteredGroups" :key="group.groupName" 
                 class="rc-float-card flex items-center justify-between gap-3 rounded-2xl p-3 sm:rounded-[1.5rem] sm:p-4 lg:p-5 transition-all hover:-translate-y-0.5">
@@ -79,6 +86,7 @@ const { loadStockData } = useStockData();
 
 const loading = ref(true);
 const printing = ref(null);
+const onlyWithPhotos = ref(false);
 
 onMounted(async () => {
   if (!stockData.value || stockData.value.length === 0) {
@@ -101,7 +109,16 @@ const filteredGroups = computed(() => {
 const printChart = async (group) => {
   try {
     printing.value = group.groupName;
-    const products = group.products;
+    let products = group.products;
+    
+    if (onlyWithPhotos.value) {
+      products = products.filter(p => !!p.imageUrl);
+      if (products.length === 0) {
+        alert("No products with photos found in this brand.");
+        return;
+      }
+    }
+    
     await generateRateChartPDF(group.groupName, products);
   } catch (err) {
     console.error("Failed to generate PDF", err);
