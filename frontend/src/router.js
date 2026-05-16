@@ -1,14 +1,19 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, createWebHashHistory } from "vue-router";
+import { Capacitor } from '@capacitor/core';
 import StockTable from "./components/StockTable.vue";
 import ImageUpload from "./components/ImageUpload.vue";
-import PdfGenerator from "./components/PdfGenerator.vue";
 import LedgerView from "./views/LedgerView.vue";
 import DaybookView from "./views/DaybookView.vue";
 import StockTrendView from "./views/StockTrendView.vue";
 import SampleRoomView from "./views/SampleRoomView.vue";
 import HomeView from "./views/HomeView.vue";
-
 import RateChartView from "./views/RateChartView.vue";
+import { useAdmin } from "./composables/useAdmin";
+
+const isAndroid = Capacitor.getPlatform() === 'android';
+
+const PdfGenerator = () => isAndroid ? import('./android/components/PdfGenerator.vue') : import('./components/PdfGenerator.vue');
+const LatestStock = () => import('./android/components/LatestStock.vue');
 
 const routes = [
   { path: "/", component: StockTable },
@@ -19,14 +24,30 @@ const routes = [
   { path: "/stock-trend", component: StockTrendView },
   { path: "/sample-room", component: SampleRoomView },
   { path: "/rate-chart", component: RateChartView },
+  { path: "/latest-stock", component: LatestStock },
   { path: "/home", component: HomeView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: isAndroid ? createWebHashHistory() : createWebHistory(import.meta.env.BASE_URL),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  if (to.path === '/ledger' || to.path === '/daybook') {
+    const { isAdmin, isSuperAdmin, checkAdminState } = useAdmin();
+    await checkAdminState();
+    
+    if (!isAdmin.value && !isSuperAdmin.value) {
+      next({ path: '/home', query: { login: 'admin' } });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
 });
 
 export default router;

@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, defineAsyncComponent } from 'vue';
+import { onMounted, ref, computed, defineAsyncComponent, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Capacitor } from '@capacitor/core';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
@@ -84,6 +84,13 @@ const router = useRouter();
 
 const appStore = useAppStore();
 const { stockData, config, searchQuery } = storeToRefs(appStore);
+
+watch(() => route.query.login, (newVal) => {
+  if (newVal === 'admin') {
+    showAdminModal.value = true;
+    router.replace({ query: { ...route.query, login: undefined } });
+  }
+}, { immediate: true });
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';

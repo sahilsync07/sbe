@@ -19,7 +19,7 @@
       <div class="flex-1 px-2.5 pt-2 pb-16 sm:px-5 sm:pt-4 lg:px-6 xl:px-10">
         <div class="mx-auto w-full max-w-3xl">
           <div class="grid grid-cols-2 gap-3 sm:gap-4">
-            <router-link v-for="item in links" :key="item.path" :to="item.path"
+            <router-link v-for="item in filteredLinks" :key="item.path" :to="item.path"
               class="home-card group flex flex-col items-center gap-3 rounded-2xl p-5 text-center transition-all duration-200 active:scale-[0.97] sm:rounded-[1.75rem] sm:gap-4 sm:p-7 hover:-translate-y-1">
               <div class="flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-16 sm:w-16 sm:rounded-[1.25rem]"
                 :style="{ background: item.gradient, boxShadow: item.shadow }">
@@ -38,8 +38,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAdmin } from '../composables/useAdmin';
+
 const router = useRouter();
+const { isAdmin, isSuperAdmin } = useAdmin();
 
 const links = [
   {
@@ -99,6 +103,15 @@ const links = [
     shadow: '0 8px 24px -4px rgba(236,72,153,0.4)',
   },
 ];
+
+const filteredLinks = computed(() => {
+  return links.filter(item => {
+    if ((item.path === '/ledger' || item.path === '/daybook') && !isAdmin.value && !isSuperAdmin.value) {
+      return false;
+    }
+    return true;
+  });
+});
 </script>
 
 <style scoped>

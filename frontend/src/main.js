@@ -18,16 +18,15 @@ import "./style.css";
 
     // Load Android-specific version
     const androidApp = await import('./android/App.vue');
-    const androidRouter = await import('./android/router.js');
     App = androidApp.default;
-    router = androidRouter.default;
   } else {
     // Load Web version
     const webApp = await import('./App.vue');
-    const webRouter = await import('./router.js');
     App = webApp.default;
-    router = webRouter.default;
   }
+
+  const mainRouter = await import('./router.js');
+  router = mainRouter.default;
 
   const app = createApp(App);
   app.use(createPinia());
