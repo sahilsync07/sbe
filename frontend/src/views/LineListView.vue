@@ -123,9 +123,19 @@ const SYSTEM_GROUPS = [
 
 onMounted(async () => {
   try {
-    const res = await fetch('/assets/ledger-data.json');
-    if (!res.ok) throw new Error('Failed to load ledger data');
-    const data = await res.json();
+    let data;
+    try {
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const localUrl = baseUrl.endsWith('/') ? `${baseUrl}assets/ledger-data.json` : `${baseUrl}/assets/ledger-data.json`;
+      const res = await fetch(`${localUrl}?t=${new Date().getTime()}`);
+      if (!res.ok) throw new Error('Local fetch failed');
+      data = await res.json();
+    } catch (localErr) {
+      console.warn('Local ledger-data fetch failed, falling back to raw github:', localErr);
+      const res = await fetch('https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/ledger-data.json');
+      if (!res.ok) throw new Error('Failed to load ledger data from raw GitHub');
+      data = await res.json();
+    }
     
     ledgerData.value = data;
     
