@@ -170,8 +170,8 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           textColor: [30, 41, 59]
         },
         headStyles: {
-          fillColor: [30, 41, 59], // Slate-800
-          textColor: 255,
+          fillColor: [241, 245, 249], // Slate-100 (light grey background, extremely ink-efficient)
+          textColor: [15, 23, 42], // Slate-900 (dark charcoal text)
           fontStyle: 'bold',
           halign: 'center',
           fontSize: 9.5
