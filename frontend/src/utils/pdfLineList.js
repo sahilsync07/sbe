@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 /**
  * Parses a ledger date string (e.g., "25-Apr-26") into a Date object.
@@ -128,7 +128,7 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
         upi: ""
       }));
 
-      doc.autoTable({
+      autoTable(doc, {
         columns: tableColumns,
         body: tableRows,
         startY: 95,
