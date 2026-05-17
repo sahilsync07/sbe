@@ -90,27 +90,56 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
       // Build PDF
       const doc = new jsPDF('p', 'pt', 'a4');
       
-      doc.setFontSize(16);
+      // Sri Brundaban Enterprises, Rayagada
       doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(30, 41, 59); // Slate-800
       doc.text("Sri Brundaban Enterprises, Rayagada", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
       
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
+      // Decorative premium Card Container for Metadata
+      const cardY = 55;
+      const cardHeight = 42;
+      const cardWidth = doc.internal.pageSize.getWidth() - 80;
       
-      // Limit line text if too many selected to avoid wrapping into table
-      let lineText = selectedLines.join(", ");
-      if (lineText.length > 80) lineText = lineText.substring(0, 77) + "...";
-      doc.text(`Line(s): ${lineText}`, 40, 65);
+      // Draw Slate-50 background card with Slate-200 border
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(1);
+      doc.roundedRect(40, cardY, cardWidth, cardHeight, 6, 6, 'FD'); // Fill & Draw
       
-      let dateText = "Period: All Time";
+      // Line label
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139); // Slate-500
+      doc.text("SELECTED LINE(S)", 55, cardY + 16);
+      
+      // Line value
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.setTextColor(15, 23, 42); // Slate-900
+      let lineText = selectedLines.join(" \u2022 ");
+      if (lineText.length > 55) lineText = lineText.substring(0, 52) + "...";
+      doc.text(lineText, 55, cardY + 30);
+      
+      // Period label
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139); // Slate-500
+      doc.text("PERIOD RANGE", 400, cardY + 16);
+      
+      // Period value
+      let dateText = "All Time";
       if (fromDate && toDate) {
-          dateText = `Period: ${fromDate.toLocaleDateString()} to ${toDate.toLocaleDateString()}`;
+          dateText = `${fromDate.toLocaleDateString('en-IN')} to ${toDate.toLocaleDateString('en-IN')}`;
       } else if (fromDate) {
-          dateText = `Period: From ${fromDate.toLocaleDateString()}`;
+          dateText = `From ${fromDate.toLocaleDateString('en-IN')}`;
       } else if (toDate) {
-          dateText = `Period: Until ${toDate.toLocaleDateString()}`;
+          dateText = `Until ${toDate.toLocaleDateString('en-IN')}`;
       }
-      doc.text(dateText, 40, 80);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.setTextColor(15, 23, 42); // Slate-900
+      doc.text(dateText, 400, cardY + 30);
 
       const tableColumns = [
         { header: "Party Name", dataKey: "partyName" },
@@ -131,35 +160,39 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
       autoTable(doc, {
         columns: tableColumns,
         body: tableRows,
-        startY: 95,
+        startY: 112,
         theme: 'grid',
         styles: {
-          fontSize: 8,
-          cellPadding: 4,
+          fontSize: 9.5,
+          cellPadding: 5,
           valign: 'middle',
+          font: 'helvetica',
+          textColor: [30, 41, 59]
         },
         headStyles: {
-          fillColor: [60, 60, 60],
+          fillColor: [30, 41, 59], // Slate-800
           textColor: 255,
           fontStyle: 'bold',
-          halign: 'center'
+          halign: 'center',
+          fontSize: 9.5
         },
         columnStyles: {
-          partyName: { cellWidth: 140 },
+          partyName: { cellWidth: 165, fontStyle: 'bold', textColor: [15, 23, 42] },
           opening: { halign: 'right', cellWidth: 65 },
-          credit: { halign: 'right', cellWidth: 55 },
-          debit: { halign: 'right', cellWidth: 55 },
-          closing: { halign: 'right', cellWidth: 65 },
-          cash: { cellWidth: 65 },
-          upi: { cellWidth: 65 }
+          credit: { halign: 'right', cellWidth: 50 },
+          debit: { halign: 'right', cellWidth: 50 },
+          closing: { halign: 'right', cellWidth: 65, fontStyle: 'bold', textColor: [15, 23, 42] },
+          cash: { cellWidth: 60 },
+          upi: { cellWidth: 60 }
         },
         alternateRowStyles: {
-          fillColor: [245, 245, 245]
+          fillColor: [248, 250, 252] // Slate-50 background for alternate rows
         },
         margin: { left: 40, right: 40 },
         didDrawPage: function (data) {
           const str = "Page " + doc.internal.getNumberOfPages();
           doc.setFontSize(8);
+          doc.setTextColor(100, 116, 139);
           doc.text(str, data.settings.margin.left, doc.internal.pageSize.getHeight() - 20);
         }
       });
