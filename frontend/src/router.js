@@ -8,6 +8,7 @@ import StockTrendView from "./views/StockTrendView.vue";
 import SampleRoomView from "./views/SampleRoomView.vue";
 import HomeView from "./views/HomeView.vue";
 import RateChartView from "./views/RateChartView.vue";
+import LineListView from "./views/LineListView.vue";
 import { useAdmin } from "./composables/useAdmin";
 
 const isAndroid = Capacitor.getPlatform() === 'android';
@@ -24,6 +25,7 @@ const routes = [
   { path: "/stock-trend", component: StockTrendView },
   { path: "/sample-room", component: SampleRoomView },
   { path: "/rate-chart", component: RateChartView },
+  { path: "/line-list", component: LineListView },
   { path: "/latest-stock", component: LatestStock },
   { path: "/home", component: HomeView },
 
@@ -36,7 +38,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  if (to.path === '/ledger' || to.path === '/daybook') {
+  if (to.path === '/ledger' || to.path === '/daybook' || to.path === '/line-list') {
     const { isAdmin, isSuperAdmin, checkAdminState } = useAdmin();
     await checkAdminState();
     

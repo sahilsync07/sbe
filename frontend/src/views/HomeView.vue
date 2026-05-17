@@ -102,11 +102,19 @@ const links = [
     gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
     shadow: '0 8px 24px -4px rgba(236,72,153,0.4)',
   },
+  {
+    path: '/line-list',
+    label: 'Line List',
+    desc: 'Print area debtor balances',
+    icon: 'fa-map-location-dot',
+    gradient: 'linear-gradient(135deg, #8b5cf6, #db2777)',
+    shadow: '0 8px 24px -4px rgba(139,92,246,0.4)',
+  },
 ];
 
 const filteredLinks = computed(() => {
   return links.filter(item => {
-    if ((item.path === '/ledger' || item.path === '/daybook') && !isAdmin.value && !isSuperAdmin.value) {
+    if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list') && !isAdmin.value && !isSuperAdmin.value) {
       return false;
     }
     return true;
