@@ -216,7 +216,10 @@ const handleClubClick = (clubName) => {
 // Get today's date in YYYY-MM-DD format
 const getTodayStr = () => {
   const d = new Date();
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const selectedDate = ref(getTodayStr());
@@ -225,11 +228,10 @@ onMounted(() => {
   loadLedgerData().then(() => {
     if (allFlattenedEntries.value.length > 0) {
       const sorted = [...allFlattenedEntries.value]
-        .filter(e => e.date)
-        .sort((a, b) => b.date.localeCompare(a.date));
+        .filter(e => e.normalizedDate)
+        .sort((a, b) => b.normalizedDate.localeCompare(a.normalizedDate));
       if (sorted[0]) {
-        const normalized = normalizeDate(sorted[0].date);
-        if (normalized) selectedDate.value = normalized;
+        selectedDate.value = sorted[0].normalizedDate;
       }
     }
   });
@@ -242,7 +244,12 @@ const normalizeDate = (dateStr) => {
         return `${dateStr.substring(0,4)}-${dateStr.substring(4,6)}-${dateStr.substring(6,8)}`;
     }
     const d = new Date(dateStr);
-    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    if (!isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
     return null;
 };
 
