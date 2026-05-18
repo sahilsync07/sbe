@@ -96,15 +96,15 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
             if (Math.abs(val) < 0.5) return "-";
             const amt = Math.round(Math.abs(val));
             // val < 0 is Debit (they owe us), so positive. val > 0 is Credit (we owe them), so negative.
-            return val < 0 ? `₹ ${amt}` : `-₹ ${amt}`;
+            return val < 0 ? `Rs ${amt}` : `-Rs ${amt}`;
           };
 
           periodData.push({
             partyName: ledger.ledgerName,
             lineName: line,
             opening: formatBalance(openingBalanceRaw),
-            credit: periodCr >= 0.5 ? `₹ ${Math.round(periodCr)}` : "-",
-            debit: periodDr >= 0.5 ? `₹ ${Math.round(periodDr)}` : "-",
+            credit: periodCr >= 0.5 ? `Rs ${Math.round(periodCr)}` : "-",
+            debit: periodDr >= 0.5 ? `Rs ${Math.round(periodDr)}` : "-",
             closing: formatBalance(closingBalanceRaw)
           });
         }
@@ -197,12 +197,12 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
         },
         columnStyles: {
           partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [20, 20, 20], fontSize: 10 },
-          opening: { halign: 'right', cellWidth: 44 },
-          debit: { halign: 'right', cellWidth: 36 },
-          credit: { halign: 'right', cellWidth: 40 },
-          closing: { halign: 'right', cellWidth: 48, fontStyle: 'bold', textColor: [20, 20, 20] },
-          cash: { cellWidth: 103.5 },
-          upi: { cellWidth: 103.5 }
+          opening: { halign: 'right', cellWidth: 49.5 },
+          debit: { halign: 'right', cellWidth: 40.5 },
+          credit: { halign: 'right', cellWidth: 45 },
+          closing: { halign: 'right', cellWidth: 54, fontStyle: 'bold', textColor: [20, 20, 20] },
+          cash: { cellWidth: 93 },
+          upi: { cellWidth: 93 }
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
