@@ -19,6 +19,31 @@ export const parseLedgerDate = (dateStr) => {
   return new Date(year, months[monthStr] !== undefined ? months[monthStr] : 0, day);
 };
 
+/**
+ * Converts a string to Title Case (Camel Casing for display).
+ * e.g., "ABDUL HAZI (PALAK BEGAM)" → "Abdul Hazi (Palak Begam)"
+ */
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .replace(/(?:^|\s|\(|\/|-)\S/g, (match) => match.toUpperCase());
+};
+
+/**
+ * Parses a party name string. Text before comma = name, text after comma = city.
+ * e.g., "HARI F/W, B.CUTTACK" → { name: "Hari F/W", city: "B.Cuttack" }
+ */
+const parsePartyName = (raw) => {
+  if (!raw) return { name: '', city: '' };
+  const commaIndex = raw.indexOf(',');
+  if (commaIndex === -1) return { name: toTitleCase(raw.trim()), city: '' };
+  return {
+    name: toTitleCase(raw.substring(0, commaIndex).trim()),
+    city: toTitleCase(raw.substring(commaIndex + 1).trim())
+  };
+};
+
 export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData) => {
   return new Promise((resolve) => {
     try {
@@ -143,19 +168,24 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
 
       const tableColumns = [
         { header: "Party Name", dataKey: "partyName" },
-        { header: "Opening Bal.", dataKey: "opening" },
-        { header: "Credit", dataKey: "credit" },
-        { header: "Debit", dataKey: "debit" },
-        { header: "Closing Bal.", dataKey: "closing" },
+        { header: "Old Balance", dataKey: "opening" },
+        { header: "Bills (Dr)", dataKey: "debit" },
+        { header: "Payments (Cr)", dataKey: "credit" },
+        { header: "Current Balance", dataKey: "closing" },
         { header: "Cash", dataKey: "cash" },
         { header: "UPI", dataKey: "upi" }
       ];
 
-      const tableRows = periodData.map(d => ({
-        ...d,
-        cash: "",
-        upi: ""
-      }));
+      const tableRows = periodData.map(d => {
+        const parsed = parsePartyName(d.partyName);
+        return {
+          ...d,
+          partyName: parsed.name,
+          _city: parsed.city,
+          cash: "",
+          upi: ""
+        };
+      });
 
       autoTable(doc, {
         columns: tableColumns,
@@ -164,31 +194,61 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
         theme: 'grid',
         styles: {
           fontSize: 9.5,
-          cellPadding: 5,
+          cellPadding: { top: 4, right: 5, bottom: 4, left: 5 },
           valign: 'middle',
           font: 'helvetica',
           textColor: [30, 41, 59]
         },
         headStyles: {
-          fillColor: [241, 245, 249], // Slate-100 (light grey background, extremely ink-efficient)
-          textColor: [15, 23, 42], // Slate-900 (dark charcoal text)
+          fillColor: [241, 245, 249],
+          textColor: [15, 23, 42],
           fontStyle: 'bold',
           halign: 'center',
           fontSize: 9.5
         },
         columnStyles: {
-          partyName: { cellWidth: 165, fontStyle: 'bold', textColor: [15, 23, 42] },
-          opening: { halign: 'right', cellWidth: 65 },
-          credit: { halign: 'right', cellWidth: 50 },
-          debit: { halign: 'right', cellWidth: 50 },
-          closing: { halign: 'right', cellWidth: 65, fontStyle: 'bold', textColor: [15, 23, 42] },
-          cash: { cellWidth: 60 },
-          upi: { cellWidth: 60 }
+          partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [15, 23, 42] },
+          opening: { halign: 'right', cellWidth: 68 },
+          debit: { halign: 'right', cellWidth: 55 },
+          credit: { halign: 'right', cellWidth: 55 },
+          closing: { halign: 'right', cellWidth: 72, fontStyle: 'bold', textColor: [15, 23, 42] },
+          cash: { cellWidth: 62 },
+          upi: { cellWidth: 62 }
         },
         alternateRowStyles: {
-          fillColor: [248, 250, 252] // Slate-50 background for alternate rows
+          fillColor: [248, 250, 252]
         },
         margin: { left: 40, right: 40 },
+        didParseCell: function (data) {
+          // Render city name as sub-text in party name column
+          if (data.section === 'body' && data.column.dataKey === 'partyName') {
+            const rowData = tableRows[data.row.index];
+            if (rowData && rowData._city) {
+              // Increase cell height to accommodate city line
+              data.cell.styles.cellPadding = { top: 3, right: 5, bottom: 3, left: 5 };
+            }
+          }
+        },
+        didDrawCell: function (data) {
+          // Draw the city name in small grey font below the party name
+          if (data.section === 'body' && data.column.dataKey === 'partyName') {
+            const rowData = tableRows[data.row.index];
+            if (rowData && rowData._city) {
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(7);
+              doc.setTextColor(120, 130, 150);
+              doc.text(
+                rowData._city,
+                data.cell.x + 5,
+                data.cell.y + data.cell.height - 3.5
+              );
+              // Restore defaults
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(9.5);
+              doc.setTextColor(30, 41, 59);
+            }
+          }
+        },
         didDrawPage: function (data) {
           const str = "Page " + doc.internal.getNumberOfPages();
           doc.setFontSize(8);
