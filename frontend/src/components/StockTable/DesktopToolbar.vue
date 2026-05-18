@@ -39,7 +39,7 @@
           </div>
 
           <!-- Search Bar (Flexible) -->
-          <div class="relative flex-1 max-w-sm group" ref="desktopSearchRef">
+          <div v-if="$route.path === '/'" class="relative flex-1 max-w-sm group" ref="desktopSearchRef">
               <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors">
                  <i class="fa-solid fa-magnifying-glass text-sm"></i>
               </span>
@@ -263,7 +263,7 @@
     >
        <div class="flex items-center gap-3">
           <!-- Search -->
-          <div class="relative flex-1" ref="mobileSearchRef">
+          <div v-if="$route.path === '/'" class="relative flex-1" ref="mobileSearchRef">
              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
                  <i class="fa-solid fa-magnifying-glass text-xs"></i>
              </span>
