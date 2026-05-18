@@ -154,19 +154,30 @@ const toggleCart = () => {
     }
 };
 
-const handleAdminLogin = (password) => {
+const handleAdminLogin = (payload) => {
+  const pwd = typeof payload === 'object' ? payload.password : payload;
+  const redirectHome = typeof payload === 'object' ? payload.redirectHome : false;
+  
   showAdminModal.value = false;
-  if (!password) return;
-  if (password === 'admin123') {
+  if (!pwd) return;
+  
+  let success = false;
+  if (pwd === 'admin123') {
     isAdmin.value = true;
     isSuperAdmin.value = false;
     toast.success('Admin Mode Enabled', { autoClose: 2000 });
-  } else if (password === 'superadmin') {
+    success = true;
+  } else if (pwd === 'superadmin') {
     isAdmin.value = false;
     isSuperAdmin.value = true;
     toast.success('Super Admin Mode Enabled', { autoClose: 2000 });
+    success = true;
   } else {
     toast.error('Incorrect password', { autoClose: 3000 });
+  }
+
+  if (success && redirectHome) {
+    router.push('/home');
   }
 };
 

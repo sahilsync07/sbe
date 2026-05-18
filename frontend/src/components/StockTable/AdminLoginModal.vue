@@ -95,12 +95,17 @@ watch(() => props.show, (newVal) => {
 });
 
 const handleLogin = () => {
-    emit('login', password.value);
+    emit('login', { password: password.value, redirectHome: false });
     password.value = ''; // Clear after attempt
 };
 
 const goHome = () => {
-    emit('close');
-    router.push('/home');
+    if (password.value) {
+        emit('login', { password: password.value, redirectHome: true });
+        password.value = '';
+    } else {
+        emit('close');
+        router.push('/home');
+    }
 };
 </script>
