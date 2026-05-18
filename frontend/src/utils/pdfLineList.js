@@ -114,45 +114,19 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
 
       // Build PDF
       const doc = new jsPDF('p', 'pt', 'a4');
-      
-      // Sri Brundaban Enterprises, Rayagada
+      const pw = doc.internal.pageSize.getWidth();
+      const mL = 40, mR = 40;
+
+      // ── Company Name ──────────────────────────────────────
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(30, 41, 59); // Slate-800
-      doc.text("Sri Brundaban Enterprises, Rayagada", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
-      
-      // Decorative premium Card Container for Metadata
-      const cardY = 55;
-      const cardHeight = 42;
-      const cardWidth = doc.internal.pageSize.getWidth() - 80;
-      
-      // Draw Slate-50 background card with Slate-200 border
-      doc.setFillColor(248, 250, 252);
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(1);
-      doc.roundedRect(40, cardY, cardWidth, cardHeight, 6, 6, 'FD'); // Fill & Draw
-      
-      // Line label
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(100, 116, 139); // Slate-500
-      doc.text("SELECTED LINE(S)", 55, cardY + 16);
-      
-      // Line value
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10.5);
-      doc.setTextColor(15, 23, 42); // Slate-900
-      let lineText = selectedLines.join(" \u2022 ");
-      if (lineText.length > 55) lineText = lineText.substring(0, 52) + "...";
-      doc.text(lineText, 55, cardY + 30);
-      
-      // Period label
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(100, 116, 139); // Slate-500
-      doc.text("PERIOD RANGE", 400, cardY + 16);
-      
-      // Period value
+      doc.setFontSize(15);
+      doc.setTextColor(30, 30, 30);
+      doc.text("Sri Brundaban Enterprises, Rayagada", pw / 2, 32, { align: "center" });
+
+      // ── Meta line: Lines • Period  (single compact row) ──
+      let lineText = selectedLines.join("  \u2022  ");
+      if (lineText.length > 45) lineText = lineText.substring(0, 42) + "...";
+
       let dateText = "All Time";
       if (fromDate && toDate) {
           dateText = `${fromDate.toLocaleDateString('en-IN')} to ${toDate.toLocaleDateString('en-IN')}`;
@@ -161,11 +135,22 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
       } else if (toDate) {
           dateText = `Until ${toDate.toLocaleDateString('en-IN')}`;
       }
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10.5);
-      doc.setTextColor(15, 23, 42); // Slate-900
-      doc.text(dateText, 400, cardY + 30);
 
+      const metaY = 47;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(100, 100, 100);
+      doc.text(lineText, mL, metaY);
+      doc.text(dateText, pw - mR, metaY, { align: "right" });
+
+      // Thin hairline separator
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.5);
+      doc.line(mL, metaY + 6, pw - mR, metaY + 6);
+
+      const tableStartY = metaY + 14;
+
+      // ── Table ─────────────────────────────────────────────
       const tableColumns = [
         { header: "Party Name", dataKey: "partyName" },
         { header: "Old Balance", dataKey: "opening" },
@@ -190,70 +175,74 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
       autoTable(doc, {
         columns: tableColumns,
         body: tableRows,
-        startY: 112,
+        startY: tableStartY,
         theme: 'grid',
         styles: {
-          fontSize: 9.5,
-          cellPadding: { top: 4, right: 5, bottom: 4, left: 5 },
+          fontSize: 9,
+          cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
           valign: 'middle',
           font: 'helvetica',
-          textColor: [30, 41, 59]
+          textColor: [40, 40, 40],
+          lineColor: [200, 200, 200],
+          lineWidth: 0.4
         },
         headStyles: {
-          fillColor: [241, 245, 249],
-          textColor: [15, 23, 42],
+          fillColor: [235, 235, 235],
+          textColor: [30, 30, 30],
           fontStyle: 'bold',
           halign: 'center',
-          fontSize: 9.5
+          fontSize: 8.5,
+          cellPadding: { top: 5, right: 4, bottom: 5, left: 4 }
         },
         columnStyles: {
-          partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [15, 23, 42] },
+          partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [20, 20, 20] },
           opening: { halign: 'right', cellWidth: 68 },
           debit: { halign: 'right', cellWidth: 55 },
           credit: { halign: 'right', cellWidth: 55 },
-          closing: { halign: 'right', cellWidth: 72, fontStyle: 'bold', textColor: [15, 23, 42] },
+          closing: { halign: 'right', cellWidth: 72, fontStyle: 'bold', textColor: [20, 20, 20] },
           cash: { cellWidth: 62 },
           upi: { cellWidth: 62 }
         },
         alternateRowStyles: {
-          fillColor: [248, 250, 252]
+          fillColor: [245, 245, 245]
         },
-        margin: { left: 40, right: 40 },
+        margin: { left: mL, right: mR },
         didParseCell: function (data) {
-          // Render city name as sub-text in party name column
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
-              // Increase cell height to accommodate city line
-              data.cell.styles.cellPadding = { top: 3, right: 5, bottom: 3, left: 5 };
+              // Give extra vertical room for the city sub-line
+              data.cell.styles.minCellHeight = 28;
+              data.cell.styles.cellPadding = { top: 4, right: 4, bottom: 10, left: 4 };
             }
           }
         },
         didDrawCell: function (data) {
-          // Draw the city name in small grey font below the party name
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(7);
-              doc.setTextColor(120, 130, 150);
+              doc.setFont('helvetica', 'italic');
+              doc.setFontSize(6.5);
+              doc.setTextColor(130, 130, 130);
               doc.text(
                 rowData._city,
-                data.cell.x + 5,
-                data.cell.y + data.cell.height - 3.5
+                data.cell.x + 4,
+                data.cell.y + data.cell.height - 3
               );
-              // Restore defaults
+              // Restore
               doc.setFont('helvetica', 'bold');
-              doc.setFontSize(9.5);
-              doc.setTextColor(30, 41, 59);
+              doc.setFontSize(9);
+              doc.setTextColor(40, 40, 40);
             }
           }
         },
         didDrawPage: function (data) {
-          const str = "Page " + doc.internal.getNumberOfPages();
-          doc.setFontSize(8);
-          doc.setTextColor(100, 116, 139);
-          doc.text(str, data.settings.margin.left, doc.internal.pageSize.getHeight() - 20);
+          // Footer: page number right, company stamp left
+          const pageH = doc.internal.pageSize.getHeight();
+          doc.setFontSize(7);
+          doc.setTextColor(160, 160, 160);
+          doc.text("Sri Brundaban Enterprises", mL, pageH - 18);
+          doc.text("Page " + doc.internal.getNumberOfPages(), pw - mR, pageH - 18, { align: "right" });
         }
       });
 
