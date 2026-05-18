@@ -258,12 +258,12 @@
 
     <!-- Mobile Bottom Bar (Fixed) — hidden on routes like ledger/daybook -->
     <div
-      v-if="!hideMobileBottomBar"
+      v-if="$route.path === '/'"
       class="lg:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl"
     >
        <div class="flex items-center gap-3">
           <!-- Search -->
-          <div v-if="$route.path === '/'" class="relative flex-1" ref="mobileSearchRef">
+          <div class="relative flex-1" ref="mobileSearchRef">
              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
                  <i class="fa-solid fa-magnifying-glass text-xs"></i>
              </span>
