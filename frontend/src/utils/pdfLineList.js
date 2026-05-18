@@ -153,10 +153,10 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
       // ── Table ─────────────────────────────────────────────
       const tableColumns = [
         { header: "Party Name", dataKey: "partyName" },
-        { header: "Old Balance", dataKey: "opening" },
-        { header: "Bills (Dr)", dataKey: "debit" },
-        { header: "Payments (Cr)", dataKey: "credit" },
-        { header: "Current Balance", dataKey: "closing" },
+        { header: "Old\nBalance", dataKey: "opening" },
+        { header: "Bills\n(Dr)", dataKey: "debit" },
+        { header: "Payments\n(Cr)", dataKey: "credit" },
+        { header: "Current\nBalance", dataKey: "closing" },
         { header: "Cash", dataKey: "cash" },
         { header: "UPI", dataKey: "upi" }
       ];
@@ -191,23 +191,30 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           textColor: [30, 30, 30],
           fontStyle: 'bold',
           halign: 'center',
-          fontSize: 8.5,
-          cellPadding: { top: 5, right: 4, bottom: 5, left: 4 }
+          fontSize: 9,
+          cellPadding: { top: 4, right: 4, bottom: 4, left: 4 }
         },
         columnStyles: {
-          partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [20, 20, 20] },
-          opening: { halign: 'right', cellWidth: 68 },
-          debit: { halign: 'right', cellWidth: 55 },
-          credit: { halign: 'right', cellWidth: 55 },
-          closing: { halign: 'right', cellWidth: 72, fontStyle: 'bold', textColor: [20, 20, 20] },
-          cash: { cellWidth: 62 },
-          upi: { cellWidth: 62 }
+          partyName: { cellWidth: 155, fontStyle: 'bold', textColor: [20, 20, 20], fontSize: 10 },
+          opening: { halign: 'right', cellWidth: 55 },
+          debit: { halign: 'right', cellWidth: 45 },
+          credit: { halign: 'right', cellWidth: 50 },
+          closing: { halign: 'right', cellWidth: 60, fontStyle: 'bold', textColor: [20, 20, 20] },
+          cash: { cellWidth: 75 },
+          upi: { cellWidth: 75 }
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
         },
         margin: { left: mL, right: mR },
         didParseCell: function (data) {
+          if (data.section === 'head') {
+             // Multi-line header styles
+             if (data.column.dataKey === 'opening' || data.column.dataKey === 'debit' || data.column.dataKey === 'credit' || data.column.dataKey === 'closing') {
+                data.cell.styles.fontSize = 9; // default big font
+                data.cell.styles.cellPadding = { top: 3, right: 4, bottom: 3, left: 4 };
+             }
+          }
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
@@ -218,6 +225,47 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           }
         },
         didDrawCell: function (data) {
+          // Custom render for multi-line headers
+          if (data.section === 'head') {
+             const key = data.column.dataKey;
+             if (['opening', 'debit', 'credit', 'closing'].includes(key)) {
+                // Clear the default text that autoTable drew (since it draws standard text)
+                // Actually, the best way to handle this without overlapping is to just let autoTable draw it but we intercept and draw ourselves, or we just rely on `\n` which autoTable handles, BUT the user wants different font sizes for each line.
+                // To achieve different font sizes for lines in a single cell, we must clear it and draw manually.
+                
+                // Let's clear the cell background
+                doc.setFillColor(235, 235, 235);
+                doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                
+                // Draw borders
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.4);
+                doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'S');
+
+                const textX = data.cell.x + (data.cell.width / 2);
+                const textYBase = data.cell.y + (data.cell.height / 2);
+                
+                doc.setTextColor(30, 30, 30);
+                doc.setFont("helvetica", "bold");
+                
+                let line1 = "";
+                let line2 = "";
+                
+                if (key === 'opening') { line1 = "Old"; line2 = "Balance"; }
+                if (key === 'debit') { line1 = "Bills"; line2 = "(Dr)"; }
+                if (key === 'credit') { line1 = "Payments"; line2 = "(Cr)"; }
+                if (key === 'closing') { line1 = "Current"; line2 = "Balance"; }
+                
+                // Draw line 1 (Big)
+                doc.setFontSize(9.5);
+                doc.text(line1, textX, textYBase - 1, { align: "center", baseline: "middle" });
+                
+                // Draw line 2 (Small)
+                doc.setFontSize(7.5);
+                doc.text(line2, textX, textYBase + 7, { align: "center", baseline: "middle" });
+             }
+          }
+
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
