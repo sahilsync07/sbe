@@ -96,15 +96,15 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
             if (Math.abs(val) < 0.5) return "-";
             const amt = Math.round(Math.abs(val));
             // val < 0 is Debit (they owe us), so positive. val > 0 is Credit (we owe them), so negative.
-            return val < 0 ? `${amt}` : `-${amt}`;
+            return val < 0 ? `₹ ${amt}` : `-₹ ${amt}`;
           };
 
           periodData.push({
             partyName: ledger.ledgerName,
             lineName: line,
             opening: formatBalance(openingBalanceRaw),
-            credit: periodCr >= 0.5 ? Math.round(periodCr).toString() : "-",
-            debit: periodDr >= 0.5 ? Math.round(periodDr).toString() : "-",
+            credit: periodCr >= 0.5 ? `₹ ${Math.round(periodCr)}` : "-",
+            debit: periodDr >= 0.5 ? `₹ ${Math.round(periodDr)}` : "-",
             closing: formatBalance(closingBalanceRaw)
           });
         }
@@ -196,13 +196,13 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           cellPadding: { top: 4, right: 4, bottom: 4, left: 4 }
         },
         columnStyles: {
-          partyName: { cellWidth: 155, fontStyle: 'bold', textColor: [20, 20, 20], fontSize: 10 },
-          opening: { halign: 'right', cellWidth: 55 },
-          debit: { halign: 'right', cellWidth: 45 },
-          credit: { halign: 'right', cellWidth: 50 },
-          closing: { halign: 'right', cellWidth: 60, fontStyle: 'bold', textColor: [20, 20, 20] },
-          cash: { cellWidth: 75 },
-          upi: { cellWidth: 75 }
+          partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [20, 20, 20], fontSize: 10 },
+          opening: { halign: 'right', cellWidth: 44 },
+          debit: { halign: 'right', cellWidth: 36 },
+          credit: { halign: 'right', cellWidth: 40 },
+          closing: { halign: 'right', cellWidth: 48, fontStyle: 'bold', textColor: [20, 20, 20] },
+          cash: { cellWidth: 103.5 },
+          upi: { cellWidth: 103.5 }
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
