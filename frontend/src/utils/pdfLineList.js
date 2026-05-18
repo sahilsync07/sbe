@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { robotoRegularBase64, robotoBoldBase64 } from './fonts';
 
 /**
  * Parses a ledger date string (e.g., "25-Apr-26") into a Date object.
@@ -96,15 +97,15 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
             if (Math.abs(val) < 0.5) return "-";
             const amt = Math.round(Math.abs(val));
             // val < 0 is Debit (they owe us), so positive. val > 0 is Credit (we owe them), so negative.
-            return val < 0 ? `Rs ${amt}` : `-Rs ${amt}`;
+            return val < 0 ? `\u20B9 ${amt}` : `-\u20B9 ${amt}`;
           };
 
           periodData.push({
             partyName: ledger.ledgerName,
             lineName: line,
             opening: formatBalance(openingBalanceRaw),
-            credit: periodCr >= 0.5 ? `Rs ${Math.round(periodCr)}` : "-",
-            debit: periodDr >= 0.5 ? `Rs ${Math.round(periodDr)}` : "-",
+            credit: periodCr >= 0.5 ? `\u20B9 ${Math.round(periodCr)}` : "-",
+            debit: periodDr >= 0.5 ? `\u20B9 ${Math.round(periodDr)}` : "-",
             closing: formatBalance(closingBalanceRaw)
           });
         }
@@ -115,11 +116,17 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
 
       // Build PDF
       const doc = new jsPDF('p', 'pt', 'a4');
+      
+      doc.addFileToVFS("Roboto-Regular.ttf", robotoRegularBase64);
+      doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+      doc.addFileToVFS("Roboto-Bold.ttf", robotoBoldBase64);
+      doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+
       const pw = doc.internal.pageSize.getWidth();
       const mL = 40, mR = 40;
 
       // ── Company Name ──────────────────────────────────────
-      doc.setFont("helvetica", "bold");
+      doc.setFont("Roboto", "bold");
       doc.setFontSize(15);
       doc.setTextColor(30, 30, 30);
       doc.text("Sri Brundaban Enterprises, Rayagada", pw / 2, 32, { align: "center" });
@@ -182,7 +189,7 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           fontSize: 9,
           cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
           valign: 'middle',
-          font: 'helvetica',
+          font: 'Roboto',
           textColor: [40, 40, 40],
           lineColor: [200, 200, 200],
           lineWidth: 0.4
@@ -247,7 +254,7 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
                 const textYBase = data.cell.y + (data.cell.height / 2);
                 
                 doc.setTextColor(30, 30, 30);
-                doc.setFont("helvetica", "bold");
+                doc.setFont("Roboto", "bold");
                 
                 let line1 = "";
                 let line2 = "";
