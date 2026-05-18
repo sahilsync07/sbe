@@ -93,17 +93,18 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           }
 
           const formatBalance = (val) => {
-            if (Math.abs(val) < 0.01) return "0.00";
-            const amt = Math.abs(val).toFixed(2);
-            return val < 0 ? `${amt} Dr` : `${amt} Cr`;
+            if (Math.abs(val) < 0.5) return "-";
+            const amt = Math.round(Math.abs(val));
+            // val < 0 is Debit (they owe us), so positive. val > 0 is Credit (we owe them), so negative.
+            return val < 0 ? `${amt}` : `-${amt}`;
           };
 
           periodData.push({
             partyName: ledger.ledgerName,
             lineName: line,
             opening: formatBalance(openingBalanceRaw),
-            credit: periodCr > 0 ? periodCr.toFixed(2) : "-",
-            debit: periodDr > 0 ? periodDr.toFixed(2) : "-",
+            credit: periodCr >= 0.5 ? Math.round(periodCr).toString() : "-",
+            debit: periodDr >= 0.5 ? Math.round(periodDr).toString() : "-",
             closing: formatBalance(closingBalanceRaw)
           });
         }
