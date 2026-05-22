@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-05-22T11:03:19.034Z",
+    "lastSync": "2026-05-22T15:13:29.753Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10581446.72,
-        "closingBalance": 10737580.49,
+        "closingBalance": 10749335.93,
         "entries": []
       }
     ]
@@ -1216,7 +1216,7 @@
       {
         "ledgerName": "PRINCE STORE, CHITRAKUNDA",
         "openingBalance": -133672,
-        "closingBalance": -147964,
+        "closingBalance": -188194,
         "entries": [
           {
             "date": "13-Apr-26",
@@ -1279,6 +1279,13 @@
             "voucherNo": "284/26-27",
             "type": "Tax Invoice",
             "amount": 5049,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "347/26-27",
+            "type": "Tax Invoice",
+            "amount": 40230,
             "drCr": "Dr"
           }
         ]
@@ -7048,7 +7055,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2559250.64,
+        "closingBalance": 2560517.93,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -9485,6 +9492,20 @@
             "type": "Tax Invoice",
             "amount": 6.31,
             "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "347/26-27",
+            "type": "Tax Invoice",
+            "amount": 943.58,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "348/26-27",
+            "type": "Tax Invoice",
+            "amount": 323.71,
+            "drCr": "Cr"
           }
         ]
       },
@@ -9497,7 +9518,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -3057201.65,
+        "closingBalance": -3056138.3,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -10135,6 +10156,13 @@
             "type": "Purchase",
             "amount": 13384.32,
             "drCr": "Dr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "349/26-27",
+            "type": "Tax Invoice",
+            "amount": 1063.35,
+            "drCr": "Cr"
           }
         ]
       },
@@ -10147,7 +10175,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2560251.89,
+        "closingBalance": 2561519.18,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -12583,6 +12611,20 @@
             "voucherNo": "346/26-27",
             "type": "Tax Invoice",
             "amount": 6.31,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "347/26-27",
+            "type": "Tax Invoice",
+            "amount": 943.58,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "348/26-27",
+            "type": "Tax Invoice",
+            "amount": 323.71,
             "drCr": "Cr"
           }
         ]
@@ -14472,7 +14514,7 @@
       {
         "ledgerName": "PACKING & TRANSPORTATING EXPENSES",
         "openingBalance": 0,
-        "closingBalance": 38750,
+        "closingBalance": 39350,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -15166,6 +15208,13 @@
             "type": "Tax Invoice",
             "amount": 200,
             "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "347/26-27",
+            "type": "Tax Invoice",
+            "amount": 600,
+            "drCr": "Cr"
           }
         ]
       },
@@ -15272,7 +15321,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": 1.34,
+        "closingBalance": 1.21,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -17814,6 +17863,27 @@
             "type": "Tax Invoice",
             "amount": 0,
             "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "347/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.29,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "348/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.03,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "349/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.39,
+            "drCr": "Dr"
           }
         ]
       },
@@ -18559,7 +18629,7 @@
       {
         "ledgerName": "MAA MAJHIGOURI F/W(SHYAMALA), JK",
         "openingBalance": -59143,
-        "closingBalance": -63238,
+        "closingBalance": -76834,
         "entries": [
           {
             "date": "3-Apr-26",
@@ -18706,6 +18776,13 @@
             "voucherNo": "335/26-27",
             "type": "Tax Invoice",
             "amount": 16040,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "348/26-27",
+            "type": "Tax Invoice",
+            "amount": 13596,
             "drCr": "Dr"
           }
         ]
@@ -21665,7 +21742,7 @@
       {
         "ledgerName": "JAYA LAXMI FOOTWEAR, MAKKUA",
         "openingBalance": 0,
-        "closingBalance": -7,
+        "closingBalance": -22337,
         "entries": [
           {
             "date": "17-Apr-26",
@@ -21694,6 +21771,13 @@
             "type": "Receipt",
             "amount": 9100,
             "drCr": "Cr"
+          },
+          {
+            "date": "22-May-26",
+            "voucherNo": "349/26-27",
+            "type": "Tax Invoice",
+            "amount": 22330,
+            "drCr": "Dr"
           }
         ]
       },
@@ -28204,7 +28288,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 7576205.92,
+        "closingBalance": 7648164.12,
         "entries": []
       },
       {
