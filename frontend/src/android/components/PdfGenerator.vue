@@ -1155,6 +1155,13 @@
                   class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
                   @click.stop
                 />
+                <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
+                <input
+                  type="number"
+                  v-model.number="group.maxQty"
+                  class="w-14 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                  @click.stop
+                />
               </div>
 
               <!-- Image count badge (after generation) -->
@@ -1297,6 +1304,9 @@ import { useStockData } from '../../composables/useStockData';
 import { useAdmin } from '../../composables/useAdmin';
 import { BRAND_LISTS } from '../../utils/constants';
 
+// Separator image: 'Old stock ends here / New stocks start'
+const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/v1779506378/Old_stock_ends_here_oc3rh7.png';
+
 // One Touch Mode group definitions (SBE-specific brand names)
 const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS'], icon: '👞', defaultMinQty: 10 },
@@ -1374,6 +1384,7 @@ export default {
         ...g,
         enabled: true,
         minQty: g.defaultMinQty,
+        maxQty: 999999,
         status: 'idle', // 'idle' | 'generating' | 'ready' | 'done' | 'skipped'
         batches: [], // [[uri, ...], [uri, ...]]
         batchStatuses: [], // ['idle' | 'sharing' | 'shared'] per batch
@@ -1921,6 +1932,16 @@ export default {
           this.completedCount++;
         }
 
+        // Prepend 'Old stock ends here' separator as first image
+        try {
+          const separatorUri = await this.saveSeparatorImage('share_native');
+          if (separatorUri) {
+            fileUris.unshift(separatorUri);
+          }
+        } catch (e) {
+          console.error('Failed to prepend separator:', e);
+        }
+
         // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
         const chunkSize = 99;
         const batches = [];
@@ -1967,6 +1988,7 @@ export default {
         ...g,
         enabled: true,
         minQty: g.defaultMinQty,
+        maxQty: 999999,
         status: 'idle',
         batches: [],
         batchStatuses: [],
@@ -2025,7 +2047,42 @@ export default {
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     },
 
-    async generatePdfBlobForOneTouch(targetBrands, onlyWithPhotos, minQty) {
+    async saveSeparatorImage(prefix) {
+      try {
+        const imgData = await this.fetchImageAsBase64(OLD_STOCK_SEPARATOR_URL);
+        // Draw on canvas to convert to JPEG
+        const dims = await this.getImageDimensions(imgData);
+        const canvas = document.createElement('canvas');
+        canvas.width = dims.width;
+        canvas.height = dims.height;
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = imgData;
+        });
+        ctx.drawImage(img, 0, 0);
+        const b64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+        const fileName = `${prefix}_old_stock_separator.jpg`;
+        const saved = await Filesystem.writeFile({
+          path: fileName,
+          data: b64,
+          directory: Directory.Cache,
+        });
+        // Cleanup
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        canvas.remove();
+        return saved.uri;
+      } catch (e) {
+        console.error('Failed to save separator image:', e);
+        return null;
+      }
+    },
+
+    async generatePdfBlobForOneTouch(targetBrands, onlyWithPhotos, minQty, maxQty) {
       const data = this.stockData;
       const normalize = (s) => (s ? s.toLowerCase().trim() : '');
       const filteredGroups = data.filter((g) =>
@@ -2056,6 +2113,7 @@ export default {
         for (const product of group.products) {
           if (onlyWithPhotos && !product.imageUrl) continue;
           if (minQty > 0 && product.quantity < minQty) continue;
+          if (maxQty > 0 && product.quantity > maxQty) continue;
 
           if (hasAddedPage) {
             doc.addPage([PAGE_W, PAGE_H]);
@@ -2149,10 +2207,12 @@ export default {
 
         try {
           const effectiveMinQty = this.oneTouchMinQtyEnabled ? group.minQty : 0;
+          const effectiveMaxQty = this.oneTouchMinQtyEnabled ? group.maxQty : 999999;
           const { blob, pageCount } = await this.generatePdfBlobForOneTouch(
             group.brands,
             this.oneTouchOnlyWithPhotos,
-            effectiveMinQty
+            effectiveMinQty,
+            effectiveMaxQty
           );
 
           if (!blob || pageCount === 0) {
@@ -2195,6 +2255,12 @@ export default {
           }
           URL.revokeObjectURL(pdfUrl);
           pdf.destroy();
+
+          // Prepend 'Old stock ends here' separator as first image
+          const separatorUri = await this.saveSeparatorImage(`ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}`);
+          if (separatorUri) {
+            fileUris.unshift(separatorUri);
+          }
 
           // Chunk into batches of 99
           const batches = [];

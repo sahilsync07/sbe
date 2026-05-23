@@ -1075,6 +1075,12 @@
                   v-model="group.minQty"
                   class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
                 />
+                <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
+                <input
+                  type="number"
+                  v-model="group.maxQty"
+                  class="w-14 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                />
               </div>
 
               <i
@@ -1271,6 +1277,9 @@ import { useStockData } from '../composables/useStockData';
 import { useAdmin } from '../composables/useAdmin';
 import { BRAND_LISTS } from '../utils/constants';
 
+// Separator image: 'Old stock ends here / New stocks start'
+const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/v1779506378/Old_stock_ends_here_oc3rh7.png';
+
 const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
@@ -1334,6 +1343,7 @@ const oneTouchGroups = ref(
     ...g,
     enabled: true,
     minQty: g.defaultMinQty,
+    maxQty: 999999,
     isExpanded: false,
     status: 'idle',
     batches: [],
@@ -1662,6 +1672,17 @@ const generatePdf = async () => {
   }
 };
 
+// Helper: Fetch separator image and return as blob
+const fetchSeparatorBlob = async () => {
+  try {
+    const res = await axios.get(OLD_STOCK_SEPARATOR_URL, { responseType: 'arraybuffer' });
+    return new Blob([res.data], { type: res.headers['content-type'] || 'image/png' });
+  } catch (e) {
+    console.error('Failed to fetch separator image:', e);
+    return null;
+  }
+};
+
 const downloadAsImages = async () => {
   if (!selectedBrands.value.length) return;
 
@@ -1676,9 +1697,23 @@ const downloadAsImages = async () => {
   const pdfjsLib = await import('pdfjs-dist');
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
+  // Fetch separator image once
+  const separatorBlob = await fetchSeparatorBlob();
+
   for (const brand of selectedBrands.value) {
     currentBrand.value = `Processing: ${brand}`;
     try {
+      // Download separator as first image for this brand
+      if (separatorBlob) {
+        const sepUrl = URL.createObjectURL(separatorBlob);
+        const sepA = document.createElement('a');
+        sepA.href = sepUrl;
+        sepA.download = `${brand.replace(/[^a-zA-Z0-9]/g, '_')}_Image_000_separator.png`;
+        sepA.click();
+        URL.revokeObjectURL(sepUrl);
+        totalImages++;
+      }
+
       const pdfBlob = await generatePdfBlob([brand]);
       const pdfUrl = URL.createObjectURL(pdfBlob);
 
@@ -1739,6 +1774,9 @@ const downloadAsZip = async () => {
   const isCombined = zipMode.value === 'combined';
   let globalPageCounter = 0;
 
+  // Fetch separator image once
+  const separatorBlob = await fetchSeparatorBlob();
+
   for (const brand of selectedBrands.value) {
     currentBrand.value = `Zipping: ${brand}`;
 
@@ -1750,6 +1788,23 @@ const downloadAsZip = async () => {
       const pdf = await loadingTask.promise;
 
       const target = isCombined ? zip : zip.folder(brand);
+
+        // Add separator as first image for this brand
+        if (separatorBlob) {
+          if (isCombined) {
+            globalPageCounter++;
+            if (zipBatchMode.value) {
+              const batchNum = Math.ceil(globalPageCounter / 99);
+              const batchFolder = zip.folder(`Batch ${batchNum}`);
+              batchFolder.file(`000_Old_Stock_Separator.jpg`, separatorBlob);
+            } else {
+              target.file(`000_Old_Stock_Separator_${String(globalPageCounter).padStart(4, '0')}.jpg`, separatorBlob);
+            }
+          } else {
+            target.file(`000_Old_Stock_Separator.jpg`, separatorBlob);
+          }
+          totalPages++;
+        }
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         // Yield to main thread every 10 pages to allow GC
@@ -1877,6 +1932,27 @@ const shareViaNativeApp = async () => {
       completedCount.value++;
     }
 
+    // Prepend 'Old stock ends here' separator as first image
+    try {
+      const sepBlob = await fetchSeparatorBlob();
+      if (sepBlob) {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(sepBlob);
+        });
+        const saved = await Filesystem.writeFile({
+          path: 'share_separator.jpg',
+          data: base64,
+          directory: Directory.Cache,
+        });
+        fileUris.unshift(saved.uri);
+      }
+    } catch (e) {
+      console.error('Failed to prepend separator:', e);
+    }
+
     // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
     const chunkSize = 99;
     const batches = [];
@@ -1946,7 +2022,7 @@ const openOneTouchModal = () => {
   showOneTouchModal.value = true;
 };
 
-const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQtyValue) => {
+const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue) => {
   const data = stockData.value;
   const filteredGroups = data.filter((group) => {
     return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
@@ -1976,6 +2052,7 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
     for (const product of group.products) {
       if (onlyWithPhotosFlag && !product.imageUrl) continue;
       if (product.quantity < minQtyValue) continue;
+      if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
 
       if (hasAddedPage) {
         doc.addPage([PAGE_W, PAGE_H]);
@@ -2072,6 +2149,7 @@ const prepareOneTouch = async () => {
 
     try {
       const effectiveMinQty = oneTouchMinQtyEnabled.value ? group.minQty : 0;
+      const effectiveMaxQty = oneTouchMinQtyEnabled.value ? group.maxQty : 999999;
 
       // Pre-calculate batches
       let productCount = 0;
@@ -2083,6 +2161,7 @@ const prepareOneTouch = async () => {
         for (const product of fg.products) {
           if (oneTouchOnlyWithPhotos.value && !product.imageUrl) continue;
           if (product.quantity < effectiveMinQty) continue;
+          if (product.quantity > effectiveMaxQty) continue;
           productCount++;
         }
       }
@@ -2097,7 +2176,7 @@ const prepareOneTouch = async () => {
         group.batches.push({ id: i, status: 'pending', fileUris: [] });
       }
 
-      const cacheKey = `${group.label}_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}`;
+      const cacheKey = `${group.label}_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}_${effectiveMaxQty}`;
       let fileUris = [];
 
       if (oneTouchCache.value[cacheKey]) {
@@ -2123,7 +2202,8 @@ const prepareOneTouch = async () => {
         const { blob, pageCount } = await generatePdfBlobForOneTouch(
           group.brands,
           oneTouchOnlyWithPhotos.value,
-          effectiveMinQty
+          effectiveMinQty,
+          effectiveMaxQty
         );
 
         if (!blob || pageCount === 0) {

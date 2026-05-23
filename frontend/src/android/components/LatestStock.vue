@@ -161,6 +161,9 @@ import axios from 'axios';
 
 const STORAGE_KEY = 'sbe_latest_stock';
 
+// Separator image: 'Old stock ends here / New stocks start'
+const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/v1779506378/Old_stock_ends_here_oc3rh7.png';
+
 const GROUPS = [
   { folder: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], onlyWithPhotos: true, minQty: 6, icon: '👟' },
   { folder: 'Florex', brands: ['Florex (Swastik)'], onlyWithPhotos: true, minQty: 6, icon: '🌸' },
@@ -527,6 +530,12 @@ export default {
             this.globalDone++;
           });
 
+          // Prepend 'Old stock ends here' separator as first image
+          const separatorUri = await this.saveSeparatorImage(safeFolder);
+          if (separatorUri) {
+            fileUris.unshift(separatorUri);
+          }
+
           if (fileUris.length > 0) {
             this.downloadedGroups.push({ folder: config.folder, icon: config.icon, fileUris });
           }
@@ -588,6 +597,40 @@ export default {
       this.toastMessage = msg;
       this.showToast = true;
       setTimeout(() => this.showToast = false, 4000);
+    },
+
+    async saveSeparatorImage(folderPrefix) {
+      try {
+        const imgData = await this.fetchImageAsBase64(OLD_STOCK_SEPARATOR_URL);
+        // Draw on canvas to convert to JPEG
+        const dims = await this.getImageDimensions(imgData);
+        const canvas = document.createElement('canvas');
+        canvas.width = dims.width;
+        canvas.height = dims.height;
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = imgData;
+        });
+        ctx.drawImage(img, 0, 0);
+        const b64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+        const fileName = `ls_${folderPrefix}_separator.jpg`;
+        const saved = await Filesystem.writeFile({
+          path: fileName,
+          data: b64,
+          directory: Directory.Data,
+        });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        canvas.remove();
+        return saved.uri;
+      } catch (e) {
+        console.error('Failed to save separator image:', e);
+        return null;
+      }
     }
   }
 };

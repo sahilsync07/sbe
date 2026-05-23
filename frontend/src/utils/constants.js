@@ -53,7 +53,9 @@ export const BRAND_LISTS = {
         'SHYAM',
         'AVTAR V V POLYMERS',
         'ATHARV PLASTIC',
-        'SALASAR BALAJI'
+        'SALASAR BALAJI',
+        'ARIHANT',
+        'ARHINAT'
     ],
     generalBoxPacking: [
         'ADDA',
@@ -73,7 +75,9 @@ export const BRAND_LISTS = {
         'UAM FOOTWEAR',
         'BROCKKIE',
         'VENUS',
-        'Mini F/w'
+        'Mini F/w',
+        'SOLA',
+        'ORTHO'
     ]
 };
 
