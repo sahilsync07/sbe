@@ -244,9 +244,10 @@ async function fetchTallyData() {
       const rate = parseFloat(stkCl.DSPCLRATE || "0");
       const amount = parseFloat(stkCl.DSPCLAMTA || "0");
 
-      // Check if the name matches any hardcoded group name (case-insensitive)
+      // Check if the name matches any known group name from config (case-insensitive)
+      // NOTE: Do NOT use `!quantity.trim()` here — Tally returns zero-stock products
+      // with empty quantity strings, which would misclassify them as groups.
       const isGroup =
-        !quantity.trim() ||
         groupNames.some((group) => name.toLowerCase() === group.toLowerCase());
 
       if (isGroup) {
