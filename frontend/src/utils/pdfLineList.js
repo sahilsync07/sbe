@@ -125,15 +125,9 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
       const pw = doc.internal.pageSize.getWidth();
       const mL = 40, mR = 40;
 
-      // ── Company Name ──────────────────────────────────────
-      doc.setFont("Roboto", "bold");
-      doc.setFontSize(15);
-      doc.setTextColor(30, 30, 30);
-      doc.text("Sri Brundaban Enterprises, Rayagada", pw / 2, 32, { align: "center" });
-
-      // ── Meta line: Lines • Period  (single compact row) ──
+      // ── Meta line: Line Name • Company • Date (single compact row, no big title) ──
       let lineText = selectedLines.join("  \u2022  ");
-      if (lineText.length > 45) lineText = lineText.substring(0, 42) + "...";
+      if (lineText.length > 40) lineText = lineText.substring(0, 37) + "...";
 
       let dateText = "All Time";
       if (fromDate && toDate) {
@@ -144,19 +138,32 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           dateText = `Until ${toDate.toLocaleDateString('en-IN')}`;
       }
 
-      const metaY = 47;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(100, 100, 100);
+      const metaY = 24;
+
+      // Line name – bold and prominent
+      doc.setFont("Roboto", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
       doc.text(lineText, mL, metaY);
+
+      // Company name – centered, same style
+      doc.setFont("Roboto", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Sri Brundabana Enterprises, Rayagada.", pw / 2, metaY, { align: "center" });
+
+      // Date – bold, right-aligned
+      doc.setFont("Roboto", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
       doc.text(dateText, pw - mR, metaY, { align: "right" });
 
       // Thin hairline separator
-      doc.setDrawColor(180, 180, 180);
+      doc.setDrawColor(160, 160, 160);
       doc.setLineWidth(0.5);
-      doc.line(mL, metaY + 6, pw - mR, metaY + 6);
+      doc.line(mL, metaY + 5, pw - mR, metaY + 5);
 
-      const tableStartY = metaY + 14;
+      const tableStartY = metaY + 10;
 
       // ── Table ─────────────────────────────────────────────
       const tableColumns = [
@@ -186,49 +193,48 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
         startY: tableStartY,
         theme: 'grid',
         styles: {
-          fontSize: 9,
-          cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
+          fontSize: 8,
+          cellPadding: { top: 1.5, right: 3, bottom: 1.5, left: 3 },
           valign: 'middle',
           font: 'Roboto',
-          textColor: [40, 40, 40],
-          lineColor: [200, 200, 200],
+          textColor: [0, 0, 0],
+          lineColor: [190, 190, 190],
           lineWidth: 0.4
         },
         headStyles: {
-          fillColor: [235, 235, 235],
-          textColor: [30, 30, 30],
+          fillColor: [225, 225, 225],
+          textColor: [0, 0, 0],
           fontStyle: 'bold',
           halign: 'center',
-          fontSize: 9,
-          cellPadding: { top: 4, right: 4, bottom: 4, left: 4 }
+          fontSize: 8,
+          cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }
         },
         columnStyles: {
-          partyName: { cellWidth: 140, fontStyle: 'bold', textColor: [20, 20, 20], fontSize: 10 },
+          partyName: { cellWidth: 168, fontStyle: 'bold', textColor: [0, 0, 0], fontSize: 8.5 },
           opening: { halign: 'right', cellWidth: 49.5 },
           debit: { halign: 'right', cellWidth: 40.5 },
           credit: { halign: 'right', cellWidth: 45 },
-          closing: { halign: 'right', cellWidth: 54, fontStyle: 'bold', textColor: [20, 20, 20] },
-          cash: { cellWidth: 93 },
-          upi: { cellWidth: 93 }
+          closing: { halign: 'right', cellWidth: 54, fontStyle: 'bold', textColor: [0, 0, 0] },
+          cash: { cellWidth: 79 },
+          upi: { cellWidth: 79 }
         },
         alternateRowStyles: {
-          fillColor: [245, 245, 245]
+          fillColor: [232, 232, 232]
         },
         margin: { left: mL, right: mR },
         didParseCell: function (data) {
           if (data.section === 'head') {
              // Multi-line header styles
-             if (data.column.dataKey === 'opening' || data.column.dataKey === 'debit' || data.column.dataKey === 'credit' || data.column.dataKey === 'closing') {
-                data.cell.styles.fontSize = 9; // default big font
-                data.cell.styles.cellPadding = { top: 3, right: 4, bottom: 3, left: 4 };
-             }
+              if (data.column.dataKey === 'opening' || data.column.dataKey === 'debit' || data.column.dataKey === 'credit' || data.column.dataKey === 'closing') {
+                 data.cell.styles.fontSize = 8;
+                 data.cell.styles.cellPadding = { top: 2, right: 3, bottom: 2, left: 3 };
+              }
           }
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
-              // Give extra vertical room for the city sub-line
-              data.cell.styles.minCellHeight = 28;
-              data.cell.styles.cellPadding = { top: 4, right: 4, bottom: 10, left: 4 };
+              // Minimal extra room for the city sub-line
+              data.cell.styles.cellPadding = { top: 1.5, right: 3, bottom: 7, left: 3 };
             }
           }
         },
@@ -237,23 +243,19 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           if (data.section === 'head') {
              const key = data.column.dataKey;
              if (['opening', 'debit', 'credit', 'closing'].includes(key)) {
-                // Clear the default text that autoTable drew (since it draws standard text)
-                // Actually, the best way to handle this without overlapping is to just let autoTable draw it but we intercept and draw ourselves, or we just rely on `\n` which autoTable handles, BUT the user wants different font sizes for each line.
-                // To achieve different font sizes for lines in a single cell, we must clear it and draw manually.
-                
-                // Let's clear the cell background
-                doc.setFillColor(235, 235, 235);
+                // Clear the cell background
+                doc.setFillColor(225, 225, 225);
                 doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                 
                 // Draw borders
-                doc.setDrawColor(200, 200, 200);
+                doc.setDrawColor(190, 190, 190);
                 doc.setLineWidth(0.4);
                 doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'S');
 
                 const textX = data.cell.x + (data.cell.width / 2);
                 const textYBase = data.cell.y + (data.cell.height / 2);
                 
-                doc.setTextColor(30, 30, 30);
+                doc.setTextColor(0, 0, 0);
                 doc.setFont("Roboto", "bold");
                 
                 let line1 = "";
@@ -265,12 +267,12 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
                 if (key === 'closing') { line1 = "Current"; line2 = "Balance"; }
                 
                 // Draw line 1 (Big)
-                doc.setFontSize(9.5);
+                doc.setFontSize(8.5);
                 doc.text(line1, textX, textYBase - 1, { align: "center", baseline: "middle" });
                 
                 // Draw line 2 (Small)
-                doc.setFontSize(7.5);
-                doc.text(line2, textX, textYBase + 7, { align: "center", baseline: "middle" });
+                doc.setFontSize(6.5);
+                doc.text(line2, textX, textYBase + 6, { align: "center", baseline: "middle" });
              }
           }
 
@@ -278,27 +280,27 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
               doc.setFont('helvetica', 'italic');
-              doc.setFontSize(6.5);
-              doc.setTextColor(130, 130, 130);
+              doc.setFontSize(5.5);
+              doc.setTextColor(100, 100, 100);
               doc.text(
                 rowData._city,
-                data.cell.x + 4,
-                data.cell.y + data.cell.height - 3
+                data.cell.x + 3,
+                data.cell.y + data.cell.height - 1.5
               );
               // Restore
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(9);
-              doc.setTextColor(40, 40, 40);
+              doc.setFont('Roboto', 'bold');
+              doc.setFontSize(8);
+              doc.setTextColor(0, 0, 0);
             }
           }
         },
         didDrawPage: function (data) {
           // Footer: page number right, company stamp left
           const pageH = doc.internal.pageSize.getHeight();
-          doc.setFontSize(7);
-          doc.setTextColor(160, 160, 160);
-          doc.text("Sri Brundaban Enterprises", mL, pageH - 18);
-          doc.text("Page " + doc.internal.getNumberOfPages(), pw - mR, pageH - 18, { align: "right" });
+          doc.setFontSize(6.5);
+          doc.setTextColor(140, 140, 140);
+          doc.text("Sri Brundabana Enterprises", mL, pageH - 14);
+          doc.text("Page " + doc.internal.getNumberOfPages(), pw - mR, pageH - 14, { align: "right" });
         }
       });
 
