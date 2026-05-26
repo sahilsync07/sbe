@@ -142,13 +142,13 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
 
       // Line name – bold and prominent
       doc.setFont("Roboto", "bold");
-      doc.setFontSize(11);
+      doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
       doc.text(lineText, mL, metaY);
 
       // Company name – centered, same style
       doc.setFont("Roboto", "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text("Sri Brundabana Enterprises, Rayagada.", pw / 2, metaY, { align: "center" });
 
