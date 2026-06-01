@@ -114,7 +114,7 @@ const logoStartPress = () => {
     logoPressTimer = setTimeout(() => {
         logoDidLongPress = true;
         emit('admin-toggle');
-        if (navigator.vibrate) navigator.vibrate(50);
+        if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate(50);
     }, 600);
 };
 

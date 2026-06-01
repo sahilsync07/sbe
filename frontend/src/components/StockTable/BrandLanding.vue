@@ -681,42 +681,42 @@ const getBrandProducts = (groupNames) => {
 // Local image imports removed in favor of Cloudinary URLs
 
 // Assets using Cloudinary optimized URLs
-const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp';
+const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp';
 
 const localCarousals = {
   'EEKEN': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257404/Eeken-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257406/Eeken-2.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257408/Eeken-3.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257409/Eeken-4.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257411/Eeken-5.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257413/Eeken-6.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257415/Eeken-7.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257416/Eeken-8.jpg'
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-2.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-3.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-4.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-5.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-6.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-7.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-8.jpg'
   ],
-  'PARALITE': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257450/Paralite.jpg'],
+  'PARALITE': ['https://res.cloudinary.com/dg365ewal/image/upload/Paralite.jpg'],
   'PARAGON GENTS': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257435/Paragon-gents-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257437/Paragon-gents-2.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257439/Paragon-gents-3.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257440/Paragon-gents-4.jpg'
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-gents-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-gents-2.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-gents-3.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-gents-4.jpg'
   ],
   'PARAGON LADIES': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257442/Paragon-ladies-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257444/Paragon-ladies-2.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257446/Paragon-ladies-3.jpg'
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-ladies-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-ladies-2.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-ladies-3.jpg'
   ],
-  'P-TOES PARALITE': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257431/P-toes.png'],
+  'P-TOES PARALITE': ['https://res.cloudinary.com/dg365ewal/image/upload/P-toes.png'],
   'Safety': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257394/Boot-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1773257396/Boot-2.jpg'
+    'https://res.cloudinary.com/dg365ewal/image/upload/Boot-1.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Boot-2.jpg'
   ],
-  'School': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257448/paragon-school.jpg'],
-  'Walkaholic': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257463/Walkaholic.png'],
-  'Max': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257426/Max.jpg'],
-  'Escoute': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257418/Escoute.jpg'],
-  'LoosePacking': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257424/loose.png'],
-  'BoxPacking': ['https://res.cloudinary.com/dg365ewal/image/upload/v1773257402/box.png']
+  'School': ['https://res.cloudinary.com/dg365ewal/image/upload/paragon-school.jpg'],
+  'Walkaholic': ['https://res.cloudinary.com/dg365ewal/image/upload/Walkaholic.png'],
+  'Max': ['https://res.cloudinary.com/dg365ewal/image/upload/Max.jpg'],
+  'Escoute': ['https://res.cloudinary.com/dg365ewal/image/upload/Escoute.jpg'],
+  'LoosePacking': ['https://res.cloudinary.com/dg365ewal/image/upload/loose.png'],
+  'BoxPacking': ['https://res.cloudinary.com/dg365ewal/image/upload/box.png']
 };
 
 const getParagonImages = (card) => {
@@ -760,14 +760,14 @@ const paragonCards = [
 
 const bigBrandCards = [
   { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/' + 'v1749667073/cubixLogo_bwawj3.jpg' },
-  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1772558569/florexLogo_sqgjln.png', bg: 'bg-emerald-500' },
+  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png', bg: 'bg-emerald-500' },
   { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/' + 'v1768150265/action-logo_dzd5mq.png' },
   { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/' + 'v1749667072/relianceLogo_bvgwwz.png' },
 ];
 
 const marqueeBrands = [
   ...bigBrandCards,
-  { id: 'EEKEN', label: 'Eeken', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp' }
+  { id: 'EEKEN', label: 'Eeken', logo: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp' }
 ];
 
 const midBrandCards = [

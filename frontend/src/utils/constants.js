@@ -84,23 +84,23 @@ export const BRAND_LISTS = {
 export const TOP_BRANDS_CONFIG = [
     {
         name: 'Cubix',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg',
+        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/cubixLogo_bwawj3.jpg',
     },
     {
         name: 'CUBIX 2',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg',
+        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/cubixLogo_bwawj3.jpg',
     },
     {
         name: 'Florex (Swastik)',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/florexLogo_sqgjln.png',
+        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png',
     },
     {
         name: 'RELIANCE FOOTWEAR',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png',
+        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/relianceLogo_bvgwwz.png',
     },
     {
         name: 'Action',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png',
+        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/action-logo_dzd5mq.png',
     },
 ];
 

@@ -474,7 +474,7 @@ const logoStartPress = () => {
         logoDidLongPress = true;
         emit('promptAdminLogin');
         // Haptic-like visual feedback
-        if (navigator.vibrate) navigator.vibrate(50);
+        if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate(50);
     }, 600);
 };
 

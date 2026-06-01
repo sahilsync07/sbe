@@ -47,7 +47,7 @@
           <div class="flex items-center justify-between px-2 mb-3">
             <div class="flex items-center gap-2">
               <img
-                src="https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp"
+                src="https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp"
                 alt="Paragon"
                 class="h-6 object-contain"
               />
@@ -1305,7 +1305,7 @@ import { useAdmin } from '../../composables/useAdmin';
 import { BRAND_LISTS } from '../../utils/constants';
 
 // Separator image: 'Old stock ends here / New stocks start'
-const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/v1779506378/Old_stock_ends_here_oc3rh7.png';
+const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/Old_stock_ends_here_oc3rh7.png';
 
 // One Touch Mode group definitions (SBE-specific brand names)
 const ONE_TOUCH_GROUPS = [
@@ -1450,16 +1450,16 @@ export default {
     getBrandLogo(brandName) {
       const logos = {
         Paragon:
-          'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp',
+          'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp',
         Reliance:
-          'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png',
-        Cubix: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg',
+          'https://res.cloudinary.com/dg365ewal/image/upload/relianceLogo_bvgwwz.png',
+        Cubix: 'https://res.cloudinary.com/dg365ewal/image/upload/cubixLogo_bwawj3.jpg',
         Florex:
-          'https://res.cloudinary.com/dg365ewal/image/upload/v1772558569/florexLogo_sqgjln.png',
+          'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png',
         Eeken:
-          'https://res.cloudinary.com/dg365ewal/image/upload/v1749668232/eekenLogo_rg5xwa.webp',
+          'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp',
         Escoute:
-          'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/escouteLogo_maieji.jpg',
+          'https://res.cloudinary.com/dg365ewal/image/upload/escouteLogo_maieji.jpg',
       };
       const lowerName = brandName.toLowerCase();
       const key = Object.keys(logos).find((k) => lowerName.includes(k.toLowerCase()));
