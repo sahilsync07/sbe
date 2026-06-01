@@ -632,7 +632,6 @@ const handlePrint = () => {
                         Buyer (Bill to)<br>
                         <span style="font-weight:bold; font-size:9pt;">${pName}</span><br>
                         ${pPlace ? pPlace + '<br>' : ''}
-                        ${pMob ? 'Mob: ' + pMob + '<br>' : ''}
                         State Name : Odisha, Code : 21
                     </div>
                 </div>
