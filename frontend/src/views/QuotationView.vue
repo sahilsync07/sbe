@@ -42,10 +42,10 @@
             <div class="field-row relative">
               <label>To:</label>
               <div class="flex-1 w-full relative">
-                <input type="text" v-model="partyName" @input="filterParties" @focus="filterParties" @blur="handlePartyBlur" placeholder="Customer Name" class="w-full">
+                <input type="text" v-model="partyName" @input="filterParties" @focus="filterParties" @blur="handlePartyBlur" @keydown="handlePartyKeydown" placeholder="Customer Name" class="w-full">
                 <div v-if="showPartyDropdown" class="autocomplete-list active" style="top:100%; position:absolute;">
                   <div v-if="filteredParties.length === 0" class="autocomplete-item no-match">No matches found</div>
-                  <div v-for="(p, index) in filteredParties" :key="index" class="autocomplete-item" @mousedown="selectParty(p)">
+                  <div v-for="(p, pIdx) in filteredParties" :key="pIdx" class="autocomplete-item" :class="{ 'selected': pIdx === focusedPartyIndex }" @mousedown.prevent="selectParty(p)" @touchstart.prevent="selectParty(p)">
                     <span>{{ p }}</span>
                   </div>
                 </div>
@@ -83,12 +83,17 @@
                   <td class="td-sl no-print">{{ index + 1 }}</td>
                   
                   <td class="td-relative no-print" data-label="Description">
-                    <input class="w-full" type="text" v-model="item.desc" placeholder="Product Name" @input="handleItemInput(item)" @focus="handleItemFocus(item)" @blur="handleItemBlur" :ref="setRef(`${index}-desc`)">
+                    <input class="w-full" type="text" v-model="item.desc" placeholder="Product Name" @input="handleItemInput(item)" @focus="handleItemFocus(item)" @blur="handleItemBlur" @keydown="handleItemKeydown($event, item, index)" :ref="setRef(`${index}-desc`)">
                     <!-- Dropdown for Product Autocomplete -->
-                    <div v-if="showItemDropdownFor === item.id && filteredProducts.length > 0" class="autocomplete-dropdown w-full">
-                      <div v-for="(prod, pIdx) in filteredProducts" :key="pIdx" class="autocomplete-item" @mousedown="selectProduct(item, prod)">
-                        <div class="prod-name">{{ prod.name }}</div>
-                        <div class="prod-price">₹{{ prod.price }}</div>
+                    <div v-if="showItemDropdownFor === item.id && filteredProducts.length > 0" class="autocomplete-list active w-full" style="top: 100%; position: absolute;">
+                      <div v-for="(prod, pIdx) in filteredProducts" :key="pIdx" class="autocomplete-item" :class="{ 'selected': pIdx === focusedProductIndex }" @mousedown.prevent="selectProduct(item, prod)" @touchstart.prevent="selectProduct(item, prod)">
+                        <div class="autocomplete-item-name-wrap font-sans text-sm font-semibold truncate flex-1">
+                          <span>{{ prod.name }}</span>
+                        </div>
+                        <div class="flex gap-2 items-center shrink-0">
+                          <span v-if="prod.qty > 0" class="qty-tag">{{ prod.qty }} Pcs</span>
+                          <span class="price-tag">₹{{ prod.price.toFixed(2) }}</span>
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -270,6 +275,8 @@ const showPartyDropdown = ref(false);
 const filteredParties = ref([]);
 const showItemDropdownFor = ref(null);
 const filteredProducts = ref([]);
+const focusedProductIndex = ref(-1);
+const focusedPartyIndex = ref(-1);
 
 // Refs for navigation
 const inputRefs = ref({});
@@ -396,6 +403,7 @@ const focusNextRow = (event, index) => {
 
 // Autocomplete Logic
 const filterParties = () => {
+  focusedPartyIndex.value = -1;
   if (!partyName.value) {
     filteredParties.value = [];
     showPartyDropdown.value = false;
@@ -418,14 +426,34 @@ const selectParty = (party) => {
     partyPlace.value = '';
   }
   showPartyDropdown.value = false;
+  focusedPartyIndex.value = -1;
 };
 
 const handlePartyBlur = () => {
   setTimeout(() => { showPartyDropdown.value = false; }, 200);
 };
 
+const handlePartyKeydown = (event) => {
+  if (showPartyDropdown.value && filteredParties.value.length > 0) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusedPartyIndex.value = (focusedPartyIndex.value + 1) % filteredParties.value.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusedPartyIndex.value = (focusedPartyIndex.value - 1 + filteredParties.value.length) % filteredParties.value.length;
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const selected = filteredParties.value[focusedPartyIndex.value >= 0 ? focusedPartyIndex.value : 0];
+      if (selected) {
+        selectParty(selected);
+      }
+    }
+  }
+};
+
 const filterItems = (item) => {
   showItemDropdownFor.value = item.id;
+  focusedProductIndex.value = -1;
   if (!item.desc) {
     filteredProducts.value = [];
     return;
@@ -442,17 +470,42 @@ const selectProduct = (item, product) => {
   item.desc = product.name;
   item.rate = product.price;
   showItemDropdownFor.value = null;
+  focusedProductIndex.value = -1;
   const index = items.value.indexOf(item);
   if (index !== -1) {
-    setTimeout(() => {
+    nextTick(() => {
       const el = inputRefs.value[`${index}-qty`];
-      if (el) el.focus();
-    }, 50);
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    });
   }
 };
 
 const handleItemBlur = () => {
   setTimeout(() => { showItemDropdownFor.value = null; }, 200);
+};
+
+const handleItemKeydown = (event, item, index) => {
+  if (showItemDropdownFor.value === item.id && filteredProducts.value.length > 0) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusedProductIndex.value = (focusedProductIndex.value + 1) % filteredProducts.value.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusedProductIndex.value = (focusedProductIndex.value - 1 + filteredProducts.value.length) % filteredProducts.value.length;
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const selected = filteredProducts.value[focusedProductIndex.value >= 0 ? focusedProductIndex.value : 0];
+      if (selected) {
+        selectProduct(item, selected);
+      }
+    }
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    focusNext(event, index, 'qty');
+  }
 };
 
 // Calculations
@@ -1568,7 +1621,7 @@ const handlePrint = () => {
             }
 
             #billTable,
-            #billTable t.quotation-page-body {
+            #billTable tbody {
                 display: block;
                 width: 100%;
             }
@@ -1928,14 +1981,19 @@ const handlePrint = () => {
   }
 
   /* Hide the web UI during print */
-  #app .quotation-page-body,
   .bill-container-wrapper,
-  .bill-container,
-  .bill-container::before,
   .no-print,
   .home-header-sticky,
   header {
       display: none !important;
+  }
+
+  .quotation-page-body, .quotation-page {
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-height: auto !important;
+      background: white !important;
   }
 
   #print-output {
