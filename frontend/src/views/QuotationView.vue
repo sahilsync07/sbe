@@ -1,5 +1,5 @@
 <template>
-  <div class="quotation-page quotation-page-body min-h-screen">
+  <div class="quotation-page quotation-page-body min-h-screen pt-[54px] lg:pt-[72px]">
     <!-- Header Navbar matching HomeView style -->
     <div class="home-header-sticky sticky top-[54px] lg:top-[72px] z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10 no-print">
       <div class="home-header-card mx-auto flex w-full max-w-4xl flex-col gap-2 p-3 sm:p-5">
@@ -79,29 +79,70 @@
               </tr>
             </thead>
             <tbody id="billBody">
-              <tr v-for="(item, index) in items" :key="item.id">
-                <td class="td-sl">{{ index + 1 }}</td>
-                <td class="td-relative" data-label="Description">
-                  <input type="text" v-model="item.desc" @input="filterItems(item)" @focus="filterItems(item)" @blur="handleItemBlur" placeholder="Type to search" autocomplete="off" @keydown.enter.prevent="focusNext($event, index, 'qty')">
+              <tr v-for="(item, index) in items" :key="item.id" :class="{'is-editing': item.isEditing, 'is-compact': !item.isEditing}">
+                <template v-if="item.isEditing">
+                  <td class="td-sl no-print">{{ index + 1 }}</td>
                   
-                  <div v-if="showItemDropdownFor === item.id" class="autocomplete-list active" style="top:100%; position:absolute;">
-                    <div v-if="filteredProducts.length === 0" class="autocomplete-item no-match">No matches found</div>
-                    <div v-for="(prod, pIdx) in filteredProducts" :key="pIdx" class="autocomplete-item" @mousedown="selectProduct(item, prod)">
-                      <div class="autocomplete-item-name-wrap"><span>{{ prod.name }}</span></div>
-                      <div style="display:flex;gap:0.5rem;align-items:center;width:100%;">
-                        <span v-if="prod.qty > 0" class="qty-tag">{{ prod.qty }} Pcs</span>
-                        <span class="price-tag">₹{{ prod.price }}</span>
+                  <td class="td-relative no-print" data-label="Description">
+                    <input class="w-full" type="text" v-model="item.desc" placeholder="Product Name" @input="handleItemInput(item)" @focus="handleItemFocus(item)" @blur="handleItemBlur" :ref="setRef(`${index}-desc`)">
+                    <!-- Dropdown for Product Autocomplete -->
+                    <div v-if="showItemDropdownFor === item.id && filteredProducts.length > 0" class="autocomplete-dropdown w-full">
+                      <div v-for="(prod, pIdx) in filteredProducts" :key="pIdx" class="autocomplete-item" @mousedown="selectProduct(item, prod)">
+                        <div class="prod-name">{{ prod.name }}</div>
+                        <div class="prod-price">₹{{ prod.price }}</div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td data-label="Qty"><input type="number" v-model="item.qty" min="1" inputmode="decimal" @keydown.enter.prevent="focusNext($event, index, 'rate')" :ref="el => setInputRef(el, index, 'qty')"></td>
-                <td data-label="Rate"><input type="number" v-model="item.rate" inputmode="decimal" @focus="$event.target.select()" @keydown.enter.prevent="focusNext($event, index, 'disc')" :ref="el => setInputRef(el, index, 'rate')"></td>
-                <td data-label="Disc %"><input type="number" v-model="item.disc" min="0" max="100" inputmode="decimal" @focus="$event.target.select()" @keydown.enter.prevent="focusNextRow($event, index)" :ref="el => setInputRef(el, index, 'disc')"></td>
-                <td class="td-amount" data-label="Amount">{{ itemAmount(item).toFixed(2) }}</td>
-                <td class="td-center no-print">
-                   <button @click="removeRow(index)" class="btn-remove" aria-label="Remove item">×</button>
-                </td>
+                  </td>
+                  
+                  <td data-label="Qty" class="no-print">
+                    <input class="w-full" type="number" v-model.number="item.qty" placeholder="Qty" min="1" @keydown.enter="focusNext($event, index, 'rate')" :ref="setRef(`${index}-qty`)">
+                  </td>
+                  
+                  <td data-label="Rate" class="no-print">
+                    <input class="w-full" type="number" v-model.number="item.rate" placeholder="Rate" min="0" step="0.01" @keydown.enter="focusNext($event, index, 'disc')" :ref="setRef(`${index}-rate`)">
+                  </td>
+                  
+                  <td data-label="Disc %" class="no-print">
+                    <input class="w-full" type="number" v-model.number="item.disc" placeholder="Disc" min="0" max="100" step="0.1" @keydown.enter="saveRow(index)" :ref="setRef(`${index}-disc`)">
+                  </td>
+                  
+                  <td class="td-amount no-print" data-label="Amount">
+                    {{ itemAmount(item).toFixed(2) }}
+                  </td>
+                  
+                  <td class="td-center no-print" style="display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center;">
+                    <button @click="saveRow(index)" class="btn-tick text-green-600 hover:text-green-800 bg-green-100 hover:bg-green-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors" aria-label="Save item"><i class="fa-solid fa-check"></i></button>
+                    <button @click="removeRow(index)" class="btn-remove" aria-label="Remove item">×</button>
+                  </td>
+                </template>
+                <template v-else>
+                  <td colspan="7" class="p-0 cursor-pointer no-print w-full" @click="item.isEditing = true">
+                    <div class="flex justify-between items-center bg-white border-b border-slate-200 px-4 py-3 hover:bg-slate-50 transition-colors w-full">
+                       <div class="flex items-center gap-3">
+                         <div class="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full text-xs font-mono font-bold shrink-0">{{ index + 1 }}</div>
+                         <div>
+                           <div class="font-semibold text-slate-900 text-sm">{{ item.desc || 'Empty Item' }}</div>
+                           <div class="text-[11px] text-slate-500 font-mono mt-0.5">
+                              {{ item.qty || 0 }} Pcs @ ₹{{ item.rate || 0 }}
+                              <span v-if="item.disc"> | Disc: {{ item.disc }}%</span>
+                           </div>
+                         </div>
+                       </div>
+                       <div class="text-right flex items-center gap-3">
+                         <div class="font-bold text-slate-900 font-mono text-sm">₹{{ itemAmount(item).toFixed(2) }}</div>
+                         <button @click.stop="removeRow(index)" class="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors"><i class="fa-regular fa-trash-can"></i></button>
+                       </div>
+                    </div>
+                  </td>
+                  <!-- Print version of compact row (needs standard td structure) -->
+                  <td class="td-sl print-only" style="display:none;">{{ index + 1 }}</td>
+                  <td class="td-relative print-only" style="display:none;" data-label="Description">{{ item.desc }}</td>
+                  <td data-label="Qty" class="print-only" style="display:none;">{{ item.qty }}</td>
+                  <td data-label="Rate" class="print-only" style="display:none;">{{ item.rate }}</td>
+                  <td data-label="Disc %" class="print-only" style="display:none;">{{ item.disc }}</td>
+                  <td class="td-amount print-only" style="display:none;" data-label="Amount">{{ itemAmount(item).toFixed(2) }}</td>
+                  <td class="td-center no-print print-only" style="display:none;"></td>
+                </template>
               </tr>
             </tbody>
           </table>
@@ -291,7 +332,23 @@ onMounted(() => {
 
 // Item interactions
 const addNewRow = () => {
-  items.value.push({ id: Date.now(), desc: '', qty: 1, unit: 'Pcs', rate: 0, disc: 0 });
+  items.value.push({ id: ++rowCounter, desc: '', qty: '', rate: '', disc: '', amount: 0, isEditing: true });
+};
+
+const saveRow = (index) => {
+  items.value[index].isEditing = false;
+  if (index === items.value.length - 1) {
+    addNewRow();
+    setTimeout(() => {
+      const el = inputRefs.value[`${index + 1}-desc`];
+      if (el) el.focus();
+    }, 50);
+  } else {
+    setTimeout(() => {
+      const el = inputRefs.value[`${index + 1}-desc`];
+      if (el) el.focus();
+    }, 50);
+  }
 };
 
 const removeRow = (idx) => {
@@ -372,11 +429,13 @@ const selectProduct = (item, product) => {
   item.desc = product.name;
   item.rate = product.price;
   showItemDropdownFor.value = null;
-  // Focus Qty automatically
-  nextTick(() => {
-    const index = items.value.findIndex(i => i.id === item.id);
-    focusNext(null, index, 'qty');
-  });
+  const index = items.value.indexOf(item);
+  if (index !== -1) {
+    setTimeout(() => {
+      const el = inputRefs.value[`${index}-qty`];
+      if (el) el.focus();
+    }, 50);
+  }
 };
 
 const handleItemBlur = () => {

@@ -73,14 +73,9 @@
           
                   <!-- Paragon Legend -->
           <div v-if="groupedSidebar.paragon && groupedSidebar.paragon.length > 0" class="p-3 bg-red-50/50 border border-red-100 rounded-2xl">
-              <div class="mb-3 px-1">
-                <CachedImage 
-                   src="https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp" 
-                   :cache-key="getOptimizedUrl('https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp')"
-                   alt="Paragon" 
-                   class="h-8 object-contain" 
-                />
-              </div>
+                <div class="mb-3 px-1">
+                  <span class="text-lg font-bold text-slate-800">Paragon</span>
+                </div>
               <div class="grid grid-cols-2 gap-1">
                 <div 
                   v-for="group in groupedSidebar.paragon" 
