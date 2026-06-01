@@ -257,8 +257,9 @@ const partyName = ref('');
 const partyPlace = ref('');
 const invDate = ref(new Date().toISOString().slice(0, 10));
 
+let rowCounter = 0;
 const items = ref([
-  { id: Date.now(), desc: '', qty: 1, unit: 'Pcs', rate: 0, disc: 0 }
+  { id: ++rowCounter, desc: '', qty: '', unit: 'Pcs', rate: '', disc: '', isEditing: true }
 ]);
 const extraDisc = ref(0);
 const packingCharges = ref(0);
@@ -276,6 +277,18 @@ const setInputRef = (el, index, field) => {
   if (el) {
     inputRefs.value[`${index}-${field}`] = el;
   }
+};
+const setRef = (key) => (el) => {
+  if (el) {
+    inputRefs.value[key] = el;
+  }
+};
+
+const handleItemInput = (item) => {
+  filterItems(item);
+};
+const handleItemFocus = (item) => {
+  filterItems(item);
 };
 
 // Data Fetching
