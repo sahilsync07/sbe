@@ -51,10 +51,6 @@
                 </div>
               </div>
             </div>
-            <div class="field-row">
-              <label>Mobile:</label>
-              <input type="text" v-model="partyMob" readonly class="readonly-input">
-            </div>
           </div>
           <div class="field-group">
             <div class="field-row">
@@ -218,7 +214,6 @@ const parties = ref([]);
 // Form State
 const partyName = ref('');
 const partyPlace = ref('');
-const partyMob = ref('');
 const invDate = ref(new Date().toISOString().slice(0, 10));
 
 const items = ref([
@@ -454,7 +449,6 @@ const handlePrint = () => {
 
   const pName = partyName.value || '-';
   const pPlace = partyPlace.value || '';
-  const pMob = partyMob.value || '';
   const dateStr = invDate.value ? new Date(invDate.value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
   const gstGrandTotal = grandTotal.value;
@@ -1564,13 +1558,11 @@ const handlePrint = () => {
             #billTable td:nth-child(3) { grid-column: span 1; }
             #billTable td:nth-child(4) { grid-column: span 1; }
             #billTable td:nth-child(5) { grid-column: span 1; }
-            #billTable td:nth-child(6) { grid-column: span 1; }
 
             /* Numeric inputs on mobile */
             #billTable td:nth-child(3) input,
             #billTable td:nth-child(4) input,
-            #billTable td:nth-child(5) input,
-            #billTable td:nth-child(6) input {
+            #billTable td:nth-child(5) input {
                 font-size: 16px;
                 padding: 8px 6px;
                 border: 1px solid var(--border-light) !important;
@@ -1581,7 +1573,7 @@ const handlePrint = () => {
             }
 
             /* Amount: Bigger and spread */
-            #billTable td:nth-child(7) {
+            #billTable td:nth-child(6) {
                 grid-column: span 2;
                 text-align: right;
                 align-items: flex-end;
@@ -1592,13 +1584,13 @@ const handlePrint = () => {
                 padding-top: 4px;
             }
 
-            #billTable td:nth-child(7)::before {
+            #billTable td:nth-child(6)::before {
                 width: 100%;
                 text-align: right;
             }
 
             /* Remove Button: Top Right absolute */
-            #billTable td:nth-child(8) {
+            #billTable td:nth-child(7) {
                 position: absolute;
                 top: 4px;
                 right: 4px;
@@ -1606,11 +1598,11 @@ const handlePrint = () => {
                 display: block;
             }
 
-            #billTable td:nth-child(8)::before {
+            #billTable td:nth-child(7)::before {
                 display: none;
             }
 
-            #billTable td:nth-child(8) .btn-remove {
+            #billTable td:nth-child(7) .btn-remove {
                 opacity: 1 !important;
                 background: var(--canvas-bg);
                 color: var(--text-primary);
@@ -1761,9 +1753,8 @@ const handlePrint = () => {
             #billTable td:nth-child(3) { grid-column: span 1; }
             #billTable td:nth-child(4) { grid-column: span 1; }
             #billTable td:nth-child(5) { grid-column: span 1; }
-            #billTable td:nth-child(6) { grid-column: span 1; }
 
-            #billTable td:nth-child(7) {
+            #billTable td:nth-child(6) {
                 grid-column: 1 / -1;
                 font-size: 1.1rem;
             }
