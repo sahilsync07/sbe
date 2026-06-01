@@ -75,7 +75,6 @@
                 <th class="w-24 text-right">Rate (₹)</th>
                 <th class="w-20 text-right">Disc %</th>
                 <th class="w-32 text-right">Amount (₹)</th>
-                <th class="w-12 text-center no-print">×</th>
               </tr>
             </thead>
             <tbody id="billBody">
@@ -107,16 +106,17 @@
                   </td>
                   
                   <td class="td-amount no-print" data-label="Amount">
-                    {{ itemAmount(item).toFixed(2) }}
-                  </td>
-                  
-                  <td class="td-center no-print td-actions">
-                    <button @click="removeRow(index)" class="btn-remove btn-remove-pos" aria-label="Remove item">×</button>
-                    <button @click="saveRow(index)" class="btn-tick btn-tick-pos" aria-label="Save item"><i class="fa-solid fa-check"></i></button>
+                    <div class="amount-actions-row">
+                      <div class="action-btns-left">
+                        <button @click="saveRow(index)" class="btn-tick-pos" aria-label="Save item"><i class="fa-solid fa-check"></i></button>
+                        <button @click="removeRow(index)" class="btn-remove-pos" aria-label="Remove item">×</button>
+                      </div>
+                      <div class="amount-value">{{ itemAmount(item).toFixed(2) }}</div>
+                    </div>
                   </td>
                 </template>
                 <template v-else>
-                  <td colspan="7" class="p-0 cursor-pointer no-print w-full" @click="item.isEditing = true">
+                  <td colspan="6" class="p-0 cursor-pointer no-print w-full" @click="item.isEditing = true">
                     <div class="flex justify-between items-center bg-white border-b border-slate-200 px-4 py-3 hover:bg-slate-50 transition-colors w-full">
                        <div class="flex items-center gap-3">
                          <div class="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full text-xs font-mono font-bold shrink-0">{{ index + 1 }}</div>
@@ -1673,63 +1673,36 @@ const handlePrint = () => {
                 min-height: 44px;
             }
 
-            /* Amount: Bigger and spread */
+            /* Amount + Actions: Full width bottom row */
             #billTable td:nth-child(6) {
-                grid-column: span 2;
+                grid-column: 1 / -1;
                 text-align: right;
-                align-items: flex-end;
+                align-items: stretch;
                 justify-content: center;
-                font-size: 1.15rem;
-                font-weight: 700;
-                color: var(--text-primary);
                 padding-top: 4px;
             }
 
             #billTable td:nth-child(6)::before {
-                width: 100%;
-                text-align: right;
-            }
-
-            /* Action Buttons cell: no grid display, positioned container */
-            #billTable td:nth-child(7) {
-                position: static;
-                grid-column: 1 / -1;
-                display: flex;
-                width: 100%;
-                height: 0;
-                overflow: visible;
-            }
-
-            #billTable td:nth-child(7)::before {
                 display: none;
             }
 
-            /* Remove button: top-right of card */
-            #billTable td:nth-child(7) .btn-remove-pos {
-                position: absolute;
-                top: 6px;
-                right: 6px;
-                opacity: 1 !important;
+            /* Remove button: small subtle */
+            .btn-remove-pos {
                 background: var(--canvas-bg);
                 color: var(--text-secondary);
-                padding: 0;
                 border-radius: 50%;
                 font-size: 1.1rem;
                 line-height: 1;
-                border: 1px solid var(--border-color);
-                width: 32px;
-                height: 32px;
+                border: 1px solid var(--border-light);
+                width: 36px;
+                height: 36px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                z-index: 2;
             }
 
-            /* Tick button: bottom-right of card */
-            #billTable td:nth-child(7) .btn-tick-pos {
-                position: absolute;
-                bottom: 10px;
-                right: 10px;
+            /* Tick button: theme-inspired dark circle */
+            .btn-tick-pos {
                 background: var(--border-color);
                 color: #fff;
                 border: none;
@@ -1741,12 +1714,33 @@ const handlePrint = () => {
                 justify-content: center;
                 font-size: 1rem;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                z-index: 2;
                 transition: transform 0.15s ease, box-shadow 0.15s ease;
             }
 
-            #billTable td:nth-child(7) .btn-tick-pos:active {
+            .btn-tick-pos:active {
                 transform: scale(0.92);
+            }
+
+            /* Amount + actions row on mobile */
+            .amount-actions-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                padding-top: 6px;
+            }
+
+            .action-btns-left {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .amount-value {
+                font-size: 1.15rem;
+                font-weight: 700;
+                font-family: var(--font-mono);
+                color: var(--text-primary);
             }
 
             /* General mobile input tweaks inside table */
@@ -1908,6 +1902,37 @@ const handlePrint = () => {
 
         #print-output {
             display: none;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 5mm;
+            }
+
+            body {
+                background: white !important;
+                color: #000 !important;
+                padding: 0 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 8pt;
+                line-height: 1.2;
+            }
+
+            .quotation-page-body,
+            .bill-container-wrapper,
+            .bill-container,
+            .bill-container::before,
+            .no-print,
+            .home-header-sticky {
+                display: none !important;
+            }
+
+            #print-output {
+                display: block !important;
+            }
         }
 </style>
 
