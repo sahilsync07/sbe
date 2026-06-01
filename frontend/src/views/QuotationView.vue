@@ -1784,186 +1784,43 @@ const handlePrint = () => {
         #print-output {
             display: none;
         }
-
-        /* ============================================================
-           PRINT STYLES
-           ============================================================ */
-
-        
-            .quotation-page-body {
-                background: white !important;
-                color: #000 !important;
-                padding: 0 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                font-size: 8pt;
-                line-height: 1.2;
-            }
-
-            .bill-container, .bill-container::before, .no-print {
-                display: none !important;
-            }
-
-            #print-output {
-                display: block !important;
-            }
-
-            .tally-bill {
-                width: 100%;
-                color: #000;
-            }
-            .tally-bill + .tally-bill {
-                page-break-before: always;
-            }
-
-            .tally-title {
-                text-align: center;
-                font-weight: bold;
-                font-size: 10pt;
-                text-decoration: underline;
-                margin-bottom: 4px;
-                text-transform: uppercase;
-            }
-
-            .tally-box {
-                border: 1px solid #000;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .t-row {
-                display: flex;
-                border-bottom: 1px solid #000;
-            }
-
-            .t-col-left {
-                flex: 1;
-                border-right: 1px solid #000;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .t-col-right {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .t-company, .t-buyer {
-                padding: 4px;
-            }
-            .t-buyer {
-                border-top: 1px solid #000;
-                flex: 1;
-            }
-            
-            .t-grid-2 {
-                display: flex;
-                border-bottom: 1px solid #000;
-                flex: 1;
-            }
-            .t-grid-2:last-child {
-                border-bottom: none;
-            }
-            .t-gcol {
-                flex: 1;
-                padding: 2px 4px;
-                border-right: 1px solid #000;
-                min-height: 24px;
-            }
-            .t-gcol:last-child {
-                border-right: none;
-            }
-            .t-gcol-full {
-                flex: 1;
-                padding: 2px 4px;
-            }
-
-            .tally-table-wrapper {
-                border-bottom: 1px solid #000;
-                min-height: 300px;
-            }
-            table.t-table {
-                width: 100%;
-                border-collapse: collapse;
-                table-layout: fixed;
-            }
-            .t-table th {
-                border-right: 1px solid #000;
-                border-bottom: 1px solid #000;
-                padding: 4px 2px;
-                text-align: center;
-                font-weight: normal;
-                vertical-align: middle;
-            }
-            .t-table th:last-child {
-                border-right: none;
-            }
-            .t-table td {
-                border-right: 1px solid #000;
-                padding: 2px 4px;
-                vertical-align: top;
-            }
-            .t-table td:last-child {
-                border-right: none;
-            }
-            .t-table td.num { text-align: right; }
-            .t-table td.cen { text-align: center; }
-            
-            .t-table-totals {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            .t-table-totals td {
-                border-top: 1px solid #000;
-                padding: 4px;
-                font-weight: bold;
-            }
-            
-            .t-words {
-                padding: 4px;
-                border-bottom: 1px solid #000;
-            }
-            .t-tax-summary {
-                width: 100%;
-                border-collapse: collapse;
-                border-bottom: 1px solid #000;
-            }
-            .t-tax-summary th, .t-tax-summary td {
-                border-right: 1px solid #000;
-                border-bottom: 1px solid #000;
-                padding: 2px 4px;
-                text-align: right;
-            }
-            .t-tax-summary th { text-align: center; }
-            .t-tax-summary th:last-child, .t-tax-summary td:last-child { border-right: none; }
-            .t-tax-summary tr:last-child td { border-bottom: none; }
-            
-            .t-bank-sig {
-                display: flex;
-            }
-            .t-bank {
-                flex: 1;
-                border-right: 1px solid #000;
-                padding: 4px;
-            }
-            .t-sig {
-                flex: 1;
-                padding: 4px;
-                text-align: right;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-            
-            .t-footer-msg {
-                text-align: center;
-                font-size: 7pt;
-                margin-top: 2px;
-            }
-        </style>
+</style>
 
 <style>
 /* Global Print Styles since scoped doesn't affect v-html injected content well */
+@media print {
+  .tally-bill { width: 100%; color: #000; font-family: Arial, sans-serif; font-size: 8pt; line-height: 1.2; }
+  .tally-bill + .tally-bill { page-break-before: always; }
+  .tally-title { text-align: center; font-weight: bold; font-size: 10pt; text-decoration: underline; margin-bottom: 4px; text-transform: uppercase; }
+  .tally-box { border: 1px solid #000; display: flex; flex-direction: column; }
+  .t-row { display: flex; border-bottom: 1px solid #000; }
+  .t-col-left { flex: 1; border-right: 1px solid #000; display: flex; flex-direction: column; }
+  .t-col-right { flex: 1; display: flex; flex-direction: column; }
+  .t-company, .t-buyer { padding: 4px; }
+  .t-buyer { border-top: 1px solid #000; flex: 1; }
+  .t-grid-2 { display: flex; border-bottom: 1px solid #000; flex: 1; }
+  .t-grid-2:last-child { border-bottom: none; }
+  .t-gcol { flex: 1; padding: 2px 4px; border-right: 1px solid #000; }
+  .t-gcol:last-child { border-right: none; }
+  .t-gcol-full { flex: 1; padding: 2px 4px; }
+  .tally-table-wrapper { border-bottom: 1px solid #000; min-height: 300px; }
+  table.t-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .t-table th { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 2px; text-align: center; font-weight: normal; }
+  .t-table th:last-child { border-right: none; }
+  .t-table td { border-right: 1px solid #000; padding: 2px 4px; vertical-align: top; }
+  .t-table td:last-child { border-right: none; }
+  .t-table td.num { text-align: right; }
+  .t-table td.cen { text-align: center; }
+  .t-table-totals { width: 100%; border-collapse: collapse; }
+  .t-table-totals td { border-top: 1px solid #000; padding: 4px; font-weight: bold; }
+  .t-words { padding: 4px; border-bottom: 1px solid #000; }
+  .t-tax-summary { width: 100%; border-collapse: collapse; border-bottom: 1px solid #000; }
+  .t-tax-summary th, .t-tax-summary td { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 2px 4px; text-align: right; }
+  .t-tax-summary th { text-align: center; }
+  .t-tax-summary th:last-child, .t-tax-summary td:last-child { border-right: none; }
+  .t-bank-sig { display: flex; }
+  .t-bank { flex: 1; border-right: 1px solid #000; padding: 4px; }
+  .t-sig { flex: 1; padding: 4px; text-align: right; display: flex; flex-direction: column; justify-content: space-between; }
+  .t-footer-msg { text-align: center; font-size: 7pt; margin-top: 2px; }
+}
 </style>
