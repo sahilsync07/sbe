@@ -117,7 +117,7 @@
                 </template>
                 <template v-else>
                   <td colspan="6" class="p-0 cursor-pointer no-print w-full" @click="item.isEditing = true">
-                    <div class="flex justify-between items-center bg-white border-b border-slate-200 px-4 py-3 hover:bg-slate-50 transition-colors w-full">
+                    <div class="flex justify-between items-center bg-white border border-slate-200 rounded-md shadow-sm px-4 py-3 hover:border-slate-300 hover:shadow transition-all w-full">
                        <div class="flex items-center gap-3">
                          <div class="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full text-xs font-mono font-bold shrink-0">{{ index + 1 }}</div>
                          <div>
@@ -702,9 +702,9 @@ const handlePrint = () => {
 
   printHTML.value = page1 + page2;
 
-  nextTick(() => {
+  setTimeout(() => {
     window.print();
-  });
+  }, 100);
 };
 </script>
 
@@ -1650,7 +1650,7 @@ const handlePrint = () => {
                 border: none !important;
                 box-shadow: none !important;
                 background: transparent !important;
-                margin-bottom: 0 !important;
+                margin-bottom: 8px !important;
             }
 
             #billTable tr.is-compact td[colspan] {
