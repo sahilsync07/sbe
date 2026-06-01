@@ -110,11 +110,19 @@ const links = [
     gradient: 'linear-gradient(135deg, #8b5cf6, #db2777)',
     shadow: '0 8px 24px -4px rgba(139,92,246,0.4)',
   },
+  {
+    path: '/quotation',
+    label: 'Quotation & Bill',
+    desc: 'Generate general & tax bills',
+    icon: 'fa-file-invoice',
+    gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
+    shadow: '0 8px 24px -4px rgba(34,197,94,0.4)',
+  },
 ];
 
 const filteredLinks = computed(() => {
   return links.filter(item => {
-    if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list') && !isAdmin.value && !isSuperAdmin.value) {
+    if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation') && !isAdmin.value && !isSuperAdmin.value) {
       return false;
     }
     return true;

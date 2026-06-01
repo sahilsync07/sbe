@@ -9,6 +9,7 @@ import SampleRoomView from "./views/SampleRoomView.vue";
 import HomeView from "./views/HomeView.vue";
 import RateChartView from "./views/RateChartView.vue";
 import LineListView from "./views/LineListView.vue";
+import QuotationView from "./views/QuotationView.vue";
 import { useAdmin } from "./composables/useAdmin";
 
 const isAndroid = Capacitor.getPlatform() === 'android';
@@ -28,6 +29,7 @@ const routes = [
   { path: "/line-list", component: LineListView },
   { path: "/latest-stock", component: LatestStock },
   { path: "/home", component: HomeView },
+  { path: "/quotation", component: QuotationView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];
@@ -38,7 +40,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  if (to.path === '/ledger' || to.path === '/daybook' || to.path === '/line-list') {
+  if (to.path === '/ledger' || to.path === '/daybook' || to.path === '/line-list' || to.path === '/quotation') {
     const { isAdmin, isSuperAdmin, checkAdminState } = useAdmin();
     await checkAdminState();
     
