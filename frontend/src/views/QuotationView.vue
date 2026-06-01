@@ -1624,6 +1624,8 @@ const handlePrint = () => {
                 grid-column: 1 / -1;
                 margin-top: 10px;
                 margin-bottom: 6px;
+                display: block;
+                width: 100%;
             }
 
             #billTable td:nth-child(2)::before {
@@ -1654,6 +1656,7 @@ const handlePrint = () => {
             #billTable tr.is-compact td[colspan] {
                 display: block !important;
                 width: 100% !important;
+                position: relative !important;
             }
 
             #billTable td:nth-child(3) { grid-column: span 1; }
@@ -1903,42 +1906,42 @@ const handlePrint = () => {
         #print-output {
             display: none;
         }
-
-        @media print {
-            @page {
-                size: A4;
-                margin: 5mm;
-            }
-
-            body {
-                background: white !important;
-                color: #000 !important;
-                padding: 0 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                font-size: 8pt;
-                line-height: 1.2;
-            }
-
-            .quotation-page-body,
-            .bill-container-wrapper,
-            .bill-container,
-            .bill-container::before,
-            .no-print,
-            .home-header-sticky {
-                display: none !important;
-            }
-
-            #print-output {
-                display: block !important;
-            }
-        }
 </style>
 
 <style>
 /* Global Print Styles since scoped doesn't affect v-html injected content well */
 @media print {
+  @page {
+      size: A4;
+      margin: 5mm;
+  }
+
+  body {
+      background: white !important;
+      color: #000 !important;
+      padding: 0 !important;
+      font-family: Arial, Helvetica, sans-serif !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      font-size: 8pt;
+      line-height: 1.2;
+  }
+
+  /* Hide the web UI during print */
+  #app .quotation-page-body,
+  .bill-container-wrapper,
+  .bill-container,
+  .bill-container::before,
+  .no-print,
+  .home-header-sticky,
+  header {
+      display: none !important;
+  }
+
+  #print-output {
+      display: block !important;
+  }
+
   .tally-bill { width: 100%; color: #000; font-family: Arial, sans-serif; font-size: 8pt; line-height: 1.2; }
   .tally-bill + .tally-bill { page-break-before: always; }
   .tally-title { text-align: center; font-weight: bold; font-size: 10pt; text-decoration: underline; margin-bottom: 4px; text-transform: uppercase; }
