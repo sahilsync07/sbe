@@ -76,7 +76,6 @@
                 <th class="w-12 text-center">Sl.</th>
                 <th class="min-w-desc">Description</th>
                 <th class="w-24 text-right">Qty</th>
-                <th class="w-20 text-right">Unit</th>
                 <th class="w-24 text-right">Rate (₹)</th>
                 <th class="w-20 text-right">Disc %</th>
                 <th class="w-32 text-right">Amount (₹)</th>
@@ -101,7 +100,6 @@
                   </div>
                 </td>
                 <td data-label="Qty"><input type="number" v-model="item.qty" min="1" inputmode="decimal" @keydown.enter.prevent="focusNext($event, index, 'rate')" :ref="el => setInputRef(el, index, 'qty')"></td>
-                <td data-label="Unit"><input type="text" v-model="item.unit" tabindex="-1" style="color:var(--text-secondary);" readonly></td>
                 <td data-label="Rate"><input type="number" v-model="item.rate" inputmode="decimal" @focus="$event.target.select()" @keydown.enter.prevent="focusNext($event, index, 'disc')" :ref="el => setInputRef(el, index, 'rate')"></td>
                 <td data-label="Disc %"><input type="number" v-model="item.disc" min="0" max="100" inputmode="decimal" @focus="$event.target.select()" @keydown.enter.prevent="focusNextRow($event, index)" :ref="el => setInputRef(el, index, 'disc')"></td>
                 <td class="td-amount" data-label="Amount">{{ itemAmount(item).toFixed(2) }}</td>
@@ -124,7 +122,7 @@
               <span>{{ amountInWords }}</span>
             </div>
 
-            <div class="bank-details">
+            <div class="bank-details relative group">
               <p class="bank-title">Bank Details</p>
               <p class="bank-name">M/S Sri Brundabana Enterprises</p>
               <div class="bank-info">
@@ -133,6 +131,9 @@
                 <p>SBI ADB RAYAGADA BRANCH</p>
                 <p>UPI ID: <span>36878162058@sbi</span></p>
               </div>
+              <button @click="copyBankDetails" class="absolute top-2 right-2 text-slate-400 hover:text-slate-600 transition-all active:scale-95 no-print" title="Copy Bank Details">
+                <i class="fa-regular fa-copy text-lg"></i>
+              </button>
             </div>
           </div>
 
@@ -368,6 +369,7 @@ const filterItems = (item) => {
   }
   const terms = item.desc.toLowerCase().split(/\s+/).filter(Boolean);
   filteredProducts.value = products.value.filter(p => {
+    if (p.name.includes('@')) return false;
     const pLower = p.name.toLowerCase();
     return terms.every(t => pLower.includes(t));
   }).slice(0, 20);
@@ -431,6 +433,16 @@ function rupeesInWords(amount) {
   str += convertUnder1000(n);
   return (str.trim() + " Rupees Only");
 }
+
+const copyBankDetails = async () => {
+  const text = "M/S Sri Brundabana Enterprises\nSB Account no: 36878162058\nIFSC code: SBIN0003068\nSBI ADB RAYAGADA BRANCH\nUPI ID: 36878162058@sbi";
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('Bank details copied to clipboard!');
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+  }
+};
 
 // Print Logic
 const printHTML = ref('');
@@ -697,7 +709,7 @@ input, select { font-family: var(--font-mono); font-size: 16px; padding: 6px 8px
 input.readonly-input { background-color: #e5e7eb; color: var(--text-secondary); pointer-events: none; }
 input:focus { box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15); }
 
-.table-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
+.table-wrap { overflow: visible; margin-bottom: 1.5rem; }
 table { width: 100%; border-collapse: collapse; }
 th { background-color: var(--border-color); color: #ffffff; font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 0.6rem 0.75rem; }
 td { padding: 0.25rem; font-size: 0.8rem; border-bottom: 1px solid var(--border-light); }
@@ -746,8 +758,8 @@ table input[type="number"] { text-align: right; }
   #billTable td::before { content: attr(data-label); font-family: var(--font-mono); font-size: 0.55rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2px; font-weight: 700; }
   #billTable td:nth-child(1) { position: absolute; top: 8px; left: 10px; }
   #billTable td:nth-child(2) { grid-column: 1 / -1; margin-top: 10px; }
-  #billTable td:nth-child(7) { grid-column: span 2; text-align: right; font-size: 1.15rem; }
-  #billTable td:nth-child(8) { position: absolute; top: 4px; right: 4px; }
+  #billTable td:nth-child(6) { grid-column: span 2; text-align: right; font-size: 1.15rem; }
+  #billTable td:nth-child(7) { position: absolute; top: 4px; right: 4px; }
 }
 
 @media print {
