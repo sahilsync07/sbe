@@ -110,9 +110,9 @@
                     {{ itemAmount(item).toFixed(2) }}
                   </td>
                   
-                  <td class="td-center no-print" style="display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center;">
-                    <button @click="saveRow(index)" class="btn-tick text-green-600 hover:text-green-800 bg-green-100 hover:bg-green-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors" aria-label="Save item"><i class="fa-solid fa-check"></i></button>
-                    <button @click="removeRow(index)" class="btn-remove" aria-label="Remove item">×</button>
+                  <td class="td-center no-print td-actions">
+                    <button @click="removeRow(index)" class="btn-remove btn-remove-pos" aria-label="Remove item">×</button>
+                    <button @click="saveRow(index)" class="btn-tick btn-tick-pos" aria-label="Save item"><i class="fa-solid fa-check"></i></button>
                   </td>
                 </template>
                 <template v-else>
@@ -234,7 +234,7 @@
 
         <div class="btn-container no-print">
           <button @click="handlePrint" class="btn-primary">
-            🖨️ Print Quote
+            Print
           </button>
         </div>
       </div>
@@ -1637,6 +1637,23 @@ const handlePrint = () => {
                 border: 1px solid var(--border-color) !important;
                 border-radius: 4px;
                 background: var(--card-bg) !important;
+                width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            /* Compact rows: override grid to simple block */
+            #billTable tr.is-compact {
+                display: block !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                margin-bottom: 0 !important;
+            }
+
+            #billTable tr.is-compact td[colspan] {
+                display: block !important;
+                width: 100% !important;
             }
 
             #billTable td:nth-child(3) { grid-column: span 1; }
@@ -1673,30 +1690,63 @@ const handlePrint = () => {
                 text-align: right;
             }
 
-            /* Remove Button: Top Right absolute */
+            /* Action Buttons cell: no grid display, positioned container */
             #billTable td:nth-child(7) {
-                position: absolute;
-                top: 4px;
-                right: 4px;
-                width: auto;
-                display: block;
+                position: static;
+                grid-column: 1 / -1;
+                display: flex;
+                width: 100%;
+                height: 0;
+                overflow: visible;
             }
 
             #billTable td:nth-child(7)::before {
                 display: none;
             }
 
-            #billTable td:nth-child(7) .btn-remove {
+            /* Remove button: top-right of card */
+            #billTable td:nth-child(7) .btn-remove-pos {
+                position: absolute;
+                top: 6px;
+                right: 6px;
                 opacity: 1 !important;
                 background: var(--canvas-bg);
-                color: var(--text-primary);
-                padding: 6px 12px;
-                border-radius: 4px;
-                font-size: 1.2rem;
+                color: var(--text-secondary);
+                padding: 0;
+                border-radius: 50%;
+                font-size: 1.1rem;
                 line-height: 1;
                 border: 1px solid var(--border-color);
-                min-width: 44px;
-                min-height: 44px;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2;
+            }
+
+            /* Tick button: bottom-right of card */
+            #billTable td:nth-child(7) .btn-tick-pos {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                background: var(--border-color);
+                color: #fff;
+                border: none;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                z-index: 2;
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
+            }
+
+            #billTable td:nth-child(7) .btn-tick-pos:active {
+                transform: scale(0.92);
             }
 
             /* General mobile input tweaks inside table */
