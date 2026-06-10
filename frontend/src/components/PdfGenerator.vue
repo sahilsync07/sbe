@@ -786,7 +786,6 @@
 
               <!-- Native App Share Button (WhatsApp/etc) -->
               <button
-                v-if="isNativeApp"
                 @click="shareViaNativeApp"
                 :disabled="selectedBrands.length === 0 || isGenerating"
                 class="w-full mt-3 py-4 bg-[#25D366] hover:bg-[#128C7E] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
