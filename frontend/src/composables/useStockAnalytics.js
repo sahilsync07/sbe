@@ -198,9 +198,29 @@ export function useStockAnalytics(stockData, lookbackDays) {
       .slice(0, 10); // Top 10 groups
   });
 
+  /**
+   * Global metrics across all products
+   */
+  const globalMetrics = computed(() => {
+    const products = analyzedProducts.value;
+    let totalStock = 0;
+    let totalSold = 0;
+    products.forEach(p => {
+      totalStock += p.currentQty;
+      totalSold += p.totalSold;
+    });
+    const sellThroughRate = (totalStock + totalSold) > 0 ? (totalSold / (totalStock + totalSold)) * 100 : 0;
+    return {
+      totalStock,
+      totalSold,
+      sellThroughRate: Math.round(sellThroughRate * 10) / 10
+    };
+  });
+
   return {
     analyzedProducts,
     summary,
     groupInsights,
+    globalMetrics,
   };
 }
