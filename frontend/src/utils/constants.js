@@ -122,7 +122,9 @@ export const DEFAULT_MIN_DATE = new Date('2025-11-01');
 
 // New arrival threshold (1 month)
 export const NEW_ARRIVAL_MONTHS = 1;
+export const NEW_ARRIVAL_DAYS_THRESHOLD = 30;
 
 // Artificial delay for visual loading state during filtering (reduced from 1500 to 50 for speed)
 export const FILTER_DELAY_MS = 50;
+
 
