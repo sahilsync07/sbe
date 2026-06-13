@@ -682,6 +682,10 @@ const getBrandProducts = (groupNames) => {
     for (const group of stockData.value) {
         if (lower.includes(group.groupName.toLowerCase()) && group.products) {
             for (const p of group.products) {
+                if (cleanView.value) {
+                    if (!p.imageUrl || Number(p.quantity) < 4) continue;
+                }
+                
                 if (p.imageUrl) products.push(p);
             }
         }
