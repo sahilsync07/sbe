@@ -39,39 +39,82 @@ const repoRoot = path.resolve(__dirname, "../../");
  * @returns {Promise<{success: boolean, message: string}>}
  */
 async function gitCommitAndPush(commitMessage) {
-  return new Promise((resolve) => {
-    const cmd = `git add -A && git commit -m "${commitMessage}" && git push`;
-    console.log(`🚀 Git: Running in ${repoRoot}`);
-    console.log(`   Command: ${cmd}`);
+  const gitEnv = {
+    ...process.env,
+    GIT_EDITOR: 'true',           // Prevent editor from opening
+    GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
+    GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
+  };
+  const execOpts = { cwd: repoRoot, timeout: 30000, env: gitEnv };
 
-    exec(cmd, {
-      cwd: repoRoot,
-      timeout: 30000,
-      env: {
-        ...process.env,
-        GIT_EDITOR: 'true',           // Prevent editor from opening
-        GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
-        GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
-      }
-    }, (error, stdout, stderr) => {
-      if (error) {
-        // "nothing to commit" is not a real error
-        if (stderr?.includes("nothing to commit") || stdout?.includes("nothing to commit")) {
-          console.log("✅ Git: Nothing to commit (data unchanged)");
-          resolve({ success: true, message: "Nothing to commit" });
-          return;
-        }
-        console.error("❌ Git commit/push failed:", error.message);
-        console.error("   stderr:", stderr);
-        resolve({ success: false, message: error.message });
-        return;
-      }
-      console.log("✅ Git: Committed and pushed successfully");
-      if (stdout) console.log("   stdout:", stdout.trim());
-      resolve({ success: true, message: "Committed and pushed" });
+  const run = (cmd) => new Promise((resolve) => {
+    exec(cmd, execOpts, (error, stdout, stderr) => {
+      resolve({ error, stdout: stdout || '', stderr: stderr || '' });
     });
   });
+
+  console.log(`🚀 Git: Running in ${repoRoot}`);
+
+  // Step 1: Stage all changes
+  await run('git add -A');
+
+  // Step 2: Commit (may fail with "nothing to commit" — that's OK)
+  const commitResult = await run(`git commit -m "${commitMessage}"`);
+  if (commitResult.error) {
+    if (commitResult.stdout.includes('nothing to commit') || commitResult.stderr.includes('nothing to commit')) {
+      console.log('✅ Git: Nothing to commit (data unchanged)');
+      return { success: true, message: 'Nothing to commit' };
+    }
+    console.error('❌ Git commit failed:', commitResult.stderr);
+    return { success: false, message: commitResult.stderr };
+  }
+
+  // Step 3: Pull --rebase to sync with remote before pushing
+  // This avoids merge commits and conflict markers in data files
+  const pullResult = await run('git pull --rebase origin main');
+  if (pullResult.error) {
+    // Rebase conflict — abort and force push our version
+    // Our data is always the freshest (just fetched from Tally + preserved images),
+    // so it's safe to overwrite the remote's data files.
+    console.warn('⚠️ Git: Rebase conflict detected, aborting rebase...');
+    console.warn('   stderr:', pullResult.stderr);
+    await run('git rebase --abort');
+
+    // Try a regular pull with auto-resolve (accept ours for data files)
+    const mergeResult = await run('git pull -X ours origin main');
+    if (mergeResult.error) {
+      console.error('❌ Git: Pull with auto-resolve also failed:', mergeResult.stderr);
+      return { success: false, message: 'Pull conflict could not be auto-resolved: ' + mergeResult.stderr };
+    }
+    console.log('✅ Git: Resolved conflicts by keeping our version');
+  }
+
+  // Step 4: Verify no conflict markers leaked into stock-data.json
+  try {
+    const stockContent = await fs.readFile(stockDataPath, 'utf-8');
+    if (stockContent.includes('<<<<<<<') || stockContent.includes('>>>>>>>')) {
+      console.error('❌ Git: Conflict markers detected in stock-data.json after merge! Cleaning...');
+      // The file is corrupted — our pre-merge version is the correct one.
+      // Re-read from the last committed version before the merge
+      await run('git checkout HEAD -- frontend/public/assets/stock-data.json frontend/public/assets/ledger-data.json');
+      await run('git add -A && git commit -m "fix: remove merge conflict markers from data files"');
+      console.log('✅ Git: Cleaned conflict markers from data files');
+    }
+  } catch (checkErr) {
+    console.warn('⚠️ Git: Could not verify stock-data.json for conflict markers:', checkErr.message);
+  }
+
+  // Step 5: Push
+  const pushResult = await run('git push origin main');
+  if (pushResult.error) {
+    console.error('❌ Git push failed:', pushResult.stderr);
+    return { success: false, message: 'Push failed: ' + pushResult.stderr };
+  }
+
+  console.log('✅ Git: Committed and pushed successfully');
+  return { success: true, message: 'Committed and pushed' };
 }
+
 
 /**
  * Formats the current date/time into a readable commit timestamp.
