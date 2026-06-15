@@ -28,22 +28,37 @@
             </div>
           </div>
 
-          <!-- Search Bar -->
-          <div class="relative mt-1">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search products, groups..."
-              class="oldstock-search w-full rounded-xl bg-slate-50/80 border border-slate-200/60 pl-9 pr-9 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
-            />
-            <button
-              v-if="searchQuery"
-              @click="searchQuery = ''"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <i class="fa-solid fa-xmark text-xs"></i>
-            </button>
+          <!-- Search Bar & Controls -->
+          <div class="flex flex-col sm:flex-row gap-3 mt-1">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search products, groups..."
+                class="oldstock-search w-full rounded-xl bg-slate-50/80 border border-slate-200/60 pl-9 pr-9 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
+              />
+              <button
+                v-if="searchQuery"
+                @click="searchQuery = ''"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-2 sm:w-auto">
+              <!-- Toggle Out of Stock -->
+              <label class="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl bg-slate-50/80 border border-slate-200/60 px-3 py-2.5 cursor-pointer hover:bg-slate-100 transition-colors">
+                <input type="checkbox" v-model="hideOutOfStock" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                <span class="text-xs font-semibold text-slate-700 whitespace-nowrap">Hide Out of Stock</span>
+              </label>
+              
+              <!-- Print Button -->
+              <button @click="handlePrint" class="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-white shadow-sm hover:bg-indigo-700 active:scale-95 transition-all">
+                <i class="fa-solid fa-print text-sm"></i>
+                <span class="text-xs font-bold whitespace-nowrap">Print PDF</span>
+              </button>
+            </div>
           </div>
 
           <!-- Mobile Summary -->
@@ -162,6 +177,35 @@
         </div>
       </div>
     </main>
+
+    <!-- Hidden Print Area -->
+    <div id="print-area" class="print-only">
+      <div class="print-header">
+        <h1>Products Without Photos</h1>
+        <p>M/S Sri Brundaban Enterprises</p>
+        <p>Date: {{ new Date().toLocaleDateString('en-IN') }} | Filter: {{ hideOutOfStock ? 'In-Stock Only' : 'All Products' }}</p>
+      </div>
+      
+      <div v-for="group in filteredGroups" :key="group.groupName" class="print-group">
+        <h2>{{ group.groupName }} <span>({{ group.products.length }} items)</span></h2>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 5%">#</th>
+              <th style="width: 80%">Product Name</th>
+              <th style="width: 15%; text-align: right;">Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(product, idx) in group.products" :key="product.productName">
+              <td>{{ idx + 1 }}</td>
+              <td><span v-html="product.productName"></span></td>
+              <td style="text-align: right;"><b>{{ product.quantity }}</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -171,9 +215,14 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const searchQuery = ref('');
+const hideOutOfStock = ref(true);
 const loading = ref(true);
 const allGroupsData = ref([]);
 const expandedGroups = ref(new Set());
+
+const handlePrint = () => {
+  window.print();
+};
 
 // Fetch stock data
 const fetchStockData = async () => {
@@ -218,19 +267,30 @@ const processData = (data) => {
   allGroupsData.value = results;
 };
 
+// Filter by stock
+const baseGroups = computed(() => {
+  if (!hideOutOfStock.value) return allGroupsData.value;
+  return allGroupsData.value.map(g => ({
+    ...g,
+    products: g.products.filter(p => p.quantity > 0)
+  })).filter(g => g.products.length > 0);
+});
+
 // Filter by search
 const filteredGroups = computed(() => {
-  if (!searchQuery.value.trim()) return allGroupsData.value;
   const q = searchQuery.value.toLowerCase().trim();
   const results = [];
-  for (const group of allGroupsData.value) {
+  
+  for (const group of baseGroups.value) {
+    if (!q) {
+      results.push({ ...group, inStockCount: group.products.filter(p=>p.quantity>0).length });
+      continue;
+    }
     const groupNameMatch = group.groupName.toLowerCase().includes(q);
-    const matchingProducts = group.products.filter(p =>
-      p.productName.toLowerCase().includes(q)
-    );
+    const matchingProducts = group.products.filter(p => p.productName.toLowerCase().includes(q));
+    
     if (groupNameMatch) {
-      // Show all products if group name matches
-      results.push({ ...group });
+      results.push({ ...group, inStockCount: group.products.filter(p=>p.quantity>0).length });
     } else if (matchingProducts.length > 0) {
       results.push({
         ...group,
@@ -239,11 +299,11 @@ const filteredGroups = computed(() => {
       });
     }
   }
-  return results;
+  return results.sort((a, b) => b.products.length - a.products.length);
 });
 
-const totalProducts = computed(() => allGroupsData.value.reduce((sum, g) => sum + g.products.length, 0));
-const totalGroups = computed(() => allGroupsData.value.length);
+const totalProducts = computed(() => baseGroups.value.reduce((sum, g) => sum + g.products.length, 0));
+const totalGroups = computed(() => baseGroups.value.length);
 const filteredCount = computed(() => filteredGroups.value.reduce((sum, g) => sum + g.products.length, 0));
 
 const toggleGroup = (name) => {
@@ -313,5 +373,70 @@ onMounted(() => {
 }
 .oldstock-search:focus {
   background: rgba(255,255,255,0.95);
+}
+
+/* Print Styles */
+.print-only { display: none; }
+
+@media print {
+  .oldstock-shell > main { display: none !important; }
+  .oldstock-shell { background: white !important; min-height: auto; }
+  
+  .print-only {
+    display: block !important;
+    width: 100%;
+    color: #000;
+  }
+  
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+  
+  .print-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+  .print-header h1 { font-size: 18pt; font-weight: bold; margin-bottom: 5px; color: #000; }
+  .print-header p { font-size: 10pt; margin: 2px 0; color: #333; }
+  
+  .print-group {
+    margin-bottom: 15px;
+    page-break-inside: avoid;
+  }
+  .print-group h2 {
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 5px;
+    background: #f1f5f9;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-group h2 span { font-size: 9pt; font-weight: normal; color: #64748b; margin-left: 5px; }
+  
+  .print-group table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+  .print-group th, .print-group td {
+    border: 1px solid #cbd5e1;
+    padding: 4px 8px;
+    text-align: left;
+    color: #000;
+  }
+  .print-group th {
+    background: #f8fafc;
+    font-weight: bold;
+    color: #334155;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 </style>
