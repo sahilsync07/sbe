@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div class="bill-container-wrapper p-4 max-w-5xl mx-auto no-print">
+    <div class="bill-container-wrapper p-4 w-full max-w-[1400px] mx-auto no-print">
       <div class="bill-container">
         <!-- Status Bar -->
         <div id="status-bar" class="no-print">
@@ -846,8 +846,9 @@ const handlePrint = () => {
             min-height: 100vh;
             min-height: 100dvh; /* dynamic viewport height for mobile */
             overflow-x: hidden;
-            padding: 20px;
-            padding: 20px env(safe-area-inset-right, 20px) 20px env(safe-area-inset-left, 20px);
+            padding-bottom: 20px;
+            padding-left: env(safe-area-inset-left, 20px);
+            padding-right: env(safe-area-inset-right, 20px);
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -862,7 +863,8 @@ const handlePrint = () => {
            ============================================================ */
 
         .bill-container {
-            max-width: 960px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             background-color: var(--card-bg);
             border: 2px solid var(--border-color);
