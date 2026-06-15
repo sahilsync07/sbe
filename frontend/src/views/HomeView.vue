@@ -15,14 +15,23 @@
               </div>
             </div>
             
-            <button
-               v-if="isAdmin && !isSuperAdmin"
-               @click="updateStockData"
-               class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-blue-600 transition-all active:scale-95 sm:h-12 sm:w-12 hover:text-blue-700"
-               title="Sync Data"
-            >
-              <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
-            </button>
+            <div v-if="isAdmin || isSuperAdmin" class="flex items-center gap-2">
+              <button
+                 v-if="isAdmin && !isSuperAdmin"
+                 @click="updateStockData"
+                 class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-blue-600 transition-all active:scale-95 sm:h-12 sm:w-12 hover:text-blue-700"
+                 title="Sync Data"
+              >
+                <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
+              </button>
+              <button
+                 @click="handleLogout"
+                 class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-red-500 transition-all active:scale-95 sm:h-12 sm:w-12 hover:text-red-600"
+                 title="Logout"
+              >
+                <i class="fa-solid fa-right-from-bracket"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -61,7 +70,12 @@ import { useStockData } from '../composables/useStockData';
 import ConsoleViewer from '../components/ConsoleViewer.vue';
 
 const router = useRouter();
-const { isAdmin, isSuperAdmin } = useAdmin();
+const { isAdmin, isSuperAdmin, logout } = useAdmin();
+
+const handleLogout = async () => {
+  await logout();
+  router.push('/');
+};
 const showBlackNavbar = computed(() => !(isAdmin.value || isSuperAdmin.value));
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const { updateStockData, loading: isSyncing } = useStockData(isLocal);
