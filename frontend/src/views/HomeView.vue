@@ -1,6 +1,6 @@
 <template>
-  <div class="home-shell min-h-screen w-full font-sans text-slate-800">
-    <main class="w-full min-h-screen flex flex-col" :class="showBlackNavbar ? 'pt-[54px] lg:pt-[72px]' : 'pt-2 sm:pt-4'">
+  <div class="home-shell min-h-screen w-full font-sans text-slate-800 flex">
+    <main class="w-full min-h-screen flex flex-col flex-1 min-w-0" :class="showBlackNavbar ? 'pt-[54px] lg:pt-[72px]' : 'pt-2 sm:pt-4'">
       <!-- Header -->
       <div class="home-header-sticky sticky z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10" :class="showBlackNavbar ? 'top-[54px] lg:top-[72px]' : 'top-0'">
         <div class="home-header-card mx-auto flex w-full max-w-3xl flex-col gap-2 p-3 sm:p-5">
@@ -45,6 +45,11 @@
         </div>
       </div>
     </main>
+
+    <!-- Admin Console Viewer (Visible on Desktop only) -->
+    <aside v-if="isAdmin || isSuperAdmin" class="hidden lg:block w-1/5 shrink-0 border-l border-slate-200 bg-slate-950 h-screen sticky top-0">
+      <ConsoleViewer />
+    </aside>
   </div>
 </template>
 
@@ -53,6 +58,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAdmin } from '../composables/useAdmin';
 import { useStockData } from '../composables/useStockData';
+import ConsoleViewer from '../components/ConsoleViewer.vue';
 
 const router = useRouter();
 const { isAdmin, isSuperAdmin } = useAdmin();
