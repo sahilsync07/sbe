@@ -7,6 +7,7 @@ import DaybookView from "./views/DaybookView.vue";
 import StockTrendView from "./views/StockTrendView.vue";
 import SampleRoomView from "./views/SampleRoomView.vue";
 import HomeView from "./views/HomeView.vue";
+import OldStockView from "./views/OldStockView.vue";
 import RateChartView from "./views/RateChartView.vue";
 import LineListView from "./views/LineListView.vue";
 import QuotationView from "./views/QuotationView.vue";
@@ -29,6 +30,7 @@ const routes = [
   { path: "/line-list", component: LineListView },
   { path: "/latest-stock", component: LatestStock },
   { path: "/home", component: HomeView },
+  { path: "/old-stock", component: OldStockView },
   { path: "/quotation", component: QuotationView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
