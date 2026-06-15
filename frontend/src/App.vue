@@ -87,8 +87,8 @@ const { stockData, config, searchQuery } = storeToRefs(appStore);
 
 watch(() => route.query, async (query) => {
   if (query.pwd) {
-    const { login: performLogin } = useAdmin();
-    const success = await performLogin(query.pwd);
+    const password = Array.isArray(query.pwd) ? query.pwd[0] : query.pwd;
+    const success = await performLogin(password);
     if (success) {
       router.replace({ path: '/home', query: { ...query, pwd: undefined } });
     } else {
@@ -129,7 +129,7 @@ const loadConfig = async () => {
     }
 };
 
-const { checkAdminState, isAdmin, isSuperAdmin } = useAdmin();
+const { checkAdminState, isAdmin, isSuperAdmin, login: performLogin } = useAdmin();
 
 const { 
   loading: stockLoading, isRefreshing, error,
@@ -169,7 +169,6 @@ const handleAdminLogin = async (payload) => {
   showAdminModal.value = false;
   if (!pwd) return;
   
-  const { login: performLogin } = useAdmin();
   const success = await performLogin(pwd);
 
   if (success && redirectHome) {
