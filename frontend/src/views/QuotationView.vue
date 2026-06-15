@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div class="bill-container-wrapper p-4 w-full max-w-[1400px] mx-auto no-print">
+    <div class="bill-container-wrapper p-4 w-full max-w-6xl mx-auto no-print">
       <div class="bill-container">
         <!-- Status Bar -->
         <div id="status-bar" class="no-print">
@@ -1988,6 +1988,21 @@ const handlePrint = () => {
   .home-header-sticky,
   header {
       display: none !important;
+  }
+
+  /* Glassmorphic Header CSS */
+  .home-header-sticky { pointer-events: none; }
+  .home-header-sticky > * { pointer-events: auto; }
+  .home-header-card {
+    border-radius: 1.75rem;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(20px) saturate(1.35);
+    -webkit-backdrop-filter: blur(20px) saturate(1.35);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 20px 40px -18px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,0.5);
+  }
+  .home-back-btn {
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(15,23,42,0.08), 0 0 0 1px rgba(226,232,240,0.9);
   }
 
   .quotation-page-body, .quotation-page {
