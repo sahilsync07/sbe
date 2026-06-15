@@ -132,6 +132,14 @@ const links = [
     gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
     shadow: '0 8px 24px -4px rgba(34,197,94,0.4)',
   },
+  {
+    path: '/old-stock',
+    label: 'Old Stock',
+    desc: 'View discontinued items',
+    icon: 'fa-box-archive',
+    gradient: 'linear-gradient(135deg, #a8a29e, #78716c)',
+    shadow: '0 8px 24px -4px rgba(168,162,158,0.4)',
+  },
 ];
 
 const filteredLinks = computed(() => {

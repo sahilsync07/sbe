@@ -1,8 +1,8 @@
 <template>
   <div class="quotation-page quotation-page-body min-h-screen pt-[54px] lg:pt-[72px]">
-    <!-- Header Navbar matching HomeView style -->
-    <div class="home-header-sticky sticky top-[54px] lg:top-[72px] z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10 no-print">
-      <div class="home-header-card mx-auto flex w-full max-w-4xl flex-col gap-2 p-3 sm:p-5">
+    <!-- Header Navbar Pill -->
+    <div class="w-full px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10 no-print">
+      <div class="home-header-card mx-auto flex w-full max-w-6xl flex-col gap-2 p-3 sm:p-5">
         <div class="flex items-center gap-2 sm:gap-4">
           <button type="button" @click="$router.push('/home')" class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-600 transition-all active:scale-95 sm:h-12 sm:w-12" title="Back">
             <i class="fa-solid fa-arrow-left text-sm sm:text-[15px]"></i>
