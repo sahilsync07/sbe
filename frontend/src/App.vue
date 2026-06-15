@@ -2,6 +2,7 @@
   <div class="min-h-screen relative">
     <!-- Global Persistent App Layout -->
     <DesktopToolbar
+      v-if="!($route.path === '/home' && (isAdmin || isSuperAdmin))"
       :loading="stockLoading"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"

@@ -1,8 +1,8 @@
 <template>
   <div class="home-shell min-h-screen w-full font-sans text-slate-800">
-    <main class="w-full pt-[54px] lg:pt-[72px] min-h-screen flex flex-col">
+    <main class="w-full min-h-screen flex flex-col" :class="showBlackNavbar ? 'pt-[54px] lg:pt-[72px]' : 'pt-2 sm:pt-4'">
       <!-- Header -->
-      <div class="home-header-sticky sticky top-[54px] lg:top-[72px] z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10">
+      <div class="home-header-sticky sticky z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10" :class="showBlackNavbar ? 'top-[54px] lg:top-[72px]' : 'top-0'">
         <div class="home-header-card mx-auto flex w-full max-w-3xl flex-col gap-2 p-3 sm:p-5">
           <div class="flex items-center justify-between gap-2 sm:gap-4">
             <div class="flex items-center gap-2 sm:gap-4">
@@ -56,6 +56,7 @@ import { useStockData } from '../composables/useStockData';
 
 const router = useRouter();
 const { isAdmin, isSuperAdmin } = useAdmin();
+const showBlackNavbar = computed(() => !(isAdmin.value || isSuperAdmin.value));
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const { updateStockData, loading: isSyncing } = useStockData(isLocal);
 
