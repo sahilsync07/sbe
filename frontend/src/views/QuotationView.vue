@@ -1,8 +1,8 @@
 <template>
   <div class="quotation-page quotation-page-body min-h-screen pt-[54px] lg:pt-[72px]">
-    <!-- Header Navbar matching HomeView style -->
-    <div class="home-header-sticky sticky top-[54px] lg:top-[72px] z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10 no-print">
-      <div class="home-header-card mx-auto flex w-full max-w-4xl flex-col gap-2 p-3 sm:p-5">
+    <!-- Header Navbar Pill -->
+    <div class="w-full px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10 no-print">
+      <div class="home-header-card mx-auto flex w-full max-w-6xl flex-col gap-2 p-3 sm:p-5">
         <div class="flex items-center gap-2 sm:gap-4">
           <button type="button" @click="$router.push('/home')" class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-600 transition-all active:scale-95 sm:h-12 sm:w-12" title="Back">
             <i class="fa-solid fa-arrow-left text-sm sm:text-[15px]"></i>
@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div class="bill-container-wrapper p-4 max-w-5xl mx-auto no-print">
+    <div class="bill-container-wrapper p-4 w-full max-w-6xl mx-auto no-print">
       <div class="bill-container">
         <!-- Status Bar -->
         <div id="status-bar" class="no-print">
@@ -846,8 +846,9 @@ const handlePrint = () => {
             min-height: 100vh;
             min-height: 100dvh; /* dynamic viewport height for mobile */
             overflow-x: hidden;
-            padding: 20px;
-            padding: 20px env(safe-area-inset-right, 20px) 20px env(safe-area-inset-left, 20px);
+            padding-bottom: 20px;
+            padding-left: env(safe-area-inset-left, 20px);
+            padding-right: env(safe-area-inset-right, 20px);
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -862,7 +863,8 @@ const handlePrint = () => {
            ============================================================ */
 
         .bill-container {
-            max-width: 960px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             background-color: var(--card-bg);
             border: 2px solid var(--border-color);
@@ -1989,6 +1991,21 @@ const handlePrint = () => {
   .home-header-sticky,
   header {
       display: none !important;
+  }
+
+  /* Glassmorphic Header CSS */
+  .home-header-sticky { pointer-events: none; }
+  .home-header-sticky > * { pointer-events: auto; }
+  .home-header-card {
+    border-radius: 1.75rem;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(20px) saturate(1.35);
+    -webkit-backdrop-filter: blur(20px) saturate(1.35);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 20px 40px -18px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,0.5);
+  }
+  .home-back-btn {
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(15,23,42,0.08), 0 0 0 1px rgba(226,232,240,0.9);
   }
 
   .quotation-page-body, .quotation-page {

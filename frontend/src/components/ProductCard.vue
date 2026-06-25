@@ -11,9 +11,9 @@
     <!-- Product Image Area -->
     <div class="relative aspect-square bg-secondary">
       <img
-        v-if="product.image"
-        :src="product.image"
-        :alt="product.name"
+        v-if="product.imageUrl"
+        :src="product.imageUrl"
+        :alt="product.productName"
         class="w-full h-full object-cover"
         loading="lazy"
       />

@@ -2,6 +2,7 @@
   <div class="min-h-screen relative">
     <!-- Global Persistent App Layout -->
     <DesktopToolbar
+      v-if="!($route.path === '/home' && (isAdmin || isSuperAdmin))"
       :loading="stockLoading"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"
@@ -85,12 +86,20 @@ const router = useRouter();
 const appStore = useAppStore();
 const { stockData, config, searchQuery } = storeToRefs(appStore);
 
-watch(() => route.query.login, (newVal) => {
-  if (newVal === 'admin') {
+watch(() => route.query, async (query) => {
+  if (query.pwd) {
+    const password = Array.isArray(query.pwd) ? query.pwd[0] : query.pwd;
+    const success = await performLogin(password);
+    if (success) {
+      router.replace({ path: '/home', query: { ...query, pwd: undefined } });
+    } else {
+      router.replace({ query: { ...query, pwd: undefined } });
+    }
+  } else if (query.login === 'admin') {
     showAdminModal.value = true;
-    router.replace({ query: { ...route.query, login: undefined } });
+    router.replace({ query: { ...query, login: undefined } });
   }
-}, { immediate: true });
+}, { immediate: true, deep: true });
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
@@ -121,7 +130,7 @@ const loadConfig = async () => {
     }
 };
 
-const { checkAdminState, isAdmin, isSuperAdmin } = useAdmin();
+const { checkAdminState, isAdmin, isSuperAdmin, login: performLogin } = useAdmin();
 
 const { 
   loading: stockLoading, isRefreshing, error,
@@ -154,27 +163,14 @@ const toggleCart = () => {
     }
 };
 
-const handleAdminLogin = (payload) => {
+const handleAdminLogin = async (payload) => {
   const pwd = typeof payload === 'object' ? payload.password : payload;
   const redirectHome = typeof payload === 'object' ? payload.redirectHome : false;
   
   showAdminModal.value = false;
   if (!pwd) return;
   
-  let success = false;
-  if (pwd === 'admin123') {
-    isAdmin.value = true;
-    isSuperAdmin.value = false;
-    toast.success('Admin Mode Enabled', { autoClose: 2000 });
-    success = true;
-  } else if (pwd === 'superadmin') {
-    isAdmin.value = false;
-    isSuperAdmin.value = true;
-    toast.success('Super Admin Mode Enabled', { autoClose: 2000 });
-    success = true;
-  } else {
-    toast.error('Incorrect password', { autoClose: 3000 });
-  }
+  const success = await performLogin(pwd);
 
   if (success && redirectHome) {
     router.push('/home');

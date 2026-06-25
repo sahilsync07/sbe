@@ -516,7 +516,13 @@ import { useAdmin } from '../../composables/useAdmin';
 import { useStockData } from '../../composables/useStockData';
 import { useCart } from '../../composables/useCart';
 
+import { useAppStore } from '../../stores/appStore';
+import { storeToRefs } from 'pinia';
+
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
+
+const appStore = useAppStore();
+const { cleanView } = storeToRefs(appStore);
 
 const { isAdmin, isSuperAdmin } = useAdmin();
 const { stockData } = useStockData();
@@ -634,6 +640,11 @@ const getNewArrivalProducts = () => {
     for (const group of stockData.value) {
         if (group.products) {
             for (const p of group.products) {
+                // If magic filter is on, ignore low stock (< 4) and no image
+                if (cleanView.value) {
+                    if (!p.imageUrl || Number(p.quantity) < 4) continue;
+                }
+                
                 if (isNewArrival(p) && p.imageUrl) products.push(p);
             }
         }
@@ -671,6 +682,10 @@ const getBrandProducts = (groupNames) => {
     for (const group of stockData.value) {
         if (lower.includes(group.groupName.toLowerCase()) && group.products) {
             for (const p of group.products) {
+                if (cleanView.value) {
+                    if (!p.imageUrl || Number(p.quantity) < 4) continue;
+                }
+                
                 if (p.imageUrl) products.push(p);
             }
         }

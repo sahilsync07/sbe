@@ -125,13 +125,20 @@ export function useStockData(isLocal) {
 
         // --- Tier 3: Live Network Fetch (Always Validate) ---
         try {
+            if (isLocal && isLocal.value) {
+                console.log("Skipping Live Fetch (Tier 3) on localhost to preserve local edits.");
+                return;
+            }
             console.log("Starting Background Live Fetch (Tier 3)...");
 
             // 5 second max wait time for live data
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-            const liveUrl = "https://sahilsync07.github.io/sbe/assets/stock-data.json";
+            const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+                ? import.meta.env.BASE_URL
+                : `${import.meta.env.BASE_URL}/`;
+            const liveUrl = `${baseUrl}assets/stock-data.json`;
             const response = await fetch(`${liveUrl}?t=${new Date().getTime()}`, {
                 signal: controller.signal
             });
