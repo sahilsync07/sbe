@@ -1629,9 +1629,9 @@ const handlePrint = () => {
             }
 
             #billTable tr {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px 10px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 10px;
                 background: var(--card-bg);
                 border: 2px solid var(--border-color);
                 padding: 14px 12px;
@@ -1676,11 +1676,10 @@ const handlePrint = () => {
 
             /* Description: Full Width at top */
             #billTable td:nth-child(2) {
-                grid-column: 1 / -1;
+                width: 100%;
                 margin-top: 10px;
                 margin-bottom: 6px;
                 display: block;
-                width: 100%;
             }
 
             #billTable td:nth-child(2)::before {
@@ -1705,7 +1704,7 @@ const handlePrint = () => {
                 border: none !important;
                 box-shadow: none !important;
                 background: transparent !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 12px !important;
             }
 
             #billTable tr.is-compact td[colspan] {
@@ -1714,9 +1713,12 @@ const handlePrint = () => {
                 position: relative !important;
             }
 
-            #billTable td:nth-child(3) { grid-column: span 1; }
-            #billTable td:nth-child(4) { grid-column: span 1; }
-            #billTable td:nth-child(5) { grid-column: span 1; }
+            #billTable td:nth-child(3),
+            #billTable td:nth-child(4),
+            #billTable td:nth-child(5) {
+                flex: 1;
+                min-width: 0;
+            }
 
             /* Numeric inputs on mobile */
             #billTable td:nth-child(3) input,
@@ -1729,13 +1731,14 @@ const handlePrint = () => {
                 background: var(--card-bg) !important;
                 text-align: center;
                 min-height: 44px;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             /* Amount + Actions: Full width bottom row */
             #billTable td:nth-child(6) {
-                grid-column: 1 / -1;
+                width: 100%;
                 text-align: right;
-                align-items: stretch;
                 justify-content: center;
                 padding-top: 4px;
             }
