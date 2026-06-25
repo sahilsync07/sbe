@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-06-25T08:17:20.183Z",
+    "lastSync": "2026-06-25T15:04:25.155Z",
     "products": []
   },
   {
@@ -798,7 +798,7 @@
       },
       {
         "productName": "ACTION PASCAL BLK (6X10)MRP233/-",
-        "quantity": 14,
+        "quantity": 10,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1777712957/Pascal_Black.png",
         "imageUploadedAt": "2026-05-02T09:09:18.356Z",
         "firstSeenAt": "2026-04-24T13:24:15.105Z",
@@ -821,6 +821,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 14
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 10
           }
         ]
       },
@@ -3100,7 +3106,7 @@
       },
       {
         "productName": "AT ORANGE (2X5)RS.165/-",
-        "quantity": 16,
+        "quantity": 12,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1771434344/At._Orange_2x5_165.jpg",
         "imageUploadedAt": "2026-02-18T17:05:46.385Z",
         "firstSeenAt": "2026-02-18T15:03:15.932Z",
@@ -3135,6 +3141,12 @@
             "type": "sold",
             "qty": 8,
             "newTotal": 16
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 12
           }
         ]
       },
@@ -3208,7 +3220,7 @@
     "products": [
       {
         "productName": "AVTAR CUTE + BRAVE (7X11)RS.75/-",
-        "quantity": 4,
+        "quantity": -1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770545880/Avtar_Cute_and_Brave.jpg",
         "imageUploadedAt": "2026-02-08T10:18:47.994Z",
         "firstSeenAt": "2026-02-08T07:52:28.756Z",
@@ -3261,6 +3273,12 @@
             "type": "sold",
             "qty": 10,
             "newTotal": 4
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": -1
           }
         ]
       },
@@ -7174,7 +7192,7 @@
       },
       {
         "productName": "CBX 10164 BRN(7X11)MRP416/-",
-        "quantity": 10,
+        "quantity": 6,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1773510032/10164_brn.jpg",
         "imageUploadedAt": "2026-03-14T17:40:33.236Z",
         "firstSeenAt": "2026-03-13T08:33:30.830Z",
@@ -7185,6 +7203,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 10
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 6
           }
         ]
       },
@@ -7251,21 +7275,35 @@
       },
       {
         "productName": "CBX 10204 BRN(7X11) MRP379/-",
-        "quantity": 2,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1765785681/10204_BRN.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 1,
+            "newTotal": 1
+          }
+        ]
       },
       {
         "productName": "CBX 10204 GRN(7X11)MRP379/-",
-        "quantity": 8,
+        "quantity": 6,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1767792982/10204_GRN.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 2,
+            "newTotal": 6
+          }
+        ]
       },
       {
         "productName": "CBX 10215 BRN(7X10) MRP539/-",
@@ -7296,12 +7334,19 @@
       },
       {
         "productName": "CBX 15007 (5*9) F GRN MRP329/-",
-        "quantity": 6,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770548689/15007_Green.jpg",
         "imageUploadedAt": "2026-02-08T11:04:51.280Z",
         "firstSeenAt": "2026-01-22T14:34:21.924Z",
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": 1
+          }
+        ]
       },
       {
         "productName": "CBX 15007 (5*9) GRAP MRP319/-",
@@ -7557,21 +7602,35 @@
       },
       {
         "productName": "CBX 21536 (14) MRN MRP289/-",
-        "quantity": 6,
+        "quantity": 2,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1761024459/photo_6111479862683354715_y.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 2
+          }
+        ]
       },
       {
         "productName": "CBX 21536 BLU (1X4) MRP284/-",
-        "quantity": 3,
+        "quantity": 2,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1761024477/photo_6224021517805668648_y_1.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 1,
+            "newTotal": 2
+          }
+        ]
       },
       {
         "productName": "CBX 21543 BRN (5X8)MRP289/-",
@@ -7625,7 +7684,7 @@
       },
       {
         "productName": "CBX 21549 BLK (5X9) MRP294/-",
-        "quantity": 30,
+        "quantity": 24,
         "imageUrl": null,
         "imageUploadedAt": "2026-03-18T12:40:06.623Z",
         "firstSeenAt": null,
@@ -7642,6 +7701,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 30
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 24
           }
         ]
       },
@@ -8045,7 +8110,7 @@
       },
       {
         "productName": "CBX 24084 GRP(5X8) MRP324/-",
-        "quantity": 5,
+        "quantity": 0,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1753446986/24084_grp.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
@@ -8056,6 +8121,12 @@
             "type": "sold",
             "qty": 2,
             "newTotal": 5
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": 0
           }
         ]
       },
@@ -8088,7 +8159,7 @@
       },
       {
         "productName": "CBX 24102 BLK(4X8)MRP373/-",
-        "quantity": 27,
+        "quantity": 23,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1777711473/24102_blk.jpg",
         "imageUploadedAt": "2026-05-02T08:44:32.690Z",
         "firstSeenAt": "2026-04-28T14:59:03.848Z",
@@ -8105,6 +8176,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 27
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 23
           }
         ]
       },
@@ -9042,12 +9119,19 @@
       },
       {
         "productName": "CBX 31039 GRP(5X10)MRP289/-",
-        "quantity": 6,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1769411370/31039_GRP.jpg",
         "imageUploadedAt": "2026-01-26T07:09:31.485Z",
         "firstSeenAt": "2026-01-25T06:55:12.444Z",
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": 1
+          }
+        ]
       },
       {
         "productName": "CBX 31040 CHRY(5X10)MRP329/-",
@@ -9145,7 +9229,7 @@
       },
       {
         "productName": "CBX 33014 BLU(6X10)MRP297/-",
-        "quantity": 1,
+        "quantity": 0,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1773826098/33014_blu.jpg",
         "imageUploadedAt": "2026-03-18T09:28:16.668Z",
         "firstSeenAt": "2026-03-18T08:10:11.644Z",
@@ -9162,6 +9246,12 @@
             "type": "sold",
             "qty": 8,
             "newTotal": 1
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 1,
+            "newTotal": 0
           }
         ]
       },
@@ -9320,12 +9410,19 @@
       },
       {
         "productName": "CBX 38800 BLK(6X10) MRP379/-",
-        "quantity": 7,
+        "quantity": 4,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1765801711/38800_BLK.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 3,
+            "newTotal": 4
+          }
+        ]
       },
       {
         "productName": "CBX 38800 BRN(6X10) MRP379/-",
@@ -9473,7 +9570,7 @@
       },
       {
         "productName": "CBX 50049 (5*9) MULTI MRP299/-",
-        "quantity": 21,
+        "quantity": 16,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749645834/50049_MULTI_1X4_5X9.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
@@ -9484,6 +9581,12 @@
             "type": "purchased",
             "qty": 5,
             "newTotal": 21
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": 16
           }
         ]
       },
@@ -10061,7 +10164,7 @@
       },
       {
         "productName": "CBX 60551 (5*9) MRP324/-BISCUITE",
-        "quantity": 35,
+        "quantity": 29,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1779508001/60551_Biscuit.jpg",
         "imageUploadedAt": "2026-06-05T17:02:27.244Z",
         "firstSeenAt": "2026-06-05T14:23:20.406Z",
@@ -10077,6 +10180,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 35
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 29
           }
         ]
       },
@@ -10400,12 +10509,19 @@
       },
       {
         "productName": "CBX 60584 P.COCK(5X9) MRP309/-",
-        "quantity": 4,
+        "quantity": 0,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1765801925/60584_P_Blue_P_Cock.jpg",
         "imageUploadedAt": "2026-05-23T03:56:15.630Z",
         "firstSeenAt": "2026-03-05T08:47:35.412Z",
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 0
+          }
+        ]
       },
       {
         "productName": "CBX 60585 TAN(5X9)MRP339/-",
@@ -10806,7 +10922,7 @@
       },
       {
         "productName": "CBX 64429 BLK(5X9)MRP289/-",
-        "quantity": 42,
+        "quantity": 38,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1776515573/64429_blk.jpg",
         "imageUploadedAt": "2026-04-18T12:32:48.176Z",
         "firstSeenAt": "2026-04-18T05:44:48.724Z",
@@ -10829,6 +10945,12 @@
             "type": "sold",
             "qty": 8,
             "newTotal": 42
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 38
           }
         ]
       },
@@ -11496,7 +11618,7 @@
       },
       {
         "productName": "CBX 77041 GRAP(5X9) MRP378/-",
-        "quantity": 40,
+        "quantity": 36,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1763618715/77041_Grape.jpg",
         "imageUploadedAt": "2026-05-23T03:22:30.424Z",
         "firstSeenAt": "2026-05-22T11:03:16.295Z",
@@ -11536,6 +11658,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 40
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 36
           }
         ]
       },
@@ -12209,7 +12337,7 @@
       },
       {
         "productName": "CUBIX 24511 BLK(4X8)MRP 411/-",
-        "quantity": 4,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1763563512/24511_Black.jpg",
         "imageUploadedAt": "2026-05-23T03:45:59.563Z",
         "firstSeenAt": "2026-05-22T11:03:16.295Z",
@@ -12249,6 +12377,12 @@
             "type": "purchased",
             "qty": 6,
             "newTotal": 4
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 3,
+            "newTotal": 1
           }
         ]
       },
@@ -12314,7 +12448,7 @@
       },
       {
         "productName": "CUBIX 60539 BRN(5X9)MRP 340/-",
-        "quantity": 6,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1779507992/60539_brn.jpg",
         "imageUploadedAt": "2026-05-23T03:46:32.475Z",
         "firstSeenAt": "2026-05-22T11:03:16.295Z",
@@ -12378,6 +12512,12 @@
             "type": "sold",
             "qty": 8,
             "newTotal": 6
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": 1
           }
         ]
       },
@@ -12512,12 +12652,19 @@
       },
       {
         "productName": "CUBIX 67765 GRP(5X9) MRP289/-",
-        "quantity": 7,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1768794266/67765_grp.jpg",
         "imageUploadedAt": "2026-03-14T17:42:44.077Z",
         "firstSeenAt": "2026-03-13T08:33:30.830Z",
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 1
+          }
+        ]
       },
       {
         "productName": "CUBIX 74509 (5X9) BISCUTE MRP339/-",
@@ -12629,7 +12776,7 @@
       },
       {
         "productName": "CUBIX C-60610 PNK(5X9) MRP362/-",
-        "quantity": 25,
+        "quantity": 19,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781881963/60610_pnk.jpg",
         "imageUploadedAt": "2026-06-19T15:12:35.399Z",
         "firstSeenAt": "2026-06-19T14:50:03.765Z",
@@ -12651,6 +12798,12 @@
             "type": "sold",
             "qty": 10,
             "newTotal": 25
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 19
           }
         ]
       },
@@ -12954,7 +13107,7 @@
       },
       {
         "productName": "CUBIX E24099 BISCUIT(4X8)MRP 439/-",
-        "quantity": 24,
+        "quantity": 20,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1767792991/24099_BISCUIT.jpg",
         "imageUploadedAt": "2026-05-23T03:47:28.635Z",
         "firstSeenAt": "2026-05-22T11:03:16.295Z",
@@ -12982,6 +13135,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 24
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 20
           }
         ]
       },
@@ -13014,7 +13173,7 @@
       },
       {
         "productName": "CUBIX E-24112 BUSCUIT(4X8)MRP 384/-",
-        "quantity": 5,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1780679448/24112_BISCUIT.jpg",
         "imageUploadedAt": "2026-06-05T17:10:36.663Z",
         "firstSeenAt": "2026-05-31T06:40:28.130Z",
@@ -13048,6 +13207,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 5
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 1
           }
         ]
       },
@@ -13236,7 +13401,7 @@
       },
       {
         "productName": "CUBIX E-24511 GRP(4X8)MRP 411/-",
-        "quantity": 14,
+        "quantity": 10,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1750160355/24511_grp.jpg",
         "imageUploadedAt": "2026-06-25T06:15:49.844Z",
         "firstSeenAt": "2026-06-20T15:04:31.316Z",
@@ -13252,6 +13417,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 14
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 10
           }
         ]
       },
@@ -13482,7 +13653,7 @@
       },
       {
         "productName": "CUBIX F 60611 LAVENDER(5X9)MRP 339/-",
-        "quantity": 34,
+        "quantity": 18,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781882027/60611_lavender.jpg",
         "imageUploadedAt": "2026-06-19T15:13:40.080Z",
         "firstSeenAt": "2026-06-19T14:50:03.765Z",
@@ -13498,6 +13669,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 34
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 16,
+            "newTotal": 18
           }
         ]
       },
@@ -14574,7 +14751,7 @@
       },
       {
         "productName": "Cbx 47501 (7*10) Mrp499/-",
-        "quantity": 16,
+        "quantity": 12,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749654593/photo_6154635797152773243_y.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
@@ -14585,6 +14762,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 16
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 12
           }
         ]
       },
@@ -18913,7 +19096,9 @@
         "productName": "ESCOUTE 0346 BRN(6X10)MRP269.50/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -18942,7 +19127,7 @@
       },
       {
         "productName": "ESCOUTE 0347 GENTS BLK (06X10) MRP269.50/-",
-        "quantity": 32,
+        "quantity": 19,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1780679947/347_blk.jpg",
         "imageUploadedAt": "2026-06-05T17:18:55.294Z",
         "firstSeenAt": "2026-05-28T15:58:46.865Z",
@@ -18982,12 +19167,18 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 32
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 13,
+            "newTotal": 19
           }
         ]
       },
       {
         "productName": "ESCOUTE 0347 GENTS BRN(6X10)MRP269.50/-",
-        "quantity": 30,
+        "quantity": 21,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781361465/347_brn.jpg",
         "imageUploadedAt": "2026-06-13T14:37:45.350Z",
         "firstSeenAt": null,
@@ -19022,6 +19213,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 30
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 9,
+            "newTotal": 21
           }
         ]
       },
@@ -19119,7 +19316,9 @@
         "productName": "ESCOUTE 0355 TAN(6X10)MRP269.50/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -19222,7 +19421,9 @@
         "productName": "ESCOUTE 0398 BRN(6X10)MRP259/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -25776,7 +25977,7 @@
       },
       {
         "productName": "CUSHION HAWAI BLU(4X5)MRP137/-",
-        "quantity": 468,
+        "quantity": 436,
         "imageUrl": null,
         "imageUploadedAt": null,
         "firstSeenAt": "2026-05-11T06:19:12.037Z",
@@ -25960,12 +26161,18 @@
             "type": "sold",
             "qty": 12,
             "newTotal": 468
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 32,
+            "newTotal": 436
           }
         ]
       },
       {
         "productName": "CUSHION HAWAI BLU(6X9)MRP138/-",
-        "quantity": 830,
+        "quantity": 794,
         "imageUrl": null,
         "imageUploadedAt": null,
         "firstSeenAt": "2026-05-11T06:19:12.037Z",
@@ -26119,6 +26326,12 @@
             "type": "sold",
             "qty": 74,
             "newTotal": 830
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 36,
+            "newTotal": 794
           }
         ]
       },
@@ -32209,7 +32422,7 @@
       },
       {
         "productName": "M 12558 (32X35)RS.185/-",
-        "quantity": 71,
+        "quantity": 63,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1775927556/M._12558_32x35_11-04.jpg",
         "imageUploadedAt": "2026-04-11T17:12:32.575Z",
         "firstSeenAt": "2026-04-10T15:06:21.301Z",
@@ -32226,6 +32439,12 @@
             "type": "sold",
             "qty": 8,
             "newTotal": 71
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 8,
+            "newTotal": 63
           }
         ]
       },
@@ -32795,7 +33014,7 @@
       },
       {
         "productName": "M 9772 GENT (6X9)RS.145/-",
-        "quantity": 24,
+        "quantity": 20,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1772508263/M._9772.jpg",
         "imageUploadedAt": "2026-04-11T17:18:41.714Z",
         "firstSeenAt": "2026-04-09T13:07:02.942Z",
@@ -32860,6 +33079,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 24
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 20
           }
         ]
       },
@@ -32887,7 +33112,7 @@
       },
       {
         "productName": "MARUTI 10123/10828/12289/13081 RS.140/-",
-        "quantity": 17,
+        "quantity": 9,
         "imageUrl": null,
         "imageUploadedAt": null,
         "firstSeenAt": null,
@@ -32898,6 +33123,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 17
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 8,
+            "newTotal": 9
           }
         ]
       },
@@ -41718,7 +41949,7 @@
       },
       {
         "productName": "PARALITE 1492 GBK (06X10) MRP245/-",
-        "quantity": 46,
+        "quantity": 26,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1766232354/1492_Olive_Green_Black.jpg",
         "imageUploadedAt": "2026-05-02T07:59:50.311Z",
         "firstSeenAt": "2026-05-31T06:40:28.130Z",
@@ -41770,6 +42001,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 46
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 20,
+            "newTotal": 26
           }
         ]
       },
@@ -41784,7 +42021,7 @@
       },
       {
         "productName": "PARALITE 1492 GENTS OBK (6X10) MRP245/-",
-        "quantity": 42,
+        "quantity": 24,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1766232354/1492_Olive_Green_Black.jpg",
         "imageUploadedAt": "2026-05-02T07:59:50.311Z",
         "firstSeenAt": "2026-04-28T14:59:03.849Z",
@@ -41861,6 +42098,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 42
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 18,
+            "newTotal": 24
           }
         ]
       },
@@ -46382,12 +46625,19 @@
       },
       {
         "productName": "VERTEX 6174 GENTS NVY (6X10) MRP315/-",
-        "quantity": 5,
+        "quantity": 1,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770914382/6174_NVY.jpg",
         "imageUploadedAt": "2026-02-12T16:39:41.958Z",
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 1
+          }
+        ]
       },
       {
         "productName": "VERTEX 6174 NAVY (6X9)MRP319/-",
@@ -46866,7 +47116,9 @@
         "productName": "VERTEX 6210 BLK(6X10)MRP349/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -46949,7 +47201,7 @@
       },
       {
         "productName": "VERTEX 6210 GENTS TAN (6X10)MRP349/-",
-        "quantity": 13,
+        "quantity": 8,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1765175812/6210_TAN.jpg",
         "imageUploadedAt": "2026-05-21T07:08:59.622Z",
         "firstSeenAt": "2026-05-16T07:03:41.399Z",
@@ -46995,6 +47247,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 13
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 5,
+            "newTotal": 8
           }
         ]
       },
@@ -47336,7 +47594,9 @@
         "productName": "VERTEX 6230 BLU(6X10)MRP349.50/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -48115,7 +48375,9 @@
         "productName": "VERTEX 650006 BNR(6X10)MRP259/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -52042,7 +52304,9 @@
         "productName": "VERTEX 6662 BN(11X12)MRP405/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -52229,7 +52493,9 @@
         "productName": "VERTEX 6667 BLK(6X10)MRP289/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -53803,7 +54069,7 @@
       },
       {
         "productName": "VERTEX 6767 BLU(6X10)MRP285/-",
-        "quantity": 14,
+        "quantity": 8,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1763621288/6767_BLUE.jpg",
         "imageUploadedAt": "2026-06-18T15:13:57.067Z",
         "firstSeenAt": "2026-06-15T13:25:08.864Z",
@@ -53825,6 +54091,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 14
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 8
           }
         ]
       },
@@ -54230,7 +54502,7 @@
       },
       {
         "productName": "VERTEX 6775 GENTS TAN(6X9) MRP310/-",
-        "quantity": 69,
+        "quantity": 60,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1761889253/photo_6219501000302118591_y_2.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
@@ -54319,6 +54591,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 69
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 9,
+            "newTotal": 60
           }
         ]
       },
@@ -55175,7 +55453,9 @@
         "productName": "VERTEX 6830 BRN(6X10)MRP349.50/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -56791,7 +57071,9 @@
         "productName": "VERTEX 6953 GENTS TAN(6X10) MRP299/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -57982,7 +58264,7 @@
             "newTotal": 28
           },
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 28,
             "newTotal": 0
@@ -58004,7 +58286,7 @@
             "newTotal": 32
           },
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 32,
             "newTotal": 0
@@ -58026,7 +58308,7 @@
             "newTotal": 47
           },
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 47,
             "newTotal": 0
@@ -58048,7 +58330,7 @@
             "newTotal": 5
           },
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 5,
             "newTotal": 0
@@ -59795,12 +60077,19 @@
       },
       {
         "productName": "PARALITE 1439 LDS  PCH (4X8)MRP134/-",
-        "quantity": 17,
+        "quantity": 7,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1767079707/1439_Peach.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 10,
+            "newTotal": 7
+          }
+        ]
       },
       {
         "productName": "PARALITE 1441 LDS PCH (3X8) MRP309/-",
@@ -65986,7 +66275,7 @@
       },
       {
         "productName": "PARALITE 1170 LDS BLK(4X8)MRP172/-",
-        "quantity": 144,
+        "quantity": 136,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770910397/1170_Black.jpg",
         "imageUploadedAt": "2026-04-11T17:38:44.857Z",
         "firstSeenAt": "2026-03-31T06:23:15.197Z",
@@ -66039,6 +66328,12 @@
             "type": "sold",
             "qty": 40,
             "newTotal": 144
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 8,
+            "newTotal": 136
           }
         ]
       },
@@ -66119,7 +66414,9 @@
         "productName": "PARALITE 1180 BLK(6X10)MRP235/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -66130,7 +66427,7 @@
       },
       {
         "productName": "PARALITE 1180 GENTS (6x10) BLK MRP230/-",
-        "quantity": 80,
+        "quantity": 70,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770910312/1180_Black.jpg",
         "imageUploadedAt": "2026-02-12T15:32:07.383Z",
         "firstSeenAt": null,
@@ -66195,6 +66492,12 @@
             "type": "sold",
             "qty": 18,
             "newTotal": 80
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 10,
+            "newTotal": 70
           }
         ]
       },
@@ -66421,7 +66724,7 @@
       },
       {
         "productName": "PARALITE 1190 GENTS BLK (6X10) MRP179.50/-",
-        "quantity": 483,
+        "quantity": 473,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770910044/1190_blk_new.jpg",
         "imageUploadedAt": "2026-02-12T15:27:25.589Z",
         "firstSeenAt": "2026-04-11T15:00:14.461Z",
@@ -66522,6 +66825,12 @@
             "type": "sold",
             "qty": 36,
             "newTotal": 483
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 10,
+            "newTotal": 473
           }
         ]
       },
@@ -66690,7 +66999,7 @@
       },
       {
         "productName": "PARALITE 1210 GENTS (6X9) MRP169.50/-",
-        "quantity": 91,
+        "quantity": 85,
         "imageUrl": null,
         "imageUploadedAt": null,
         "firstSeenAt": "2026-04-18T05:44:48.747Z",
@@ -66839,6 +67148,12 @@
             "type": "sold",
             "qty": 19,
             "newTotal": 91
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 85
           }
         ]
       },
@@ -67047,7 +67362,7 @@
       },
       {
         "productName": "PARALITE 1215 LDS BKR(6X9)MRP144/-",
-        "quantity": 37,
+        "quantity": 29,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770548761/1215_Red.jpg",
         "imageUploadedAt": "2026-05-02T07:45:59.570Z",
         "firstSeenAt": "2026-04-28T14:59:03.863Z",
@@ -67124,6 +67439,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 37
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 8,
+            "newTotal": 29
           }
         ]
       },
@@ -67267,7 +67588,9 @@
         "productName": "PARALITE 1220 LDS BKR(4X8)MRP149.50/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -67278,7 +67601,7 @@
       },
       {
         "productName": "PARALITE 1220 LDS BKR (5X8)MRP149.50/-",
-        "quantity": 34,
+        "quantity": 22,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770547673/1220_Red.jpg",
         "imageUploadedAt": "2026-02-08T10:47:54.137Z",
         "firstSeenAt": null,
@@ -67295,6 +67618,12 @@
             "type": "sold",
             "qty": 2,
             "newTotal": 34
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 12,
+            "newTotal": 22
           }
         ]
       },
@@ -67467,7 +67796,7 @@
       },
       {
         "productName": "PARALITE 1250 BKR(6X10)MRP245/-",
-        "quantity": 66,
+        "quantity": 60,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770909838/1250_BKR.jpg",
         "imageUploadedAt": "2026-05-02T07:46:42.023Z",
         "firstSeenAt": "2026-04-28T14:59:03.863Z",
@@ -67520,12 +67849,18 @@
             "type": "sold",
             "qty": 32,
             "newTotal": 66
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 60
           }
         ]
       },
       {
         "productName": "PARALITE 1250 GENTS BKR(6X10)MRP.240/-",
-        "quantity": 200,
+        "quantity": 197,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770909838/1250_BKR.jpg",
         "imageUploadedAt": "2026-02-12T15:24:00.122Z",
         "firstSeenAt": null,
@@ -67608,6 +67943,12 @@
             "type": "sold",
             "qty": 16,
             "newTotal": 200
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 3,
+            "newTotal": 197
           }
         ]
       },
@@ -67682,7 +68023,7 @@
       },
       {
         "productName": "PARALITE 1251 GENTS BKR (6X10)MRP245/-",
-        "quantity": 145,
+        "quantity": 133,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770909765/1251_BKR.jpg",
         "imageUploadedAt": "2026-05-02T08:55:26.783Z",
         "firstSeenAt": "2026-04-24T13:24:15.107Z",
@@ -67807,6 +68148,12 @@
             "type": "sold",
             "qty": 9,
             "newTotal": 145
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 12,
+            "newTotal": 133
           }
         ]
       },
@@ -68046,7 +68393,9 @@
         "productName": "PARALITE 1476 LGY(6X10)MRP245/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -68108,7 +68457,9 @@
         "productName": "PARALITE 1552 BRN(6X10)MRP154/-",
         "quantity": 0,
         "imageUrl": null,
+        "imageUploadedAt": null,
         "firstSeenAt": "2026-06-25T08:17:20.183Z",
+        "inSampleRoom": false,
         "productHistory": [
           {
             "date": "2026-06-25T08:17:20.183Z",
@@ -68355,7 +68706,7 @@
       },
       {
         "productName": "PARALITE 1650 GENTS (6X9) MRP210/-",
-        "quantity": 55,
+        "quantity": 38,
         "imageUrl": null,
         "imageUploadedAt": null,
         "firstSeenAt": null,
@@ -68378,6 +68729,12 @@
             "type": "sold",
             "qty": 6,
             "newTotal": 55
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 17,
+            "newTotal": 38
           }
         ]
       },
@@ -68874,7 +69231,7 @@
             "newTotal": 10
           },
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 10,
             "newTotal": 0
@@ -68890,7 +69247,7 @@
         "inSampleRoom": false,
         "productHistory": [
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 5,
             "newTotal": 0
@@ -68918,7 +69275,7 @@
             "newTotal": 27
           },
           {
-            "date": "2026-06-25T08:17:20.183Z",
+            "date": "2026-06-25T15:04:25.155Z",
             "type": "sold",
             "qty": 27,
             "newTotal": 0
@@ -80597,7 +80954,7 @@
       },
       {
         "productName": "SB-310 (6X9) RS.180/-",
-        "quantity": 36,
+        "quantity": 32,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1772509849/SB_310.jpg",
         "imageUploadedAt": "2026-03-03T03:50:48.888Z",
         "firstSeenAt": "2026-03-01T06:48:38.803Z",
@@ -80608,12 +80965,18 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 36
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 32
           }
         ]
       },
       {
         "productName": "SB-370 (6X9)RS.190/-",
-        "quantity": 20,
+        "quantity": 16,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1772509858/SB_370.jpg",
         "imageUploadedAt": "2026-03-03T03:50:58.602Z",
         "firstSeenAt": "2026-03-01T06:48:38.803Z",
@@ -80624,6 +80987,12 @@
             "type": "sold",
             "qty": 4,
             "newTotal": 20
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 16
           }
         ]
       }
@@ -80670,7 +81039,7 @@
       },
       {
         "productName": "PG SCH SHOE 0792 BLK(4X6)MRP330/-",
-        "quantity": 28,
+        "quantity": 24,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781544300/792_4x6_330.jpg",
         "imageUploadedAt": "2026-06-18T15:14:09.998Z",
         "firstSeenAt": "2026-06-15T13:25:08.864Z",
@@ -80686,12 +81055,18 @@
             "type": "sold",
             "qty": 2,
             "newTotal": 28
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 24
           }
         ]
       },
       {
         "productName": "PG SCH SHOE 0792 BLK(7X8)MRP355/-",
-        "quantity": 60,
+        "quantity": 58,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781544300/792_4x6_330.jpg",
         "imageUploadedAt": "2026-06-18T15:14:20.848Z",
         "firstSeenAt": "2026-06-15T13:25:08.864Z",
@@ -80701,12 +81076,18 @@
             "date": "2026-06-15T13:25:08.864Z",
             "type": "initial",
             "qty": 60
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 2,
+            "newTotal": 58
           }
         ]
       },
       {
         "productName": "PG SCH SHOE 0797 BLK(4X6)MRP310/-",
-        "quantity": 19,
+        "quantity": 15,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781795721/797_4x6_310.jpg",
         "imageUploadedAt": "2026-06-18T15:15:14.887Z",
         "firstSeenAt": "2026-06-15T13:25:08.864Z",
@@ -80728,12 +81109,18 @@
             "type": "sold",
             "qty": 2,
             "newTotal": 19
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 15
           }
         ]
       },
       {
         "productName": "PG SCH SHOE 0797 BLK(7X10)MRP350/-",
-        "quantity": 33,
+        "quantity": 31,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781544241/797_7x10_350.jpg",
         "imageUploadedAt": "2026-06-18T15:15:24.198Z",
         "firstSeenAt": "2026-06-15T13:25:08.864Z",
@@ -80767,6 +81154,12 @@
             "type": "sold",
             "qty": 2,
             "newTotal": 33
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 2,
+            "newTotal": 31
           }
         ]
       },
@@ -81952,7 +82345,7 @@
       },
       {
         "productName": "DRL SCHOOL SHOE GIRL-4 (1X3)MRP313/-",
-        "quantity": 39,
+        "quantity": 37,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1781795545/Girl-04_1x3_313_new.jpg",
         "imageUploadedAt": "2026-06-18T15:12:19.653Z",
         "firstSeenAt": "2026-06-16T14:56:46.879Z",
@@ -81992,6 +82385,12 @@
             "type": "sold",
             "qty": 19,
             "newTotal": 39
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 2,
+            "newTotal": 37
           }
         ]
       },
@@ -82442,7 +82841,7 @@
       },
       {
         "productName": "DRL SCHOOL SHOE GOLA-111 WHT(8X10)MRP515/-",
-        "quantity": 16,
+        "quantity": 14,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1770546742/Gola-111_Wht_8x10.png",
         "imageUploadedAt": "2026-02-08T10:32:24.611Z",
         "firstSeenAt": "2026-02-07T08:19:02.617Z",
@@ -82459,6 +82858,12 @@
             "type": "sold",
             "qty": 10,
             "newTotal": 16
+          },
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 2,
+            "newTotal": 14
           }
         ]
       },
@@ -88827,12 +89232,19 @@
       },
       {
         "productName": "PARAGON 2637 GENTS BSL (6X9) MRP129/-",
-        "quantity": 28,
+        "quantity": 24,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1765807418/2637_Black_Sky_Blue.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 4,
+            "newTotal": 24
+          }
+        ]
       },
       {
         "productName": "PARAGON 2638 BKR (6X9) MRP129/-",
@@ -91289,12 +91701,19 @@
       },
       {
         "productName": "XP 8281(6*11) MRP 445/-",
-        "quantity": 23,
+        "quantity": 17,
         "imageUrl": "https://res.cloudinary.com/dg365ewal/image/upload/v1749893938/8281_BLK.jpg",
         "imageUploadedAt": null,
         "firstSeenAt": null,
         "inSampleRoom": false,
-        "productHistory": []
+        "productHistory": [
+          {
+            "date": "2026-06-25T15:04:25.155Z",
+            "type": "sold",
+            "qty": 6,
+            "newTotal": 17
+          }
+        ]
       },
       {
         "productName": "XP 8288 (6*11) MRP445/-",
