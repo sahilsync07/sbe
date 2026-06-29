@@ -1280,7 +1280,7 @@ import { BRAND_LISTS } from '../utils/constants';
 const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/Old_stock_ends_here_oc3rh7.png';
 
 const ONE_TOUCH_GROUPS = [
-  { label: 'Paragon', brands: ['Max', 'PARAGON GENTS'], icon: '👞', defaultMinQty: 10 },
+  { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
   { label: 'Eeken', brands: ['EEKEN'], icon: '🏃', defaultMinQty: 10 },
   { label: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], icon: '👟', defaultMinQty: 10 },

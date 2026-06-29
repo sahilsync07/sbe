@@ -1309,7 +1309,7 @@ const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/uplo
 
 // One Touch Mode group definitions (SBE-specific brand names)
 const ONE_TOUCH_GROUPS = [
-  { label: 'Paragon', brands: ['Max', 'PARAGON GENTS'], icon: '👞', defaultMinQty: 10 },
+  { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
   { label: 'Eeken', brands: ['EEKEN'], icon: '🏃', defaultMinQty: 10 },
   { label: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], icon: '👟', defaultMinQty: 10 },
