@@ -1299,7 +1299,7 @@ const ONE_TOUCH_GROUPS = [
     icon: '📦',
     defaultMinQty: 10,
   },
-  { label: 'P-Toes Paralite', brands: ['P-TOES PARALITE'], icon: '🟠', defaultMinQty: 10 },
+  { label: 'P-Toes & Paralite', brands: ['P-TOES', 'Paralite', 'P-TOES PARALITE'], icon: '🟠', defaultMinQty: 10 },
   {
     label: 'Paragon Ladies 40% Discount',
     brands: ['SOLEA DISC 40% OFFER'],
