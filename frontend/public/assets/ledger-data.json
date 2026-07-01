@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-07-01T15:13:13.985Z",
+    "lastSync": "2026-07-01T15:19:28.782Z",
     "ledgers": []
   },
   {
@@ -35914,6 +35914,34 @@
         ]
       },
       {
+        "ledgerName": "DEV FOOTWEAR, JIMIRIPETA",
+        "openingBalance": 0,
+        "closingBalance": -12765,
+        "entries": [
+          {
+            "date": "24-Jun-26",
+            "voucherNo": "577/26-27",
+            "type": "Tax Invoice",
+            "amount": 11943,
+            "drCr": "Dr"
+          },
+          {
+            "date": "30-Jun-26",
+            "voucherNo": 32,
+            "type": "Credit Note",
+            "amount": 6997,
+            "drCr": "Cr"
+          },
+          {
+            "date": "30-Jun-26",
+            "voucherNo": "632/26-27",
+            "type": "Tax Invoice",
+            "amount": 7819,
+            "drCr": "Dr"
+          }
+        ]
+      },
+      {
         "ledgerName": "Family Footwear,Parvathipuram",
         "openingBalance": 0,
         "closingBalance": 0,
@@ -41423,34 +41451,6 @@
         "openingBalance": 0,
         "closingBalance": 0,
         "entries": []
-      },
-      {
-        "ledgerName": "DEV FOOTWEAR, JIMIRIPETA",
-        "openingBalance": 0,
-        "closingBalance": -12765,
-        "entries": [
-          {
-            "date": "24-Jun-26",
-            "voucherNo": "577/26-27",
-            "type": "Tax Invoice",
-            "amount": 11943,
-            "drCr": "Dr"
-          },
-          {
-            "date": "30-Jun-26",
-            "voucherNo": 32,
-            "type": "Credit Note",
-            "amount": 6997,
-            "drCr": "Cr"
-          },
-          {
-            "date": "30-Jun-26",
-            "voucherNo": "632/26-27",
-            "type": "Tax Invoice",
-            "amount": 7819,
-            "drCr": "Dr"
-          }
-        ]
       },
       {
         "ledgerName": "DHANAJAYA BEHERA, RAYAGADA",
