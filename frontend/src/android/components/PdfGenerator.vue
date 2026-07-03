@@ -1071,9 +1071,9 @@
             class="rounded-2xl border-2 transition-all overflow-hidden"
             :class="oneTouchGroupClass(group)"
           >
-            <!-- Group Header Row -->
+            <!-- Group Header -->
             <div
-              class="flex items-center gap-3 px-4 py-4"
+              class="px-4 py-3"
               :class="{
                 'cursor-pointer hover:bg-slate-50/50': group.batches && group.batches.length > 0,
               }"
@@ -1081,103 +1081,111 @@
                 group.batches && group.batches.length > 0 && (group.expanded = !group.expanded)
               "
             >
-              <!-- Checkbox (before start) -->
-              <input
-                v-if="!oneTouchStarted"
-                type="checkbox"
-                v-model="group.enabled"
-                class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
-                @click.stop
-              />
+              <!-- Row 1: Checkbox + Icon + Name + Status -->
+              <div class="flex items-center gap-2.5">
+                <!-- Checkbox (before start) -->
+                <input
+                  v-if="!oneTouchStarted"
+                  type="checkbox"
+                  v-model="group.enabled"
+                  class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
+                  @click.stop
+                />
 
-              <!-- Status Icon -->
-              <div
-                class="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-lg"
-                :class="oneTouchIconBgClass(group)"
-              >
-                <svg
-                  v-if="group.status === 'generating'"
-                  class="animate-spin h-5 w-5 text-violet-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
+                <!-- Status Icon -->
+                <div
+                  class="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-xl"
+                  :class="oneTouchIconBgClass(group)"
                 >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                <span v-else-if="group.status === 'done'" class="text-lg">✅</span>
-                <span v-else-if="group.status === 'ready'" class="text-lg">🟢</span>
-                <span v-else-if="group.status === 'skipped'" class="text-sm">⏭️</span>
-                <span v-else class="text-lg">{{ group.icon }}</span>
-              </div>
+                  <svg
+                    v-if="group.status === 'generating'"
+                    class="animate-spin h-5 w-5 text-violet-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span v-else-if="group.status === 'done'" class="text-lg">✅</span>
+                  <span v-else-if="group.status === 'ready'" class="text-lg">🟢</span>
+                  <span v-else-if="group.status === 'skipped'" class="text-sm">⏭️</span>
+                  <span v-else class="text-lg">{{ group.icon }}</span>
+                </div>
 
-              <!-- Label -->
-              <div class="flex-1 min-w-0">
-                <span class="text-sm font-bold text-slate-700 leading-tight block truncate">{{
-                  group.label
-                }}</span>
+                <!-- Label + Status text -->
+                <div class="flex-1 min-w-0">
+                  <span class="text-[13px] font-bold text-slate-800 leading-tight block">{{
+                    group.label
+                  }}</span>
+                  <span
+                    v-if="group.status === 'generating'"
+                    class="text-[11px] text-violet-500 font-medium"
+                  >
+                    Generating {{ group.imageCount }}/{{ group.totalImages || '?' }} images...
+                  </span>
+                  <span
+                    v-if="group.status === 'skipped'"
+                    class="text-[11px] text-slate-400 font-medium"
+                    >No products found</span
+                  >
+                </div>
+
+                <!-- Image count badge (after generation) -->
                 <span
-                  v-if="group.status === 'generating'"
-                  class="text-[11px] text-violet-500 font-medium"
+                  v-if="(group.status === 'ready' || group.status === 'done') && group.imageCount > 0"
+                  class="text-[10px] bg-violet-100 text-violet-700 font-bold px-2 py-0.5 rounded-full flex-shrink-0"
                 >
-                  Generating {{ group.imageCount }}/{{ group.totalImages || '?' }} images...
+                  {{ group.imageCount }} imgs
                 </span>
-                <span
-                  v-if="group.status === 'skipped'"
-                  class="text-[11px] text-slate-400 font-medium"
-                  >No products found</span
-                >
+
+                <!-- Expand chevron -->
+                <i
+                  v-if="group.batches && group.batches.length > 0"
+                  class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200 flex-shrink-0"
+                  :class="{ 'rotate-180': group.expanded }"
+                ></i>
               </div>
 
-              <!-- Min Qty (before start) -->
+              <!-- Row 2: Min/Max Qty (compact, below the name) -->
               <div
                 v-if="!oneTouchStarted"
-                class="flex items-center gap-1 flex-shrink-0"
+                class="flex items-center gap-3 mt-2 pl-[30px]"
                 :class="{
-                  'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
+                  'opacity-30 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
                 }"
               >
-                <span class="text-[10px] text-slate-400 font-bold">MIN</span>
-                <input
-                  type="number"
-                  v-model.number="group.minQty"
-                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
-                  @click.stop
-                />
-                <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
-                <input
-                  type="number"
-                  v-model.number="group.maxQty"
-                  class="w-14 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
-                  @click.stop
-                />
+                <div class="flex items-center gap-1.5" @click.stop>
+                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Min</span>
+                  <input
+                    type="number"
+                    v-model.number="group.minQty"
+                    class="w-11 text-center font-bold text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none transition-all"
+                    @click.stop
+                  />
+                </div>
+                <div class="flex items-center gap-1.5" @click.stop>
+                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Max</span>
+                  <input
+                    type="text"
+                    v-model="group.maxQty"
+                    placeholder="∞"
+                    class="w-11 text-center font-bold text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none placeholder:text-slate-300 transition-all"
+                    @click.stop
+                  />
+                </div>
               </div>
-
-              <!-- Image count badge (after generation) -->
-              <span
-                v-if="(group.status === 'ready' || group.status === 'done') && group.imageCount > 0"
-                class="text-[10px] bg-violet-100 text-violet-700 font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-              >
-                {{ group.imageCount }} imgs
-              </span>
-
-              <!-- Expand chevron -->
-              <i
-                v-if="group.batches && group.batches.length > 0"
-                class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200 flex-shrink-0"
-                :class="{ 'rotate-180': group.expanded }"
-              ></i>
             </div>
 
             <!-- Generating Progress Bar -->
@@ -1329,6 +1337,7 @@ const ONE_TOUCH_GROUPS = [
     defaultMinQty: 10,
   },
   { label: 'P-Toes', brands: ['P-TOES'], icon: '🟠', defaultMinQty: 10 },
+  { label: 'Paralite', brands: ['PARALITE'], icon: '🔶', defaultMinQty: 10 },
   {
     label: 'Paragon Ladies 40% Discount',
     brands: ['SOLEA DISC 40% OFFER'],
@@ -1384,7 +1393,7 @@ export default {
         ...g,
         enabled: true,
         minQty: g.defaultMinQty,
-        maxQty: 999999,
+        maxQty: '',
         status: 'idle', // 'idle' | 'generating' | 'ready' | 'done' | 'skipped'
         batches: [], // [[uri, ...], [uri, ...]]
         batchStatuses: [], // ['idle' | 'sharing' | 'shared'] per batch
@@ -1988,7 +1997,7 @@ export default {
         ...g,
         enabled: true,
         minQty: g.defaultMinQty,
-        maxQty: 999999,
+        maxQty: '',
         status: 'idle',
         batches: [],
         batchStatuses: [],
@@ -2045,6 +2054,14 @@ export default {
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+
+    parseMaxQty(val) {
+      if (val === '' || val === null || val === undefined) return Infinity;
+      const s = String(val).trim().toLowerCase();
+      if (s === '' || s === 'x' || s === '∞') return Infinity;
+      const n = parseInt(s, 10);
+      return isNaN(n) || n <= 0 ? Infinity : n;
     },
 
     async saveSeparatorImage(prefix) {
@@ -2207,7 +2224,7 @@ export default {
 
         try {
           const effectiveMinQty = this.oneTouchMinQtyEnabled ? group.minQty : 0;
-          const effectiveMaxQty = this.oneTouchMinQtyEnabled ? group.maxQty : 999999;
+          const effectiveMaxQty = this.oneTouchMinQtyEnabled ? this.parseMaxQty(group.maxQty) : Infinity;
           const { blob, pageCount } = await this.generatePdfBlobForOneTouch(
             group.brands,
             this.oneTouchOnlyWithPhotos,

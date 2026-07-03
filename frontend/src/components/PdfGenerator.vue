@@ -1076,9 +1076,10 @@
                 />
                 <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
                 <input
-                  type="number"
+                  type="text"
                   v-model="group.maxQty"
-                  class="w-14 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                  placeholder="∞"
+                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none placeholder:text-slate-300"
                 />
               </div>
 
@@ -1300,6 +1301,7 @@ const ONE_TOUCH_GROUPS = [
     defaultMinQty: 10,
   },
   { label: 'P-Toes', brands: ['P-TOES'], icon: '🟠', defaultMinQty: 10 },
+  { label: 'Paralite', brands: ['PARALITE'], icon: '🔶', defaultMinQty: 10 },
   {
     label: 'Paragon Ladies 40% Discount',
     brands: ['SOLEA DISC 40% OFFER'],
@@ -1342,7 +1344,7 @@ const oneTouchGroups = ref(
     ...g,
     enabled: true,
     minQty: g.defaultMinQty,
-    maxQty: 999999,
+    maxQty: '',
     isExpanded: false,
     status: 'idle',
     batches: [],
@@ -1353,6 +1355,14 @@ const oneTouchMinQtyEnabled = ref(true);
 const isOneTouchSharing = ref(false);
 const isOneTouchPreparing = ref(false);
 const cancelOneTouch = ref(false);
+
+const parseMaxQty = (val) => {
+  if (val === '' || val === null || val === undefined) return Infinity;
+  const s = String(val).trim().toLowerCase();
+  if (s === '' || s === 'x' || s === '∞') return Infinity;
+  const n = parseInt(s, 10);
+  return isNaN(n) || n <= 0 ? Infinity : n;
+};
 
 const handleCancelOneTouch = () => {
   cancelOneTouch.value = true;
@@ -2148,7 +2158,7 @@ const prepareOneTouch = async () => {
 
     try {
       const effectiveMinQty = oneTouchMinQtyEnabled.value ? group.minQty : 0;
-      const effectiveMaxQty = oneTouchMinQtyEnabled.value ? group.maxQty : 999999;
+      const effectiveMaxQty = oneTouchMinQtyEnabled.value ? parseMaxQty(group.maxQty) : Infinity;
 
       // Pre-calculate batches
       let productCount = 0;
