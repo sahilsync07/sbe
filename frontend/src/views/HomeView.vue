@@ -205,11 +205,19 @@ const links = [
     colorKey: 'stone',
     gradient: 'linear-gradient(135deg, #a8a29e, #78716c)',
   },
+  {
+    path: '/analyzer',
+    label: 'Analyzer',
+    desc: 'Debtor & creditor monthly analysis',
+    icon: 'fa-chart-pie',
+    colorKey: 'teal',
+    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+  },
 ];
 
 const filteredLinks = computed(() => {
   return links.filter(item => {
-    if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation') && !isAdmin.value && !isSuperAdmin.value) {
+    if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation' || item.path === '/analyzer') && !isAdmin.value && !isSuperAdmin.value) {
       return false;
     }
     return true;

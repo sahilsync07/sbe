@@ -105,7 +105,7 @@ const isLocal = ref(window.location.hostname === "localhost" || window.location.
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
 
 // Pages that are part of the Hub (navbar is completely hidden on these)
-const hubPages = new Set(['/home', '/ledger', '/daybook', '/sample-room', '/stock-trend', '/pdf-gen', '/rate-chart', '/line-list', '/quotation', '/old-stock']);
+const hubPages = new Set(['/home', '/ledger', '/daybook', '/sample-room', '/stock-trend', '/pdf-gen', '/rate-chart', '/line-list', '/quotation', '/old-stock', '/analyzer']);
 
 // Hide mobile bottom bar inside Daybook & Ledger
 const hideMobileBottomBar = computed(() => {
