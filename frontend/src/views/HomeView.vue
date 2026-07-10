@@ -1,64 +1,96 @@
 <template>
-  <div class="home-shell min-h-screen w-full font-sans text-slate-800 flex">
-    <main class="w-full min-h-screen flex flex-col flex-1 min-w-0" :class="showBlackNavbar ? 'pt-[54px] lg:pt-[72px]' : 'pt-2 sm:pt-4'">
-      <!-- Header -->
-      <div class="home-header-sticky sticky z-40 px-2.5 pt-2 pb-1.5 sm:px-5 sm:pt-4 sm:pb-2 lg:px-6 xl:px-10" :class="showBlackNavbar ? 'top-[54px] lg:top-[72px]' : 'top-0'">
-        <div class="home-header-card mx-auto flex w-full max-w-3xl flex-col gap-2 p-3 sm:p-5">
-          <div class="flex items-center justify-between gap-2 sm:gap-4">
-            <div class="flex items-center gap-2 sm:gap-4">
-              <button type="button" @click="router.push('/')" class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-600 transition-all active:scale-95 sm:h-12 sm:w-12" title="Back">
-                <i class="fa-solid fa-arrow-left text-sm sm:text-[15px]"></i>
-              </button>
-              <div>
-                <h1 class="text-lg font-bold tracking-tight text-slate-950 sm:text-2xl">SBE Hub</h1>
-                <p class="text-[11px] text-slate-500 sm:text-xs">Quick access to all tools</p>
-              </div>
-            </div>
-            
-            <div v-if="isAdmin || isSuperAdmin" class="flex items-center gap-2">
-              <button
-                 v-if="isAdmin && !isSuperAdmin"
-                 @click="updateStockData"
-                 class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-blue-600 transition-all active:scale-95 sm:h-12 sm:w-12 hover:text-blue-700"
-                 title="Sync Data"
-              >
-                <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
-              </button>
-              <button
-                 @click="handleLogout"
-                 class="home-back-btn flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-red-500 transition-all active:scale-95 sm:h-12 sm:w-12 hover:text-red-600"
-                 title="Logout"
-              >
-                <i class="fa-solid fa-right-from-bracket"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="hub-shell">
+    <!-- Main Content Area -->
+    <main class="hub-main">
+      <!-- Ambient Glow Orbs -->
+      <div class="hub-orb hub-orb--warm"></div>
+      <div class="hub-orb hub-orb--accent"></div>
 
-      <div class="flex-1 px-2.5 pt-2 pb-16 sm:px-5 sm:pt-4 lg:px-6 xl:px-10">
-        <div class="mx-auto w-full max-w-3xl">
-          <div class="grid grid-cols-2 gap-3 sm:gap-4">
-            <router-link v-for="item in filteredLinks" :key="item.path" :to="item.path"
-              class="home-card group flex flex-col items-center gap-3 rounded-2xl p-5 text-center transition-all duration-200 active:scale-[0.97] sm:rounded-[1.75rem] sm:gap-4 sm:p-7 hover:-translate-y-1">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-16 sm:w-16 sm:rounded-[1.25rem]"
-                :style="{ background: item.gradient, boxShadow: item.shadow }">
-                <i :class="['fa-solid', item.icon, 'text-xl text-white sm:text-2xl']"></i>
-              </div>
-              <div>
-                <h3 class="text-sm font-bold text-slate-900 sm:text-base">{{ item.label }}</h3>
-                <p class="mt-0.5 text-[10px] leading-snug text-slate-400 sm:text-xs">{{ item.desc }}</p>
-              </div>
-            </router-link>
+      <!-- Top Bar -->
+      <header class="hub-topbar">
+        <div class="hub-topbar__left">
+          <button type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="hub-topbar__date">
+            <span class="hub-topbar__day">{{ currentDay }}</span>
+            <span class="hub-topbar__full-date">{{ currentDate }}</span>
           </div>
         </div>
+
+        <div class="hub-topbar__right" v-if="isAdmin || isSuperAdmin">
+          <button
+            v-if="isAdmin && !isSuperAdmin"
+            @click="updateStockData"
+            class="hub-icon-btn hub-icon-btn--accent"
+            title="Sync Data"
+          >
+            <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
+          </button>
+          <button
+            v-if="isAdmin || isSuperAdmin"
+            @click="toggleConsole"
+            class="hub-icon-btn hub-icon-btn--console hidden lg:flex"
+            :class="{ 'hub-icon-btn--active': showConsole }"
+            title="Toggle Console"
+          >
+            <i class="fa-solid fa-terminal"></i>
+          </button>
+          <button
+            @click="handleLogout"
+            class="hub-icon-btn hub-icon-btn--danger"
+            title="Logout"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Hero Section -->
+      <section class="hub-hero">
+        <h1 class="hub-hero__title">
+          <span class="hub-hero__label">SBE</span>
+          <span class="hub-hero__gradient">Hub</span>
+        </h1>
+        <p class="hub-hero__sub">Your command center — every tool, one tap away.</p>
+      </section>
+
+      <!-- Bento Grid -->
+      <section class="hub-grid">
+        <router-link
+          v-for="(item, index) in filteredLinks"
+          :key="item.path"
+          :to="item.path"
+          class="hub-card"
+          :class="[`hub-card--${item.colorKey}`, item.featured ? 'hub-card--featured' : '']"
+          :style="{ '--card-delay': `${index * 0.04}s` }"
+        >
+          <div class="hub-card__icon-wrap">
+            <div class="hub-card__icon" :style="{ background: item.gradient }">
+              <i :class="['fa-solid', item.icon]"></i>
+            </div>
+          </div>
+          <div class="hub-card__body">
+            <h3 class="hub-card__title">{{ item.label }}</h3>
+            <p class="hub-card__desc">{{ item.desc }}</p>
+          </div>
+          <div class="hub-card__arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </router-link>
+      </section>
+
+      <div class="hub-footer">
+        <span>Built with precision for SBE Rayagada</span>
       </div>
     </main>
 
-    <!-- Admin Console Viewer (Visible on Desktop only) -->
-    <aside v-if="isAdmin || isSuperAdmin" class="hidden lg:block w-1/5 shrink-0 border-l border-slate-200 bg-slate-950 h-screen sticky top-0">
-      <ConsoleViewer />
-    </aside>
+    <!-- Admin Console Sidebar (Desktop only, collapsible) -->
+    <Transition name="console-slide">
+      <aside v-if="(isAdmin || isSuperAdmin) && showConsole" class="hub-console hidden lg:flex">
+        <ConsoleViewer />
+      </aside>
+    </Transition>
   </div>
 </template>
 
@@ -72,94 +104,106 @@ import ConsoleViewer from '../components/ConsoleViewer.vue';
 const router = useRouter();
 const { isAdmin, isSuperAdmin, logout } = useAdmin();
 
+const showConsole = ref(false); // collapsed by default
+
+const toggleConsole = () => {
+  showConsole.value = !showConsole.value;
+};
+
 const handleLogout = async () => {
   await logout();
   router.push('/');
 };
-const showBlackNavbar = computed(() => !(isAdmin.value || isSuperAdmin.value));
+
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const { updateStockData, loading: isSyncing } = useStockData(isLocal);
 
+// Date display
+const now = new Date();
+const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+const currentDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
 const links = [
+  {
+    path: '/',
+    label: 'Stock Table',
+    desc: 'Browse full product catalog with images & live stock',
+    icon: 'fa-table-cells-large',
+    colorKey: 'slate',
+    gradient: 'linear-gradient(135deg, #64748b, #334155)',
+    featured: true,
+  },
   {
     path: '/ledger',
     label: 'Ledger',
     desc: 'Account balances & entries',
     icon: 'fa-book-open',
-    gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-    shadow: '0 8px 24px -4px rgba(99,102,241,0.4)',
+    colorKey: 'indigo',
+    gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
   },
   {
     path: '/sample-room',
     label: 'Sample Room',
     desc: 'Track present samples',
     icon: 'fa-box-open',
-    gradient: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
-    shadow: '0 8px 24px -4px rgba(14,165,233,0.4)',
+    colorKey: 'cyan',
+    gradient: 'linear-gradient(135deg, #06b6d4, #0891b2)',
   },
   {
     path: '/stock-trend',
     label: 'Stock Trends',
     desc: 'Movement & reorder insights',
     icon: 'fa-chart-line',
+    colorKey: 'amber',
     gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    shadow: '0 8px 24px -4px rgba(245,158,11,0.4)',
   },
   {
     path: '/pdf-gen',
     label: 'PDF Generator',
     desc: 'One-touch share & batches',
     icon: 'fa-file-pdf',
-    gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
-    shadow: '0 8px 24px -4px rgba(239,68,68,0.4)',
+    colorKey: 'rose',
+    gradient: 'linear-gradient(135deg, #f43f5e, #e11d48)',
   },
   {
     path: '/daybook',
     label: 'Daybook',
     desc: 'Daily voucher transactions',
     icon: 'fa-calendar-day',
+    colorKey: 'emerald',
     gradient: 'linear-gradient(135deg, #10b981, #059669)',
-    shadow: '0 8px 24px -4px rgba(16,185,129,0.4)',
-  },
-  {
-    path: '/',
-    label: 'Stock Table',
-    desc: 'Product catalog & images',
-    icon: 'fa-table-cells-large',
-    gradient: 'linear-gradient(135deg, #64748b, #475569)',
-    shadow: '0 8px 24px -4px rgba(100,116,139,0.4)',
   },
   {
     path: '/rate-chart',
     label: 'Rate Chart',
     desc: 'Print brand price lists',
     icon: 'fa-file-invoice-dollar',
+    colorKey: 'pink',
     gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
-    shadow: '0 8px 24px -4px rgba(236,72,153,0.4)',
   },
   {
     path: '/line-list',
     label: 'Line List',
     desc: 'Print area debtor balances',
     icon: 'fa-map-location-dot',
-    gradient: 'linear-gradient(135deg, #8b5cf6, #db2777)',
-    shadow: '0 8px 24px -4px rgba(139,92,246,0.4)',
+    colorKey: 'violet',
+    gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
   },
   {
     path: '/quotation',
     label: 'Quotation & Bill',
     desc: 'Generate general & tax bills',
     icon: 'fa-file-invoice',
+    colorKey: 'green',
     gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
-    shadow: '0 8px 24px -4px rgba(34,197,94,0.4)',
   },
   {
     path: '/old-stock',
     label: 'Old Stock',
     desc: 'View discontinued items',
     icon: 'fa-box-archive',
+    colorKey: 'stone',
     gradient: 'linear-gradient(135deg, #a8a29e, #78716c)',
-    shadow: '0 8px 24px -4px rgba(168,162,158,0.4)',
   },
 ];
 
@@ -174,30 +218,423 @@ const filteredLinks = computed(() => {
 </script>
 
 <style scoped>
-.home-shell {
-  background-color: #fafafa;
-  background-image:
-    radial-gradient(1000px 500px at 50% -5%, rgba(99,102,241,0.12), transparent 50%),
-    radial-gradient(800px 400px at 80% 80%, rgba(14,165,233,0.08), transparent 45%);
+/* ══════════════════════════════════════
+   SHELL & LAYOUT
+   ══════════════════════════════════════ */
+.hub-shell {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f8f6f1;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+  overflow-x: hidden;
 }
-.home-header-sticky { pointer-events: none; }
-.home-header-sticky > * { pointer-events: auto; }
-.home-header-card {
-  border-radius: 1.75rem;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(20px) saturate(1.35);
-  -webkit-backdrop-filter: blur(20px) saturate(1.35);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 20px 40px -18px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,0.5);
+
+.hub-main {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  padding: 0 clamp(16px, 4vw, 48px);
+  padding-bottom: 48px;
+  overflow-y: auto;
 }
-.home-back-btn {
+
+/* ══════════════════════════════════════
+   AMBIENT ORBS (Background Glow)
+   ══════════════════════════════════════ */
+.hub-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+}
+.hub-orb--warm {
+  width: 700px; height: 700px;
+  top: -180px; right: -100px;
+  background: radial-gradient(circle, #fde68a 0%, #fbbf24 40%, transparent 70%);
+}
+.hub-orb--accent {
+  width: 500px; height: 500px;
+  bottom: -120px; left: -80px;
+  background: radial-gradient(circle, #c4b5fd 0%, #8b5cf6 40%, transparent 70%);
+  opacity: 0.25;
+}
+
+/* ══════════════════════════════════════
+   TOP BAR
+   ══════════════════════════════════════ */
+.hub-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+}
+
+.hub-topbar__left,
+.hub-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-topbar__date {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.hub-topbar__day {
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+}
+.hub-topbar__full-date {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Icon Buttons */
+.hub-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.06);
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(.4,0,.2,1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+.hub-icon-btn:hover {
   background: #fff;
-  box-shadow: 0 4px 14px rgba(15,23,42,0.08), 0 0 0 1px rgba(226,232,240,0.9);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
 }
-.home-card {
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 16px 36px -16px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,0.8) inset;
+.hub-icon-btn:active { transform: scale(0.95); }
+
+.hub-icon-btn--accent { color: #6366f1; }
+.hub-icon-btn--accent:hover { color: #4f46e5; background: #eef2ff; }
+.hub-icon-btn--danger { color: #ef4444; }
+.hub-icon-btn--danger:hover { color: #dc2626; background: #fef2f2; }
+.hub-icon-btn--console { color: #64748b; }
+.hub-icon-btn--console:hover { color: #475569; background: #f1f5f9; }
+.hub-icon-btn--active {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
 }
-.home-card:hover {
-  box-shadow: 0 24px 48px -16px rgba(15,23,42,0.18), 0 0 0 1px rgba(255,255,255,0.9) inset;
+.hub-icon-btn--active:hover { background: #0f172a !important; }
+
+/* ══════════════════════════════════════
+   HERO SECTION
+   ══════════════════════════════════════ */
+.hub-hero {
+  position: relative;
+  z-index: 1;
+  padding: 32px 0 10px;
+}
+
+.hub-hero__title {
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.hub-hero__label {
+  color: #1e293b;
+}
+
+.hub-hero__gradient {
+  background: linear-gradient(135deg, #d97706, #ea580c, #dc2626);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hub-hero__sub {
+  margin-top: 10px;
+  font-size: clamp(13px, 1.4vw, 16px);
+  color: #94a3b8;
+  font-weight: 450;
+  letter-spacing: 0.01em;
+}
+
+/* ══════════════════════════════════════
+   BENTO GRID
+   ══════════════════════════════════════ */
+.hub-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 28px 0 0;
+}
+
+/* ══════════════════════════════════════
+   CARD
+   ══════════════════════════════════════ */
+.hub-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 8px 32px -8px rgba(15,23,42,0.06);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.35s cubic-bezier(.4,0,.2,1);
+  animation: card-rise 0.5s cubic-bezier(.16,1,.3,1) var(--card-delay, 0s) both;
+  overflow: hidden;
+}
+
+.hub-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent 60%);
+}
+
+.hub-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,1) inset,
+    0 20px 48px -12px rgba(15,23,42,0.12),
+    0 0 0 1px rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.85);
+}
+.hub-card:hover::before { opacity: 1; }
+.hub-card:active { transform: scale(0.98) translateY(0); }
+
+/* Featured Card (Stock Table) — spans full width on large screens */
+.hub-card--featured {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-color: rgba(255,255,255,0.05);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.03) inset,
+    0 20px 48px -12px rgba(0,0,0,0.3);
+}
+.hub-card--featured .hub-card__title { color: #f1f5f9; }
+.hub-card--featured .hub-card__desc { color: #94a3b8; }
+.hub-card--featured .hub-card__arrow { color: #64748b; }
+.hub-card--featured:hover {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 24px 56px -12px rgba(0,0,0,0.4);
+}
+.hub-card--featured .hub-card__icon {
+  box-shadow: 0 8px 24px -4px rgba(100,116,139,0.5);
+}
+
+/* Icon */
+.hub-card__icon-wrap {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.hub-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  box-shadow: 0 6px 20px -4px rgba(0,0,0,0.25);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease;
+}
+
+.hub-card:hover .hub-card__icon {
+  transform: scale(1.1) rotate(-2deg);
+  box-shadow: 0 10px 28px -4px rgba(0,0,0,0.35);
+}
+
+/* Body */
+.hub-card__body {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.hub-card__title {
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #1e293b;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.hub-card__desc {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+/* Arrow */
+.hub-card__arrow {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+.hub-card:hover .hub-card__arrow {
+  color: #64748b;
+  transform: translateX(4px);
+}
+.hub-card--featured:hover .hub-card__arrow {
+  color: #e2e8f0;
+}
+
+/* ══════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════ */
+.hub-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 40px 0 16px;
+  font-size: 11px;
+  color: #cbd5e1;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+/* ══════════════════════════════════════
+   CONSOLE SIDEBAR
+   ══════════════════════════════════════ */
+.hub-console {
+  width: 320px;
+  flex-shrink: 0;
+  height: 100vh;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid rgba(30,41,59,0.08);
+  background: #0f172a;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.1);
+}
+
+/* Console Slide Transition */
+.console-slide-enter-active {
+  transition: all 0.4s cubic-bezier(.16,1,.3,1);
+}
+.console-slide-leave-active {
+  transition: all 0.3s cubic-bezier(.4,0,1,1);
+}
+.console-slide-enter-from,
+.console-slide-leave-to {
+  width: 0;
+  opacity: 0;
+  transform: translateX(40px);
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════ */
+@keyframes card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════ */
+@media (max-width: 639px) {
+  .hub-hero { padding: 20px 0 6px; }
+  .hub-hero__title { gap: 10px; }
+  .hub-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 20px 0 0;
+  }
+  .hub-card { padding: 16px 18px; gap: 14px; border-radius: 16px; }
+  .hub-card--featured { grid-column: 1; }
+  .hub-card__icon { width: 42px; height: 42px; border-radius: 12px; font-size: 16px; }
+  .hub-icon-btn { width: 36px; height: 36px; border-radius: 12px; font-size: 13px; }
+  .hub-topbar__date { display: none; }
+  .hub-orb--warm { width: 400px; height: 400px; top: -100px; right: -60px; }
+  .hub-orb--accent { width: 300px; height: 300px; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hub-card--featured { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) {
+  .hub-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .hub-card--featured { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1280px) {
+  .hub-hero { padding: 40px 0 14px; }
+  .hub-card {
+    padding: 22px 26px;
+    gap: 18px;
+  }
+  .hub-card__icon {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+    border-radius: 16px;
+  }
+  .hub-card__title { font-size: 16px; }
+  .hub-card__desc { font-size: 13px; }
 }
 </style>

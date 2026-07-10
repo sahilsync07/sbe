@@ -2,7 +2,7 @@
   <div class="min-h-screen relative">
     <!-- Global Persistent App Layout -->
     <DesktopToolbar
-      v-if="!($route.path === '/home' && (isAdmin || isSuperAdmin))"
+      v-if="!hubPages.has($route.path)"
       :loading="stockLoading"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"
@@ -103,6 +103,9 @@ watch(() => route.query, async (query) => {
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
+
+// Pages that are part of the Hub (navbar is completely hidden on these)
+const hubPages = new Set(['/home', '/ledger', '/daybook', '/sample-room', '/stock-trend', '/pdf-gen', '/rate-chart', '/line-list', '/quotation', '/old-stock']);
 
 // Hide mobile bottom bar inside Daybook & Ledger
 const hideMobileBottomBar = computed(() => {
