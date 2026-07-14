@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-07-14T13:56:41.835Z",
+    "lastSync": "2026-07-14T14:48:17.888Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10367966.14,
-        "closingBalance": 10632830.13,
+        "closingBalance": 10641011.74,
         "entries": []
       }
     ]
@@ -13262,7 +13262,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2695541.23,
+        "closingBalance": 2696565.76,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -18400,6 +18400,20 @@
             "voucherNo": "738/26-27",
             "type": "Tax Invoice",
             "amount": 8.39,
+            "drCr": "Cr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "740/26-27",
+            "type": "Tax Invoice",
+            "amount": 357.86,
+            "drCr": "Cr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "741/26-27",
+            "type": "Tax Invoice",
+            "amount": 666.67,
             "drCr": "Cr"
           }
         ]
@@ -19868,7 +19882,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2696542.48,
+        "closingBalance": 2697567.01,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -25006,6 +25020,20 @@
             "voucherNo": "738/26-27",
             "type": "Tax Invoice",
             "amount": 8.39,
+            "drCr": "Cr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "740/26-27",
+            "type": "Tax Invoice",
+            "amount": 357.86,
+            "drCr": "Cr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "741/26-27",
+            "type": "Tax Invoice",
+            "amount": 666.67,
             "drCr": "Cr"
           }
         ]
@@ -27933,7 +27961,7 @@
       {
         "ledgerName": "PACKING & TRANSPORTATING EXPENSES",
         "openingBalance": 0,
-        "closingBalance": 69950,
+        "closingBalance": 70350,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -29292,6 +29320,13 @@
             "type": "Tax Invoice",
             "amount": 300,
             "drCr": "Cr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "741/26-27",
+            "type": "Tax Invoice",
+            "amount": 400,
+            "drCr": "Cr"
           }
         ]
       },
@@ -29412,7 +29447,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": 1.96,
+        "closingBalance": 2.09,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -34824,6 +34859,20 @@
             "type": "Tax Invoice",
             "amount": 0.16,
             "drCr": "Dr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "740/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.13,
+            "drCr": "Dr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "741/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.26,
+            "drCr": "Cr"
           }
         ]
       },
@@ -39685,7 +39734,7 @@
       {
         "ledgerName": "SRI VINAYAKA F/W, MUNIGUDA",
         "openingBalance": -30141,
-        "closingBalance": -44196,
+        "closingBalance": -72596,
         "entries": [
           {
             "date": "11-Apr-26",
@@ -39749,6 +39798,13 @@
             "type": "Receipt",
             "amount": 5000,
             "drCr": "Cr"
+          },
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "741/26-27",
+            "type": "Tax Invoice",
+            "amount": 28400,
+            "drCr": "Dr"
           }
         ]
       },
@@ -53591,8 +53647,16 @@
       {
         "ledgerName": "Upendra Behera",
         "openingBalance": 0,
-        "closingBalance": 0,
-        "entries": []
+        "closingBalance": -15030,
+        "entries": [
+          {
+            "date": "14-Jul-26",
+            "voucherNo": "740/26-27",
+            "type": "Tax Invoice",
+            "amount": 15030,
+            "drCr": "Dr"
+          }
+        ]
       },
       {
         "ledgerName": "UPENDRA NAYAK,RAYAGADA",
@@ -53696,7 +53760,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 17249671.24,
+        "closingBalance": 17290652.05,
         "entries": []
       },
       {
