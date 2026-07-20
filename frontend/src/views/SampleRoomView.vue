@@ -51,10 +51,36 @@
                 <button @click="selectNone" class="sr-action-btn rounded-full px-3 py-1.5 text-xs font-semibold sm:px-4 sm:py-2 sm:text-sm">None</button>
               </div>
 
-              <!-- Sort by Qty -->
-              <button @click="sortByQty = !sortByQty" class="sr-action-btn flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:px-4 sm:py-2 sm:text-sm active:scale-[0.97]" :class="sortByQty ? 'ring-2 ring-indigo-500 ring-offset-1 text-indigo-700' : ''">
-                <i class="fa-solid" :class="sortByQty ? 'fa-arrow-down-9-1' : 'fa-sort'"></i> <span class="hidden sm:inline">Sort Qty</span>
-              </button>
+              <!-- View Options -->
+              <div class="hidden md:flex items-center gap-3 mr-2 pr-3 border-r border-slate-200/60">
+                <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-indigo-600 transition-colors">
+                  <input type="checkbox" v-model="hideZeroStock" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 transition-colors cursor-pointer" />
+                  Hide Zero Stock
+                </label>
+                <div class="flex items-center gap-1.5 relative">
+                  <i class="fa-solid fa-sort text-slate-400 text-xs"></i>
+                  <select v-model="sortOption" class="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-transparent border-none py-0 pl-1 pr-6 focus:ring-0 cursor-pointer hover:text-indigo-600 transition-colors appearance-none">
+                    <option value="alpha">Sort: A to Z</option>
+                    <option value="qty_desc">Qty: High to Low</option>
+                    <option value="qty_asc">Qty: Low to High</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down absolute right-1 text-slate-400 text-[10px] pointer-events-none"></i>
+                </div>
+              </div>
+              <div class="flex md:hidden items-center gap-1">
+                <button @click="hideZeroStock = !hideZeroStock" class="sr-action-btn flex items-center justify-center h-8 w-8 rounded-full text-xs active:scale-[0.97]" :class="hideZeroStock ? 'ring-2 ring-indigo-500 ring-offset-1 text-indigo-700 bg-indigo-50/50' : ''" title="Hide Zero Stock">
+                  <i class="fa-solid" :class="hideZeroStock ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+                <div class="relative flex items-center">
+                  <select v-model="sortOption" class="sr-action-btn h-8 pl-7 pr-6 rounded-full text-[10px] font-bold uppercase tracking-wider appearance-none bg-transparent" title="Sort Options">
+                    <option value="alpha">A-Z</option>
+                    <option value="qty_desc">Qty &darr;</option>
+                    <option value="qty_asc">Qty &uarr;</option>
+                  </select>
+                  <i class="fa-solid fa-sort absolute left-2.5 text-slate-500 pointer-events-none text-[10px]"></i>
+                  <i class="fa-solid fa-chevron-down absolute right-2.5 text-slate-400 pointer-events-none text-[8px]"></i>
+                </div>
+              </div>
               
               <!-- Print -->
               <button @click="printPDF" class="sr-print-btn flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white sm:px-5 sm:py-2 sm:text-sm active:scale-[0.97] transition-all hover:shadow-lg hover:shadow-indigo-500/30">
@@ -343,7 +369,8 @@ const saving = ref(false);
 const selectedGroup = ref(null);
 const checkedMap = ref({});
 const searchQuery = ref('');
-const sortByQty = ref(false);
+const sortOption = ref('alpha');
+const hideZeroStock = ref(false);
 const viewMode = ref('list'); // 'list' | 'grid'
 const filterMode = ref('all'); // 'all' | 'present' | 'missing'
 
@@ -367,9 +394,16 @@ const sortedGroupProducts = computed(() => {
     arr = arr.filter(p => !checkedMap.value[p.productName]);
   }
 
+  // Apply Hide Zero Stock
+  if (hideZeroStock.value) {
+    arr = arr.filter(p => (p.quantity || 0) > 0);
+  }
+
   // Apply Sort
-  if (sortByQty.value) {
+  if (sortOption.value === 'qty_desc') {
     arr.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
+  } else if (sortOption.value === 'qty_asc') {
+    arr.sort((a, b) => (a.quantity || 0) - (b.quantity || 0));
   } else {
     // Default alphabetical sort for consistency
     arr.sort((a,b) => a.productName.localeCompare(b.productName));
