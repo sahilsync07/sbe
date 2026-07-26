@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-07-25T15:01:18.432Z",
+    "lastSync": "2026-07-26T07:46:54.712Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10369397.77,
-        "closingBalance": 10559178,
+        "closingBalance": 10560054.06,
         "entries": []
       }
     ]
@@ -593,7 +593,7 @@
       {
         "ledgerName": "BALARAM SAHU,NARAYANPATNA",
         "openingBalance": -15535,
-        "closingBalance": -1556,
+        "closingBalance": -1305,
         "entries": [
           {
             "date": "15-Apr-26",
@@ -642,6 +642,13 @@
             "voucherNo": 572,
             "type": "Receipt",
             "amount": 5000,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 44,
+            "type": "Credit Note",
+            "amount": 251,
             "drCr": "Cr"
           }
         ]
@@ -1515,7 +1522,7 @@
       {
         "ledgerName": "MAA AGNI GANGA MAA, NILABADI",
         "openingBalance": 0,
-        "closingBalance": -10275,
+        "closingBalance": -7635,
         "entries": [
           {
             "date": "19-Jun-26",
@@ -1529,6 +1536,13 @@
             "voucherNo": 515,
             "type": "Receipt",
             "amount": 3000,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 43,
+            "type": "Credit Note",
+            "amount": 2640,
             "drCr": "Cr"
           }
         ]
@@ -4078,7 +4092,7 @@
       {
         "ledgerName": "SBI(ADB)-CC A/C",
         "openingBalance": 4801995.93,
-        "closingBalance": 6103963.45,
+        "closingBalance": 6093963.45,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -8249,7 +8263,7 @@
             "date": "21-Jul-26",
             "voucherNo": 584,
             "type": "Receipt",
-            "amount": 200000,
+            "amount": 210000,
             "drCr": "Dr"
           },
           {
@@ -14690,7 +14704,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2708496.72,
+        "closingBalance": 2708726.98,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -20219,7 +20233,7 @@
             "date": "23-Jul-26",
             "voucherNo": 42,
             "type": "Credit Note",
-            "amount": 21.86,
+            "amount": 15.51,
             "drCr": "Dr"
           },
           {
@@ -20311,6 +20325,34 @@
             "voucherNo": "814/26-27",
             "type": "Tax Invoice",
             "amount": 141.61,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 43,
+            "type": "Credit Note",
+            "amount": 62.87,
+            "drCr": "Dr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 44,
+            "type": "Credit Note",
+            "amount": 5.97,
+            "drCr": "Dr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "815/26-27",
+            "type": "Tax Invoice",
+            "amount": 290.4,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "816/26-27",
+            "type": "Tax Invoice",
+            "amount": 2.35,
             "drCr": "Cr"
           }
         ]
@@ -22038,7 +22080,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2709497.97,
+        "closingBalance": 2709728.23,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -27567,7 +27609,7 @@
             "date": "23-Jul-26",
             "voucherNo": 42,
             "type": "Credit Note",
-            "amount": 21.86,
+            "amount": 15.51,
             "drCr": "Dr"
           },
           {
@@ -27659,6 +27701,34 @@
             "voucherNo": "814/26-27",
             "type": "Tax Invoice",
             "amount": 141.61,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 43,
+            "type": "Credit Note",
+            "amount": 62.87,
+            "drCr": "Dr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 44,
+            "type": "Credit Note",
+            "amount": 5.97,
+            "drCr": "Dr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "815/26-27",
+            "type": "Tax Invoice",
+            "amount": 290.4,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "816/26-27",
+            "type": "Tax Invoice",
+            "amount": 2.35,
             "drCr": "Cr"
           }
         ]
@@ -32692,7 +32762,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": 1.36,
+        "closingBalance": 1.44,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -38557,8 +38627,8 @@
             "date": "23-Jul-26",
             "voucherNo": 42,
             "type": "Credit Note",
-            "amount": 0.02,
-            "drCr": "Cr"
+            "amount": 0.23,
+            "drCr": "Dr"
           },
           {
             "date": "24-Jul-26",
@@ -38670,6 +38740,34 @@
             "voucherNo": "814/26-27",
             "type": "Tax Invoice",
             "amount": 0.4,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 43,
+            "type": "Credit Note",
+            "amount": 0.06,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": 44,
+            "type": "Credit Note",
+            "amount": 0.09,
+            "drCr": "Dr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "815/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.05,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "816/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.31,
             "drCr": "Cr"
           }
         ]
@@ -40127,7 +40225,7 @@
       {
         "ledgerName": "MAA MAJHIGOURI F/W(SHYAMALA), JK",
         "openingBalance": -59143,
-        "closingBalance": -84056,
+        "closingBalance": -86253,
         "entries": [
           {
             "date": "3-Apr-26",
@@ -40443,6 +40541,20 @@
             "type": "Receipt",
             "amount": 30000,
             "drCr": "Cr"
+          },
+          {
+            "date": "21-Jul-26",
+            "voucherNo": 584,
+            "type": "Receipt",
+            "amount": 10000,
+            "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "815/26-27",
+            "type": "Tax Invoice",
+            "amount": 12197,
+            "drCr": "Dr"
           }
         ]
       },
@@ -43987,7 +44099,7 @@
       {
         "ledgerName": "SRI VINAYAKA F/W, MUNIGUDA",
         "openingBalance": -30141,
-        "closingBalance": -61736,
+        "closingBalance": -62002,
         "entries": [
           {
             "date": "11-Apr-26",
@@ -44077,7 +44189,7 @@
             "date": "23-Jul-26",
             "voucherNo": 42,
             "type": "Credit Note",
-            "amount": 918,
+            "amount": 652,
             "drCr": "Cr"
           }
         ]
@@ -57814,7 +57926,7 @@
       {
         "ledgerName": "RETAL",
         "openingBalance": -45635,
-        "closingBalance": -57900,
+        "closingBalance": -57999,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -58340,6 +58452,13 @@
             "type": "Receipt",
             "amount": 585,
             "drCr": "Cr"
+          },
+          {
+            "date": "26-Jul-26",
+            "voucherNo": "816/26-27",
+            "type": "Tax Invoice",
+            "amount": 99,
+            "drCr": "Dr"
           }
         ]
       },
@@ -59490,7 +59609,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 19686161.48,
+        "closingBalance": 19695371.88,
         "entries": []
       },
       {
