@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-07-30T14:45:57.433Z",
+    "lastSync": "2026-07-31T14:54:19.815Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 10334606.35,
-        "closingBalance": 12690283.4,
+        "closingBalance": 12718278.26,
         "entries": []
       }
     ]
@@ -1529,7 +1529,7 @@
       {
         "ledgerName": "MAA AGNI GANGA MAA, NILABADI",
         "openingBalance": 0,
-        "closingBalance": -7635,
+        "closingBalance": -24897,
         "entries": [
           {
             "date": "19-Jun-26",
@@ -1551,6 +1551,13 @@
             "type": "Credit Note",
             "amount": 2640,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "847/26-27",
+            "type": "Tax Invoice",
+            "amount": 17262,
+            "drCr": "Dr"
           }
         ]
       },
@@ -4127,7 +4134,7 @@
       {
         "ledgerName": "SBI(ADB)-CC A/C",
         "openingBalance": 4801995.93,
-        "closingBalance": 4272447.45,
+        "closingBalance": 4269447.45,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -8050,6 +8057,13 @@
             "drCr": "Dr"
           },
           {
+            "date": "13-Jul-26",
+            "voucherNo": 623,
+            "type": "Receipt",
+            "amount": 3000,
+            "drCr": "Dr"
+          },
+          {
             "date": "14-Jul-26",
             "voucherNo": 551,
             "type": "Receipt",
@@ -8615,7 +8629,7 @@
       {
         "ledgerName": "Cash",
         "openingBalance": -1420682.31,
-        "closingBalance": -2074511.31,
+        "closingBalance": -2089421.31,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -13329,6 +13343,20 @@
             "drCr": "Dr"
           },
           {
+            "date": "15-Jul-26",
+            "voucherNo": 562,
+            "type": "Payment",
+            "amount": 2390,
+            "drCr": "Cr"
+          },
+          {
+            "date": "16-Jul-26",
+            "voucherNo": 563,
+            "type": "Payment",
+            "amount": 700,
+            "drCr": "Cr"
+          },
+          {
             "date": "17-Jul-26",
             "voucherNo": 561,
             "type": "Receipt",
@@ -13578,6 +13606,20 @@
             "voucherNo": 616,
             "type": "Receipt",
             "amount": 156000,
+            "drCr": "Dr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 621,
+            "type": "Receipt",
+            "amount": 14500,
+            "drCr": "Dr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 622,
+            "type": "Receipt",
+            "amount": 3500,
             "drCr": "Dr"
           }
         ]
@@ -14352,7 +14394,7 @@
       {
         "ledgerName": "MURALI FANCY, KOLNARA",
         "openingBalance": -29519,
-        "closingBalance": -14767,
+        "closingBalance": -45286,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -14467,11 +14509,25 @@
             "drCr": "Cr"
           },
           {
+            "date": "13-Jul-26",
+            "voucherNo": 623,
+            "type": "Receipt",
+            "amount": 3000,
+            "drCr": "Cr"
+          },
+          {
             "date": "27-Jul-26",
             "voucherNo": 611,
             "type": "Receipt",
             "amount": 10000,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "849/26-27",
+            "type": "Tax Invoice",
+            "amount": 33519,
+            "drCr": "Dr"
           }
         ]
       },
@@ -15012,7 +15068,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2698023.27,
+        "closingBalance": 2699509.09,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -20844,6 +20900,27 @@
             "type": "Tax Invoice",
             "amount": 40.48,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "845/26-27",
+            "type": "Tax Invoice",
+            "amount": 280.28,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "847/26-27",
+            "type": "Tax Invoice",
+            "amount": 407.45,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "849/26-27",
+            "type": "Tax Invoice",
+            "amount": 798.09,
+            "drCr": "Cr"
           }
         ]
       },
@@ -20856,7 +20933,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -3237919.52,
+        "closingBalance": -3235603.96,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -22607,6 +22684,27 @@
             "type": "Tax Invoice",
             "amount": 357.65,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "846/26-27",
+            "type": "Tax Invoice",
+            "amount": 699.98,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "848/26-27",
+            "type": "Tax Invoice",
+            "amount": 1116.18,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "850/26-27",
+            "type": "Tax Invoice",
+            "amount": 499.4,
+            "drCr": "Cr"
           }
         ]
       },
@@ -22619,7 +22717,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2699024.52,
+        "closingBalance": 2700510.34,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -28450,6 +28548,27 @@
             "voucherNo": "844/26-27",
             "type": "Tax Invoice",
             "amount": 40.48,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "845/26-27",
+            "type": "Tax Invoice",
+            "amount": 280.28,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "847/26-27",
+            "type": "Tax Invoice",
+            "amount": 407.45,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "849/26-27",
+            "type": "Tax Invoice",
+            "amount": 798.09,
             "drCr": "Cr"
           }
         ]
@@ -31572,7 +31691,7 @@
       {
         "ledgerName": "Miscellaneous Expenses",
         "openingBalance": 0,
-        "closingBalance": -30405,
+        "closingBalance": -31205,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -31776,6 +31895,13 @@
             "type": "Payment",
             "amount": 200,
             "drCr": "Dr"
+          },
+          {
+            "date": "15-Jul-26",
+            "voucherNo": 562,
+            "type": "Payment",
+            "amount": 800,
+            "drCr": "Dr"
           }
         ]
       },
@@ -31878,7 +32004,7 @@
       {
         "ledgerName": "PACKING & TRANSPORTATING EXPENSES",
         "openingBalance": 0,
-        "closingBalance": 79600,
+        "closingBalance": 79950,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -33440,6 +33566,20 @@
             "type": "Tax Invoice",
             "amount": 400,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "847/26-27",
+            "type": "Tax Invoice",
+            "amount": 150,
+            "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "850/26-27",
+            "type": "Tax Invoice",
+            "amount": 200,
+            "drCr": "Cr"
           }
         ]
       },
@@ -33560,7 +33700,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": 0.01,
+        "closingBalance": -1.38,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -39756,6 +39896,48 @@
             "type": "Tax Invoice",
             "amount": 0.04,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "845/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.16,
+            "drCr": "Dr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "846/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.33,
+            "drCr": "Dr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "847/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.2,
+            "drCr": "Dr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "848/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.32,
+            "drCr": "Dr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "849/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.07,
+            "drCr": "Dr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "850/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.31,
+            "drCr": "Dr"
           }
         ]
       },
@@ -48273,13 +48455,20 @@
       {
         "ledgerName": "MADHAB FOOTWEAR, MAKKUA",
         "openingBalance": 0,
-        "closingBalance": -9403,
+        "closingBalance": -20090,
         "entries": [
           {
             "date": "25-Jul-26",
             "voucherNo": "802/26-27",
             "type": "Tax Invoice",
             "amount": 9403,
+            "drCr": "Dr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "850/26-27",
+            "type": "Tax Invoice",
+            "amount": 10687,
             "drCr": "Dr"
           }
         ]
@@ -48425,7 +48614,7 @@
       {
         "ledgerName": "P.Ravi , Kereda",
         "openingBalance": 0,
-        "closingBalance": -2038,
+        "closingBalance": -13810,
         "entries": [
           {
             "date": "22-May-26",
@@ -48503,6 +48692,13 @@
             "type": "Receipt",
             "amount": 4000,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "845/26-27",
+            "type": "Tax Invoice",
+            "amount": 11772,
+            "drCr": "Dr"
           }
         ]
       },
@@ -48515,7 +48711,7 @@
       {
         "ledgerName": "P V Ramakrishana, Kuner",
         "openingBalance": -18695,
-        "closingBalance": -14870,
+        "closingBalance": -29569,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -48670,6 +48866,13 @@
             "type": "Receipt",
             "amount": 5000,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "846/26-27",
+            "type": "Tax Invoice",
+            "amount": 14699,
+            "drCr": "Dr"
           }
         ]
       },
@@ -48739,7 +48942,7 @@
       {
         "ledgerName": "SANTHOSI GENERAL STORE, KOMARADA",
         "openingBalance": 0,
-        "closingBalance": -4954,
+        "closingBalance": -28393,
         "entries": [
           {
             "date": "5-Jun-26",
@@ -48789,6 +48992,13 @@
             "type": "Receipt",
             "amount": 3000,
             "drCr": "Cr"
+          },
+          {
+            "date": "31-Jul-26",
+            "voucherNo": "848/26-27",
+            "type": "Tax Invoice",
+            "amount": 23439,
+            "drCr": "Dr"
           }
         ]
       },
@@ -49897,7 +50107,7 @@
       {
         "ledgerName": "Tea,Snacks & Water Expenses",
         "openingBalance": 0,
-        "closingBalance": -14325,
+        "closingBalance": -14415,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -50696,6 +50906,13 @@
             "type": "Payment",
             "amount": 160,
             "drCr": "Dr"
+          },
+          {
+            "date": "15-Jul-26",
+            "voucherNo": 562,
+            "type": "Payment",
+            "amount": 90,
+            "drCr": "Dr"
           }
         ]
       },
@@ -50708,7 +50925,7 @@
       {
         "ledgerName": "Travelling Expenses",
         "openingBalance": 0,
-        "closingBalance": -112115,
+        "closingBalance": -112815,
         "entries": [
           {
             "date": "4-Apr-26",
@@ -51121,6 +51338,13 @@
             "voucherNo": 538,
             "type": "Payment",
             "amount": 300,
+            "drCr": "Dr"
+          },
+          {
+            "date": "16-Jul-26",
+            "voucherNo": 563,
+            "type": "Payment",
+            "amount": 700,
             "drCr": "Dr"
           }
         ]
@@ -53560,7 +53784,7 @@
       {
         "ledgerName": "BISWANATH BEHERA, RAYAGADA",
         "openingBalance": -79326,
-        "closingBalance": -106996,
+        "closingBalance": -103996,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -54338,6 +54562,13 @@
             "type": "Receipt",
             "amount": 4000,
             "drCr": "Cr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 621,
+            "type": "Receipt",
+            "amount": 3000,
+            "drCr": "Cr"
           }
         ]
       },
@@ -54356,7 +54587,7 @@
       {
         "ledgerName": "DAMBURU, RAYAGADA",
         "openingBalance": -116581,
-        "closingBalance": -101503,
+        "closingBalance": -96503,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -55358,6 +55589,13 @@
             "type": "Receipt",
             "amount": 5000,
             "drCr": "Cr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 621,
+            "type": "Receipt",
+            "amount": 5000,
+            "drCr": "Cr"
           }
         ]
       },
@@ -55835,7 +56073,7 @@
       {
         "ledgerName": "ESWAR BEHERA, RAYAGADA",
         "openingBalance": -19501,
-        "closingBalance": -50915,
+        "closingBalance": -49915,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -56337,6 +56575,13 @@
           {
             "date": "28-Jul-26",
             "voucherNo": 613,
+            "type": "Receipt",
+            "amount": 1000,
+            "drCr": "Cr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 621,
             "type": "Receipt",
             "amount": 1000,
             "drCr": "Cr"
@@ -58512,7 +58757,7 @@
       {
         "ledgerName": "NEW RENUKA AGENCY",
         "openingBalance": 5937,
-        "closingBalance": -51100,
+        "closingBalance": -50000,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -59275,6 +59520,13 @@
             "voucherNo": 616,
             "type": "Receipt",
             "amount": 3000,
+            "drCr": "Cr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 621,
+            "type": "Receipt",
+            "amount": 1100,
             "drCr": "Cr"
           }
         ]
@@ -60280,7 +60532,7 @@
       {
         "ledgerName": "SARASWATI BEHERA, RAYAGADA",
         "openingBalance": -8193,
-        "closingBalance": -19763,
+        "closingBalance": -15363,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -60869,6 +61121,13 @@
             "type": "Receipt",
             "amount": 2000,
             "drCr": "Cr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 621,
+            "type": "Receipt",
+            "amount": 4400,
+            "drCr": "Cr"
           }
         ]
       },
@@ -61353,7 +61612,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 20901584.62,
+        "closingBalance": 21007326.81,
         "entries": []
       },
       {
@@ -61453,13 +61712,20 @@
       {
         "ledgerName": "ANKISH, STAFF RGDA",
         "openingBalance": 0,
-        "closingBalance": -100,
+        "closingBalance": -1100,
         "entries": [
           {
             "date": "12-Jul-26",
             "voucherNo": 536,
             "type": "Payment",
             "amount": 100,
+            "drCr": "Dr"
+          },
+          {
+            "date": "15-Jul-26",
+            "voucherNo": 562,
+            "type": "Payment",
+            "amount": 1000,
             "drCr": "Dr"
           }
         ]
@@ -61563,7 +61829,7 @@
       {
         "ledgerName": "Auto Walla Anil Monthly Expeens",
         "openingBalance": -1230,
-        "closingBalance": -31699,
+        "closingBalance": -28199,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -61662,6 +61928,13 @@
             "type": "Tax Invoice",
             "amount": 259,
             "drCr": "Dr"
+          },
+          {
+            "date": "30-Jul-26",
+            "voucherNo": 622,
+            "type": "Receipt",
+            "amount": 3500,
+            "drCr": "Cr"
           }
         ]
       },
@@ -62724,7 +62997,7 @@
       {
         "ledgerName": "Susant Staff Rgda",
         "openingBalance": -146473,
-        "closingBalance": -167027,
+        "closingBalance": -167527,
         "entries": [
           {
             "date": "4-Apr-26",
@@ -62899,6 +63172,13 @@
             "voucherNo": 537,
             "type": "Payment",
             "amount": 1000,
+            "drCr": "Dr"
+          },
+          {
+            "date": "15-Jul-26",
+            "voucherNo": 562,
+            "type": "Payment",
+            "amount": 500,
             "drCr": "Dr"
           }
         ]
