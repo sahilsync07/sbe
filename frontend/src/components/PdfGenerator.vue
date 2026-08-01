@@ -1113,10 +1113,49 @@
                 />
               </div>
 
+              <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
+              <button
+                v-if="group.brands.length > 1"
+                @click.stop="group.showBrandPicker = !group.showBrandPicker"
+                class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0"
+                :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
+                :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
+              >
+                <i class="fa-solid fa-gear text-xs"></i>
+              </button>
               <i
                 class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"
                 :class="{ 'rotate-180': group.isExpanded }"
               ></i>
+            </div>
+
+            <!-- Sub-brand Picker -->
+            <div
+              v-if="group.showBrandPicker"
+              class="px-3 pb-3 border-t border-violet-100 bg-violet-50/30"
+            >
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 pt-2">Sub-brands</p>
+              <div class="flex flex-wrap gap-2">
+                <label
+                  v-for="brand in group.brands"
+                  :key="brand"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-all text-xs font-semibold border"
+                  :class="group.activeBrands.includes(brand)
+                    ? 'bg-violet-100 border-violet-300 text-violet-800'
+                    : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="group.activeBrands.includes(brand)"
+                    @change="toggleSubBrand(idx, brand)"
+                    class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+                  />
+                  {{ brand }}
+                </label>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1.5">
+                {{ group.activeBrands.length }} of {{ group.brands.length }} selected
+              </p>
             </div>
 
             <!-- Accordion Dropdown -->
@@ -1375,6 +1414,8 @@ const oneTouchGroups = ref(
     enabled: true,
     minQty: g.defaultMinQty,
     maxQty: '',
+    activeBrands: [...g.brands],
+    showBrandPicker: false,
     isExpanded: false,
     status: 'idle',
     batches: [],
@@ -1410,6 +1451,19 @@ const parseMaxQty = (val) => {
 
 const handleCancelOneTouch = () => {
   cancelOneTouch.value = true;
+};
+
+const toggleSubBrand = (groupIdx, brand) => {
+  const group = oneTouchGroups.value[groupIdx];
+  const idx = group.activeBrands.indexOf(brand);
+  if (idx >= 0) {
+    // Don't allow unchecking the last brand
+    if (group.activeBrands.length > 1) {
+      group.activeBrands.splice(idx, 1);
+    }
+  } else {
+    group.activeBrands.push(brand);
+  }
 };
 const oneTouchCurrentGroup = ref('');
 const oneTouchGroupIndex = ref(0);
@@ -2208,7 +2262,7 @@ const prepareOneTouch = async () => {
       let productCount = 0;
       const data = stockData.value;
       const filteredGroups = data.filter((g) => {
-        return group.brands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
+        return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
       });
       for (const fg of filteredGroups) {
         for (const product of fg.products) {
@@ -2229,7 +2283,7 @@ const prepareOneTouch = async () => {
         group.batches.push({ id: i, status: 'pending', fileUris: [] });
       }
 
-      const cacheKey = `${group.label}_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}_${effectiveMaxQty}`;
+      const cacheKey = `${group.label}_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}_${effectiveMaxQty}_${group.activeBrands.sort().join(',')}`;
       let fileUris = [];
 
       if (oneTouchCache.value[cacheKey]) {
@@ -2253,7 +2307,7 @@ const prepareOneTouch = async () => {
         }
 
         const { blob, pageCount } = await generatePdfBlobForOneTouch(
-          group.brands,
+          group.activeBrands,
           oneTouchOnlyWithPhotos.value,
           effectiveMinQty,
           effectiveMaxQty
