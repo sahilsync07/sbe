@@ -989,6 +989,36 @@
 
         <!-- Global Filters -->
         <div class="px-5 py-3 border-b border-slate-100 space-y-2 flex-shrink-0 bg-slate-50/50">
+          <!-- Low Stock Mode Toggle -->
+          <div
+            class="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all"
+            :class="oneTouchLowStockMode ? 'bg-amber-50 border border-amber-200' : 'bg-slate-100 border border-slate-200'"
+            @click="oneTouchLowStockMode = !oneTouchLowStockMode"
+          >
+            <div class="flex items-center gap-2.5">
+              <div
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
+                :class="oneTouchLowStockMode ? 'bg-amber-200 text-amber-700' : 'bg-slate-200 text-slate-500'"
+              >
+                <i class="fa-solid fa-arrow-down-short-wide"></i>
+              </div>
+              <div>
+                <span class="text-sm font-bold" :class="oneTouchLowStockMode ? 'text-amber-800' : 'text-slate-600'">Low Stock Mode</span>
+                <p class="text-[10px] font-medium" :class="oneTouchLowStockMode ? 'text-amber-500' : 'text-slate-400'">
+                  {{ oneTouchLowStockMode ? 'Min 1 → Max 10' : 'Min 10 → Max ∞' }}
+                </p>
+              </div>
+            </div>
+            <div
+              class="w-10 h-[22px] rounded-full relative transition-colors duration-300"
+              :class="oneTouchLowStockMode ? 'bg-amber-400' : 'bg-slate-300'"
+            >
+              <div
+                class="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300"
+                :class="oneTouchLowStockMode ? 'left-[22px]' : 'left-[3px]'"
+              ></div>
+            </div>
+          </div>
           <label class="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -1352,9 +1382,23 @@ const oneTouchGroups = ref(
 );
 const oneTouchOnlyWithPhotos = ref(true);
 const oneTouchMinQtyEnabled = ref(true);
+const oneTouchLowStockMode = ref(false);
 const isOneTouchSharing = ref(false);
 const isOneTouchPreparing = ref(false);
 const cancelOneTouch = ref(false);
+
+// Watch low stock mode toggle and update all groups
+watch(oneTouchLowStockMode, (isLowStock) => {
+  oneTouchGroups.value.forEach((group) => {
+    if (isLowStock) {
+      group.minQty = 1;
+      group.maxQty = '10';
+    } else {
+      group.minQty = 10;
+      group.maxQty = '';
+    }
+  });
+});
 
 const parseMaxQty = (val) => {
   if (val === '' || val === null || val === undefined) return Infinity;
