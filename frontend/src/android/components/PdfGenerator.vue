@@ -1022,6 +1022,36 @@
           v-if="!oneTouchStarted"
           class="px-6 py-4 border-b border-slate-100 space-y-3 flex-shrink-0 bg-slate-50/50"
         >
+          <!-- Low Stock Mode Toggle -->
+          <div
+            class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all"
+            :class="oneTouchLowStockMode ? 'bg-amber-50 border border-amber-200' : 'bg-slate-100 border border-slate-200'"
+            @click="oneTouchLowStockMode = !oneTouchLowStockMode"
+          >
+            <div class="flex items-center gap-2.5">
+              <div
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                :class="oneTouchLowStockMode ? 'bg-amber-200 text-amber-700' : 'bg-slate-200 text-slate-500'"
+              >
+                <i class="fa-solid fa-arrow-down-short-wide"></i>
+              </div>
+              <div>
+                <span class="text-sm font-bold" :class="oneTouchLowStockMode ? 'text-amber-800' : 'text-slate-600'">Low Stock Mode</span>
+                <p class="text-[10px] font-medium" :class="oneTouchLowStockMode ? 'text-amber-500' : 'text-slate-400'">
+                  {{ oneTouchLowStockMode ? 'Min 1 → Max 10' : 'Min 10 → Max ∞' }}
+                </p>
+              </div>
+            </div>
+            <div
+              class="w-10 h-[22px] rounded-full relative transition-colors duration-300"
+              :class="oneTouchLowStockMode ? 'bg-amber-400' : 'bg-slate-300'"
+            >
+              <div
+                class="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300"
+                :class="oneTouchLowStockMode ? 'left-[22px]' : 'left-[3px]'"
+              ></div>
+            </div>
+          </div>
           <label class="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -1150,6 +1180,16 @@
                   {{ group.imageCount }} imgs
                 </span>
 
+                <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
+                <button
+                  v-if="group.brands.length > 1 && !oneTouchStarted"
+                  @click.stop="group.showBrandPicker = !group.showBrandPicker"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0"
+                  :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
+                >
+                  <i class="fa-solid fa-gear text-xs"></i>
+                </button>
+
                 <!-- Expand chevron -->
                 <i
                   v-if="group.batches && group.batches.length > 0"
@@ -1185,6 +1225,35 @@
                     @click.stop
                   />
                 </div>
+              </div>
+              
+              <!-- Sub-brand Picker -->
+              <div
+                v-if="group.showBrandPicker && !oneTouchStarted"
+                class="mt-2 pl-[30px]"
+              >
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Sub-brands</p>
+                <div class="flex flex-wrap gap-2">
+                  <label
+                    v-for="brand in group.brands"
+                    :key="brand"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-all text-xs font-semibold border"
+                    :class="group.activeBrands.includes(brand)
+                      ? 'bg-violet-100 border-violet-300 text-violet-800'
+                      : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="group.activeBrands.includes(brand)"
+                      @change="toggleSubBrand(idx, brand)"
+                      class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+                    />
+                    {{ brand }}
+                  </label>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1.5">
+                  {{ group.activeBrands.length }} of {{ group.brands.length }} selected
+                </p>
               </div>
             </div>
 
@@ -1391,6 +1460,8 @@ export default {
       showOneTouchModal: false,
       oneTouchGroups: ONE_TOUCH_GROUPS.map((g) => ({
         ...g,
+        activeBrands: [...g.brands],
+        showBrandPicker: false,
         enabled: true,
         minQty: g.defaultMinQty,
         maxQty: '',
@@ -1403,10 +1474,25 @@ export default {
       })),
       oneTouchOnlyWithPhotos: true,
       oneTouchMinQtyEnabled: true,
+      oneTouchLowStockMode: false,
       oneTouchStarted: false,
       oneTouchElapsedTime: 0,
       oneTouchTimerInterval: null,
     };
+  },
+
+  watch: {
+    oneTouchLowStockMode(isLowStock) {
+      this.oneTouchGroups.forEach((group) => {
+        if (isLowStock) {
+          group.minQty = 1;
+          group.maxQty = '10';
+        } else {
+          group.minQty = 10;
+          group.maxQty = '';
+        }
+      });
+    },
   },
 
   computed: {
@@ -1995,6 +2081,8 @@ export default {
       // Reset all groups to defaults with per-group state
       this.oneTouchGroups = ONE_TOUCH_GROUPS.map((g) => ({
         ...g,
+        activeBrands: [...g.brands],
+        showBrandPicker: false,
         enabled: true,
         minQty: g.defaultMinQty,
         maxQty: '',
@@ -2007,6 +2095,7 @@ export default {
       }));
       this.oneTouchOnlyWithPhotos = true;
       this.oneTouchMinQtyEnabled = true;
+      this.oneTouchLowStockMode = false;
       this.oneTouchStarted = false;
       this.oneTouchElapsedTime = 0;
       if (this.oneTouchTimerInterval) {
@@ -2023,6 +2112,18 @@ export default {
       if (this.oneTouchTimerInterval) {
         clearInterval(this.oneTouchTimerInterval);
         this.oneTouchTimerInterval = null;
+      }
+    },
+
+    toggleSubBrand(groupIdx, brand) {
+      const group = this.oneTouchGroups[groupIdx];
+      const idx = group.activeBrands.indexOf(brand);
+      if (idx >= 0) {
+        if (group.activeBrands.length > 1) {
+          group.activeBrands.splice(idx, 1);
+        }
+      } else {
+        group.activeBrands.push(brand);
       }
     },
 
@@ -2226,7 +2327,7 @@ export default {
           const effectiveMinQty = this.oneTouchMinQtyEnabled ? group.minQty : 0;
           const effectiveMaxQty = this.oneTouchMinQtyEnabled ? this.parseMaxQty(group.maxQty) : Infinity;
           const { blob, pageCount } = await this.generatePdfBlobForOneTouch(
-            group.brands,
+            group.activeBrands,
             this.oneTouchOnlyWithPhotos,
             effectiveMinQty,
             effectiveMaxQty

@@ -55,7 +55,8 @@ export const BRAND_LISTS = {
         'ATHARV PLASTIC',
         'SALASAR BALAJI',
         'ARIHANT',
-        'ARHINAT'
+        'ARHINAT',
+        'NAV DURGA RAIPUR'
     ],
     generalBoxPacking: [
         'ADDA',
