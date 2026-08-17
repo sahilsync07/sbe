@@ -104,7 +104,7 @@ export const TOP_BRANDS_CONFIG = [
         logo: null,
     },
     {
-        name: 'AIRSON',
+        name: 'AJANTA',
         logo: null,
     },
 ];

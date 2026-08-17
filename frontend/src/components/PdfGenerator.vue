@@ -1357,7 +1357,7 @@ const ONE_TOUCH_GROUPS = [
   { label: 'Florex', brands: ['Florex (Swastik)'], icon: '🌸', defaultMinQty: 10 },
   { label: 'Action', brands: ['ACTION'], icon: '⚡', defaultMinQty: 10 },
   { label: 'Reliance', brands: ['RELIANCE FOOTWEAR'], icon: '🔷', defaultMinQty: 10 },
-  { label: 'Ajanta', brands: ['AIRSON'], icon: '👡', defaultMinQty: 10 },
+  { label: 'Ajanta', brands: ['AJANTA'], icon: '👡', defaultMinQty: 10 },
   {
     label: 'General Box Packing',
     brands: [...BRAND_LISTS.generalBoxPacking],
