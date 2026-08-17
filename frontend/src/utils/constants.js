@@ -103,6 +103,10 @@ export const TOP_BRANDS_CONFIG = [
         name: 'Action',
         logo: null,
     },
+    {
+        name: 'AIRSON',
+        logo: null,
+    },
 ];
 
 export const MID_BRANDS_CONFIG = [
