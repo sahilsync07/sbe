@@ -679,7 +679,6 @@ app.post("/api/updateStockData", async (req, res) => {
     // ---- 5. Re-attach images, timestamps, history & re-inject zero-stock items --------
     // ---- 6. De-duplicate by productName ------------------------------------
     const syncTimestamp = new Date().toISOString();
-    const HISTORY_CAP = 50;
     let historyEntriesAdded = 0;
 
     stockData.forEach((group) => {
@@ -702,8 +701,7 @@ app.post("/api/updateStockData", async (req, res) => {
             history.push({ date: syncTimestamp, type: "sold", qty: Math.abs(delta), newTotal: p.quantity });
             historyEntriesAdded++;
           }
-          // Cap history at last N entries to prevent file bloat
-          p.productHistory = history.slice(-HISTORY_CAP);
+          p.productHistory = history;
         } else {
           // New product from Tally!
           p.imageUrl = null;
@@ -728,7 +726,7 @@ app.post("/api/updateStockData", async (req, res) => {
             group.products.push({
               ...oldProduct,
               quantity: 0,
-              productHistory: history.slice(-HISTORY_CAP)
+              productHistory: history
             });
           }
         });
