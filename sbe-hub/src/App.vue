@@ -1,0 +1,223 @@
+<template>
+  <div class="min-h-screen relative bg-slate-50">
+    <!-- Global Safe Area Mask for Android (prevents scroll-through) -->
+    <div v-if="isNativeApp" class="fixed top-0 w-full z-[100]" :class="headerMaskColor" style="height: env(safe-area-inset-top, 32px);"></div>
+    
+    <!-- Global Ambient Glow Orbs -->
+    <div class="hub-orb hub-orb--warm fixed top-0 left-0 w-96 h-96 bg-gradient-to-tr from-amber-200/20 to-orange-400/20 rounded-full blur-[80px] -z-10 pointer-events-none mix-blend-multiply opacity-70"></div>
+    <div class="hub-orb hub-orb--accent fixed top-40 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-blue-300/20 to-violet-500/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-multiply opacity-60"></div>
+
+    <router-view></router-view>
+    
+    <AdminLoginModal 
+       :show="showAdminModal"
+       @close="showAdminModal = false"
+       @login="handleAdminLogin"
+    />
+  </div>
+</template>
+
+<script setup>
+import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
+import { AppUpdate } from '@capawesome/capacitor-app-update';
+import { toast } from 'vue3-toastify';
+
+import AdminLoginModal from '@/components/StockTable/AdminLoginModal.vue';
+
+import { useAppStore } from '@/stores/appStore';
+import { useAdmin } from '@/composables/useAdmin';
+import { performDeltaSync } from '@/utils/nativeCache';
+import { setupDailySyncNotification } from '@/utils/notifications';
+import { useStockData } from '@/composables/useStockData';
+
+const route = useRoute();
+const router = useRouter();
+
+const appStore = useAppStore();
+
+const isNativeApp = ref(Capacitor.isNativePlatform());
+
+// Determine the safe area mask color based on route
+const headerMaskColor = computed(() => {
+  if (route.path === '/analyzer') return 'bg-[#f8f6f1]';
+  return 'bg-slate-50';
+});
+
+// Extract metadata instantly on cache load
+watch(() => appStore.stockData, (newData) => {
+  if (newData && newData.length > 0) {
+    const meta = newData.find(g => g.groupName === '_META_DATA_' || g.group === '_META_DATA_');
+    if (meta && meta.lastSync) {
+      appStore.setSyncTime(new Date(meta.lastSync));
+    }
+    
+    // Patch Goal 13: Remove Ajanta from Airson
+    const airsonGroup = newData.find(g => g.group === 'Airson');
+    if (airsonGroup && airsonGroup.brands) {
+      airsonGroup.brands = airsonGroup.brands.filter(b => b.brand !== 'AJANTA');
+    }
+  }
+}, { deep: true, immediate: true });
+
+// Watch for login query param
+watch(() => route.query, async (query) => {
+  if (query.pwd) {
+    const password = Array.isArray(query.pwd) ? query.pwd[0] : query.pwd;
+    const success = await performLogin(password);
+    if (success) {
+      router.replace({ path: '/', query: { ...query, pwd: undefined } });
+    } else {
+      router.replace({ query: { ...query, pwd: undefined } });
+    }
+  } else if (query.login === 'admin') {
+    showAdminModal.value = true;
+    router.replace({ query: { ...query, login: undefined } });
+  }
+}, { immediate: true, deep: true });
+
+const showAdminModal = ref(false);
+
+// Load Config
+const loadConfig = async () => {
+    try {
+        const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
+        const conf = await response.json();
+        appStore.$patch({ config: conf });
+    } catch (err) {
+        toast.error("Failed to load app configuration");
+    }
+};
+
+const { checkAdminState, isAdmin, isSuperAdmin, login: performLogin } = useAdmin();
+
+const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+const { loadStockData, updateStockData } = useStockData(isLocal);
+
+const handleAdminLogin = async (payload) => {
+  const pwd = typeof payload === 'object' ? payload.password : payload;
+  const redirectHome = typeof payload === 'object' ? payload.redirectHome : false;
+  
+  showAdminModal.value = false;
+  if (!pwd) return;
+  
+  const success = await performLogin(pwd);
+
+  if (success && redirectHome) {
+    router.push('/');
+  }
+};
+
+let backListener = null;
+
+onMounted(async () => {
+  await loadConfig();
+  await checkAdminState();
+  await loadStockData();
+  // await setupDailySyncNotification();
+  await performDeltaSync();
+  
+  // Android App Update Check
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const info = await AppUpdate.getAppUpdateInfo();
+      if (info.updateAvailability === 2) {
+        if (info.immediateUpdateAllowed) {
+          await AppUpdate.performImmediateUpdate();
+        } else if (info.flexibleUpdateAllowed) {
+          await AppUpdate.performFlexibleUpdate();
+        }
+      }
+    } catch (error) {
+      console.warn('App Update Check Failed:', error);
+    }
+  }
+
+  // Hardware Back Button Handling
+  if (Capacitor.getPlatform() === 'android') {
+      backListener = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+          if (canGoBack) {
+              router.back();
+          } else {
+              CapacitorApp.exitApp();
+          }
+      });
+  }
+});
+
+onUnmounted(() => {
+    if (backListener) {
+        backListener.remove();
+    }
+});
+</script>
+
+<style>
+/* ==========================================================
+   MODERN TOAST OVERRIDES (CSS Variables Strategy)
+   ========================================================== */
+:root {
+  --toastify-toast-width: auto !important;
+  --toastify-toast-min-height: 48px !important;
+  --toastify-toast-max-height: 800px !important;
+  --toastify-toast-bd-radius: 99px !important; 
+  --toastify-font-family: inherit !important;
+  --toastify-z-index: 999999 !important;
+  --toastify-text-color-light: #f8fafc !important;
+  --toastify-text-color-dark: #f8fafc !important;
+  --toastify-color-light: rgba(15, 23, 42, 0.95) !important;
+  --toastify-color-dark: rgba(15, 23, 42, 0.95) !important;
+  --toastify-color-info: rgba(15, 23, 42, 0.95) !important;
+  --toastify-color-success: rgba(15, 23, 42, 0.95) !important;
+  --toastify-color-warning: rgba(15, 23, 42, 0.95) !important;
+  --toastify-color-error: rgba(15, 23, 42, 0.95) !important;
+  --toastify-icon-color-success: #22c55e !important; 
+}
+
+.Vue3Toastify__toast-container {
+  padding: 0 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.Vue3Toastify__toast-container {
+  bottom: max(env(safe-area-inset-bottom, 32px), 32px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  align-items: center !important;
+  transform: none !important;
+}
+.Vue3Toastify__toast {
+  margin: 0 auto !important;
+  border-radius: 99px !important; 
+}
+
+.Vue3Toastify__toast {
+  pointer-events: auto !important;
+  padding: 10px 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: none !important;
+  margin-bottom: 8px !important;
+  display: inline-flex !important;
+  animation: toast-spring-up 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+
+.Vue3Toastify__progress-bar,
+.Vue3Toastify__close-button {
+  display: none !important;
+}
+
+@keyframes toast-spring-up {
+  0% { transform: translateY(100px) scale(0.85); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+</style>
