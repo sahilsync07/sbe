@@ -268,3 +268,86 @@ html {
 .hub-card[href="/pdf-gen?onetouch=true"] {
   order: -1 !important;
 }
+
+/* ============================================
+   AESTHETIC MOBILE TOAST STYLES (Bottom-Floating Glassmorphism Pill)
+   ============================================ */
+.Toastify__toast-container--bottom-right,
+.Toastify__toast-container--bottom-left,
+.Toastify__toast-container--bottom-center {
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+  right: 16px !important;
+  left: auto !important;
+  max-width: 90vw !important;
+  padding: 0 !important;
+  z-index: 99999 !important;
+}
+
+@media (max-width: 640px) {
+  .Toastify__toast-container--bottom-right,
+  .Toastify__toast-container--bottom-left,
+  .Toastify__toast-container--bottom-center {
+    right: 16px !important;
+    left: 16px !important;
+    bottom: calc(75px + env(safe-area-inset-bottom, 0px)) !important; /* Above mobile bottom navigation */
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.Toastify__toast {
+  border-radius: 9999px !important; /* Pill shape */
+  padding: 8px 18px !important;
+  min-height: 40px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.4), 0 4px 12px -2px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  letter-spacing: 0.01em !important;
+}
+
+.Toastify__toast--default,
+.Toastify__toast--dark {
+  background: rgba(15, 23, 42, 0.92) !important;
+  color: #f8fafc !important;
+}
+
+.Toastify__toast--success {
+  background: rgba(6, 78, 59, 0.92) !important; /* Emerald */
+  border-color: rgba(52, 211, 153, 0.3) !important;
+  color: #ecfdf5 !important;
+}
+
+.Toastify__toast--info {
+  background: rgba(30, 27, 75, 0.92) !important; /* Indigo */
+  border-color: rgba(129, 140, 248, 0.3) !important;
+  color: #eef2ff !important;
+}
+
+.Toastify__toast--warning {
+  background: rgba(120, 53, 15, 0.92) !important; /* Amber */
+  border-color: rgba(251, 191, 36, 0.3) !important;
+  color: #fffbeb !important;
+}
+
+.Toastify__toast--error {
+  background: rgba(136, 19, 55, 0.92) !important; /* Rose */
+  border-color: rgba(251, 113, 133, 0.3) !important;
+  color: #fff1f2 !important;
+}
+
+.Toastify__toast-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.Toastify__toast-icon {
+  width: 18px !important;
+  margin-right: 6px !important;
+}

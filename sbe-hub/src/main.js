@@ -15,10 +15,12 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(Vue3Toasty, {
-  autoClose: 2500,
-  position: "bottom-center",
+  autoClose: 2000,
+  position: "bottom-right",
   hideProgressBar: true,
   closeButton: false,
   icon: true,
+  theme: "dark",
+  transition: "slide",
 });
 app.mount("#app");

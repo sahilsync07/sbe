@@ -80,15 +80,31 @@ watch(() => route.query, async (query) => {
 
 const showAdminModal = ref(false);
 
-// Load Config
+// Load Config (Offline-First)
 const loadConfig = async () => {
+    const CACHE_KEY = 'sbe-config-cache';
+    // 1. Immediately hydrate from cache in 0ms
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            appStore.$patch({ config: JSON.parse(cached) });
+        }
+    } catch (e) {}
+
+    // 2. Fetch fresh config in background, silently falling back when offline
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
         const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
-        const conf = await response.json();
-        appStore.$patch({ config: conf });
+        if (response.ok) {
+            const conf = await response.json();
+            appStore.$patch({ config: conf });
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(conf));
+            } catch (e) {}
+        }
     } catch (err) {
-        toast.error("Failed to load app configuration");
+        // Offline / network failure: silently continue with cached config
+        console.log('[SBE Hub] Using cached configuration (offline mode).');
     }
 };
 
