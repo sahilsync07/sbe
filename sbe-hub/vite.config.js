@@ -19,15 +19,17 @@ const fallbackToFrontend = () => {
       }
 
       if (resolvedPath) {
-        if (fs.existsSync(resolvedPath)) {
-          return resolvedPath; // Exists in sbe-hub
+        const extensions = ['', '.js', '.vue', '/index.js'];
+        for (const ext of extensions) {
+          if (fs.existsSync(resolvedPath + ext) && fs.statSync(resolvedPath + ext).isFile()) {
+            return resolvedPath + ext; // Exists in sbe-hub
+          }
         }
         
         // Convert to frontend path
         const relativeToSrc = path.relative(path.resolve(__dirname, 'src'), resolvedPath);
         const frontendPath = path.resolve(__dirname, '../frontend/src', relativeToSrc);
         
-        const extensions = ['', '.js', '.vue', '/index.js'];
         for (const ext of extensions) {
           if (fs.existsSync(frontendPath + ext)) {
             return frontendPath + ext; // Share from frontend
