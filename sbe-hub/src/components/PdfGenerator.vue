@@ -1049,84 +1049,104 @@
                 : 'bg-slate-50 border-slate-100 opacity-60'
             "
           >
-            <div
-              class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-black/5"
-              @click="group.isExpanded = !group.isExpanded"
-            >
-              <input
-                type="checkbox"
-                v-model="group.enabled"
-                @click.stop
-                class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
-              />
-              
-              <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{
-                group.label
-              }}</span>
-
-              <!-- Status Indicator -->
-              <div v-if="group.status === 'preparing'" class="flex-shrink-0">
-                <svg
-                  class="animate-spin h-4 w-4 text-violet-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              </div>
-              <div v-else-if="group.status === 'ready'" class="flex-shrink-0 text-emerald-500">
-                <i class="fa-solid fa-check-circle text-lg"></i>
-              </div>
-
+            <div class="p-3">
+              <!-- Top Row: Checkbox, Group Heading, Status, Gear, Chevron -->
               <div
-                class="flex items-center gap-1 flex-shrink-0 mx-2"
+                class="flex items-center justify-between gap-2 cursor-pointer"
+                @click="group.isExpanded = !group.isExpanded"
+              >
+                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                  <input
+                    type="checkbox"
+                    v-model="group.enabled"
+                    @click.stop
+                    class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <div class="text-sm font-bold text-slate-800 leading-tight truncate">
+                      {{ group.label }}
+                    </div>
+                    <div v-if="group.brands.length > 1" class="text-[10px] text-slate-400 font-semibold mt-0.5">
+                      {{ group.activeBrands.length }}/{{ group.brands.length }} brands selected
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 flex-shrink-0" @click.stop>
+                  <!-- Status Indicator -->
+                  <div v-if="group.status === 'preparing'" class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
+                    <svg
+                      class="animate-spin h-3 w-3 text-blue-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Preparing</span>
+                  </div>
+                  <div v-else-if="group.status === 'ready'" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Ready</span>
+                  </div>
+
+                  <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
+                  <button
+                    v-if="group.brands.length > 1"
+                    @click.stop="group.showBrandPicker = !group.showBrandPicker"
+                    class="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                    :class="group.showBrandPicker ? 'bg-violet-200 text-violet-800' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                    :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
+                  >
+                    <i class="fa-solid fa-gear text-xs"></i>
+                  </button>
+
+                  <!-- Expand Accordion Chevron -->
+                  <button
+                    @click="group.isExpanded = !group.isExpanded"
+                    class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-all"
+                  >
+                    <i
+                      class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
+                      :class="{ 'rotate-180': group.isExpanded }"
+                    ></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Min & Max Qty Inputs below heading -->
+              <div
+                class="flex items-center gap-2 mt-2.5 pt-2 border-t border-violet-100/60"
                 :class="{
                   'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
                 }"
                 @click.stop
               >
-                <span class="text-[10px] text-slate-400 font-bold">MIN</span>
-                <input
-                  type="number"
-                  v-model="group.minQty"
-                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
-                />
-                <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
-                <input
-                  type="text"
-                  v-model="group.maxQty"
-                  placeholder="∞"
-                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none placeholder:text-slate-300"
-                />
-              </div>
+                <!-- Min Qty Input -->
+                <div class="flex-1 flex items-center bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-violet-500 shadow-sm transition-all">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1.5">MIN</span>
+                  <input
+                    type="number"
+                    v-model="group.minQty"
+                    class="w-full text-center font-bold text-xs bg-transparent outline-none text-slate-800"
+                    placeholder="0"
+                  />
+                  <span class="text-[10px] text-slate-400 font-medium ml-1">prs</span>
+                </div>
 
-              <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
-              <button
-                v-if="group.brands.length > 1"
-                @click.stop="group.showBrandPicker = !group.showBrandPicker"
-                class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0"
-                :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
-                :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
-              >
-                <i class="fa-solid fa-gear text-xs"></i>
-              </button>
-              <i
-                class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"
-                :class="{ 'rotate-180': group.isExpanded }"
-              ></i>
+                <!-- Max Qty Input -->
+                <div class="flex-1 flex items-center bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-violet-500 shadow-sm transition-all">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1.5">MAX</span>
+                  <input
+                    type="text"
+                    v-model="group.maxQty"
+                    placeholder="∞"
+                    class="w-full text-center font-bold text-xs bg-transparent outline-none text-slate-800 placeholder:text-slate-300"
+                  />
+                  <span class="text-[10px] text-slate-400 font-medium ml-1">prs</span>
+                </div>
+              </div>
             </div>
 
             <!-- Sub-brand Picker -->
