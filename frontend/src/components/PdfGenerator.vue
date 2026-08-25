@@ -1345,6 +1345,8 @@ import { useBrandGroups } from '../composables/useBrandGroups';
 import { useStockData } from '../composables/useStockData';
 import { useAdmin } from '../composables/useAdmin';
 import { BRAND_LISTS } from '../utils/constants';
+import { fetchCachedImageAsBase64 } from '../utils/nativeCache';
+import { getOptimizedImageUrl } from '../utils/formatters';
 
 // Separator image: 'Old stock ends here / New stocks start'
 const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/Old_stock_ends_here_oc3rh7.png';
@@ -1634,7 +1636,7 @@ const generatePdfBlob = async (targetBrands) => {
 
       if (product.imageUrl) {
         try {
-          const imgData = await fetchImageAsBase64(product.imageUrl);
+          const imgData = await fetchImageAsBase64(product.imageUrl, product.productName);
           const dims = await getImageDimensions(imgData);
 
           const finalWidth = PAGE_W;
@@ -1680,12 +1682,18 @@ const generatePdfBlob = async (targetBrands) => {
   return doc.output('blob');
 };
 
-const fetchImageAsBase64 = async (url) => {
-  const res = await axios.get(url, { responseType: 'arraybuffer' });
+const fetchImageAsBase64 = async (url, productName = '') => {
+  try {
+    const cached = await fetchCachedImageAsBase64(url, productName);
+    if (cached) return cached;
+  } catch (e) {}
+
+  const targetUrl = getOptimizedImageUrl(url) || url;
+  const res = await axios.get(targetUrl, { responseType: 'arraybuffer' });
   const base64 = btoa(
     new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
   );
-  return `data:${res.headers['content-type']};base64,${base64}`;
+  return `data:${res.headers['content-type'] || 'image/jpeg'};base64,${base64}`;
 };
 
 const getImageDimensions = async (base64) => {
@@ -2173,7 +2181,7 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
 
       if (product.imageUrl) {
         try {
-          const imgData = await fetchImageAsBase64(product.imageUrl);
+          const imgData = await fetchImageAsBase64(product.imageUrl, product.productName);
           const dims = await getImageDimensions(imgData);
 
           const finalWidth = PAGE_W;

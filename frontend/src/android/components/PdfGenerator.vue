@@ -9,16 +9,15 @@
     >
       <div
         class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-10"
-        style="padding-top: max(env(safe-area-inset-top, 20px), 16px)"
       >
         <div class="flex items-center gap-2">
-          <!-- Sidebar Back Button -->
+          <!-- Sidebar Home Button -->
           <button
-            @click="$router.back()"
-            class="w-8 h-8 flex lg:hidden items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors shadow-sm active:scale-95 border border-slate-200 mr-1"
-            title="Back"
+            @click="$router.push('/')"
+            class="w-8 h-8 flex lg:hidden items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm active:scale-95 border border-white/20 mr-1"
+            title="Home"
           >
-            <i class="fa-solid fa-arrow-left text-xs"></i>
+            <i class="fa-solid fa-house text-xs"></i>
           </button>
 
           <h2 class="text-xl font-black text-slate-800 tracking-tight">Brands</h2>
@@ -36,9 +35,7 @@
         </button>
       </div>
 
-      <div
-        class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-4 pt-[max(env(safe-area-inset-top),20px)]"
-      >
+      <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar pb-24 lg:pb-4">
         <!-- Paragon Section -->
         <div
           v-if="groupedSidebar.paragon.length > 0"
@@ -549,10 +546,7 @@
     >
       <div class="flex h-full flex-col lg:flex-row w-full">
         <!-- Settings & Actions Area -->
-        <div
-          class="flex-1 overflow-y-auto p-4 lg:p-10 pb-24 lg:pb-10 w-full"
-          style="padding-top: max(env(safe-area-inset-top, 20px), 16px)"
-        >
+        <div class="flex-1 overflow-y-auto p-4 lg:p-10 pb-24 lg:pb-10 w-full">
           <header class="mb-8 flex items-center gap-4">
             <button
               @click="$router.push('/')"
@@ -685,6 +679,8 @@
                 </label>
               </div>
             </div>
+
+            <!-- Action Area -->
             <div class="grid grid-cols-1 gap-3 pt-4">
               <button
                 @click="generatePdf"
@@ -790,7 +786,6 @@
 
               <!-- Native App Share Button (WhatsApp/etc) -->
               <button
-                v-if="isNativeApp"
                 @click="shareViaNativeApp"
                 :disabled="selectedBrands.length === 0 || isGenerating"
                 class="w-full mt-3 py-4 bg-[#25D366] hover:bg-[#128C7E] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
@@ -833,6 +828,32 @@
                 <i class="fa-solid fa-bolt"></i>
                 One Touch Mode
               </button>
+
+              <!-- One Touch Progress Area -->
+              <div
+                v-if="isGenerating && isOneTouchSharing"
+                class="mt-4 p-4 bg-violet-50/50 border border-violet-100 rounded-xl space-y-2"
+              >
+                <div
+                  class="flex justify-between text-xs font-bold text-violet-800 uppercase tracking-widest"
+                >
+                  <span
+                    >{{ oneTouchCurrentGroup }} ({{ oneTouchGroupIndex }}/{{
+                      oneTouchTotalGroups
+                    }})</span
+                  >
+                </div>
+                <div class="h-2 w-full bg-violet-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-violet-500 rounded-full transition-all duration-300"
+                    :style="{ width: `${(oneTouchGroupIndex / oneTouchTotalGroups) * 100}%` }"
+                  ></div>
+                </div>
+                <div class="text-[10px] text-violet-600/70 text-center font-medium">
+                  {{ oneTouchProgress }}
+                </div>
+              </div>
+
               <!-- Progress Bar -->
               <div
                 v-if="isGenerating"
@@ -897,7 +918,7 @@
 
     <!-- Mobile Bottom Navigation -->
     <div
-      class="lg:hidden fixed bottom-0 mb-safe left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center h-16 z-[60] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]"
+      class="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center h-16 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe"
     >
       <button
         @click="mobileTab = 'brands'"
@@ -930,6 +951,334 @@
       <div class="bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
         <i class="fa-solid fa-circle-check text-green-400"></i>
         <span class="font-medium">{{ toastMessage }}</span>
+      </div>
+    </div>
+
+    <!-- One Touch Config Modal -->
+    <div
+      v-if="showOneTouchModal"
+      class="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] shadow-2xl flex flex-col overflow-hidden"
+      >
+        <!-- Header -->
+        <div
+          class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg"
+            >
+              <i class="fa-solid fa-bolt text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-black text-slate-800">One Touch Mode</h3>
+              <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                Auto-share all groups
+              </p>
+            </div>
+          </div>
+          <button
+            @click="showOneTouchModal = false"
+            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all"
+          >
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Global Filters -->
+        <div class="px-5 py-3 border-b border-slate-100 space-y-2 flex-shrink-0 bg-slate-50/50">
+          <!-- Low Stock Mode Toggle -->
+          <div
+            class="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all"
+            :class="oneTouchLowStockMode ? 'bg-amber-50 border border-amber-200' : 'bg-slate-100 border border-slate-200'"
+            @click="oneTouchLowStockMode = !oneTouchLowStockMode"
+          >
+            <div class="flex items-center gap-2.5">
+              <div
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
+                :class="oneTouchLowStockMode ? 'bg-amber-200 text-amber-700' : 'bg-slate-200 text-slate-500'"
+              >
+                <i class="fa-solid fa-arrow-down-short-wide"></i>
+              </div>
+              <div>
+                <span class="text-sm font-bold" :class="oneTouchLowStockMode ? 'text-amber-800' : 'text-slate-600'">Low Stock Mode</span>
+                <p class="text-[10px] font-medium" :class="oneTouchLowStockMode ? 'text-amber-500' : 'text-slate-400'">
+                  {{ oneTouchLowStockMode ? 'Min 1 → Max 10' : 'Min 10 → Max ∞' }}
+                </p>
+              </div>
+            </div>
+            <div
+              class="w-10 h-[22px] rounded-full relative transition-colors duration-300"
+              :class="oneTouchLowStockMode ? 'bg-amber-400' : 'bg-slate-300'"
+            >
+              <div
+                class="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300"
+                :class="oneTouchLowStockMode ? 'left-[22px]' : 'left-[3px]'"
+              ></div>
+            </div>
+          </div>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="oneTouchOnlyWithPhotos"
+              class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+            />
+            <span class="text-sm font-medium text-slate-700">Only with photos</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="oneTouchMinQtyEnabled"
+              class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+            />
+            <span class="text-sm font-medium text-slate-700">Minimum quantity filter</span>
+          </label>
+        </div>
+
+        <!-- Group List -->
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 custom-scrollbar">
+          <div
+            v-for="(group, idx) in oneTouchGroups"
+            :key="idx"
+            class="rounded-xl border transition-all overflow-hidden"
+            :class="
+              group.enabled
+                ? 'bg-violet-50/50 border-violet-200'
+                : 'bg-slate-50 border-slate-100 opacity-60'
+            "
+          >
+            <div
+              class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-black/5"
+              @click="group.isExpanded = !group.isExpanded"
+            >
+              <input
+                type="checkbox"
+                v-model="group.enabled"
+                @click.stop
+                class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
+              />
+              <span class="text-lg flex-shrink-0">{{ group.icon }}</span>
+              <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{
+                group.label
+              }}</span>
+
+              <!-- Status Indicator -->
+              <div v-if="group.status === 'preparing'" class="flex-shrink-0">
+                <svg
+                  class="animate-spin h-4 w-4 text-violet-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </div>
+              <div v-else-if="group.status === 'ready'" class="flex-shrink-0 text-emerald-500">
+                <i class="fa-solid fa-check-circle text-lg"></i>
+              </div>
+
+              <div
+                class="flex items-center gap-1 flex-shrink-0 mx-2"
+                :class="{
+                  'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
+                }"
+                @click.stop
+              >
+                <span class="text-[10px] text-slate-400 font-bold">MIN</span>
+                <input
+                  type="number"
+                  v-model="group.minQty"
+                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                />
+                <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
+                <input
+                  type="text"
+                  v-model="group.maxQty"
+                  placeholder="∞"
+                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none placeholder:text-slate-300"
+                />
+              </div>
+
+              <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
+              <button
+                v-if="group.brands.length > 1"
+                @click.stop="group.showBrandPicker = !group.showBrandPicker"
+                class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0"
+                :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
+                :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
+              >
+                <i class="fa-solid fa-gear text-xs"></i>
+              </button>
+              <i
+                class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"
+                :class="{ 'rotate-180': group.isExpanded }"
+              ></i>
+            </div>
+
+            <!-- Sub-brand Picker -->
+            <div
+              v-if="group.showBrandPicker"
+              class="px-3 pb-3 border-t border-violet-100 bg-violet-50/30"
+            >
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 pt-2">Sub-brands</p>
+              <div class="flex flex-wrap gap-2">
+                <label
+                  v-for="brand in group.brands"
+                  :key="brand"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-all text-xs font-semibold border"
+                  :class="group.activeBrands.includes(brand)
+                    ? 'bg-violet-100 border-violet-300 text-violet-800'
+                    : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="group.activeBrands.includes(brand)"
+                    @change="toggleSubBrand(idx, brand)"
+                    class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+                  />
+                  {{ brand }}
+                </label>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1.5">
+                {{ group.activeBrands.length }} of {{ group.brands.length }} selected
+              </p>
+            </div>
+
+            <!-- Accordion Dropdown -->
+            <div
+              v-if="group.isExpanded"
+              class="px-3 pb-3 pt-1 border-t border-violet-100 bg-white/50"
+            >
+              <div
+                v-if="group.batches.length === 0"
+                class="text-xs text-slate-400 text-center py-2 font-medium"
+              >
+                No batches yet. Click Prepare.
+              </div>
+              <div v-else class="grid grid-cols-2 gap-2 mt-2">
+                <button
+                  v-for="(batch, bIdx) in group.batches"
+                  :key="bIdx"
+                  @click="shareBatchDirectly(batch)"
+                  :disabled="batch.status !== 'ready'"
+                  class="py-2.5 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  :class="{
+                    'bg-slate-100 text-slate-400 cursor-not-allowed': batch.status === 'pending',
+                    'bg-blue-100 text-blue-700 cursor-not-allowed': batch.status === 'preparing',
+                    'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 active:scale-95 cursor-pointer border border-emerald-200':
+                      batch.status === 'ready',
+                  }"
+                >
+                  <svg
+                    v-if="batch.status === 'preparing'"
+                    class="animate-spin h-3 w-3"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <i v-else-if="batch.status === 'ready'" class="fa-brands fa-whatsapp text-sm"></i>
+                  <span
+                    >Batch {{ bIdx + 1 }}
+                    {{
+                      batch.status === 'pending'
+                        ? ''
+                        : batch.status === 'preparing'
+                          ? 'Preparing...'
+                          : 'Ready'
+                    }}</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-5 py-4 border-t border-slate-100 flex-shrink-0 space-y-2">
+          <div class="flex gap-2 w-full">
+            <button
+              v-if="isOneTouchPreparing"
+              @click="handleCancelOneTouch"
+              class="w-1/3 py-4 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-xl shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+            >
+              <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+            <button
+              @click="prepareOneTouch"
+              :disabled="isOneTouchPreparing"
+              class="py-4 bg-slate-900 hover:bg-black disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+              :class="isOneTouchPreparing ? 'w-2/3' : 'w-full'"
+            >
+              <span v-if="isOneTouchPreparing" class="flex items-center gap-2">
+                <svg
+                  class="animate-spin h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Preparing...
+                <span class="font-mono text-sm ml-1 bg-black/20 px-2 py-0.5 rounded">{{
+                  formattedOneTouchTime
+                }}</span>
+              </span>
+              <span v-else class="flex items-center gap-2">
+                <i class="fa-solid fa-bolt"></i>
+                Prepare
+                <span
+                  v-if="oneTouchElapsedTime > 0"
+                  class="font-mono text-sm ml-1 bg-black/20 px-2 py-0.5 rounded"
+                  >{{ formattedOneTouchTime }}</span
+                >
+              </span>
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-400 text-center font-medium">
+            {{ oneTouchGroups.filter((g) => g.enabled).length }} groups selected • Batches of 99
+            images
+          </p>
+        </div>
       </div>
     </div>
 
@@ -980,411 +1329,28 @@
         </button>
       </div>
     </div>
-
-    <!-- One Touch Mode Modal (Live Dashboard) -->
-    <div
-      v-if="showOneTouchModal"
-      class="fixed inset-0 z-[80] bg-black/80 flex items-end lg:items-center justify-center backdrop-blur-sm"
-    >
-      <div
-        class="bg-white rounded-t-3xl lg:rounded-2xl w-full max-w-lg max-h-[92vh] shadow-2xl flex flex-col overflow-hidden"
-      >
-        <!-- Header -->
-        <div
-          class="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0"
-        >
-          <div class="flex items-center gap-3">
-            <div
-              class="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg"
-            >
-              <i class="fa-solid fa-bolt text-white text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-black text-slate-800">One Touch Mode</h3>
-              <p
-                class="text-[10px] uppercase tracking-widest font-bold"
-                :class="oneTouchStarted ? 'text-violet-500' : 'text-slate-400'"
-              >
-                {{ oneTouchStarted ? 'Processing...' : 'Auto-share all groups' }}
-              </p>
-            </div>
-          </div>
-          <button
-            @click="closeOneTouchModal"
-            class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <!-- Global Filters (before start) -->
-        <div
-          v-if="!oneTouchStarted"
-          class="px-6 py-4 border-b border-slate-100 space-y-3 flex-shrink-0 bg-slate-50/50"
-        >
-          <!-- Low Stock Mode Toggle -->
-          <div
-            class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all"
-            :class="oneTouchLowStockMode ? 'bg-amber-50 border border-amber-200' : 'bg-slate-100 border border-slate-200'"
-            @click="oneTouchLowStockMode = !oneTouchLowStockMode"
-          >
-            <div class="flex items-center gap-2.5">
-              <div
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-                :class="oneTouchLowStockMode ? 'bg-amber-200 text-amber-700' : 'bg-slate-200 text-slate-500'"
-              >
-                <i class="fa-solid fa-arrow-down-short-wide"></i>
-              </div>
-              <div>
-                <span class="text-sm font-bold" :class="oneTouchLowStockMode ? 'text-amber-800' : 'text-slate-600'">Low Stock Mode</span>
-                <p class="text-[10px] font-medium" :class="oneTouchLowStockMode ? 'text-amber-500' : 'text-slate-400'">
-                  {{ oneTouchLowStockMode ? 'Min 1 → Max 10' : 'Min 10 → Max ∞' }}
-                </p>
-              </div>
-            </div>
-            <div
-              class="w-10 h-[22px] rounded-full relative transition-colors duration-300"
-              :class="oneTouchLowStockMode ? 'bg-amber-400' : 'bg-slate-300'"
-            >
-              <div
-                class="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300"
-                :class="oneTouchLowStockMode ? 'left-[22px]' : 'left-[3px]'"
-              ></div>
-            </div>
-          </div>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              v-model="oneTouchOnlyWithPhotos"
-              class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
-            />
-            <span class="text-sm font-semibold text-slate-700">Only with photos</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              v-model="oneTouchMinQtyEnabled"
-              class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
-            />
-            <span class="text-sm font-semibold text-slate-700">Minimum quantity filter</span>
-          </label>
-        </div>
-
-        <!-- Overall Progress Bar (after start) -->
-        <div
-          v-if="oneTouchStarted"
-          class="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-violet-50/50"
-        >
-          <div class="flex justify-between text-xs font-bold text-violet-600 mb-1.5">
-            <span>{{ oneTouchCompletedGroups }} / {{ oneTouchEnabledCount }} groups</span>
-            <span
-              >{{
-                Math.round((oneTouchCompletedGroups / Math.max(oneTouchEnabledCount, 1)) * 100)
-              }}%</span
-            >
-          </div>
-          <div class="h-1.5 w-full bg-violet-100 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-violet-500 rounded-full transition-all duration-500"
-              :style="{
-                width: `${(oneTouchCompletedGroups / Math.max(oneTouchEnabledCount, 1)) * 100}%`,
-              }"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Group List (scrollable) -->
-        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3 custom-scrollbar">
-          <div
-            v-for="(group, idx) in oneTouchGroups"
-            :key="idx"
-            class="rounded-2xl border-2 transition-all overflow-hidden"
-            :class="oneTouchGroupClass(group)"
-          >
-            <!-- Group Header -->
-            <div
-              class="px-4 py-3"
-              :class="{
-                'cursor-pointer hover:bg-slate-50/50': group.batches && group.batches.length > 0,
-              }"
-              @click="
-                group.batches && group.batches.length > 0 && (group.expanded = !group.expanded)
-              "
-            >
-              <!-- Row 1: Checkbox + Icon + Name + Status -->
-              <div class="flex items-center gap-2.5">
-                <!-- Checkbox (before start) -->
-                <input
-                  v-if="!oneTouchStarted"
-                  type="checkbox"
-                  v-model="group.enabled"
-                  class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
-                  @click.stop
-                />
-
-                <!-- Status Icon -->
-                <div
-                  class="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-xl"
-                  :class="oneTouchIconBgClass(group)"
-                >
-                  <svg
-                    v-if="group.status === 'generating'"
-                    class="animate-spin h-5 w-5 text-violet-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  <span v-else-if="group.status === 'done'" class="text-lg">✅</span>
-                  <span v-else-if="group.status === 'ready'" class="text-lg">🟢</span>
-                  <span v-else-if="group.status === 'skipped'" class="text-sm">⏭️</span>
-                  <span v-else class="text-lg">{{ group.icon }}</span>
-                </div>
-
-                <!-- Label + Status text -->
-                <div class="flex-1 min-w-0">
-                  <span class="text-[13px] font-bold text-slate-800 leading-tight block">{{
-                    group.label
-                  }}</span>
-                  <span
-                    v-if="group.status === 'generating'"
-                    class="text-[11px] text-violet-500 font-medium"
-                  >
-                    Generating {{ group.imageCount }}/{{ group.totalImages || '?' }} images...
-                  </span>
-                  <span
-                    v-if="group.status === 'skipped'"
-                    class="text-[11px] text-slate-400 font-medium"
-                    >No products found</span
-                  >
-                </div>
-
-                <!-- Image count badge (after generation) -->
-                <span
-                  v-if="(group.status === 'ready' || group.status === 'done') && group.imageCount > 0"
-                  class="text-[10px] bg-violet-100 text-violet-700 font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                >
-                  {{ group.imageCount }} imgs
-                </span>
-
-                <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
-                <button
-                  v-if="group.brands.length > 1 && !oneTouchStarted"
-                  @click.stop="group.showBrandPicker = !group.showBrandPicker"
-                  class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0"
-                  :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
-                >
-                  <i class="fa-solid fa-gear text-xs"></i>
-                </button>
-
-                <!-- Expand chevron -->
-                <i
-                  v-if="group.batches && group.batches.length > 0"
-                  class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200 flex-shrink-0"
-                  :class="{ 'rotate-180': group.expanded }"
-                ></i>
-              </div>
-
-              <!-- Row 2: Min/Max Qty (compact, below the name) -->
-              <div
-                v-if="!oneTouchStarted"
-                class="flex items-center gap-3 mt-2 pl-[30px]"
-                :class="{
-                  'opacity-30 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
-                }"
-              >
-                <div class="flex items-center gap-1.5" @click.stop>
-                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Min</span>
-                  <input
-                    type="number"
-                    v-model.number="group.minQty"
-                    class="w-11 text-center font-bold text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none transition-all"
-                    @click.stop
-                  />
-                </div>
-                <div class="flex items-center gap-1.5" @click.stop>
-                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Max</span>
-                  <input
-                    type="text"
-                    v-model="group.maxQty"
-                    placeholder="∞"
-                    class="w-11 text-center font-bold text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none placeholder:text-slate-300 transition-all"
-                    @click.stop
-                  />
-                </div>
-              </div>
-              
-              <!-- Sub-brand Picker -->
-              <div
-                v-if="group.showBrandPicker && !oneTouchStarted"
-                class="mt-2 pl-[30px]"
-              >
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Sub-brands</p>
-                <div class="flex flex-wrap gap-2">
-                  <label
-                    v-for="brand in group.brands"
-                    :key="brand"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-all text-xs font-semibold border"
-                    :class="group.activeBrands.includes(brand)
-                      ? 'bg-violet-100 border-violet-300 text-violet-800'
-                      : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
-                  >
-                    <input
-                      type="checkbox"
-                      :checked="group.activeBrands.includes(brand)"
-                      @change="toggleSubBrand(idx, brand)"
-                      class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
-                    />
-                    {{ brand }}
-                  </label>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1.5">
-                  {{ group.activeBrands.length }} of {{ group.brands.length }} selected
-                </p>
-              </div>
-            </div>
-
-            <!-- Generating Progress Bar -->
-            <div v-if="group.status === 'generating'" class="px-4 pb-3">
-              <div class="h-1.5 w-full bg-violet-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-violet-500 rounded-full transition-all duration-300"
-                  :style="{
-                    width: group.totalImages
-                      ? `${(group.imageCount / group.totalImages) * 100}%`
-                      : '10%',
-                  }"
-                ></div>
-              </div>
-            </div>
-
-            <!-- Expanded Batch Buttons (horizontal scroll) -->
-            <div
-              v-if="group.expanded && group.batches && group.batches.length > 0"
-              class="px-4 pb-4 pt-2 border-t border-slate-100/80 bg-slate-50/30"
-            >
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2.5">
-                Share Batches
-              </p>
-              <div class="flex gap-2.5 overflow-x-auto pb-2 ot-scroll-x">
-                <button
-                  v-for="(batch, bIdx) in group.batches"
-                  :key="bIdx"
-                  @click.stop="shareOneTouchBatch(idx, bIdx)"
-                  :disabled="group.batchStatuses[bIdx] === 'sharing'"
-                  class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-sm border-2"
-                  :class="oneTouchBatchBtnClass(group.batchStatuses[bIdx])"
-                >
-                  <i
-                    v-if="group.batchStatuses[bIdx] === 'shared'"
-                    class="fa-solid fa-circle-check"
-                  ></i>
-                  <i
-                    v-else-if="group.batchStatuses[bIdx] === 'sharing'"
-                    class="fa-solid fa-spinner fa-spin"
-                  ></i>
-                  <i v-else class="fa-brands fa-whatsapp text-lg"></i>
-                  <span>Batch {{ bIdx + 1 }}</span>
-                  <span class="text-[10px] opacity-60">({{ batch.length }})</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="px-6 py-5 border-t border-slate-100 flex-shrink-0">
-          <button
-            v-if="!oneTouchStarted"
-            @click="startOneTouchShare"
-            class="w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
-          >
-            <i class="fa-solid fa-bolt"></i>
-            Start One Touch
-          </button>
-          <p
-            v-if="!oneTouchStarted"
-            class="text-[10px] text-slate-400 text-center font-medium mt-2"
-          >
-            {{ oneTouchGroups.filter((g) => g.enabled).length }} groups selected • Batches of 99
-            images
-          </p>
-
-          <button
-            v-else-if="oneTouchStarted && !oneTouchAllDone"
-            disabled
-            class="w-full py-4 bg-slate-300 text-slate-700 font-bold rounded-xl shadow-inner active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
-          >
-            <svg
-              class="animate-spin h-5 w-5 text-slate-600"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Processing... {{ formatElapsedTime(oneTouchElapsedTime) }}
-          </button>
-
-          <button
-            v-if="oneTouchStarted && oneTouchAllDone"
-            @click="closeOneTouchModal"
-            class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-xl active:scale-[0.95] transition-all flex items-center justify-center gap-3 text-lg"
-          >
-            <i class="fa-solid fa-circle-check"></i>
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import axios from 'axios';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-
-import { jsPDF } from 'jspdf';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
-import { ref } from 'vue';
-import { useBrandGroups } from '../../composables/useBrandGroups';
-import { useStockData } from '../../composables/useStockData';
-import { useAdmin } from '../../composables/useAdmin';
-import { BRAND_LISTS } from '../../utils/constants';
+import { useBrandGroups } from '@/composables/useBrandGroups';
+import { useStockData } from '@/composables/useStockData';
+import { useAdmin } from '@/composables/useAdmin';
+import { BRAND_LISTS } from '@/utils/constants';
+import { fetchCachedImageAsBase64 } from '@/utils/nativeCache';
+import { getOptimizedImageUrl } from '@/utils/formatters';
 
 // Separator image: 'Old stock ends here / New stocks start'
 const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/Old_stock_ends_here_oc3rh7.png';
 
-// One Touch Mode group definitions (SBE-specific brand names)
 const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
@@ -1393,6 +1359,7 @@ const ONE_TOUCH_GROUPS = [
   { label: 'Florex', brands: ['Florex (Swastik)'], icon: '🌸', defaultMinQty: 10 },
   { label: 'Action', brands: ['ACTION'], icon: '⚡', defaultMinQty: 10 },
   { label: 'Reliance', brands: ['RELIANCE FOOTWEAR'], icon: '🔷', defaultMinQty: 10 },
+  { label: 'Ajanta', brands: ['AJANTA'], icon: '👡', defaultMinQty: 10 },
   {
     label: 'General Box Packing',
     brands: [...BRAND_LISTS.generalBoxPacking],
@@ -1422,1050 +1389,1043 @@ const ONE_TOUCH_GROUPS = [
   { label: 'Socks', brands: ['Barun', 'Pareek Soucks', 'LEO'], icon: '🧦', defaultMinQty: 10 },
 ];
 
-export default {
-  setup() {
-    const { stockData, loadStockData } = useStockData(ref(false));
-    const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
-    const brands = ref([]);
-    const { isAdmin, isSuperAdmin } = useAdmin();
+// State
+const { stockData, loadStockData, loading } = useStockData(ref(false)); // Reuse existing composable
+const selectedBrands = ref([]);
+const onlyWithPhotos = ref(true);
+const minQtyEnabled = ref(false);
+const minQty = ref(5);
+const pdfMode = ref('separate');
+const zipMode = ref('separate');
+const zipBatchMode = ref(false);
+const isGenerating = ref(false);
+const isPdfGenerating = ref(false);
+const isZipGenerating = ref(false);
+const isSharing = ref(false);
 
-    return { stockData, loadStockData, groupedSidebar, brands, isAdmin, isSuperAdmin };
+// Batch Sharing State
+const showBatchModal = ref(false);
+const batchList = ref([]);
+const currentBatchIndex = ref(0);
+
+const { isAdmin, isSuperAdmin } = useAdmin();
+
+const showOneTouchModal = ref(false);
+const oneTouchGroups = ref(
+  ONE_TOUCH_GROUPS.map((g) => ({
+    ...g,
+    enabled: true,
+    minQty: g.defaultMinQty,
+    maxQty: '',
+    activeBrands: [...g.brands],
+    showBrandPicker: false,
+    isExpanded: false,
+    status: 'idle',
+    batches: [],
+  }))
+);
+const oneTouchOnlyWithPhotos = ref(true);
+const oneTouchMinQtyEnabled = ref(true);
+const oneTouchLowStockMode = ref(false);
+const isOneTouchSharing = ref(false);
+const isOneTouchPreparing = ref(false);
+const cancelOneTouch = ref(false);
+
+// Watch low stock mode toggle and update all groups
+watch(oneTouchLowStockMode, (isLowStock) => {
+  oneTouchGroups.value.forEach((group) => {
+    if (isLowStock) {
+      group.minQty = 1;
+      group.maxQty = '10';
+    } else {
+      group.minQty = 10;
+      group.maxQty = '';
+    }
+  });
+});
+
+const parseMaxQty = (val) => {
+  if (val === '' || val === null || val === undefined) return Infinity;
+  const s = String(val).trim().toLowerCase();
+  if (s === '' || s === 'x' || s === '∞') return Infinity;
+  const n = parseInt(s, 10);
+  return isNaN(n) || n <= 0 ? Infinity : n;
+};
+
+const handleCancelOneTouch = () => {
+  cancelOneTouch.value = true;
+};
+
+const toggleSubBrand = (groupIdx, brand) => {
+  const group = oneTouchGroups.value[groupIdx];
+  const idx = group.activeBrands.indexOf(brand);
+  if (idx >= 0) {
+    // Don't allow unchecking the last brand
+    if (group.activeBrands.length > 1) {
+      group.activeBrands.splice(idx, 1);
+    }
+  } else {
+    group.activeBrands.push(brand);
+  }
+};
+const oneTouchCurrentGroup = ref('');
+const oneTouchGroupIndex = ref(0);
+const oneTouchTotalGroups = ref(0);
+const oneTouchProgress = ref('');
+const oneTouchCache = ref(JSON.parse(localStorage.getItem('sbe_onetouch_cache') || '{}'));
+watch(
+  oneTouchCache,
+  (newVal) => {
+    localStorage.setItem('sbe_onetouch_cache', JSON.stringify(newVal));
   },
-  data() {
-    return {
-      selectedBrands: [],
-      onlyWithPhotos: true,
-      minQtyEnabled: false,
-      minQty: 5,
-      pdfMode: 'separate',
-      zipMode: 'separate',
-      zipBatchMode: false,
-      isGenerating: false,
-      isPdfGenerating: false,
-      isZipGenerating: false,
-      isSharing: false,
+  { deep: true }
+);
 
-      // Batch Sharing State
-      showBatchModal: false,
-      batchList: [],
-      currentBatchIndex: 0,
+const oneTouchElapsedTime = ref(0);
+let oneTouchTimerInterval = null;
 
-      mobileTab: 'brands',
-      currentBrand: '',
-      completedCount: 0,
-      showToast: false,
-      toastMessage: '',
+const formattedOneTouchTime = computed(() => {
+  const mins = Math.floor(oneTouchElapsedTime.value / 60);
+  const secs = oneTouchElapsedTime.value % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+});
 
-      // One Touch Mode State
-      showOneTouchModal: false,
-      oneTouchGroups: ONE_TOUCH_GROUPS.map((g) => ({
-        ...g,
-        activeBrands: [...g.brands],
-        showBrandPicker: false,
-        enabled: true,
-        minQty: g.defaultMinQty,
-        maxQty: '',
-        status: 'idle', // 'idle' | 'generating' | 'ready' | 'done' | 'skipped'
-        batches: [], // [[uri, ...], [uri, ...]]
-        batchStatuses: [], // ['idle' | 'sharing' | 'shared'] per batch
-        expanded: false,
-        imageCount: 0,
-        totalImages: 0,
-      })),
-      oneTouchOnlyWithPhotos: true,
-      oneTouchMinQtyEnabled: true,
-      oneTouchLowStockMode: false,
-      oneTouchStarted: false,
-      oneTouchElapsedTime: 0,
-      oneTouchTimerInterval: null,
-    };
+watch(
+  stockData,
+  () => {
+    oneTouchCache.value = {};
   },
+  { deep: true }
+);
 
-  watch: {
-    oneTouchLowStockMode(isLowStock) {
-      this.oneTouchGroups.forEach((group) => {
-        if (isLowStock) {
-          group.minQty = 1;
-          group.maxQty = '10';
-        } else {
-          group.minQty = 10;
-          group.maxQty = '';
-        }
-      });
-    },
-  },
+const mobileTab = ref('brands');
+const currentBrand = ref('');
+const completedCount = ref(0);
+const showToast = ref(false);
+const toastMessage = ref('');
 
-  computed: {
-    isNativeApp() {
-      return Capacitor.isNativePlatform();
-    },
-    oneTouchEnabledCount() {
-      return this.oneTouchGroups.filter((g) => g.enabled).length;
-    },
-    oneTouchCompletedGroups() {
-      return this.oneTouchGroups.filter(
-        (g) => g.enabled && (g.status === 'ready' || g.status === 'done' || g.status === 'skipped')
-      ).length;
-    },
-    oneTouchAllDone() {
-      return (
-        this.oneTouchStarted &&
-        this.oneTouchGroups
-          .filter((g) => g.enabled)
-          .every((g) => g.status === 'done' || g.status === 'skipped' || g.status === 'ready')
-      );
-    },
-  },
+// Computed: Brands list from stockData (for display/count if needed)
+const brands = computed(() => stockData.value.map((g) => g.groupName).sort());
 
-  async mounted() {
-    await this.loadStockData();
-    this.brands = this.stockData.map((g) => g.groupName).sort();
+// Use brand groups composable
+const { groupedSidebar } = useBrandGroups(stockData, ref({}), ref(''));
 
-    // Hardware Back Button Listener
-    App.addListener('backButton', () => {
-      if (this.$router.currentRoute.value.path === '/pdf-gen') {
-        this.$router.push('/');
+// Native app check
+const isNativeApp = computed(() => Capacitor.isNativePlatform());
+
+onMounted(async () => {
+  await loadStockData();
+
+  // Hardware Back Button Listener
+  App.addListener('backButton', ({ canGoBack }) => {
+    if (window.location.pathname === '/pdf-gen') {
+      window.history.back();
+    }
+  });
+});
+
+onBeforeUnmount(() => {
+  App.removeAllListeners();
+});
+
+// Methods
+const formatProductName = (name) => {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const getBrandLogo = (brandName) => {
+  const logos = {
+    Paragon:
+      'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp',
+    Reliance:
+      'https://res.cloudinary.com/dg365ewal/image/upload/relianceLogo_bvgwwz.png',
+    Cubix: 'https://res.cloudinary.com/dg365ewal/image/upload/cubixLogo_bwawj3.jpg',
+    Florex: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png',
+    ACTION: 'https://res.cloudinary.com/dg365ewal/image/upload/action-logo_dzd5mq.png',
+    Eeken: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp',
+    Escoute: 'https://res.cloudinary.com/dg365ewal/image/upload/escouteLogo_maieji.jpg',
+  };
+  // Fuzzy match logic
+  const lowerName = brandName.toLowerCase();
+  const key = Object.keys(logos).find((k) => lowerName.includes(k.toLowerCase()));
+  return key ? logos[key] : null;
+};
+
+const toggleBrand = (brandName) => {
+  if (selectedBrands.value.includes(brandName)) {
+    selectedBrands.value = selectedBrands.value.filter((b) => b !== brandName);
+  } else {
+    selectedBrands.value.push(brandName);
+  }
+};
+
+const isCategorySelected = (category) => {
+  const group = groupedSidebar.value[category];
+  if (!group || group.length === 0) return false;
+
+  return group.every((item) => {
+    // Only topBrands uses { group: { groupName }, logo } structure
+    const name = category === 'topBrands' ? item.group.groupName : item.groupName;
+    return selectedBrands.value.includes(name);
+  });
+};
+
+const toggleCategory = (category, event) => {
+  const isChecked = event.target.checked;
+  const group = groupedSidebar.value[category];
+
+  if (!group) return;
+
+  group.forEach((item) => {
+    // Only topBrands uses { group: { groupName }, logo } structure
+    const name = category === 'topBrands' ? item.group.groupName : item.groupName;
+    if (isChecked) {
+      if (!selectedBrands.value.includes(name)) selectedBrands.value.push(name);
+    } else {
+      selectedBrands.value = selectedBrands.value.filter((b) => b !== name);
+    }
+  });
+};
+
+const scrollToGenerate = () => {
+  nextTick(() => {
+    generateSection.value?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+};
+
+// --- PDF GENERATION LOGIC (Frontend Only) ---
+const generatePdfBlob = async (targetBrands) => {
+  const data = stockData.value;
+  const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
+
+  const { jsPDF } = await import('jspdf');
+  const { clashDisplayBoldBase64 } = await import('@/utils/fonts.js');
+
+  const PAGE_W = 1080;
+  const PAGE_H = 2400;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PAGE_W, PAGE_H] });
+
+  // Add custom font
+  doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
+  doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
+
+  let hasAddedPage = false;
+  const dateStr = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  for (const group of filteredGroups) {
+    for (const product of group.products) {
+      if (onlyWithPhotos.value && !product.imageUrl) continue;
+      if (minQtyEnabled.value && product.quantity <= minQty.value) continue;
+
+      if (hasAddedPage) {
+        doc.addPage([PAGE_W, PAGE_H]);
       }
-    });
-  },
+      hasAddedPage = true;
 
-  beforeUnmount() {
-    App.removeAllListeners();
-  },
+      doc.setFillColor('#000000');
+      doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
 
-  methods: {
-    formatProductName(name) {
-      if (!name) return '';
-      return name
-        .toLowerCase()
-        .split(' ')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    },
-    getBrandLogo(brandName) {
-      const logos = {
-        Paragon:
-          'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp',
-        Reliance:
-          'https://res.cloudinary.com/dg365ewal/image/upload/relianceLogo_bvgwwz.png',
-        Cubix: 'https://res.cloudinary.com/dg365ewal/image/upload/cubixLogo_bwawj3.jpg',
-        Florex:
-          'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png',
-        Eeken:
-          'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp',
-        Escoute:
-          'https://res.cloudinary.com/dg365ewal/image/upload/escouteLogo_maieji.jpg',
-      };
-      const lowerName = brandName.toLowerCase();
-      const key = Object.keys(logos).find((k) => lowerName.includes(k.toLowerCase()));
-      return key ? logos[key] : null;
-    },
-    toggleBrand(brandName) {
-      if (this.selectedBrands.includes(brandName)) {
-        this.selectedBrands = this.selectedBrands.filter((b) => b !== brandName);
+      if (product.imageUrl) {
+        try {
+          const imgData = await fetchImageAsBase64(product.imageUrl, product.productName);
+          const dims = await getImageDimensions(imgData);
+
+          const finalWidth = PAGE_W;
+          const finalHeight = dims.height * (PAGE_W / dims.width);
+          const x = 0;
+          const y = (PAGE_H - finalHeight) / 2;
+
+          doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+        } catch (imgErr) {
+          doc.setTextColor(255);
+          doc.setFont('Clash Display', 'bold');
+          doc.setFontSize(24);
+          doc.text('Image Load Failed', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
+        }
       } else {
-        this.selectedBrands.push(brandName);
+        doc.setTextColor(255);
+        doc.setFont('Clash Display', 'bold');
+        doc.setFontSize(36);
+        doc.text('No Photo Available', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
       }
-    },
-    isCategorySelected(category) {
-      const group = this.groupedSidebar[category];
-      if (!group || group.length === 0) return false;
 
-      return group.every((item) => {
-        // Only topBrands uses { group: { groupName }, logo } structure
-        const name = category === 'topBrands' ? item.group.groupName : item.groupName;
-        return this.selectedBrands.includes(name);
-      });
-    },
-    toggleCategory(category, event) {
-      const isChecked = event.target.checked;
-      const group = this.groupedSidebar[category];
+      // HEADER
+      doc.setTextColor(180, 180, 180);
+      doc.setFont('Clash Display', 'bold');
+      doc.setFontSize(38);
+      doc.text(dateStr, 50, 80, { align: 'left' });
+      doc.text(group.groupName, PAGE_W - 50, 80, { align: 'right' });
 
-      if (!group) return;
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(90);
+      doc.text('SBE Rayagada', PAGE_W / 2, 200, { align: 'center' });
 
-      group.forEach((item) => {
-        // Only topBrands uses { group: { groupName }, logo } structure
-        const name = category === 'topBrands' ? item.group.groupName : item.groupName;
-        if (isChecked) {
-          if (!this.selectedBrands.includes(name)) this.selectedBrands.push(name);
-        } else {
-          this.selectedBrands = this.selectedBrands.filter((b) => b !== name);
-        }
-      });
-    },
-    scrollToGenerate() {
-      this.$nextTick(() => {
-        this.$refs.generateSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    },
+      // FOOTER
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(40);
+      doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center' });
 
-    async loadBrands() {
+      doc.setTextColor(255, 215, 0); // Muted gold
+      doc.setFontSize(54);
+      doc.text(`Qty: ${product.quantity}`, PAGE_W / 2, PAGE_H - 80, { align: 'center' });
+    }
+  }
+  return doc.output('blob');
+};
+
+const fetchImageAsBase64 = async (url, productName = '') => {
+  try {
+    const cached = await fetchCachedImageAsBase64(url, productName);
+    if (cached) return cached;
+  } catch (e) {}
+
+  const targetUrl = getOptimizedImageUrl(url) || url;
+  const res = await axios.get(targetUrl, { responseType: 'arraybuffer' });
+  const base64 = btoa(
+    new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
+  );
+  return `data:${res.headers['content-type'] || 'image/jpeg'};base64,${base64}`;
+};
+
+const getImageDimensions = async (base64) => {
+  return new Promise((resolve) => {
+    const i = new Image();
+    i.onload = () => resolve({ width: i.width, height: i.height });
+    i.src = base64;
+  });
+};
+
+const generatePdf = async () => {
+  if (!selectedBrands.value.length) {
+    showToast.value = true;
+    toastMessage.value = 'Select at least one brand first';
+    setTimeout(() => (showToast.value = false), 3000);
+    return;
+  }
+
+  isGenerating.value = true;
+  isPdfGenerating.value = true;
+  completedCount.value = 0;
+
+  if (pdfMode.value === 'combined') {
+    // COMBINED PDF
+    currentBrand.value = 'Merging All Brands...';
+
+    try {
+      const blob = await generatePdfBlob(selectedBrands.value);
+
+      const today = new Date().toISOString().split('T')[0];
+      const filename = `CATALOG_COMBINED_${today}.pdf`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      completedCount.value = selectedBrands.value.length;
+      showToast.value = true;
+      toastMessage.value = 'Combined PDF downloaded!';
+      setTimeout(() => (showToast.value = false), 4000);
+    } catch (err) {
+      console.error(err);
+      showToast.value = true;
+      toastMessage.value = 'Failed to generate combined PDF';
+      setTimeout(() => (showToast.value = false), 5000);
+    } finally {
+      isGenerating.value = false;
+      isPdfGenerating.value = false;
+      currentBrand.value = '';
+    }
+  } else {
+    // SEPARATE PDFs
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const brand of selectedBrands.value) {
+      currentBrand.value = `Generating ${brand}...`;
+
       try {
-        const res = await axios.get(
-          'https://raw.githubusercontent.com/sahilsync07/sbe/main/frontend/public/assets/stock-data.json'
-        );
-        this.brands = [...new Set(res.data.map((g) => g.groupName))].sort();
-      } catch (err) {
-        this.showToast = true;
-        this.toastMessage = 'Failed to load brands — check internet';
-        setTimeout(() => (this.showToast = false), 3000);
+        const blob = await generatePdfBlob([brand]);
+
+        const today = new Date().toISOString().split('T')[0];
+        const safe = brand.replace(/[^a-zA-Z0-9]/g, '_');
+        const filename = `${safe}_${today}.pdf`;
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        successCount++;
+      } catch (e) {
+        console.error(`Failed ${brand}`, e);
+        failCount++;
       }
-    },
+      completedCount.value++;
+      await new Promise((r) => setTimeout(r, 500)); // Sleep briefly to not freeze UI
+    }
 
-    // --- PDF GENERATION LOGIC (Frontend Only) ---
-    async generatePdfBlob(targetBrands) {
-      // 1. Use Cached Data
-      const data = this.stockData;
-      const filteredGroups = data.filter((group) => targetBrands.includes(group.groupName));
+    showToast.value = true;
+    toastMessage.value = `Done! ${successCount} Success, ${failCount} Failed`;
+    setTimeout(() => (showToast.value = false), 4000);
 
-      // 2. Setup PDF
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt', // using points to match pdfkit somewhat closer (72 dpi vs pdfkit default)
-        format: 'a4',
-      });
+    isGenerating.value = false;
+    isPdfGenerating.value = false;
+    currentBrand.value = '';
+  }
+};
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+// Helper: Fetch separator image and return as blob
+const fetchSeparatorBlob = async () => {
+  try {
+    const res = await axios.get(OLD_STOCK_SEPARATOR_URL, { responseType: 'arraybuffer' });
+    return new Blob([res.data], { type: res.headers['content-type'] || 'image/png' });
+  } catch (e) {
+    console.error('Failed to fetch separator image:', e);
+    return null;
+  }
+};
 
-      let hasAddedPage = false;
+const downloadAsImages = async () => {
+  if (!selectedBrands.value.length) return;
 
-      for (const group of filteredGroups) {
-        let isFirstProductInBrand = true;
+  isGenerating.value = true;
+  isPdfGenerating.value = false;
+  isZipGenerating.value = false; // Just to be safe
+  completedCount.value = 0;
+  let totalSuccess = 0;
+  let totalFailed = 0;
+  let totalImages = 0;
 
-        for (const product of group.products) {
-          if (this.onlyWithPhotos && !product.imageUrl) continue;
-          if (this.minQtyEnabled && product.quantity <= this.minQty) continue;
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-          if (hasAddedPage) {
-            doc.addPage();
-          }
-          hasAddedPage = true;
+  // Fetch separator image once
+  const separatorBlob = await fetchSeparatorBlob();
 
-          // A. Background (Light beige)
-          doc.setFillColor('#faf8f6');
-          doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  for (const brand of selectedBrands.value) {
+    currentBrand.value = `Processing: ${brand}`;
+    try {
+      // Download separator as first image for this brand
+      if (separatorBlob) {
+        const sepUrl = URL.createObjectURL(separatorBlob);
+        const sepA = document.createElement('a');
+        sepA.href = sepUrl;
+        sepA.download = `${brand.replace(/[^a-zA-Z0-9]/g, '_')}_Image_000_separator.png`;
+        sepA.click();
+        URL.revokeObjectURL(sepUrl);
+        totalImages++;
+      }
 
-          // B. Waves
-          doc.setDrawColor('#e0e0e0');
-          doc.setLineWidth(3);
+      const pdfBlob = await generatePdfBlob([brand]);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
 
-          // Top Wave
-          doc.path([
-            { op: 'm', c: [0, 0] },
-            { op: 'l', c: [200, 80] },
-            { op: 'c', c: [266, 26, 400, 33, 600, 100] },
-          ]);
-          doc.stroke();
+      const loadingTask = pdfjsLib.getDocument(pdfUrl);
+      const pdf = await loadingTask.promise;
 
-          // Bottom Wave
-          const h = pageHeight;
-          doc.path([
-            { op: 'm', c: [0, h] },
-            { op: 'l', c: [250, h - 100] },
-            { op: 'c', c: [316, h - 33, 433, h - 16, 600, h - 50] },
-          ]);
-          doc.stroke();
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.5 });
 
-          // C. Brand Name (First product only)
-          if (isFirstProductInBrand) {
-            doc.setTextColor(0, 0, 0); // Black
-            // doc.setFillOpacity(0.2); // jsPDF doesn't handle fillOpacity easily for text, using light grey instead
-            doc.setTextColor(200, 200, 200); // Light Grey to simulate opacity
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(28);
-            doc.text(group.groupName, pageWidth / 2, 35, { align: 'center' });
-            isFirstProductInBrand = false;
-          }
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const context = canvas.getContext('2d');
 
-          // D. Product Image
-          if (product.imageUrl) {
-            try {
-              // Fetch image as blobs
-              const imgData = await this.fetchImageAsBase64(product.imageUrl);
+        await page.render({ canvasContext: context, viewport }).promise;
 
-              // Dimensions
-              const maxWidth = pageWidth - 40;
-              const maxHeight = pageHeight - 150;
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
+        const url = URL.createObjectURL(blob);
 
-              // We need image dimensions.
-              // With Base64, we can load it into a temporary Image object to get dims
-              const dims = await this.getImageDimensions(imgData);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${brand.replace(/[^a-zA-Z0-9]/g, '_')}_Image_${String(pageNum).padStart(3, '0')}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
 
-              const scale = Math.min(maxWidth / dims.width, maxHeight / dims.height, 1);
-              const finalWidth = dims.width * scale;
-              const finalHeight = dims.height * scale;
+        totalImages++;
+      }
 
-              const x = (pageWidth - finalWidth) / 2;
-              const y = 60;
+      URL.revokeObjectURL(pdfUrl);
+      totalSuccess++;
+    } catch (err) {
+      console.error('Failed for brand:', brand, err);
+      totalFailed++;
+    }
+    completedCount.value++;
+  }
 
-              doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+  isGenerating.value = false;
+  currentBrand.value = '';
+  showToast.value = true;
+  toastMessage.value = `Downloaded ${totalImages} images (${totalFailed} failed brands)`;
+  setTimeout(() => (showToast.value = false), 4000);
+};
 
-              const textY = y + finalHeight + 25;
+const downloadAsZip = async () => {
+  if (!selectedBrands.value.length) return;
 
-              // E. Text
-              doc.setTextColor(0, 0, 0);
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(16);
-              doc.text(product.productName, pageWidth / 2, textY, { align: 'center' });
+  isGenerating.value = true;
+  isZipGenerating.value = true;
+  completedCount.value = 0;
+  const zip = new JSZip();
 
-              doc.setTextColor(212, 0, 0); // #d40000
-              doc.setFontSize(18);
-              doc.text(`Qty: ${product.quantity}`, pageWidth / 2, textY + 30, { align: 'center' });
-            } catch (imgErr) {
-              console.error(`Image failed: ${product.productName}`, imgErr);
-              doc.setTextColor(0);
-              doc.setFontSize(16);
-              doc.text('Image Load Failed', pageWidth / 2, pageHeight / 2, { align: 'center' });
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  let totalPages = 0;
+  let failedBrands = 0;
+  const isCombined = zipMode.value === 'combined';
+  let globalPageCounter = 0;
+
+  // Fetch separator image once
+  const separatorBlob = await fetchSeparatorBlob();
+
+  for (const brand of selectedBrands.value) {
+    currentBrand.value = `Zipping: ${brand}`;
+
+    try {
+      const blob = await generatePdfBlob([brand]);
+
+      const pdfUrl = URL.createObjectURL(blob);
+      const loadingTask = pdfjsLib.getDocument(pdfUrl);
+      const pdf = await loadingTask.promise;
+
+      const target = isCombined ? zip : zip.folder(brand);
+
+        // Add separator as first image for this brand
+        if (separatorBlob) {
+          if (isCombined) {
+            globalPageCounter++;
+            if (zipBatchMode.value) {
+              const batchNum = Math.ceil(globalPageCounter / 99);
+              const batchFolder = zip.folder(`Batch ${batchNum}`);
+              batchFolder.file(`000_Old_Stock_Separator.jpg`, separatorBlob);
+            } else {
+              target.file(`000_Old_Stock_Separator_${String(globalPageCounter).padStart(4, '0')}.jpg`, separatorBlob);
             }
           } else {
-            doc.setTextColor(0);
-            doc.setFontSize(20);
-            doc.text(product.productName, pageWidth / 2, pageHeight / 2 - 20, { align: 'center' });
-            doc.text(`Qty: ${product.quantity}`, pageWidth / 2, pageHeight / 2 + 20, {
-              align: 'center',
-            });
+            target.file(`000_Old_Stock_Separator.jpg`, separatorBlob);
           }
-        }
-      }
-
-      return doc.output('blob');
-    },
-
-    async fetchImageAsBase64(url) {
-      const res = await axios.get(url, { responseType: 'arraybuffer' });
-      const base64 = btoa(
-        new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
-      return `data:${res.headers['content-type']};base64,${base64}`;
-    },
-
-    async getImageDimensions(base64) {
-      return new Promise((resolve) => {
-        const i = new Image();
-        i.onload = () => resolve({ width: i.width, height: i.height });
-        i.src = base64;
-      });
-    },
-
-    async generatePdf() {
-      if (!this.selectedBrands.length) {
-        this.showToast = true;
-        this.toastMessage = 'Select at least one brand first';
-        setTimeout(() => (this.showToast = false), 3000);
-        return;
-      }
-
-      this.isGenerating = true;
-      this.isPdfGenerating = true;
-      this.completedCount = 0;
-
-      if (this.pdfMode === 'combined') {
-        // COMBINED PDF
-        this.currentBrand = 'Merging All Brands...';
-
-        try {
-          const blob = await this.generatePdfBlob(this.selectedBrands);
-
-          const today = new Date().toISOString().split('T')[0];
-          const filename = `CATALOG_COMBINED_${today}.pdf`;
-
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = filename;
-          a.click();
-          window.URL.revokeObjectURL(url);
-
-          this.completedCount = this.selectedBrands.length;
-          this.showToast = true;
-          this.toastMessage = 'Combined PDF downloaded!';
-          setTimeout(() => (this.showToast = false), 4000);
-        } catch (err) {
-          console.error(err);
-          this.showToast = true;
-          this.toastMessage = 'Failed to generate combined PDF';
-          setTimeout(() => (this.showToast = false), 5000);
-        } finally {
-          this.isGenerating = false;
-          this.isPdfGenerating = false;
-          this.currentBrand = '';
-        }
-      } else {
-        // SEPARATE PDFs
-        let successCount = 0;
-        let failCount = 0;
-
-        for (const brand of this.selectedBrands) {
-          this.currentBrand = `Generating ${brand}...`;
-
-          try {
-            const blob = await this.generatePdfBlob([brand]);
-
-            const today = new Date().toISOString().split('T')[0];
-            const safe = brand.replace(/[^a-zA-Z0-9]/g, '_');
-            const filename = `${safe}_${today}.pdf`;
-
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            window.URL.revokeObjectURL(url);
-
-            successCount++;
-          } catch (e) {
-            console.error(`Failed ${brand}`, e);
-            failCount++;
-          }
-          this.completedCount++;
-          await new Promise((r) => setTimeout(r, 500)); // Sleep briefly to not freeze UI
+          totalPages++;
         }
 
-        this.showToast = true;
-        this.toastMessage = `Done! ${successCount} Success, ${failCount} Failed`;
-        setTimeout(() => (this.showToast = false), 4000);
-
-        this.isGenerating = false;
-        this.isPdfGenerating = false;
-        this.currentBrand = '';
-      }
-    },
-
-    async downloadAsImages() {
-      if (!this.selectedBrands.length) return;
-
-      this.isGenerating = true;
-      this.isPdfGenerating = false;
-      this.isZipGenerating = false; // Just to be safe
-      this.completedCount = 0;
-      let totalSuccess = 0;
-      let totalFailed = 0;
-      let totalImages = 0;
-
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-      for (const brand of this.selectedBrands) {
-        this.currentBrand = `Processing: ${brand}`;
-        try {
-          const pdfBlob = await this.generatePdfBlob([brand]);
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-
-          const loadingTask = pdfjsLib.getDocument(pdfUrl);
-          const pdf = await loadingTask.promise;
-
-          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 2.5 });
-
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const context = canvas.getContext('2d');
-
-            await page.render({ canvasContext: context, viewport }).promise;
-
-            const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${brand.replace(/[^a-zA-Z0-9]/g, '_')}_Image_${String(pageNum).padStart(3, '0')}.png`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            totalImages++;
-          }
-
-          URL.revokeObjectURL(pdfUrl);
-          totalSuccess++;
-        } catch (err) {
-          console.error('Failed for brand:', brand, err);
-          totalFailed++;
-        }
-        this.completedCount++;
-      }
-
-      this.isGenerating = false;
-      this.currentBrand = '';
-      this.showToast = true;
-      this.toastMessage = `Downloaded ${totalImages} images (${totalFailed} failed brands)`;
-      setTimeout(() => (this.showToast = false), 4000);
-    },
-
-    async downloadAsZip() {
-      if (!this.selectedBrands.length) return;
-
-      this.isGenerating = true;
-      this.isZipGenerating = true;
-      this.completedCount = 0;
-      const zip = new JSZip();
-
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-      let totalPages = 0;
-      let failedBrands = 0;
-      const isCombined = this.zipMode === 'combined';
-      let globalPageCounter = 0;
-
-      for (const brand of this.selectedBrands) {
-        this.currentBrand = `Zipping: ${brand}`;
-
-        try {
-          const blob = await this.generatePdfBlob([brand]);
-
-          const pdfUrl = URL.createObjectURL(blob);
-          const loadingTask = pdfjsLib.getDocument(pdfUrl);
-          const pdf = await loadingTask.promise;
-
-          const target = isCombined ? zip : zip.folder(brand);
-
-          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 2.0 });
-
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const context = canvas.getContext('2d');
-            await page.render({ canvasContext: context, viewport }).promise;
-
-            const imgBlob = await new Promise((resolve) =>
-              canvas.toBlob(resolve, 'image/jpeg', 0.85)
-            );
-            if (isCombined) {
-              globalPageCounter++;
-              if (this.zipBatchMode) {
-                const batchNum = Math.ceil(globalPageCounter / 99);
-                const batchFolder = zip.folder(`Batch ${batchNum}`);
-                batchFolder.file(
-                  `${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`,
-                  imgBlob
-                );
-              } else {
-                target.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
-              }
-            } else {
-              target.file(`${brand}_Page_${pageNum}.jpg`, imgBlob);
-            }
-            totalPages++;
-          }
-          URL.revokeObjectURL(pdfUrl);
-        } catch (e) {
-          console.error(`Failed to zip ${brand}`, e);
-          failedBrands++;
-          this.showToast = true;
-          this.toastMessage = `Failed to process ${brand}`;
-          setTimeout(() => (this.showToast = false), 2000);
-        }
-        this.completedCount++;
-      }
-
-      this.currentBrand = 'Finalizing ZIP file...';
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `Catalog_Images_${new Date().toISOString().split('T')[0]}.zip`);
-
-      this.isGenerating = false;
-      this.isZipGenerating = false;
-      this.currentBrand = '';
-      this.showToast = true;
-      this.toastMessage = `ZIP Ready! ${totalPages} images included.`;
-      setTimeout(() => (this.showToast = false), 4000);
-    },
-
-    async shareViaNativeApp() {
-      if (!this.selectedBrands.length) return;
-
-      this.isGenerating = true;
-      this.isSharing = true;
-      this.completedCount = 0;
-
-      try {
-        const pdfjsLib = await import('pdfjs-dist');
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-        const fileUris = [];
-
-        // 1. Generate All Images & Save to Temp
-        for (const brand of this.selectedBrands) {
-          this.currentBrand = `Preparing: ${brand}`;
-          try {
-            const blob = await this.generatePdfBlob([brand]);
-            const pdfUrl = URL.createObjectURL(blob);
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
-            const pdf = await loadingTask.promise;
-
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-              const page = await pdf.getPage(pageNum);
-              // Scale 1.5 is good balance for WhatsApp (lighter than print)
-              const viewport = page.getViewport({ scale: 1.5 });
-
-              const canvas = document.createElement('canvas');
-              canvas.width = viewport.width;
-              canvas.height = viewport.height;
-              const context = canvas.getContext('2d');
-              await page.render({ canvasContext: context, viewport }).promise;
-
-              // Convert to Base64 (needed for Filesystem.writeFile)
-              const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-              const fileName = `${brand.replace(/[^a-zA-Z0-9]/g, '')}_${pageNum}.jpg`;
-
-              // Save to Cache Directory
-              const savedFile = await Filesystem.writeFile({
-                path: fileName,
-                data: base64,
-                directory: Directory.Cache,
-              });
-
-              fileUris.push(savedFile.uri);
-            }
-            URL.revokeObjectURL(pdfUrl);
-          } catch (e) {
-            console.error('Native Gen Error', e);
-          }
-          this.completedCount++;
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        // Yield to main thread every 10 pages to allow GC
+        if (pageNum % 10 === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 20));
         }
 
-        // Prepend 'Old stock ends here' separator as first image
-        try {
-          const separatorUri = await this.saveSeparatorImage('share_native');
-          if (separatorUri) {
-            fileUris.unshift(separatorUri);
-          }
-        } catch (e) {
-          console.error('Failed to prepend separator:', e);
-        }
+        const page = await pdf.getPage(pageNum);
+        // Scale 1.0 is sufficient and prevents OOM crashes
+        const viewport = page.getViewport({ scale: 1.0 });
 
-        // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
-        const chunkSize = 99;
-        const batches = [];
-        for (let i = 0; i < fileUris.length; i += chunkSize) {
-          batches.push(fileUris.slice(i, i + chunkSize));
-        }
-
-        if (batches.length === 0) {
-          this.showToast = true;
-          this.toastMessage = 'No images generated';
-          setTimeout(() => (this.showToast = false), 3000);
-          this.isSharing = false;
-          this.isGenerating = false;
-          return;
-        }
-
-        // 3. Decide: Direct Share or Batch Mode
-        if (batches.length === 1) {
-          await Share.share({ files: batches[0] });
-          this.isSharing = false;
-          this.isGenerating = false;
-        } else {
-          this.batchList = batches;
-          this.currentBatchIndex = 0;
-          this.showBatchModal = true;
-          // Don't turn off isGenerating yet, modal handles it
-        }
-      } catch (err) {
-        console.error('Native Share Failed', err);
-        this.showToast = true;
-        this.toastMessage = 'Sharing cancelled or failed.';
-        setTimeout(() => (this.showToast = false), 3000);
-        this.isGenerating = false;
-        this.isSharing = false;
-      } finally {
-        this.currentBrand = '';
-      }
-    },
-
-    // ─── ONE TOUCH MODE METHODS ─────────────────────────────────────────
-    openOneTouchModal() {
-      // Reset all groups to defaults with per-group state
-      this.oneTouchGroups = ONE_TOUCH_GROUPS.map((g) => ({
-        ...g,
-        activeBrands: [...g.brands],
-        showBrandPicker: false,
-        enabled: true,
-        minQty: g.defaultMinQty,
-        maxQty: '',
-        status: 'idle',
-        batches: [],
-        batchStatuses: [],
-        expanded: false,
-        imageCount: 0,
-        totalImages: 0,
-      }));
-      this.oneTouchOnlyWithPhotos = true;
-      this.oneTouchMinQtyEnabled = true;
-      this.oneTouchLowStockMode = false;
-      this.oneTouchStarted = false;
-      this.oneTouchElapsedTime = 0;
-      if (this.oneTouchTimerInterval) {
-        clearInterval(this.oneTouchTimerInterval);
-        this.oneTouchTimerInterval = null;
-      }
-      this.showOneTouchModal = true;
-    },
-
-    closeOneTouchModal() {
-      this.showOneTouchModal = false;
-      this.oneTouchStarted = false;
-      this.isGenerating = false;
-      if (this.oneTouchTimerInterval) {
-        clearInterval(this.oneTouchTimerInterval);
-        this.oneTouchTimerInterval = null;
-      }
-    },
-
-    toggleSubBrand(groupIdx, brand) {
-      const group = this.oneTouchGroups[groupIdx];
-      const idx = group.activeBrands.indexOf(brand);
-      if (idx >= 0) {
-        if (group.activeBrands.length > 1) {
-          group.activeBrands.splice(idx, 1);
-        }
-      } else {
-        group.activeBrands.push(brand);
-      }
-    },
-
-    // UI helper methods for template classes
-    oneTouchGroupClass(group) {
-      if (group.status === 'generating') return 'bg-violet-50/60 border-violet-300 shadow-md';
-      if (group.status === 'ready') return 'bg-green-50/40 border-green-300';
-      if (group.status === 'done') return 'bg-slate-50 border-green-200 opacity-80';
-      if (group.status === 'skipped') return 'bg-slate-50 border-slate-200 opacity-60';
-      if (!this.oneTouchStarted && group.enabled) return 'bg-violet-50/30 border-violet-200';
-      return 'bg-slate-50 border-slate-100 opacity-60';
-    },
-
-    oneTouchIconBgClass(group) {
-      if (group.status === 'generating') return 'bg-violet-100';
-      if (group.status === 'ready') return 'bg-green-100';
-      if (group.status === 'done') return 'bg-green-50';
-      return 'bg-slate-100';
-    },
-
-    oneTouchBatchBtnClass(status) {
-      if (status === 'sharing')
-        return 'bg-blue-100 border-blue-200 text-blue-700 cursor-not-allowed';
-      if (status === 'shared') return 'bg-emerald-100 border-emerald-200 text-emerald-800';
-      return 'bg-slate-100 border-slate-200 text-slate-500';
-    },
-
-    formatElapsedTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    },
-
-    parseMaxQty(val) {
-      if (val === '' || val === null || val === undefined) return Infinity;
-      const s = String(val).trim().toLowerCase();
-      if (s === '' || s === 'x' || s === '∞') return Infinity;
-      const n = parseInt(s, 10);
-      return isNaN(n) || n <= 0 ? Infinity : n;
-    },
-
-    async saveSeparatorImage(prefix) {
-      try {
-        const imgData = await this.fetchImageAsBase64(OLD_STOCK_SEPARATOR_URL);
-        // Draw on canvas to convert to JPEG
-        const dims = await this.getImageDimensions(imgData);
         const canvas = document.createElement('canvas');
-        canvas.width = dims.width;
-        canvas.height = dims.height;
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-          img.src = imgData;
-        });
-        ctx.drawImage(img, 0, 0);
-        const b64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
-        const fileName = `${prefix}_old_stock_separator.jpg`;
-        const saved = await Filesystem.writeFile({
-          path: fileName,
-          data: b64,
-          directory: Directory.Cache,
-        });
-        // Cleanup
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const context = canvas.getContext('2d');
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        // Lower quality to 0.75
+        const imgBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.75));
+
+        // Memory Cleanup - CRITICAL for WebView/Browser stability!
+        context.clearRect(0, 0, canvas.width, canvas.height);
         canvas.width = 0;
         canvas.height = 0;
-        canvas.remove();
-        return saved.uri;
-      } catch (e) {
-        console.error('Failed to save separator image:', e);
-        return null;
-      }
-    },
+        page.cleanup();
 
-    async generatePdfBlobForOneTouch(targetBrands, onlyWithPhotos, minQty, maxQty) {
-      const data = this.stockData;
-      const normalize = (s) => (s ? s.toLowerCase().trim() : '');
-      const filteredGroups = data.filter((g) =>
-        targetBrands.some((b) => normalize(b) === normalize(g.groupName))
-      );
-
-      if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
-
-      const { jsPDF } = await import('jspdf');
-      const { clashDisplayBoldBase64 } = await import('../../utils/fonts.js');
-
-      const PAGE_W = 1080;
-      const PAGE_H = 2400;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PAGE_W, PAGE_H] });
-
-      doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
-      doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
-
-      let hasAddedPage = false;
-      let pageCount = 0;
-      const dateStr = new Date().toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      });
-
-      for (const group of filteredGroups) {
-        for (const product of group.products) {
-          if (onlyWithPhotos && !product.imageUrl) continue;
-          if (minQty > 0 && product.quantity < minQty) continue;
-          if (maxQty > 0 && product.quantity > maxQty) continue;
-
-          if (hasAddedPage) {
-            doc.addPage([PAGE_W, PAGE_H]);
-          }
-          hasAddedPage = true;
-          pageCount++;
-
-          doc.setFillColor('#000000');
-          doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
-
-          if (product.imageUrl) {
-            try {
-              const imgData = await this.fetchImageAsBase64(product.imageUrl);
-              const dims = await this.getImageDimensions(imgData);
-
-              const finalWidth = PAGE_W;
-              const finalHeight = dims.height * (PAGE_W / dims.width);
-              const x = 0;
-              const y = (PAGE_H - finalHeight) / 2;
-
-              doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
-            } catch (imgErr) {
-              doc.setTextColor(255);
-              doc.setFont('Clash Display', 'bold');
-              doc.setFontSize(24);
-              doc.text('Image Load Failed', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
-            }
+        if (isCombined) {
+          globalPageCounter++;
+          if (zipBatchMode.value) {
+            const batchNum = Math.ceil(globalPageCounter / 99);
+            const batchFolder = zip.folder(`Batch ${batchNum}`);
+            batchFolder.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
           } else {
-            doc.setTextColor(255);
-            doc.setFont('Clash Display', 'bold');
-            doc.setFontSize(36);
-            doc.text('No Photo Available', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
+            target.file(`${brand}_${String(globalPageCounter).padStart(4, '0')}.jpg`, imgBlob);
+          }
+        } else {
+          target.file(`${brand}_Page_${pageNum}.jpg`, imgBlob);
+        }
+        totalPages++;
+      }
+      URL.revokeObjectURL(pdfUrl);
+    } catch (e) {
+      console.error(`Failed to zip ${brand}`, e);
+      failedBrands++;
+      showToast.value = true;
+      toastMessage.value = `Failed to process ${brand}`;
+      setTimeout(() => (showToast.value = false), 2000);
+    }
+    completedCount.value++;
+  }
+
+  currentBrand.value = 'Finalizing ZIP file...';
+  const content = await zip.generateAsync({ type: 'blob' });
+  saveAs(content, `Catalog_Images_${new Date().toISOString().split('T')[0]}.zip`);
+
+  isGenerating.value = false;
+  isZipGenerating.value = false;
+  currentBrand.value = '';
+  showToast.value = true;
+  toastMessage.value = `ZIP Ready! ${totalPages} images included.`;
+  setTimeout(() => (showToast.value = false), 4000);
+};
+
+const shareViaNativeApp = async () => {
+  if (!selectedBrands.value.length) return;
+
+  isGenerating.value = true;
+  isSharing.value = true;
+  completedCount.value = 0;
+
+  try {
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+    const fileUris = [];
+
+    // 1. Generate All Images & Save to Temp
+    for (const brand of selectedBrands.value) {
+      currentBrand.value = `Preparing: ${brand}`;
+      try {
+        const blob = await generatePdfBlob([brand]);
+        const pdfUrl = URL.createObjectURL(blob);
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          // Yield to main thread every 10 pages to allow GC
+          if (pageNum % 10 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 20));
           }
 
-          // HEADER
-          doc.setTextColor(180, 180, 180);
+          const page = await pdf.getPage(pageNum);
+          // Scale 1.0 is sufficient for 1080x2400 and prevents OOM crashes
+          const viewport = page.getViewport({ scale: 1.0 });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const context = canvas.getContext('2d');
+          await page.render({ canvasContext: context, viewport }).promise;
+
+          // Convert to Base64 (lower quality to 0.75 for smaller bridge payload)
+          const base64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+          const fileName = `${brand.replace(/[^a-zA-Z0-9]/g, '')}_${pageNum}.jpg`;
+
+          // Memory Cleanup - CRITICAL for WebView stability!
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.width = 0;
+          canvas.height = 0;
+          page.cleanup();
+
+          // Save to Cache Directory
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64,
+            directory: Directory.Cache,
+          });
+
+          fileUris.push(savedFile.uri);
+        }
+        URL.revokeObjectURL(pdfUrl);
+      } catch (e) {
+        console.error('Native Gen Error', e);
+      }
+      completedCount.value++;
+    }
+
+    // Prepend 'Old stock ends here' separator as first image
+    try {
+      const sepBlob = await fetchSeparatorBlob();
+      if (sepBlob) {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(sepBlob);
+        });
+        const saved = await Filesystem.writeFile({
+          path: 'share_separator.jpg',
+          data: base64,
+          directory: Directory.Cache,
+        });
+        fileUris.unshift(saved.uri);
+      }
+    } catch (e) {
+      console.error('Failed to prepend separator:', e);
+    }
+
+    // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
+    const chunkSize = 99;
+    const batches = [];
+    for (let i = 0; i < fileUris.length; i += chunkSize) {
+      batches.push(fileUris.slice(i, i + chunkSize));
+    }
+
+    if (batches.length === 0) {
+      showToast.value = true;
+      toastMessage.value = 'No images generated';
+      setTimeout(() => (showToast.value = false), 3000);
+      isSharing.value = false;
+      isGenerating.value = false;
+      return;
+    }
+
+    // 3. Decide: Direct Share or Batch Mode
+    if (batches.length === 1) {
+      await Share.share({ files: batches[0] });
+      isSharing.value = false;
+      isGenerating.value = false;
+    } else {
+      batchList.value = batches;
+      currentBatchIndex.value = 0;
+      showBatchModal.value = true;
+      // Don't turn off isGenerating yet, modal handles it
+    }
+  } catch (err) {
+    console.error('Native Share Failed', err);
+    showToast.value = true;
+    toastMessage.value = 'Sharing cancelled or failed.';
+    setTimeout(() => (showToast.value = false), 3000);
+    isGenerating.value = false;
+    isSharing.value = false;
+  } finally {
+    currentBrand.value = '';
+  }
+};
+
+const executeBatchShare = async () => {
+  try {
+    const currentFiles = batchList.value[currentBatchIndex.value];
+    await Share.share({ files: currentFiles });
+
+    // Move to next batch
+    currentBatchIndex.value++;
+
+    // Check if done
+    if (currentBatchIndex.value >= batchList.value.length) {
+      showBatchModal.value = false;
+      isGenerating.value = false;
+      isSharing.value = false;
+      showToast.value = true;
+      toastMessage.value = 'All batches shared successfully!';
+      setTimeout(() => (showToast.value = false), 4000);
+    }
+  } catch (e) {
+    console.error(e);
+    // Don't advance index if failed, let them retry
+  }
+};
+
+// Add missing ref for template
+const generateSection = ref(null);
+
+const openOneTouchModal = () => {
+  showOneTouchModal.value = true;
+};
+
+const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue) => {
+  const data = stockData.value;
+  const filteredGroups = data.filter((group) => {
+    return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
+  });
+
+  if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+
+  const { jsPDF } = await import('jspdf');
+  const { clashDisplayBoldBase64 } = await import('@/utils/fonts.js');
+
+  const PAGE_W = 1080;
+  const PAGE_H = 2400;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PAGE_W, PAGE_H] });
+
+  doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
+  doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
+
+  let hasAddedPage = false;
+  let pageCount = 0;
+  const dateStr = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  for (const group of filteredGroups) {
+    for (const product of group.products) {
+      if (onlyWithPhotosFlag && !product.imageUrl) continue;
+      if (product.quantity < minQtyValue) continue;
+      if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
+
+      if (hasAddedPage) {
+        doc.addPage([PAGE_W, PAGE_H]);
+      }
+      hasAddedPage = true;
+      pageCount++;
+
+      doc.setFillColor('#000000');
+      doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+
+      if (product.imageUrl) {
+        try {
+          const imgData = await fetchImageAsBase64(product.imageUrl, product.productName);
+          const dims = await getImageDimensions(imgData);
+
+          const finalWidth = PAGE_W;
+          const finalHeight = dims.height * (PAGE_W / dims.width);
+          const x = 0;
+          const y = (PAGE_H - finalHeight) / 2;
+
+          doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+        } catch (imgErr) {
+          doc.setTextColor(255);
           doc.setFont('Clash Display', 'bold');
-          doc.setFontSize(38);
-          doc.text(dateStr, 50, 80, { align: 'left' });
-          doc.text(group.groupName, PAGE_W - 50, 80, { align: 'right' });
+          doc.setFontSize(24);
+          doc.text('Image Load Failed', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
+        }
+      } else {
+        doc.setTextColor(255);
+        doc.setFont('Clash Display', 'bold');
+        doc.setFontSize(36);
+        doc.text('No Photo Available', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
+      }
 
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(90);
-          doc.text('SBE Rayagada', PAGE_W / 2, 200, { align: 'center' });
+      // HEADER
+      doc.setTextColor(180, 180, 180);
+      doc.setFont('Clash Display', 'bold');
+      doc.setFontSize(38);
+      doc.text(dateStr, 50, 80, { align: 'left' });
+      doc.text(group.groupName, PAGE_W - 50, 80, { align: 'right' });
 
-          // FOOTER
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(40);
-          doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center' });
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(60);
+      doc.text('Sri Brundabana Enterprises', PAGE_W / 2, 160, { align: 'center' });
 
-          doc.setTextColor(255, 215, 0); // Muted gold
-          doc.setFontSize(54);
-          doc.text(`Qty: ${product.quantity}`, PAGE_W / 2, PAGE_H - 80, { align: 'center' });
+      doc.setFontSize(50);
+      doc.text('Rayagada', PAGE_W / 2, 230, { align: 'center' });
+
+      // FOOTER
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(64);
+      doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center' });
+
+      doc.setTextColor(255, 215, 0); // Muted gold
+      doc.setFontSize(54);
+      doc.text(`Qty: ${product.quantity}`, PAGE_W / 2, PAGE_H - 80, { align: 'center' });
+    }
+  }
+  return { blob: hasAddedPage ? doc.output('blob') : null, pageCount };
+};
+
+const prepareOneTouch = async () => {
+  const checkedGroups = oneTouchGroups.value.filter((g) => g.enabled);
+  if (checkedGroups.length === 0) {
+    showToast.value = true;
+    toastMessage.value = 'Select at least one group';
+    setTimeout(() => (showToast.value = false), 3000);
+    return;
+  }
+
+  isOneTouchPreparing.value = true;
+  isGenerating.value = true;
+  cancelOneTouch.value = false;
+
+  oneTouchElapsedTime.value = 0;
+  if (oneTouchTimerInterval) clearInterval(oneTouchTimerInterval);
+  oneTouchTimerInterval = setInterval(() => {
+    oneTouchElapsedTime.value++;
+  }, 1000);
+
+  // Reset all groups status
+  oneTouchGroups.value.forEach((g) => {
+    g.status = 'idle';
+    g.batches = [];
+  });
+
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+  for (const group of checkedGroups) {
+    if (cancelOneTouch.value) break;
+    group.status = 'preparing';
+    group.isExpanded = true;
+
+    try {
+      const effectiveMinQty = oneTouchMinQtyEnabled.value ? group.minQty : 0;
+      const effectiveMaxQty = oneTouchMinQtyEnabled.value ? parseMaxQty(group.maxQty) : Infinity;
+
+      // Pre-calculate batches
+      let productCount = 0;
+      const data = stockData.value;
+      const filteredGroups = data.filter((g) => {
+        return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
+      });
+      for (const fg of filteredGroups) {
+        for (const product of fg.products) {
+          if (oneTouchOnlyWithPhotos.value && !product.imageUrl) continue;
+          if (product.quantity < effectiveMinQty) continue;
+          if (product.quantity > effectiveMaxQty) continue;
+          productCount++;
         }
       }
-      return { blob: pageCount > 0 ? doc.output('blob') : null, pageCount };
-    },
 
-    async startOneTouchShare() {
-      const checkedGroups = this.oneTouchGroups.filter((g) => g.enabled);
-      if (checkedGroups.length === 0) {
-        this.showToast = true;
-        this.toastMessage = 'Select at least one group';
-        setTimeout(() => (this.showToast = false), 3000);
-        return;
+      if (productCount === 0) {
+        group.status = 'ready';
+        continue;
       }
 
-      if (this.oneTouchTimerInterval) {
-        clearInterval(this.oneTouchTimerInterval);
-        this.oneTouchTimerInterval = null;
+      const totalBatches = Math.ceil(productCount / 99);
+      for (let i = 0; i < totalBatches; i++) {
+        group.batches.push({ id: i, status: 'pending', fileUris: [] });
       }
-      this.oneTouchElapsedTime = 0;
-      this.oneTouchTimerInterval = setInterval(() => {
-        this.oneTouchElapsedTime += 1;
-      }, 1000);
 
-      // Switch modal to live dashboard mode
-      this.oneTouchStarted = true;
-      this.isGenerating = true;
+      const cacheKey = `${group.label}_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}_${effectiveMaxQty}_${group.activeBrands.sort().join(',')}`;
+      let fileUris = [];
 
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+      if (oneTouchCache.value[cacheKey]) {
+        fileUris = oneTouchCache.value[cacheKey];
+        await new Promise((r) => setTimeout(r, 300));
 
-      // Process all groups — generation runs continuously, sharing is decoupled
-      for (const group of checkedGroups) {
-        // Check if modal was closed (cancelled)
-        if (!this.showOneTouchModal) break;
+        // Distribute to batches
+        const chunkSize = 99;
+        let bIdx = 0;
+        for (let i = 0; i < fileUris.length; i += chunkSize) {
+          if (group.batches[bIdx]) {
+            group.batches[bIdx].fileUris = fileUris.slice(i, i + chunkSize);
+            group.batches[bIdx].status = 'ready';
+          }
+          bIdx++;
+        }
+        group.status = 'ready';
+      } else {
+        if (group.batches.length > 0) {
+          group.batches[0].status = 'preparing';
+        }
 
-        group.status = 'generating';
-        group.expanded = false;
+        const { blob, pageCount } = await generatePdfBlobForOneTouch(
+          group.activeBrands,
+          oneTouchOnlyWithPhotos.value,
+          effectiveMinQty,
+          effectiveMaxQty
+        );
 
-        try {
-          const effectiveMinQty = this.oneTouchMinQtyEnabled ? group.minQty : 0;
-          const effectiveMaxQty = this.oneTouchMinQtyEnabled ? this.parseMaxQty(group.maxQty) : Infinity;
-          const { blob, pageCount } = await this.generatePdfBlobForOneTouch(
-            group.activeBrands,
-            this.oneTouchOnlyWithPhotos,
-            effectiveMinQty,
-            effectiveMaxQty
-          );
+        if (!blob || pageCount === 0) {
+          group.status = 'ready';
+          continue;
+        }
 
-          if (!blob || pageCount === 0) {
-            group.status = 'skipped';
-            continue;
+        const pdfUrl = URL.createObjectURL(blob);
+        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+
+        let currentBatchIndex = 0;
+        let currentBatchUris = [];
+
+        for (let p = 1; p <= pdf.numPages; p++) {
+          if (cancelOneTouch.value) break;
+
+          // Yield to main thread every 10 pages to allow UI updates and Garbage Collection
+          if (p % 10 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 20));
           }
 
-          // Render PDF to images
-          group.totalImages = pageCount;
-          const pdfUrl = URL.createObjectURL(blob);
-          const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-          const fileUris = [];
+          const page = await pdf.getPage(p);
+          const viewport = page.getViewport({ scale: 1.0 }); // Changed from 1.5 to 1.0 to save memory
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
 
-          for (let p = 1; p <= pdf.numPages; p++) {
-            if (!this.showOneTouchModal) break; // cancelled
-            const page = await pdf.getPage(p);
-            const viewport = page.getViewport({ scale: 1.0 });
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const ctx = canvas.getContext('2d');
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            const b64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-            const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_${p}.jpg`;
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          // Extract Base64 (lower quality to 0.75 for smaller payload over Capacitor bridge)
+          const b64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+          const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_${p}.jpg`;
+
+          // Memory Cleanup - CRITICAL to prevent Webview crash!
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.width = 0;
+          canvas.height = 0;
+          page.cleanup(); // Free pdf.js internal memory for this page
+
+          if (isNativeApp.value) {
             const saved = await Filesystem.writeFile({
               path: fileName,
               data: b64,
               directory: Directory.Cache,
             });
+            currentBatchUris.push(saved.uri);
             fileUris.push(saved.uri);
-            group.imageCount = p;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.width = 0;
-            canvas.height = 0;
-            canvas.remove();
-            page.cleanup();
-            if (p % 5 === 0) {
-              await new Promise((resolve) => setTimeout(resolve, 0));
+          } else {
+            const a = document.createElement('a');
+            a.href = `data:image/jpeg;base64,${b64}`;
+            a.download = fileName;
+            a.click();
+            await new Promise((r) => setTimeout(r, 100)); // Rate limit downloads on Web
+            currentBatchUris.push(fileName);
+            fileUris.push(fileName);
+          }
+
+          // If we hit 99 in current batch or it's the very last page
+          if (currentBatchUris.length === 99 || p === pdf.numPages) {
+            if (group.batches[currentBatchIndex]) {
+              group.batches[currentBatchIndex].fileUris = [...currentBatchUris];
+              group.batches[currentBatchIndex].status = 'ready';
+            }
+            currentBatchUris = [];
+            currentBatchIndex++;
+            if (currentBatchIndex < group.batches.length) {
+              group.batches[currentBatchIndex].status = 'preparing';
             }
           }
-          URL.revokeObjectURL(pdfUrl);
-          pdf.destroy();
-
-          // Prepend 'Old stock ends here' separator as first image
-          const separatorUri = await this.saveSeparatorImage(`ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}`);
-          if (separatorUri) {
-            fileUris.unshift(separatorUri);
-          }
-
-          // Chunk into batches of 99
-          const batches = [];
-          for (let i = 0; i < fileUris.length; i += 99) {
-            batches.push(fileUris.slice(i, i + 99));
-          }
-
-          // Populate group's batch data — UI will reactively show batch buttons
-          group.batches = batches;
-          group.batchStatuses = batches.map(() => 'idle');
-          group.status = 'ready';
-          group.expanded = true;
-
-          // Yield to event loop between group processing to prevent memory buildup
-          await new Promise((resolve) => setTimeout(resolve, 100));
-
-          // DON'T wait for user to share — immediately continue to next group
-        } catch (err) {
-          console.error(`One Touch failed for ${group.label}:`, err);
-          group.status = 'skipped';
         }
-      }
+        URL.revokeObjectURL(pdfUrl);
+        pdf.destroy();
 
-      if (this.oneTouchTimerInterval) {
-        clearInterval(this.oneTouchTimerInterval);
-        this.oneTouchTimerInterval = null;
-      }
-      this.isGenerating = false;
-      this.showToast = true;
-      this.toastMessage = `All groups processed! Share at your pace.`;
-      setTimeout(() => (this.showToast = false), 4000);
-    },
-
-    async shareOneTouchBatch(groupIdx, batchIdx) {
-      const group = this.oneTouchGroups[groupIdx];
-      if (!group || !group.batches[batchIdx]) return;
-      if (group.batchStatuses[batchIdx] === 'sharing') return;
-
-      // Use Vue.set-style for array reactivity (Vue 3 handles this natively)
-      group.batchStatuses[batchIdx] = 'sharing';
-      // Force reactivity update
-      group.batchStatuses = [...group.batchStatuses];
-
-      try {
-        await Share.share({ files: group.batches[batchIdx] });
-        group.batchStatuses[batchIdx] = 'shared';
-      } catch (e) {
-        console.error('One touch batch share error:', e);
-        // Reset to idle if not already marked shared (user might have cancelled)
-        if (group.batchStatuses[batchIdx] !== 'shared') {
-          group.batchStatuses[batchIdx] = 'idle';
+        if (!cancelOneTouch.value && isNativeApp.value && fileUris.length > 0) {
+          oneTouchCache.value[cacheKey] = fileUris;
         }
+        group.status = cancelOneTouch.value ? 'idle' : 'ready';
+
+        // Yield to event loop between group processing
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
+    } catch (err) {
+      console.error(`One Touch failed for ${group.label}:`, err);
+      group.status = 'idle';
+    }
+  }
 
-      // Force reactivity update
-      group.batchStatuses = [...group.batchStatuses];
+  if (oneTouchTimerInterval) clearInterval(oneTouchTimerInterval);
 
-      // Check if all batches are shared
-      if (group.batchStatuses.every((s) => s === 'shared')) {
-        group.status = 'done';
-        group.expanded = false;
-      }
-    },
+  isOneTouchPreparing.value = false;
+  isGenerating.value = false;
+  showToast.value = true;
+  toastMessage.value = cancelOneTouch.value
+    ? 'One Touch Preparation Cancelled'
+    : 'One Touch Preparation complete!';
+  setTimeout(() => (showToast.value = false), 4000);
+};
 
-    async executeBatchShare() {
-      try {
-        const currentFiles = this.batchList[this.currentBatchIndex];
-        await Share.share({ files: currentFiles });
-
-        // Move to next batch
-        this.currentBatchIndex++;
-
-        // Check if done
-        if (this.currentBatchIndex >= this.batchList.length) {
-          this.showBatchModal = false;
-          this.isGenerating = false;
-          this.isSharing = false;
-          this.showToast = true;
-          this.toastMessage = 'All batches shared successfully!';
-          setTimeout(() => (this.showToast = false), 4000);
-        }
-      } catch (e) {
-        console.error(e);
-        // Don't advance index if failed, let them retry
-      }
-    },
-  },
+const shareBatchDirectly = async (batch) => {
+  if (batch.status !== 'ready') return;
+  try {
+    await Share.share({ files: batch.fileUris });
+  } catch (e) {
+    console.error('Share failed or cancelled', e);
+  }
 };
 </script>
 
@@ -2494,22 +2454,6 @@ export default {
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: #94a3b8;
-}
-
-/* Horizontal scroll for batch buttons */
-.ot-scroll-x::-webkit-scrollbar {
-  height: 4px;
-}
-.ot-scroll-x::-webkit-scrollbar-track {
-  background: transparent;
-}
-.ot-scroll-x::-webkit-scrollbar-thumb {
-  background-color: #c4b5fd;
-  border-radius: 20px;
-}
-.ot-scroll-x {
-  scrollbar-width: thin;
-  scrollbar-color: #c4b5fd transparent;
 }
 
 @keyframes bounceIn {

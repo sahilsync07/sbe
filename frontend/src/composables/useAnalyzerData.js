@@ -1,29 +1,31 @@
 import { ref, computed } from 'vue';
-import { useLedgerData } from './useLedgerData';
+import { useLedgerData } from '@/composables/useLedgerData';
 
 /**
- * Composable for the Analyzer page.
- * Processes ledger data to produce monthly summaries for Debtors & Creditors,
- * with percentage change indicators and 6-month history.
+ * Composable for the Debtors & Creditors Aging & Payment Recovery Analyzer.
+ * Computes 0-30, 31-60, 61-90, and 90+ days aging buckets per party and per group.
  */
 export function useAnalyzerData() {
   const { ledgerData, loading, error, loadLedgerData } = useLedgerData();
 
-  // ─── Helpers ──────────────────────────────────────────────
+  const activeTab = ref('Debtors'); // 'Debtors' | 'Creditors'
+  const viewMode = ref('Party View'); // 'Party View' | 'Group View'
+  const searchQuery = ref('');
+  const selectedGroups = ref([]);
+  const activeAgingFilter = ref('all'); // 'all' | '90plus' | '60plus' | '30plus' | 'current'
+  const sortBy = ref('overdue_desc'); // 'overdue_desc' | 'balance_desc' | 'balance_asc' | 'name_asc' | 'name_desc'
 
-  /**
-   * Parse a Tally date string like "25-Apr-26" into a JS Date.
-   * Two-digit years: 00-49 → 2000s, 50-99 → 1900s.
-   */
+  // ─── Date Parsing Helpers ──────────────────────────────────────────────
+  const monthMap = {
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+  };
+
   const parseDate = (dateStr) => {
     if (!dateStr) return null;
     const parts = dateStr.split('-');
     if (parts.length !== 3) return null;
     const [day, monthStr, yearShort] = parts;
-    const monthMap = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-    };
     const month = monthMap[monthStr];
     if (month === undefined) return null;
     let year = parseInt(yearShort, 10);
@@ -31,263 +33,348 @@ export function useAnalyzerData() {
     return new Date(year, month, parseInt(day, 10));
   };
 
-  /**
-   * Get a month key like "2026-07" from a Date object.
-   */
-  const getMonthKey = (date) => {
-    if (!date) return null;
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    return `${y}-${m}`;
-  };
-
-  /**
-   * Get display label for a month key, e.g. "Jul 2026".
-   */
-  const getMonthLabel = (key) => {
-    const [y, m] = key.split('-');
-    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${labels[parseInt(m, 10) - 1]} ${y}`;
-  };
-
-  /**
-   * Generate sorted array of last N month keys ending at the current month.
-   */
-  const getLastNMonths = (n) => {
-    const now = new Date();
-    const months = [];
-    for (let i = n - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push(getMonthKey(d));
+  // Compute reference date (latest transaction date across all ledgers or today)
+  const referenceDate = computed(() => {
+    let latest = new Date();
+    if (ledgerData.value && Array.isArray(ledgerData.value)) {
+      for (const group of ledgerData.value) {
+        if (!group.ledgers) continue;
+        for (const ledger of group.ledgers) {
+          if (!ledger.entries) continue;
+          for (const e of ledger.entries) {
+            const d = parseDate(e.date);
+            if (d && d > latest) {
+              latest = d;
+            }
+          }
+        }
+      }
     }
-    return months;
-  };
-
-  // The 6 months we care about (including current month)
-  const months = computed(() => getLastNMonths(6));
-  const currentMonth = computed(() => months.value[months.value.length - 1]);
-  // Previous 5 months (excluding current), newest first for display
-  const previousMonths = computed(() => {
-    const ms = months.value.slice(0, -1); // remove current month
-    return [...ms].reverse(); // newest first: Jun, May, Apr, Mar, Feb
+    return latest;
   });
 
-  // ─── Classification ───────────────────────────────────────
-
-  /**
-   * Classify a group as 'debtor' or 'creditor' based on entry types.
-   * - Groups with predominantly Receipt entries → Debtors (Sundry Debtors)
-   * - Groups with predominantly Payment entries → Creditors (Sundry Creditors)
-   * - Fallback: negative closing balance (Dr) → Debtor, positive (Cr) → Creditor
-   */
-  const classifyGroup = (group) => {
-    if (!group.ledgers || group.ledgers.length === 0) return 'debtor';
-
-    let receiptCount = 0;
-    let paymentCount = 0;
-    let totalClosing = 0;
-
-    group.ledgers.forEach(ledger => {
-      totalClosing += (ledger.closingBalance || 0);
-      if (ledger.entries) {
-        ledger.entries.forEach(e => {
-          if (e.type === 'Receipt') receiptCount++;
-          if (e.type === 'Payment') paymentCount++;
-        });
-      }
-    });
-
-    if (receiptCount > 0 || paymentCount > 0) {
-      return receiptCount >= paymentCount ? 'debtor' : 'creditor';
-    }
-    // Fallback: negative total = Dr outstanding = debtor
-    return totalClosing <= 0 ? 'debtor' : 'creditor';
-  };
-
-  // ─── Per-Ledger Monthly Processing ─────────────────────────
-
-  /**
-   * For a single ledger, compute monthly totals for payment and goods.
-   * Returns { monthKey: { payment: number, goods: number } }
-   */
-  const computeLedgerMonthly = (ledger, type) => {
-    const monthlyData = {};
-    months.value.forEach(m => {
-      monthlyData[m] = { payment: 0, goods: 0 };
-    });
-
-    if (!ledger.entries) return monthlyData;
-
-    ledger.entries.forEach(entry => {
-      const date = parseDate(entry.date);
-      if (!date) return;
-      const mk = getMonthKey(date);
-      if (!monthlyData[mk]) return; // outside our 6-month window
-
-      if (type === 'debtor') {
-        // Debtor: Receipts → payment received, Tax Invoices → goods sold
-        if (entry.type === 'Receipt') {
-          monthlyData[mk].payment += entry.amount || 0;
-        } else if (entry.type === 'Tax Invoice') {
-          monthlyData[mk].goods += entry.amount || 0;
-        }
-      } else {
-        // Creditor: Payments → payment made, Tax Invoices → goods purchased
-        if (entry.type === 'Payment') {
-          monthlyData[mk].payment += entry.amount || 0;
-        } else if (entry.type === 'Tax Invoice') {
-          monthlyData[mk].goods += entry.amount || 0;
-        }
-      }
-    });
-
-    return monthlyData;
-  };
-
-  /**
-   * Compute percentage change between two values.
-   * Returns null if previous is 0 (no basis for comparison).
-   */
-  const pctChange = (current, previous) => {
-    if (previous === 0) {
-      if (current === 0) return null;
-      return null; // Can't calculate % from zero base — show "New" instead
-    }
-    return ((current - previous) / previous) * 100;
-  };
-
-  /**
-   * For monthly data, compute the % change for each month compared to the previous month.
-   * Returns { monthKey: { payment, goods, paymentPct, goodsPct } }
-   */
-  const enrichWithPctChange = (monthlyData) => {
-    const ms = months.value;
-    const result = {};
-
-    ms.forEach((mk, idx) => {
-      const data = monthlyData[mk] || { payment: 0, goods: 0 };
-      const prevMk = idx > 0 ? ms[idx - 1] : null;
-      const prev = prevMk ? (monthlyData[prevMk] || { payment: 0, goods: 0 }) : null;
-
-      result[mk] = {
-        payment: data.payment,
-        goods: data.goods,
-        paymentPct: prev ? pctChange(data.payment, prev.payment) : null,
-        goodsPct: prev ? pctChange(data.goods, prev.goods) : null,
-      };
-    });
-
-    return result;
-  };
-
-  // ─── Main Computed Data ────────────────────────────────────
-
-  /**
-   * Process all groups and return classified, enriched data.
-   */
+  // ─── Classification & Aging Computation ────────────────────────────────
   const processedData = computed(() => {
     if (!ledgerData.value || !Array.isArray(ledgerData.value)) {
       return { debtors: [], creditors: [] };
     }
 
-    const debtorGroups = [];
-    const creditorGroups = [];
+    const refDate = referenceDate.value;
+    const debtors = [];
+    const creditors = [];
 
-    ledgerData.value
-      .filter(g => g.groupName !== '_META_DATA_' && g.groupName && !g.groupName.startsWith('&#4;'))
-      .forEach(group => {
-        const type = classifyGroup(group);
-        const parties = [];
+    for (const group of ledgerData.value) {
+      if (group.groupName === '_META_DATA_' || !group.ledgers) continue;
 
-        // Aggregate group-level monthly data
-        const groupMonthly = {};
-        months.value.forEach(m => { groupMonthly[m] = { payment: 0, goods: 0 }; });
+      for (const ledger of group.ledgers) {
+        const closing = ledger.closingBalance || 0;
+        if (Math.abs(closing) < 0.01) continue; // Skip zero balance accounts
 
-        (group.ledgers || []).forEach(ledger => {
-          const ledgerMonthly = computeLedgerMonthly(ledger, type);
+        // Accounting classification:
+        // closing < 0 (Dr) -> Debtor (Customer owes SBE)
+        // closing > 0 (Cr) -> Creditor (SBE owes Supplier)
+        const isDebtor = closing < 0;
+        const totalOutstanding = Math.abs(closing);
 
-          // Accumulate into group totals
-          months.value.forEach(m => {
-            groupMonthly[m].payment += ledgerMonthly[m].payment;
-            groupMonthly[m].goods += ledgerMonthly[m].goods;
-          });
+        // Calculate Aging Buckets using FIFO / Invoices
+        // Collect invoices (Dr entries for Debtors, Cr entries for Creditors)
+        const entries = (ledger.entries || []).map(e => ({
+          ...e,
+          parsedDate: parseDate(e.date)
+        })).filter(e => e.parsedDate !== null);
 
-          const enriched = enrichWithPctChange(ledgerMonthly);
-          const cm = currentMonth.value;
+        // Sort entries newest first
+        entries.sort((a, b) => b.parsedDate - a.parsedDate);
 
-          parties.push({
-            name: ledger.ledgerName,
-            groupName: group.groupName,
-            openingBalance: ledger.openingBalance || 0,
-            closingBalance: ledger.closingBalance || 0,
-            currentPayment: enriched[cm]?.payment || 0,
-            currentGoods: enriched[cm]?.goods || 0,
-            currentPaymentPct: enriched[cm]?.paymentPct,
-            currentGoodsPct: enriched[cm]?.goodsPct,
-            monthlyData: enriched,
-          });
+        let unallocatedBalance = totalOutstanding;
+        let b0_30 = 0;
+        let b31_60 = 0;
+        let b61_90 = 0;
+        let b90_plus = 0;
+
+        // Relevant invoice entry type for aging
+        const invoiceEntries = entries.filter(e => {
+          if (isDebtor) {
+            return e.drCr === 'Dr' || e.type === 'Tax Invoice' || e.type === 'Sales';
+          } else {
+            return e.drCr === 'Cr' || e.type === 'Tax Invoice' || e.type === 'Purchase';
+          }
         });
 
-        // Sort parties alphabetically
-        parties.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        for (const inv of invoiceEntries) {
+          if (unallocatedBalance <= 0) break;
 
-        const enrichedGroup = enrichWithPctChange(groupMonthly);
-        const cm = currentMonth.value;
+          const daysOld = Math.max(0, Math.floor((refDate - inv.parsedDate) / (1000 * 60 * 60 * 24)));
+          const amountToAllocate = Math.min(unallocatedBalance, inv.amount || 0);
 
-        const groupObj = {
-          groupName: group.groupName,
-          partyCount: parties.length,
-          currentPayment: enrichedGroup[cm]?.payment || 0,
-          currentGoods: enrichedGroup[cm]?.goods || 0,
-          currentPaymentPct: enrichedGroup[cm]?.paymentPct,
-          currentGoodsPct: enrichedGroup[cm]?.goodsPct,
-          monthlyData: enrichedGroup,
-          parties,
+          if (daysOld <= 30) {
+            b0_30 += amountToAllocate;
+          } else if (daysOld <= 60) {
+            b31_60 += amountToAllocate;
+          } else if (daysOld <= 90) {
+            b61_90 += amountToAllocate;
+          } else {
+            b90_plus += amountToAllocate;
+          }
+
+          unallocatedBalance -= amountToAllocate;
+        }
+
+        // Any remaining balance not covered by recent invoices is older than 90 days
+        if (unallocatedBalance > 0) {
+          b90_plus += unallocatedBalance;
+        }
+
+        // Percentage breakdown for visual progress bar
+        const pct0_30 = totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0;
+        const pct31_60 = totalOutstanding > 0 ? (b31_60 / totalOutstanding) * 100 : 0;
+        const pct61_90 = totalOutstanding > 0 ? (b61_90 / totalOutstanding) * 100 : 0;
+        const pct90_plus = totalOutstanding > 0 ? (b90_plus / totalOutstanding) * 100 : 0;
+
+        const partyRecord = {
+          ledgerName: ledger.ledgerName || 'Unknown Party',
+          groupName: group.groupName || 'General',
+          closingBalance: closing,
+          totalOutstanding,
+          isDebtor,
+          aging: {
+            b0_30,
+            b31_60,
+            b61_90,
+            b90_plus,
+            pct0_30,
+            pct31_60,
+            pct61_90,
+            pct90_plus,
+            overdueTotal: b31_60 + b61_90 + b90_plus,
+            criticalTotal: b90_plus
+          },
+          entries: entries.slice(0, 8), // Recent 8 entries for quick preview
+          totalEntriesCount: entries.length
         };
 
-        if (type === 'debtor') {
-          debtorGroups.push(groupObj);
+        if (isDebtor) {
+          debtors.push(partyRecord);
         } else {
-          creditorGroups.push(groupObj);
+          creditors.push(partyRecord);
         }
-      });
+      }
+    }
 
-    // Sort groups alphabetically
-    debtorGroups.sort((a, b) => a.groupName.localeCompare(b.groupName));
-    creditorGroups.sort((a, b) => a.groupName.localeCompare(b.groupName));
-
-    return { debtors: debtorGroups, creditors: creditorGroups };
+    return { debtors, creditors };
   });
 
-  const debtorGroups = computed(() => processedData.value.debtors);
-  const creditorGroups = computed(() => processedData.value.creditors);
-
-  // Flat list of all debtor parties (with group info)
-  const debtorParties = computed(() => {
-    return debtorGroups.value.flatMap(g => g.parties);
+  // Current active dataset (Debtors or Creditors)
+  const currentList = computed(() => {
+    return activeTab.value === 'Debtors' ? processedData.value.debtors : processedData.value.creditors;
   });
 
-  // Flat list of all creditor parties
-  const creditorParties = computed(() => {
-    return creditorGroups.value.flatMap(g => g.parties);
+  // Unique group list for filter dropdown
+  const groupList = computed(() => {
+    const map = new Map();
+    for (const item of currentList.value) {
+      if (!map.has(item.groupName)) {
+        map.set(item.groupName, {
+          groupName: item.groupName,
+          count: 0,
+          totalAmount: 0,
+          b0_30: 0,
+          b31_60: 0,
+          b61_90: 0,
+          b90_plus: 0
+        });
+      }
+      const g = map.get(item.groupName);
+      g.count += 1;
+      g.totalAmount += item.totalOutstanding;
+      g.b0_30 += item.aging.b0_30;
+      g.b31_60 += item.aging.b31_60;
+      g.b61_90 += item.aging.b61_90;
+      g.b90_plus += item.aging.b90_plus;
+    }
+    return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
   });
+
+  // KPI Summary Statistics for Top Cards
+  const summaryStats = computed(() => {
+    const list = currentList.value;
+    let totalOutstanding = 0;
+    let b0_30 = 0;
+    let b31_60 = 0;
+    let b61_90 = 0;
+    let b90_plus = 0;
+    let criticalCount = 0;
+    let overdueCount = 0;
+
+    for (const item of list) {
+      totalOutstanding += item.totalOutstanding;
+      b0_30 += item.aging.b0_30;
+      b31_60 += item.aging.b31_60;
+      b61_90 += item.aging.b61_90;
+      b90_plus += item.aging.b90_plus;
+
+      if (item.aging.b90_plus > 100) criticalCount++;
+      if (item.aging.overdueTotal > 100) overdueCount++;
+    }
+
+    return {
+      totalOutstanding,
+      totalCount: list.length,
+      b0_30,
+      b31_60,
+      b61_90,
+      b90_plus,
+      criticalCount,
+      overdueCount,
+      pct0_30: totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0,
+      pct31_60: totalOutstanding > 0 ? (b31_60 / totalOutstanding) * 100 : 0,
+      pct61_90: totalOutstanding > 0 ? (b61_90 / totalOutstanding) * 100 : 0,
+      pct90_plus: totalOutstanding > 0 ? (b90_plus / totalOutstanding) * 100 : 0
+    };
+  });
+
+  // Filtered & Sorted Parties
+  const filteredParties = computed(() => {
+    let result = [...currentList.value];
+
+    // 1. Search Query Filter
+    if (searchQuery.value && searchQuery.value.trim()) {
+      const q = searchQuery.value.toLowerCase().trim();
+      result = result.filter(item =>
+        item.ledgerName.toLowerCase().includes(q) ||
+        item.groupName.toLowerCase().includes(q)
+      );
+    }
+
+    // 2. Selected Group Filter
+    if (selectedGroups.value.length > 0) {
+      result = result.filter(item => selectedGroups.value.includes(item.groupName));
+    }
+
+    // 3. Aging Risk Filter
+    if (activeAgingFilter.value === '90plus') {
+      result = result.filter(item => item.aging.b90_plus > 100);
+    } else if (activeAgingFilter.value === '60plus') {
+      result = result.filter(item => (item.aging.b61_90 + item.aging.b90_plus) > 100);
+    } else if (activeAgingFilter.value === '30plus') {
+      result = result.filter(item => item.aging.overdueTotal > 100);
+    } else if (activeAgingFilter.value === 'current') {
+      result = result.filter(item => item.aging.b0_30 > 100);
+    }
+
+    // 4. Sorting
+    result.sort((a, b) => {
+      if (sortBy.value === 'overdue_desc') {
+        return (b.aging.b90_plus + b.aging.b61_90) - (a.aging.b90_plus + a.aging.b61_90);
+      } else if (sortBy.value === 'balance_desc') {
+        return b.totalOutstanding - a.totalOutstanding;
+      } else if (sortBy.value === 'balance_asc') {
+        return a.totalOutstanding - b.totalOutstanding;
+      } else if (sortBy.value === 'name_asc') {
+        return a.ledgerName.localeCompare(b.ledgerName);
+      } else if (sortBy.value === 'name_desc') {
+        return b.ledgerName.localeCompare(a.ledgerName);
+      }
+      return 0;
+    });
+
+    return result;
+  });
+
+  // Grouped View Data
+  const groupedViewData = computed(() => {
+    const groupsMap = new Map();
+
+    for (const party of filteredParties.value) {
+      if (!groupsMap.has(party.groupName)) {
+        groupsMap.set(party.groupName, {
+          groupName: party.groupName,
+          parties: [],
+          totalOutstanding: 0,
+          b0_30: 0,
+          b31_60: 0,
+          b61_90: 0,
+          b90_plus: 0,
+          isExpanded: false
+        });
+      }
+      const g = groupsMap.get(party.groupName);
+      g.parties.push(party);
+      g.totalOutstanding += party.totalOutstanding;
+      g.b0_30 += party.aging.b0_30;
+      g.b31_60 += party.aging.b31_60;
+      g.b61_90 += party.aging.b61_90;
+      g.b90_plus += party.aging.b90_plus;
+    }
+
+    const groupsArr = Array.from(groupsMap.values());
+    for (const g of groupsArr) {
+      g.pct0_30 = g.totalOutstanding > 0 ? (g.b0_30 / g.totalOutstanding) * 100 : 0;
+      g.pct31_60 = g.totalOutstanding > 0 ? (g.b31_60 / g.totalOutstanding) * 100 : 0;
+      g.pct61_90 = g.totalOutstanding > 0 ? (g.b61_90 / g.totalOutstanding) * 100 : 0;
+      g.pct90_plus = g.totalOutstanding > 0 ? (g.b90_plus / g.totalOutstanding) * 100 : 0;
+    }
+
+    return groupsArr.sort((a, b) => b.totalOutstanding - a.totalOutstanding);
+  });
+
+  // ─── Formatters & Utility Functions ────────────────────────────────────
+  const formatINR = (val) => {
+    if (val === undefined || val === null) return '₹0';
+    const num = Math.round(Number(val));
+    return '₹' + num.toLocaleString('en-IN');
+  };
+
+  const formatShortINR = (val) => {
+    if (!val || val === 0) return '₹0';
+    const num = Math.abs(Number(val));
+    if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + ' Cr';
+    if (num >= 100000) return '₹' + (num / 100000).toFixed(2) + ' L';
+    if (num >= 1000) return '₹' + (num / 1000).toFixed(1) + ' k';
+    return '₹' + num.toLocaleString('en-IN');
+  };
+
+  /**
+   * Generate WhatsApp payment follow-up message link
+   */
+  const getWhatsAppFollowupLink = (party) => {
+    const name = party.ledgerName;
+    const total = formatINR(party.totalOutstanding);
+    const overdue = formatINR(party.aging.b61_90 + party.aging.b90_plus);
+    const isOverdue = (party.aging.b61_90 + party.aging.b90_plus) > 0;
+
+    let text = `*Payment Statement Reminder*\n\nDear *${name}*,\nGreetings from *Sri Balaji Enterprises*.\n\n`;
+    text += `Your total current ledger balance is: *${total}*.\n`;
+
+    if (isOverdue) {
+      text += `• Overdue (>60 days): *${overdue}*\n`;
+    }
+    if (party.aging.b90_plus > 0) {
+      text += `• Critical (>90 days): *${formatINR(party.aging.b90_plus)}*\n`;
+    }
+
+    text += `\nKindly verify and arrange for payment clearance at your earliest convenience.\n\nThank you! 🙏\n_Sri Balaji Enterprises_`;
+
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  };
 
   return {
-    // Data
-    debtorGroups,
-    creditorGroups,
-    debtorParties,
-    creditorParties,
-    months,
-    currentMonth,
-    previousMonths,
-    // State
+    ledgerData,
     loading,
     error,
-    // Actions
     loadLedgerData,
-    // Helpers
-    getMonthLabel,
-    pctChange,
+    activeTab,
+    viewMode,
+    searchQuery,
+    selectedGroups,
+    activeAgingFilter,
+    sortBy,
+    groupList,
+    summaryStats,
+    filteredParties,
+    groupedViewData,
+    formatINR,
+    formatShortINR,
+    getWhatsAppFollowupLink
   };
 }
