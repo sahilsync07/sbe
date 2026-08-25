@@ -69,6 +69,26 @@ export function useStockData(isLocal) {
             }
         }
 
+        // Patch Goal 13: Extract Ajanta from Airson into its own group
+        const airsonGroup = data.find(g => g.groupName === 'Airson' || g.group === 'Airson');
+        if (airsonGroup && airsonGroup.brands) {
+            const ajantaBrands = airsonGroup.brands.filter(b => b.brand === 'AJANTA');
+            if (ajantaBrands.length > 0) {
+                // Remove from Airson
+                airsonGroup.brands = airsonGroup.brands.filter(b => b.brand !== 'AJANTA');
+                
+                // Add as new group if not exists
+                if (!data.some(g => g.groupName === 'AJANTA')) {
+                    data.push({
+                        groupName: 'AJANTA',
+                        group: 'AJANTA',
+                        brands: ajantaBrands,
+                        products: ajantaBrands.flatMap(b => b.products || []) // Flatten if products are under brands
+                    });
+                }
+            }
+        }
+
         return data;
     };
 

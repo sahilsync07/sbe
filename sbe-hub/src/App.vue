@@ -53,12 +53,6 @@ watch(() => appStore.stockData, (newData) => {
     if (meta && meta.lastSync) {
       appStore.setSyncTime(new Date(meta.lastSync));
     }
-    
-    // Patch Goal 13: Remove Ajanta from Airson
-    const airsonGroup = newData.find(g => g.group === 'Airson');
-    if (airsonGroup && airsonGroup.brands) {
-      airsonGroup.brands = airsonGroup.brands.filter(b => b.brand !== 'AJANTA');
-    }
   }
 }, { deep: true, immediate: true });
 

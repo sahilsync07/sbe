@@ -1334,6 +1334,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -1409,8 +1410,20 @@ const batchList = ref([]);
 const currentBatchIndex = ref(0);
 
 const { isAdmin, isSuperAdmin } = useAdmin();
+const route = useRoute();
+const router = useRouter();
 
 const showOneTouchModal = ref(false);
+
+onMounted(() => {
+  if (route.query.onetouch === 'true') {
+    showOneTouchModal.value = true;
+    
+    // Clean up URL without triggering a reload
+    router.replace({ path: '/pdf-gen' });
+  }
+});
+
 const oneTouchGroups = ref(
   ONE_TOUCH_GROUPS.map((g) => ({
     ...g,
