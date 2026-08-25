@@ -957,137 +957,136 @@
     <!-- One Touch Config Modal -->
     <div
       v-if="showOneTouchModal"
-      class="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+      class="fixed inset-0 z-[80] bg-slate-900/60 flex items-center justify-center p-3 sm:p-4 backdrop-blur-md animate-fade-in"
     >
       <div
-        class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] shadow-2xl flex flex-col overflow-hidden"
+        class="bg-white rounded-3xl w-full max-w-lg max-h-[92vh] sm:max-h-[88vh] shadow-2xl flex flex-col overflow-hidden border border-slate-100"
       >
         <!-- Header -->
         <div
-          class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0"
+          class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-white"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg"
+              class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25"
             >
-              <i class="fa-solid fa-bolt text-white"></i>
+              <i class="fa-solid fa-bolt text-white text-base"></i>
             </div>
             <div>
-              <h3 class="text-lg font-black text-slate-800">One Touch Mode</h3>
-              <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                Auto-share all groups
+              <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">One Touch Mode</h3>
+              <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                Auto-generate & share brand catalogs
               </p>
             </div>
           </div>
           <button
             @click="showOneTouchModal = false"
-            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all"
+            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 active:scale-95 transition-all"
           >
             <i class="fa-solid fa-xmark text-sm"></i>
           </button>
         </div>
 
         <!-- Global Filters -->
-        <div class="px-5 py-3 border-b border-slate-100 space-y-2 flex-shrink-0 bg-slate-50/50">
+        <div class="px-5 py-3 border-b border-slate-100 space-y-2.5 flex-shrink-0 bg-slate-50/70">
           <!-- Low Stock Mode Toggle -->
           <div
-            class="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all"
-            :class="oneTouchLowStockMode ? 'bg-amber-50 border border-amber-200' : 'bg-slate-100 border border-slate-200'"
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer transition-all border shadow-sm"
+            :class="oneTouchLowStockMode ? 'bg-amber-500/10 border-amber-300/80 ring-2 ring-amber-400/20' : 'bg-white border-slate-200/80 hover:border-slate-300'"
             @click="oneTouchLowStockMode = !oneTouchLowStockMode"
           >
             <div class="flex items-center gap-2.5">
               <div
-                class="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
-                :class="oneTouchLowStockMode ? 'bg-amber-200 text-amber-700' : 'bg-slate-200 text-slate-500'"
+                class="w-8 h-8 rounded-xl flex items-center justify-center text-sm transition-colors"
+                :class="oneTouchLowStockMode ? 'bg-amber-400 text-amber-950 font-bold' : 'bg-slate-100 text-slate-500'"
               >
                 <i class="fa-solid fa-arrow-down-short-wide"></i>
               </div>
               <div>
-                <span class="text-sm font-bold" :class="oneTouchLowStockMode ? 'text-amber-800' : 'text-slate-600'">Low Stock Mode</span>
-                <p class="text-[10px] font-medium" :class="oneTouchLowStockMode ? 'text-amber-500' : 'text-slate-400'">
-                  {{ oneTouchLowStockMode ? 'Min 1 → Max 10' : 'Min 10 → Max ∞' }}
+                <span class="text-xs sm:text-sm font-bold block" :class="oneTouchLowStockMode ? 'text-amber-950' : 'text-slate-700'">Low Stock Clearance Mode</span>
+                <p class="text-[10px] font-medium" :class="oneTouchLowStockMode ? 'text-amber-700' : 'text-slate-400'">
+                  {{ oneTouchLowStockMode ? 'Active: Min 1 → Max 10 pairs' : 'Standard: Min 10 → Max ∞ pairs' }}
                 </p>
               </div>
             </div>
             <div
-              class="w-10 h-[22px] rounded-full relative transition-colors duration-300"
-              :class="oneTouchLowStockMode ? 'bg-amber-400' : 'bg-slate-300'"
+              class="w-11 h-6 rounded-full relative transition-colors duration-300 flex-shrink-0"
+              :class="oneTouchLowStockMode ? 'bg-amber-500' : 'bg-slate-300'"
             >
               <div
-                class="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300"
-                :class="oneTouchLowStockMode ? 'left-[22px]' : 'left-[3px]'"
+                class="absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-md transition-all duration-300"
+                :class="oneTouchLowStockMode ? 'left-[23px]' : 'left-[3px]'"
               ></div>
             </div>
           </div>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              v-model="oneTouchOnlyWithPhotos"
-              class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
-            />
-            <span class="text-sm font-medium text-slate-700">Only with photos</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              v-model="oneTouchMinQtyEnabled"
-              class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
-            />
-            <span class="text-sm font-medium text-slate-700">Minimum quantity filter</span>
-          </label>
+
+          <!-- Secondary Filters Row -->
+          <div class="flex items-center justify-between px-1 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                v-model="oneTouchOnlyWithPhotos"
+                class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300"
+              />
+              <span class="text-xs font-semibold text-slate-700">Photos Only</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                v-model="oneTouchMinQtyEnabled"
+                class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300"
+              />
+              <span class="text-xs font-semibold text-slate-700">Enable Quantity Filter</span>
+            </label>
+          </div>
         </div>
 
         <!-- Group List -->
-        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 custom-scrollbar">
+        <div class="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 custom-scrollbar">
           <div
             v-for="(group, idx) in oneTouchGroups"
             :key="idx"
-            class="rounded-xl border transition-all overflow-hidden"
+            class="rounded-2xl border transition-all duration-200 overflow-hidden"
             :class="
               group.enabled
-                ? 'bg-violet-50/50 border-violet-200'
-                : 'bg-slate-50 border-slate-100 opacity-60'
+                ? 'bg-white border-violet-200/90 shadow-sm ring-1 ring-violet-500/10'
+                : 'bg-slate-50 border-slate-200/60 opacity-60'
             "
           >
-            <div class="p-3">
-              <!-- Top Row: Checkbox, Group Heading, Status, Gear, Chevron -->
+            <div class="p-3 sm:p-3.5 space-y-2.5">
+              <!-- Tier 1: Group Heading + Checkbox + Status + Subbrand button + Accordion -->
               <div
-                class="flex items-center justify-between gap-2 cursor-pointer"
+                class="flex items-center justify-between gap-2.5 cursor-pointer select-none"
                 @click="group.isExpanded = !group.isExpanded"
               >
-                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
                   <input
                     type="checkbox"
                     v-model="group.enabled"
                     @click.stop
-                    class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
+                    class="w-5 h-5 rounded-lg text-violet-600 focus:ring-violet-500 border-slate-300 cursor-pointer flex-shrink-0"
                   />
                   <div class="min-w-0 flex-1">
-                    <div class="text-sm font-bold text-slate-800 leading-tight truncate">
+                    <h4 class="text-sm font-black text-slate-800 leading-tight truncate">
                       {{ group.label }}
-                    </div>
-                    <div v-if="group.brands.length > 1" class="text-[10px] text-slate-400 font-semibold mt-0.5">
-                      {{ group.activeBrands.length }}/{{ group.brands.length }} brands selected
-                    </div>
+                    </h4>
+                    <p v-if="group.brands.length > 1" class="text-[10px] text-slate-400 font-semibold mt-0.5 truncate">
+                      {{ group.activeBrands.length }}/{{ group.brands.length }} brands included
+                    </p>
                   </div>
                 </div>
 
                 <div class="flex items-center gap-1.5 flex-shrink-0" @click.stop>
                   <!-- Status Indicator -->
-                  <div v-if="group.status === 'preparing'" class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
-                    <svg
-                      class="animate-spin h-3 w-3 text-blue-600"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
+                  <div v-if="group.status === 'preparing'" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">
+                    <svg class="animate-spin h-3 w-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     <span>Preparing</span>
                   </div>
-                  <div v-else-if="group.status === 'ready'" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold flex items-center gap-1">
-                    <i class="fa-solid fa-check text-xs"></i>
+                  <div v-else-if="group.status === 'ready'" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold flex items-center gap-1 border border-emerald-200">
+                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
                     <span>Ready</span>
                   </div>
 
@@ -1095,17 +1094,18 @@
                   <button
                     v-if="group.brands.length > 1"
                     @click.stop="group.showBrandPicker = !group.showBrandPicker"
-                    class="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                    :class="group.showBrandPicker ? 'bg-violet-200 text-violet-800' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                    class="h-8 px-2 rounded-xl flex items-center gap-1 text-[11px] font-bold transition-all"
+                    :class="group.showBrandPicker ? 'bg-violet-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
                     :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
                   >
-                    <i class="fa-solid fa-gear text-xs"></i>
+                    <i class="fa-solid fa-sliders text-[10px]"></i>
+                    <span class="text-[10px]">{{ group.activeBrands.length }}</span>
                   </button>
 
                   <!-- Expand Accordion Chevron -->
                   <button
                     @click="group.isExpanded = !group.isExpanded"
-                    class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-all"
+                    class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 active:scale-95 transition-all"
                   >
                     <i
                       class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
@@ -1115,188 +1115,168 @@
                 </div>
               </div>
 
-              <!-- Bottom Row: Min & Max Qty Inputs below heading -->
+              <!-- Tier 2: Dedicated Min & Max Qty Inputs below heading -->
               <div
-                class="flex items-center gap-2 mt-2.5 pt-2 border-t border-violet-100/60"
+                class="flex items-center gap-2.5 pt-2 border-t border-slate-100"
                 :class="{
                   'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
                 }"
                 @click.stop
               >
                 <!-- Min Qty Input -->
-                <div class="flex-1 flex items-center bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-violet-500 shadow-sm transition-all">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1.5">MIN</span>
+                <div class="flex-1 flex items-center bg-slate-50/80 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500 shadow-inner transition-all">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1.5">MIN</span>
                   <input
                     type="number"
                     v-model="group.minQty"
-                    class="w-full text-center font-bold text-xs bg-transparent outline-none text-slate-800"
+                    class="w-full text-center font-black text-xs sm:text-sm bg-transparent outline-none text-slate-800"
                     placeholder="0"
                   />
-                  <span class="text-[10px] text-slate-400 font-medium ml-1">prs</span>
+                  <span class="text-[10px] text-slate-400 font-bold ml-1">prs</span>
                 </div>
 
                 <!-- Max Qty Input -->
-                <div class="flex-1 flex items-center bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-violet-500 shadow-sm transition-all">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1.5">MAX</span>
+                <div class="flex-1 flex items-center bg-slate-50/80 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500 shadow-inner transition-all">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1.5">MAX</span>
                   <input
                     type="text"
                     v-model="group.maxQty"
                     placeholder="∞"
-                    class="w-full text-center font-bold text-xs bg-transparent outline-none text-slate-800 placeholder:text-slate-300"
+                    class="w-full text-center font-black text-xs sm:text-sm bg-transparent outline-none text-slate-800 placeholder:text-slate-300"
                   />
-                  <span class="text-[10px] text-slate-400 font-medium ml-1">prs</span>
+                  <span class="text-[10px] text-slate-400 font-bold ml-1">prs</span>
                 </div>
               </div>
             </div>
 
-            <!-- Sub-brand Picker -->
+            <!-- Sub-brand Picker Panel -->
             <div
               v-if="group.showBrandPicker"
-              class="px-3 pb-3 border-t border-violet-100 bg-violet-50/30"
+              class="px-4 pb-3.5 pt-2.5 border-t border-violet-100 bg-violet-50/40 space-y-2"
             >
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 pt-2">Sub-brands</p>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] text-violet-800 font-black uppercase tracking-wider">Sub-Brands in this Group</span>
+                <span class="text-[10px] text-slate-500 font-bold">{{ group.activeBrands.length }} of {{ group.brands.length }} enabled</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
                 <label
                   v-for="brand in group.brands"
                   :key="brand"
-                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-all text-xs font-semibold border"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer transition-all text-xs font-bold border select-none"
                   :class="group.activeBrands.includes(brand)
-                    ? 'bg-violet-100 border-violet-300 text-violet-800'
-                    : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
+                    ? 'bg-white border-violet-300 text-violet-800 shadow-sm ring-1 ring-violet-400/20'
+                    : 'bg-slate-100/80 border-slate-200 text-slate-400 line-through opacity-75'"
                 >
                   <input
                     type="checkbox"
                     :checked="group.activeBrands.includes(brand)"
                     @change="toggleSubBrand(idx, brand)"
-                    class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+                    class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-slate-300"
                   />
                   {{ brand }}
                 </label>
               </div>
-              <p class="text-[10px] text-slate-400 mt-1.5">
-                {{ group.activeBrands.length }} of {{ group.brands.length }} selected
-              </p>
             </div>
 
-            <!-- Accordion Dropdown -->
+            <!-- Accordion Batches List -->
             <div
               v-if="group.isExpanded"
-              class="px-3 pb-3 pt-1 border-t border-violet-100 bg-white/50"
+              class="px-4 pb-3.5 pt-2 border-t border-slate-100 bg-slate-50/50 space-y-2"
             >
               <div
                 v-if="group.batches.length === 0"
-                class="text-xs text-slate-400 text-center py-2 font-medium"
+                class="text-xs text-slate-400 text-center py-2.5 font-medium flex items-center justify-center gap-2"
               >
-                No batches yet. Click Prepare.
+                <i class="fa-solid fa-hourglass-start text-slate-300"></i>
+                <span>No batches prepared yet. Click 'Prepare All Batches' below.</span>
               </div>
-              <div v-else class="grid grid-cols-2 gap-2 mt-2">
+              <div v-else class="grid grid-cols-2 gap-2">
                 <button
                   v-for="(batch, bIdx) in group.batches"
                   :key="bIdx"
                   @click="shareBatchDirectly(batch)"
                   :disabled="batch.status !== 'ready'"
-                  class="py-2.5 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  class="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-between transition-all shadow-sm active:scale-[0.97]"
                   :class="{
-                    'bg-slate-100 text-slate-400 cursor-not-allowed': batch.status === 'pending',
-                    'bg-blue-100 text-blue-700 cursor-not-allowed': batch.status === 'preparing',
-                    'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 active:scale-95 cursor-pointer border border-emerald-200':
+                    'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200': batch.status === 'pending',
+                    'bg-blue-50 text-blue-700 cursor-not-allowed border border-blue-200': batch.status === 'preparing',
+                    'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 shadow-md cursor-pointer border border-emerald-500':
                       batch.status === 'ready',
                   }"
                 >
-                  <svg
-                    v-if="batch.status === 'preparing'"
-                    class="animate-spin h-3 w-3"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  <i v-else-if="batch.status === 'ready'" class="fa-brands fa-whatsapp text-sm"></i>
+                  <span class="flex items-center gap-1.5">
+                    <i v-if="batch.status === 'ready'" class="fa-brands fa-whatsapp text-sm"></i>
+                    <svg
+                      v-else-if="batch.status === 'preparing'"
+                      class="animate-spin h-3 w-3"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Batch {{ bIdx + 1 }}</span>
+                  </span>
                   <span
-                    >Batch {{ bIdx + 1 }}
+                    class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    :class="batch.status === 'ready' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'"
+                  >
                     {{
                       batch.status === 'pending'
-                        ? ''
+                        ? 'Pending'
                         : batch.status === 'preparing'
-                          ? 'Preparing...'
-                          : 'Ready'
-                    }}</span
-                  >
+                          ? 'Wait...'
+                          : 'Share'
+                    }}
+                  </span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="px-5 py-4 border-t border-slate-100 flex-shrink-0 space-y-2">
-          <div class="flex gap-2 w-full">
+        <!-- Modal Sticky Footer -->
+        <div class="px-5 py-4 border-t border-slate-100 flex-shrink-0 space-y-2 bg-white">
+          <div class="flex gap-2.5 w-full">
             <button
               v-if="isOneTouchPreparing"
               @click="handleCancelOneTouch"
-              class="w-1/3 py-4 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-xl shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+              class="w-1/3 py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-2xl border border-rose-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <i class="fa-solid fa-xmark"></i> Cancel
             </button>
             <button
               @click="prepareOneTouch"
               :disabled="isOneTouchPreparing"
-              class="py-4 bg-slate-900 hover:bg-black disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
+              class="py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-black rounded-2xl shadow-xl shadow-violet-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-sm sm:text-base"
               :class="isOneTouchPreparing ? 'w-2/3' : 'w-full'"
             >
               <span v-if="isOneTouchPreparing" class="flex items-center gap-2">
                 <svg
-                  class="animate-spin h-5 w-5"
+                  class="animate-spin h-5 w-5 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Preparing...
-                <span class="font-mono text-sm ml-1 bg-black/20 px-2 py-0.5 rounded">{{
-                  formattedOneTouchTime
-                }}</span>
+                <span>Preparing...</span>
+                <span class="font-mono text-xs ml-1 bg-black/20 px-2 py-0.5 rounded-lg">{{ formattedOneTouchTime }}</span>
               </span>
               <span v-else class="flex items-center gap-2">
-                <i class="fa-solid fa-bolt"></i>
-                Prepare
+                <i class="fa-solid fa-bolt text-amber-300"></i>
+                <span>Prepare All Batches</span>
                 <span
                   v-if="oneTouchElapsedTime > 0"
-                  class="font-mono text-sm ml-1 bg-black/20 px-2 py-0.5 rounded"
-                  >{{ formattedOneTouchTime }}</span
-                >
+                  class="font-mono text-xs ml-1 bg-black/20 px-2 py-0.5 rounded-lg text-white/90"
+                >{{ formattedOneTouchTime }}</span>
               </span>
             </button>
           </div>
-          <p class="text-[10px] text-slate-400 text-center font-medium">
-            {{ oneTouchGroups.filter((g) => g.enabled).length }} groups selected • Batches of 99
-            images
+          <p class="text-[11px] text-slate-400 text-center font-semibold">
+            {{ oneTouchGroups.filter((g) => g.enabled).length }} groups selected • 99 images per WhatsApp batch
           </p>
         </div>
       </div>
@@ -1386,13 +1366,11 @@ const ONE_TOUCH_GROUPS = [
   {
     label: 'General Box Packing',
     brands: [...BRAND_LISTS.generalBoxPacking],
-    icon: '📥',
     defaultMinQty: 10,
   },
   {
     label: 'General Loose Packing',
     brands: [...BRAND_LISTS.generalLoosePacking],
-    icon: '📦',
     defaultMinQty: 10,
   },
   { label: 'P-Toes', brands: ['P-TOES'], defaultMinQty: 10 },
@@ -1400,13 +1378,11 @@ const ONE_TOUCH_GROUPS = [
   {
     label: 'Paragon Ladies 40% Discount',
     brands: ['SOLEA DISC 40% OFFER'],
-    icon: '🏷️',
     defaultMinQty: 10,
   },
   {
     label: 'Paragon Gents 40% Discount',
     brands: ['PARAGON GENTS 40%'],
-    icon: '🏷️',
     defaultMinQty: 10,
   },
   { label: 'Socks', brands: ['Barun', 'Pareek Soucks', 'LEO'], defaultMinQty: 10 },
