@@ -88,11 +88,32 @@ jobs:
           chmod +x ./gradlew
           ./gradlew bundleRelease
 
-      - name: Upload to Google Play Console
+      - name: Upload to Google Play Console (Internal Track)
+        if: github.event_name == 'push' || github.event.inputs.track == 'internal'
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.sbe.hub
           releaseFiles: sbe-hub/android/app/build/outputs/bundle/release/app-release.aab
-          track: ${{ github.event.inputs.track || 'internal' }}
+          track: internal
+          status: ${{ github.event.inputs.status || 'completed' }}
+
+      - name: Upload to Google Play Console (Closed Testing - Alpha)
+        if: github.event_name == 'push' || github.event.inputs.track == 'alpha'
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.sbe.hub
+          releaseFiles: sbe-hub/android/app/build/outputs/bundle/release/app-release.aab
+          track: alpha
+          status: ${{ github.event.inputs.status || 'completed' }}
+
+      - name: Upload to Google Play Console (Custom Track - Production / Beta)
+        if: github.event_name == 'workflow_dispatch' && (github.event.inputs.track == 'production' || github.event.inputs.track == 'beta')
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.sbe.hub
+          releaseFiles: sbe-hub/android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.track }}
           status: ${{ github.event.inputs.status || 'completed' }}
