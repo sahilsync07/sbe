@@ -89,23 +89,10 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-3.5 sm:px-6 pt-4 space-y-4">
-      <div v-if="loading" class="flex flex-col items-center justify-center py-20">
-        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-violet-500 mb-4"></i>
-        <p class="text-slate-500 font-semibold text-sm animate-pulse">Computing Aging Buckets...</p>
-      </div>
-      
-      <template v-else-if="error">
-        <div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 text-center font-medium mt-10">
-          <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
-          <p>{{ error }}</p>
-        </div>
-      </template>
-
-      <template v-else>
-        <!-- ═══ TABS (Debtors vs Creditors) ═══ -->
-        <div class="flex items-center justify-between gap-3">
-          <!-- Dual Tab Switcher -->
-          <div class="flex p-1 bg-slate-200/70 rounded-2xl border border-slate-300/60 shadow-inner w-full sm:w-auto">
+      <!-- ═══ TABS (Debtors vs Creditors) ═══ -->
+      <div class="flex items-center justify-between gap-3">
+        <!-- Dual Tab Switcher -->
+        <div class="flex p-1 bg-slate-200/70 rounded-2xl border border-slate-300/60 shadow-inner w-full sm:w-auto">
           <button
             @click="activeTab = 'Debtors'"
             class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all"
@@ -140,7 +127,7 @@
       </div>
 
       <!-- ═══ KPI SUMMARY DASHBOARD (4 AGING CARDS) ═══ -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+      <div v-if="!loading && !error" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         <!-- 0-30 Days: Fresh / Current -->
         <div
           @click="activeAgingFilter = activeAgingFilter === 'current' ? 'all' : 'current'"
@@ -230,7 +217,7 @@
       </div>
 
       <!-- ═══ SEARCH & SMART RISK FILTERS ═══ -->
-      <div class="space-y-2.5">
+      <div v-if="!loading && !error" class="space-y-2.5">
         <!-- Search Input Bar -->
         <div class="relative flex items-center">
           <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-sm pointer-events-none"></i>
@@ -546,7 +533,7 @@
             </div>
           </div>
         </div>
-      </template>
+      </div>
     </main>
   </div>
 </template>
