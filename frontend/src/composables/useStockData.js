@@ -152,13 +152,11 @@ export function useStockData(isLocal) {
             console.log("Starting Background Live Fetch (Tier 3)...");
 
             // 5 second max wait time for live data
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            // Use GitHub raw URL for live network fetch to ensure mobile app and web always get the freshest sync data
+            const liveUrl = (import.meta.env.PROD && typeof window !== 'undefined' && window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost'))
+                ? `${import.meta.env.BASE_URL}assets/stock-data.json`
+                : REMOTE_DATA_URL;
 
-            const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-                ? import.meta.env.BASE_URL
-                : `${import.meta.env.BASE_URL}/`;
-            const liveUrl = `${baseUrl}assets/stock-data.json`;
             const response = await fetch(`${liveUrl}?t=${new Date().getTime()}`, {
                 signal: controller.signal
             });
@@ -167,13 +165,19 @@ export function useStockData(isLocal) {
             if (response.ok) {
                 const liveData = await response.json();
 
+                // Extract metadata immediately from live data
+                const metaItem = liveData.find(g => g.groupName === '_META_DATA_' || g.group === '_META_DATA_');
+                if (metaItem && metaItem.lastSync) {
+                    lastRefresh.value = new Date(metaItem.lastSync);
+                }
+
                 // Update UI with fresh data
                 stockData.value = processCustomGroups(liveData);
 
                 // Update Cache
                 localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
 
-                console.log("Updated stock data from Live URL (Tier 3)");
+                console.log("Updated stock data from Live URL (Tier 3), sync:", lastRefresh.value);
 
                 if (!hasData) {
                     loading.value = false; // Stop loading if we were still waiting

@@ -25,6 +25,14 @@ const ledgerDataPath = path.resolve(
   __dirname,
   "../../frontend/public/assets/ledger-data.json"
 );
+const hubStockDataPath = path.resolve(
+  __dirname,
+  "../../sbe-hub/public/assets/stock-data.json"
+);
+const hubLedgerDataPath = path.resolve(
+  __dirname,
+  "../../sbe-hub/public/assets/ledger-data.json"
+);
 const tallyTimeout = 30000;
 const repoRoot = path.resolve(__dirname, "../../");
 
@@ -536,7 +544,11 @@ async function syncLedgerToFile() {
   });
 
   try {
-    await fs.writeFile(ledgerDataPath, JSON.stringify(ledgerData, null, 2));
+    const jsonStr = JSON.stringify(ledgerData, null, 2);
+    await fs.writeFile(ledgerDataPath, jsonStr);
+    try {
+      await fs.writeFile(hubLedgerDataPath, jsonStr);
+    } catch (e) {}
     console.log("✅ Updated ledger-data.json at:", ledgerDataPath);
     return { success: true, groups: ledgerData.length - 1, lastSync: lastSyncTime };
   } catch (err) {
@@ -752,7 +764,11 @@ app.post("/api/updateStockData", async (req, res) => {
 
     // ---- 8. Write updated files ------------------------------------------------
     try {
-      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      const jsonStr = JSON.stringify(stockData, null, 2);
+      await fs.writeFile(stockDataPath, jsonStr);
+      try {
+        await fs.writeFile(hubStockDataPath, jsonStr);
+      } catch (e) {}
       console.log("Updated stock-data.json at:", stockDataPath);
     } catch (err) {
       console.error("Error writing stock-data.json:", err.message, err.stack);
