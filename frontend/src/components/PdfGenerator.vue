@@ -1050,83 +1050,96 @@
             "
           >
             <div
-              class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-black/5"
+              class="flex flex-col cursor-pointer hover:bg-black/5"
               @click="group.isExpanded = !group.isExpanded"
             >
-              <input
-                type="checkbox"
-                v-model="group.enabled"
-                @click.stop
-                class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
-              />
-              <span class="text-lg flex-shrink-0">{{ group.icon }}</span>
-              <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{
-                group.label
-              }}</span>
+              <!-- Row 1: Brand Name & Icons -->
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  v-model="group.enabled"
+                  @click.stop
+                  class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500 border-gray-300 cursor-pointer flex-shrink-0"
+                />
+                <span class="text-lg flex-shrink-0">{{ group.icon }}</span>
+                <span class="flex-1 text-sm font-bold text-slate-700 leading-tight truncate">{{
+                  group.label
+                }}</span>
 
-              <!-- Status Indicator -->
-              <div v-if="group.status === 'preparing'" class="flex-shrink-0">
-                <svg
-                  class="animate-spin h-4 w-4 text-violet-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
+                <!-- Status Indicator -->
+                <div v-if="group.status === 'preparing'" class="flex-shrink-0">
+                  <svg
+                    class="animate-spin h-4 w-4 text-violet-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </div>
+                <div v-else-if="group.status === 'ready'" class="flex-shrink-0 text-emerald-500">
+                  <i class="fa-solid fa-check-circle text-lg"></i>
+                </div>
+
+                <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
+                <button
+                  v-if="group.brands.length > 1"
+                  @click.stop="group.showBrandPicker = !group.showBrandPicker"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ml-1"
+                  :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
+                  :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
                 >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              </div>
-              <div v-else-if="group.status === 'ready'" class="flex-shrink-0 text-emerald-500">
-                <i class="fa-solid fa-check-circle text-lg"></i>
+                  <i class="fa-solid fa-gear text-xs"></i>
+                </button>
+                <i
+                  class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform ml-1"
+                  :class="{ 'rotate-180': group.isExpanded }"
+                ></i>
               </div>
 
+              <!-- Row 2: Min/Max Settings -->
               <div
-                class="flex items-center gap-1 flex-shrink-0 mx-2"
+                class="flex items-center gap-2 px-11 pb-2.5 w-full"
                 :class="{
                   'opacity-40 pointer-events-none': !oneTouchMinQtyEnabled || !group.enabled,
                 }"
                 @click.stop
               >
-                <span class="text-[10px] text-slate-400 font-bold">MIN</span>
-                <input
-                  type="number"
-                  v-model="group.minQty"
-                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none"
-                />
-                <span class="text-[10px] text-slate-400 font-bold ml-1">MAX</span>
-                <input
-                  type="text"
-                  v-model="group.maxQty"
-                  placeholder="∞"
-                  class="w-12 text-center font-bold text-sm bg-white border border-slate-200 rounded-lg py-1 focus:ring-2 focus:ring-violet-500 outline-none placeholder:text-slate-300"
-                />
+                <div class="flex items-center bg-slate-100 rounded-lg overflow-hidden border border-slate-200/60 shadow-inner flex-1">
+                  <div class="bg-slate-200/80 px-2 py-1 flex items-center justify-center border-r border-slate-200/60">
+                    <span class="text-[9px] text-slate-500 font-black tracking-widest uppercase">Min</span>
+                  </div>
+                  <input
+                    type="number"
+                    v-model="group.minQty"
+                    class="w-full text-center font-bold text-sm bg-transparent py-1 focus:ring-2 focus:ring-violet-500 outline-none"
+                  />
+                </div>
+                
+                <div class="flex items-center bg-slate-100 rounded-lg overflow-hidden border border-slate-200/60 shadow-inner flex-1">
+                  <div class="bg-slate-200/80 px-2 py-1 flex items-center justify-center border-r border-slate-200/60">
+                    <span class="text-[9px] text-slate-500 font-black tracking-widest uppercase">Max</span>
+                  </div>
+                  <input
+                    type="text"
+                    v-model="group.maxQty"
+                    placeholder="∞"
+                    class="w-full text-center font-bold text-sm bg-transparent py-1 focus:ring-2 focus:ring-violet-500 outline-none placeholder:text-slate-300"
+                  />
+                </div>
               </div>
-
-              <!-- Gear icon for sub-brand picker (only for multi-brand groups) -->
-              <button
-                v-if="group.brands.length > 1"
-                @click.stop="group.showBrandPicker = !group.showBrandPicker"
-                class="w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0"
-                :class="group.showBrandPicker ? 'bg-violet-200 text-violet-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'"
-                :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
-              >
-                <i class="fa-solid fa-gear text-xs"></i>
-              </button>
-              <i
-                class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"
-                :class="{ 'rotate-180': group.isExpanded }"
-              ></i>
             </div>
 
             <!-- Sub-brand Picker -->
