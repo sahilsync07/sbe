@@ -137,6 +137,15 @@
               <i class="fa-solid fa-check"></i>
             </div>
 
+            <!-- Compulsory Star Badge -->
+            <div
+              v-if="prod.isCompulsory"
+              class="absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-amber-500 text-white rounded-full flex items-center justify-center text-[7px] font-black"
+              title="Compulsory Item"
+            >
+              ★
+            </div>
+
             <!-- Index Tag -->
             <div class="absolute bottom-0.5 left-0.5 px-1 rounded bg-slate-900/70 text-white text-[8px] font-extrabold leading-tight backdrop-blur-2xs">
               {{ idx + 1 }}
@@ -219,6 +228,12 @@
               <span class="px-2.5 py-1 rounded-xl bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
                 {{ currentProduct.groupName || activeCategoryObj.label }}
               </span>
+              <span
+                v-if="currentProduct.isCompulsory"
+                class="px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider shadow-xs animate-pulse"
+              >
+                ★ Core Item
+              </span>
             </div>
 
             <!-- In-Stock Indicator -->
@@ -273,7 +288,32 @@
               </div>
             </div>
 
-            <!-- ═══ SIZE SHORTCUT PILLS ═══ -->
+            <!-- ═══ DIRECT SIZE PROMPT (For Cushion & Compulsory Items) ═══ -->
+            <div v-if="currentProduct.suggestedSizes && currentProduct.suggestedSizes.length > 0" class="p-3 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent rounded-2xl border border-amber-300/60 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-black text-amber-900 uppercase tracking-wider">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-bullseye text-amber-600"></i>
+                  <span>Which size does the customer want?</span>
+                </span>
+                <span class="text-[10px] font-semibold text-amber-700">1-tap select</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="sizeOpt in currentProduct.suggestedSizes"
+                  :key="sizeOpt"
+                  type="button"
+                  @click="appendSuggestedSize(sizeOpt)"
+                  class="px-3 py-1.5 rounded-xl text-xs font-black transition-all active:scale-95 border shadow-2xs"
+                  :class="currentComment.includes(sizeOpt)
+                    ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                    : 'bg-white text-amber-950 border-amber-300 hover:bg-amber-100/80'"
+                >
+                  {{ sizeOpt }}
+                </button>
+              </div>
+            </div>
+
+            <!-- ═══ GENERAL SIZE SHORTCUT PILLS ═══ -->
             <div class="space-y-1.5 pt-1">
               <div class="flex items-center justify-between text-[11px] font-black text-slate-400 uppercase tracking-wider">
                 <span>Quick Size Shortcuts</span>
@@ -543,6 +583,64 @@ const activeCategoryObj = computed(() => {
   return categoryList.find(c => c.id === activeCategoryId.value) || categoryList[0];
 });
 
+// ─── Hardcoded Compulsory Core Products Definition for General ─────────
+const COMPULSORY_CORE_ITEMS = [
+  {
+    matchKey: 'cushion',
+    productName: 'CUSHION HAWAI (ALL SIZES)',
+    groupName: 'Hawai Chappal',
+    imageUrl: 'https://res.cloudinary.com/dg365ewal/image/upload/v1773125726/CUSHION_NEW.jpg',
+    rate: 133,
+    suggestedSizes: ['6 to 9 (6x9)', '4 to 5 (4x5)', '5 to 10 (5x10)', '1 to 3 (1x3)', '9 to 13 (9x13)'],
+    isCompulsory: true
+  },
+  {
+    matchKey: '1251',
+    productName: 'PARALITE 1251 GENTS BKR',
+    groupName: 'PARALITE',
+    imageUrl: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770909765/1251_BKR.jpg',
+    rate: 245,
+    suggestedSizes: ['6 to 10 (6x10)', '7 to 10 (7x10)', '6 to 9 (6x9)'],
+    isCompulsory: true
+  },
+  {
+    matchKey: '16048_blk',
+    productName: 'PARALITE 16048 GENTS BLACK',
+    groupName: 'PARALITE',
+    imageUrl: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770919216/16048_BLK.jpg',
+    rate: 299.5,
+    suggestedSizes: ['6 to 9 (6x9)', '6 to 10 (6x10)', '7 to 10 (7x10)', '2 to 5 (2x5)'],
+    isCompulsory: true
+  },
+  {
+    matchKey: '16048_mig',
+    productName: 'PARALITE 16048 GENTS GREEN (MIG)',
+    groupName: 'PARALITE',
+    imageUrl: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770548064/16048_MIG.jpg',
+    rate: 335,
+    suggestedSizes: ['6 to 10 (6x10)', '6 to 9 (6x9)', '7 to 10 (7x10)', '2 to 5 (2x5)'],
+    isCompulsory: true
+  },
+  {
+    matchKey: '16048_blu',
+    productName: 'PARALITE 16048 GENTS BLUE',
+    groupName: 'PARALITE',
+    imageUrl: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770919216/16048_BLK.jpg',
+    rate: 335,
+    suggestedSizes: ['6 to 9 (6x9)', '6 to 10 (6x10)', '7 to 10 (7x10)', '2 to 5 (2x5)'],
+    isCompulsory: true
+  },
+  {
+    matchKey: '16049',
+    productName: 'PARALITE 16049 GENTS',
+    groupName: 'PARALITE',
+    imageUrl: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770919172/16049_BLK.jpg',
+    rate: 299.5,
+    suggestedSizes: ['6 to 9 (6x9)', '6 to 10 (6x10)', '2 to 5 (2x5)'],
+    isCompulsory: true
+  }
+];
+
 // ─── Filtered Products for Active Category ────────────────────────────
 const allCatalogProducts = computed(() => {
   if (!stockData.value || !Array.isArray(stockData.value)) return [];
@@ -564,7 +662,24 @@ const currentCategoryProducts = computed(() => {
   const list = allCatalogProducts.value;
 
   if (cat.id === 'general') {
-    return list.filter(p => p.imageUrl && p.imageUrl.trim().length > 0);
+    // Populate compulsory items at top of General list
+    const enrichedCompulsory = COMPULSORY_CORE_ITEMS.map(c => {
+      // Find matching live stock if available
+      const live = list.find(p => p.productName && p.productName.toLowerCase().includes(c.matchKey));
+      return {
+        ...c,
+        closingBalance: live ? (live.closingBalance || live.quantity || 0) : 0,
+        rate: (live && live.rate) ? live.rate : c.rate
+      };
+    });
+
+    const otherItems = list.filter(p => {
+      if (!p.imageUrl || p.imageUrl.trim().length === 0) return false;
+      const n = (p.productName || '').toLowerCase();
+      return !n.includes('cushion') && !n.includes('1251') && !n.includes('16048') && !n.includes('16049');
+    });
+
+    return [...enrichedCompulsory, ...otherItems];
   }
 
   const allowedBrandsSet = new Set(cat.brands.map(b => b.toLowerCase().trim()));
@@ -578,7 +693,7 @@ const getCategoryCount = (catId) => {
   const cat = categoryList.find(c => c.id === catId);
   if (!cat) return 0;
   if (catId === 'general') {
-    return allCatalogProducts.value.filter(p => p.imageUrl).length;
+    return currentCategoryProducts.value.length;
   }
   const allowedBrandsSet = new Set(cat.brands.map(b => b.toLowerCase().trim()));
   return allCatalogProducts.value.filter(p => {
@@ -651,6 +766,19 @@ watch(currentIndex, async (newIdx) => {
 
 // ─── Size Shortcuts & Comment Helpers ─────────────────────────────────
 const quickSizes = ['4x8', '5x9', '5x10', '6x9', '6x10', '7x10', '9x10', '11x13', '1x3', '4x7'];
+
+const appendSuggestedSize = (sizeOption) => {
+  const snippet = `Size: ${sizeOption}`;
+  if (currentComment.value.includes(snippet) || currentComment.value.includes(sizeOption)) {
+    // Already included
+    return;
+  }
+  if (currentComment.value.trim().length > 0) {
+    currentComment.value += `, ${snippet}`;
+  } else {
+    currentComment.value = snippet;
+  }
+};
 
 const appendSizeShortcut = (size) => {
   if (currentComment.value.trim().length > 0) {
