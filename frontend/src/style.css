@@ -206,30 +206,204 @@ html {
 
 /* Pause animations when user hovers or touches the container */
 .pause-marquee:hover,
+/* Root app container */
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ============================================
+   ANDROID-ONLY SAFE AREA STYLES
+   These only apply when running in Capacitor Android app
+   ============================================ */
+
+/* Safe Area Utilities - Android Only */
+.platform-android .safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.platform-android .safe-area-top-fixed {
+  top: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.platform-android .safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Main content offset - Android Only */
+.platform-android .main-content-offset {
+  margin-top: calc(54px + env(safe-area-inset-top, 0px));
+}
+@media (min-width: 768px) {
+  .platform-android .main-content-offset {
+    margin-top: calc(72px + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Web fallback - no safe area adjustments */
+body:not(.platform-android) .main-content-offset {
+  margin-top: 60px;
+}
+@media (min-width: 768px) {
+  body:not(.platform-android) .main-content-offset {
+    margin-top: 72px;
+  }
+}
+
+/* Sticky Group Header Offset */
+/* Mobile: 54px navbar + safe-area */
+.sticky-group-header {
+  top: calc(54px + env(safe-area-inset-top, 20px));
+}
+/* Desktop: 72px navbar */
+@media (min-width: 768px) {
+  .sticky-group-header {
+    top: 72px;
+  }
+}
+
+/* Android-only elements - hidden by default, visible on Android */
+.android-only-btn {
+  display: none !important;
+}
+.platform-android .android-only-btn {
+  display: flex !important;
+}
+
+/* Custom Scrollbar */
+/* Custom Scrollbar - Hidden but functional */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* For Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* Utilities */
+.holographic-text {
+  background: linear-gradient(to right, #2563eb, #e11d48, #2563eb);
+  background-size: 200% auto;
+  color: #000;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.holographic-border {
+  position: relative;
+  z-index: 0;
+}
+
+.holographic-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(to right, #2563eb, #e11d48, #2563eb);
+  background-size: 200% auto;
+  z-index: -1;
+  animation: shine 3s linear infinite;
+}
+
+/* Transitions */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.list-leave-active {
+  position: absolute;
+}
+
+
+@media (max-width: 640px) {
+  table {
+    @apply table-fixed;
+  }
+
+  th,
+  td {
+    @apply px-1 py-2 text-xs;
+  }
+
+  th:first-child,
+  td:first-child {
+    @apply w-28;
+  }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    @apply w-16;
+  }
+
+  th:nth-child(3),
+  td:nth-child(3) {
+    @apply w-28;
+  }
+
+  .image-box {
+    @apply w-20 h-28;
+  }
+
+
+}
+
+
+/* Replaced by App.vue global styles for better cache persistence */
+
+/* 
+ * Infinite Marquee Animations for Horizontal Galleries
+ * These are applied to flex containers to make them scroll automatically
+ */
+.animate-marquee-left {
+  animation: marquee-left 35s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 35s linear infinite;
+}
+
+@keyframes marquee-left {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); } /* Scrolls half of its duplicated width */
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); } /* Starts half-scrolled */
+  100% { transform: translateX(0%); }
+}
+
+/* Pause animations when user hovers or touches the container */
+.pause-marquee:hover,
 .pause-marquee:active,
 .pause-marquee:focus-within {
   animation-play-state: paused;
-}
-
-/* ==========================================================
-   MODERN TOAST OVERRIDES (CSS Variables Strategy)
-   ========================================================== */
-:root {
-  --toastify-toast-width: auto !important;
-  --toastify-toast-min-height: 48px !important;
-  --toastify-toast-max-height: 800px !important;
-  --toastify-toast-bd-radius: 99px !important;
-  --toastify-font-family: inherit !important;
-  --toastify-z-index: 999999 !important;
-  --toastify-text-color-light: #f8fafc !important;
-  --toastify-text-color-dark: #f8fafc !important;
-  --toastify-color-light: rgba(15, 23, 42, 0.95) !important;
-  --toastify-color-dark: rgba(15, 23, 42, 0.95) !important;
-  --toastify-color-info: rgba(15, 23, 42, 0.95) !important;
-  --toastify-color-success: rgba(15, 23, 42, 0.95) !important;
-  --toastify-color-warning: rgba(15, 23, 42, 0.95) !important;
-  --toastify-color-error: rgba(15, 23, 42, 0.95) !important;
-  --toastify-icon-color-success: #22c55e !important;
 }
 
 .Toastify__toast-container {
@@ -259,15 +433,9 @@ html {
   border: none !important;
   margin-bottom: 8px !important;
   display: inline-flex !important;
-  animation: toast-spring-up 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
 .Toastify__progress-bar,
 .Toastify__close-button {
   display: none !important;
-}
-
-@keyframes toast-spring-up {
-  0% { transform: translateY(100px) scale(0.85); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
 }

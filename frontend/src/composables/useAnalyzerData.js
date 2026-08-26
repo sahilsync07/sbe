@@ -193,12 +193,25 @@ export function useAnalyzerData() {
         const pct61_90 = totalOutstanding > 0 ? (b61_90 / totalOutstanding) * 100 : 0;
         const pct90_plus = totalOutstanding > 0 ? (b90_plus / totalOutstanding) * 100 : 0;
 
+        // Determine Mutually Exclusive Primary Aging Group (Priority: Oldest unpaid debt)
+        let primaryBucket = '0_30';
+        if (b90_plus > 100) {
+          primaryBucket = '90plus';
+        } else if (b61_90 > 100) {
+          primaryBucket = '61_90';
+        } else if (b31_60 > 100) {
+          primaryBucket = '31_60';
+        } else {
+          primaryBucket = '0_30';
+        }
+
         const partyRecord = {
           ledgerName: ledger.ledgerName || 'Unknown Party',
           groupName: group.groupName || 'General',
           closingBalance: closing,
           totalOutstanding,
           isDebtor,
+          primaryBucket,
           rawLedger: ledger,
           aging: {
             b0_30,
@@ -266,8 +279,10 @@ export function useAnalyzerData() {
     let b31_60 = 0;
     let b61_90 = 0;
     let b90_plus = 0;
-    let criticalCount = 0;
-    let overdueCount = 0;
+    let count90plus = 0;
+    let count61_90 = 0;
+    let count31_60 = 0;
+    let count0_30 = 0;
 
     for (const item of list) {
       totalOutstanding += item.totalOutstanding;
@@ -276,8 +291,10 @@ export function useAnalyzerData() {
       b61_90 += item.aging.b61_90;
       b90_plus += item.aging.b90_plus;
 
-      if (item.aging.b90_plus > 100) criticalCount++;
-      if (item.aging.overdueTotal > 100) overdueCount++;
+      if (item.primaryBucket === '90plus') count90plus++;
+      else if (item.primaryBucket === '61_90') count61_90++;
+      else if (item.primaryBucket === '31_60') count31_60++;
+      else count0_30++;
     }
 
     return {
@@ -287,8 +304,12 @@ export function useAnalyzerData() {
       b31_60,
       b61_90,
       b90_plus,
-      criticalCount,
-      overdueCount,
+      count90plus,
+      count61_90,
+      count31_60,
+      count0_30,
+      criticalCount: count90plus,
+      overdueCount: count61_90 + count31_60,
       pct0_30: totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0,
       pct31_60: totalOutstanding > 0 ? (b31_60 / totalOutstanding) * 100 : 0,
       pct61_90: totalOutstanding > 0 ? (b61_90 / totalOutstanding) * 100 : 0,
@@ -314,15 +335,15 @@ export function useAnalyzerData() {
       result = result.filter(item => selectedGroups.value.includes(item.groupName));
     }
 
-    // 3. Aging Risk Filter
+    // 3. Mutually Exclusive Aging Risk Filter (No repetitive overlap across buckets)
     if (activeAgingFilter.value === '90plus') {
-      result = result.filter(item => item.aging.b90_plus > 100);
-    } else if (activeAgingFilter.value === '60plus') {
-      result = result.filter(item => (item.aging.b61_90 + item.aging.b90_plus) > 100);
-    } else if (activeAgingFilter.value === '30plus') {
-      result = result.filter(item => item.aging.overdueTotal > 100);
-    } else if (activeAgingFilter.value === 'current') {
-      result = result.filter(item => item.aging.b0_30 > 100);
+      result = result.filter(item => item.primaryBucket === '90plus');
+    } else if (activeAgingFilter.value === '61_90') {
+      result = result.filter(item => item.primaryBucket === '61_90');
+    } else if (activeAgingFilter.value === '31_60') {
+      result = result.filter(item => item.primaryBucket === '31_60');
+    } else if (activeAgingFilter.value === '0_30') {
+      result = result.filter(item => item.primaryBucket === '0_30');
     }
 
     // 4. Sorting

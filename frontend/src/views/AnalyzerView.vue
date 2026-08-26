@@ -146,9 +146,9 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         <!-- 0-30 Days: Fresh / Current -->
         <div
-          @click="activeAgingFilter = activeAgingFilter === 'current' ? 'all' : 'current'"
+          @click="activeAgingFilter = activeAgingFilter === '0_30' ? 'all' : '0_30'"
           class="bg-white/90 rounded-2xl p-3.5 sm:p-4 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === 'current' ? 'border-emerald-500 ring-2 ring-emerald-400/20 bg-emerald-50/30' : 'border-slate-200/80 hover:border-emerald-300'"
+          :class="activeAgingFilter === '0_30' ? 'border-emerald-500 ring-2 ring-emerald-400/20 bg-emerald-50/30' : 'border-slate-200/80 hover:border-emerald-300'"
         >
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[11px] font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -162,14 +162,14 @@
           <div class="text-base sm:text-xl font-black text-slate-900 tracking-tight">
             {{ formatINR(summaryStats.b0_30) }}
           </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Fresh / Current Cycle</p>
+          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count0_30 }} Prompt Accounts</p>
         </div>
 
         <!-- 31-60 Days: Due -->
         <div
-          @click="activeAgingFilter = activeAgingFilter === '30plus' ? 'all' : '30plus'"
+          @click="activeAgingFilter = activeAgingFilter === '31_60' ? 'all' : '31_60'"
           class="bg-white/90 rounded-2xl p-3.5 sm:p-4 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === '30plus' ? 'border-amber-500 ring-2 ring-amber-400/20 bg-amber-50/30' : 'border-slate-200/80 hover:border-amber-300'"
+          :class="activeAgingFilter === '31_60' ? 'border-amber-500 ring-2 ring-amber-400/20 bg-amber-50/30' : 'border-slate-200/80 hover:border-amber-300'"
         >
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -183,14 +183,14 @@
           <div class="text-base sm:text-xl font-black text-slate-900 tracking-tight">
             {{ formatINR(summaryStats.b31_60) }}
           </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Payment Due / Follow-up</p>
+          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count31_60 }} Due Accounts</p>
         </div>
 
         <!-- 61-90 Days: Overdue -->
         <div
-          @click="activeAgingFilter = activeAgingFilter === '60plus' ? 'all' : '60plus'"
+          @click="activeAgingFilter = activeAgingFilter === '61_90' ? 'all' : '61_90'"
           class="bg-white/90 rounded-2xl p-3.5 sm:p-4 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === '60plus' ? 'border-orange-500 ring-2 ring-orange-400/20 bg-orange-50/30' : 'border-slate-200/80 hover:border-orange-300'"
+          :class="activeAgingFilter === '61_90' ? 'border-orange-500 ring-2 ring-orange-400/20 bg-orange-50/30' : 'border-slate-200/80 hover:border-orange-300'"
         >
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[11px] font-black text-orange-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -204,7 +204,7 @@
           <div class="text-base sm:text-xl font-black text-slate-900 tracking-tight">
             {{ formatINR(summaryStats.b61_90) }}
           </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Overdue / Priority Call</p>
+          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count61_90 }} Overdue Accounts</p>
         </div>
 
         <!-- 90+ Days: Critical Alert -->
@@ -227,7 +227,7 @@
           </div>
           <p class="text-[10px] text-rose-600 font-bold mt-0.5 flex items-center gap-1">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            {{ summaryStats.criticalCount }} High-Risk Accounts
+            {{ summaryStats.count90plus }} Critical Accounts
           </p>
         </div>
       </div>
@@ -253,7 +253,7 @@
           </button>
         </div>
 
-        <!-- Filter Pills Row -->
+        <!-- Filter Pills Row (Mutually Exclusive Buckets) -->
         <div class="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
           <button
             @click="activeAgingFilter = 'all'"
@@ -269,23 +269,31 @@
             :class="activeAgingFilter === '90plus' ? 'bg-rose-600 text-white border-rose-600 shadow-xs' : 'bg-rose-50 text-rose-800 border-rose-200 hover:border-rose-300'"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-rose-500" :class="activeAgingFilter === '90plus' ? 'bg-white' : ''"></span>
-            Critical 90+ Days ({{ summaryStats.criticalCount }})
+            90+ Days ({{ summaryStats.count90plus }})
           </button>
 
           <button
-            @click="activeAgingFilter = '60plus'"
+            @click="activeAgingFilter = '61_90'"
             class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5"
-            :class="activeAgingFilter === '60plus' ? 'bg-orange-600 text-white border-orange-600 shadow-xs' : 'bg-orange-50 text-orange-800 border-orange-200 hover:border-orange-300'"
+            :class="activeAgingFilter === '61_90' ? 'bg-orange-600 text-white border-orange-600 shadow-xs' : 'bg-orange-50 text-orange-800 border-orange-200 hover:border-orange-300'"
           >
-            Overdue 60+ Days
+            61–90 Days ({{ summaryStats.count61_90 }})
           </button>
 
           <button
-            @click="activeAgingFilter = 'current'"
+            @click="activeAgingFilter = '31_60'"
             class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5"
-            :class="activeAgingFilter === 'current' ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs' : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:border-emerald-300'"
+            :class="activeAgingFilter === '31_60' ? 'bg-amber-600 text-white border-amber-600 shadow-xs' : 'bg-amber-50 text-amber-800 border-amber-200 hover:border-amber-300'"
           >
-            Current (0-30d)
+            31–60 Days ({{ summaryStats.count31_60 }})
+          </button>
+
+          <button
+            @click="activeAgingFilter = '0_30'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5"
+            :class="activeAgingFilter === '0_30' ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs' : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:border-emerald-300'"
+          >
+            0–30 Days ({{ summaryStats.count0_30 }})
           </button>
         </div>
       </div>
@@ -309,7 +317,7 @@
           v-for="party in visibleParties"
           :key="party.ledgerName"
           class="bg-white/95 rounded-2xl p-4 sm:p-5 border transition-all duration-200 shadow-xs hover:shadow-md space-y-3.5"
-          :class="party.aging.b90_plus > 500 ? 'border-rose-200/90 ring-1 ring-rose-500/10' : 'border-slate-200/80'"
+          :class="party.primaryBucket === '90plus' ? 'border-rose-200/90 ring-1 ring-rose-500/10' : 'border-slate-200/80'"
         >
           <!-- Card Header -->
           <div class="flex items-start justify-between gap-3">
@@ -318,13 +326,34 @@
                 <h3 class="text-sm sm:text-base font-black text-slate-900 leading-snug">
                   {{ party.ledgerName }}
                 </h3>
-                <!-- Critical 90+ Badge -->
+                <!-- Dedicated Bucket Status Badge -->
                 <span
-                  v-if="party.aging.b90_plus > 100"
+                  v-if="party.primaryBucket === '90plus'"
                   class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
                 >
                   <i class="fa-solid fa-triangle-exclamation text-[9px]"></i>
-                  90+d Overdue
+                  90+d Critical
+                </span>
+                <span
+                  v-else-if="party.primaryBucket === '61_90'"
+                  class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
+                >
+                  <i class="fa-solid fa-clock text-[9px]"></i>
+                  61–90d Overdue
+                </span>
+                <span
+                  v-else-if="party.primaryBucket === '31_60'"
+                  class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
+                >
+                  <i class="fa-solid fa-calendar-days text-[9px]"></i>
+                  31–60d Due
+                </span>
+                <span
+                  v-else
+                  class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
+                >
+                  <i class="fa-solid fa-circle-check text-[9px]"></i>
+                  0–30d Current
                 </span>
               </div>
               <p class="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5 mt-0.5">
