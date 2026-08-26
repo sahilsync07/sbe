@@ -187,7 +187,7 @@ onUnmounted(() => {
   --toastify-icon-color-success: #22c55e !important; 
 }
 
-.Vue3Toastify__toast-container {
+.Toastify__toast-container {
   padding: 0 !important;
   pointer-events: none !important;
   display: flex !important;
@@ -195,20 +195,21 @@ onUnmounted(() => {
   gap: 12px !important;
 }
 
-.Vue3Toastify__toast-container {
+.Toastify__toast-container {
   bottom: max(env(safe-area-inset-bottom, 32px), 32px) !important;
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
   align-items: center !important;
+  top: auto !important;
   transform: none !important;
 }
-.Vue3Toastify__toast {
+.Toastify__toast {
   margin: 0 auto !important;
   border-radius: 99px !important; 
 }
 
-.Vue3Toastify__toast {
+.Toastify__toast {
   pointer-events: auto !important;
   padding: 10px 24px !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
@@ -221,8 +222,8 @@ onUnmounted(() => {
   animation: toast-spring-up 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
-.Vue3Toastify__progress-bar,
-.Vue3Toastify__close-button {
+.Toastify__progress-bar,
+.Toastify__close-button {
   display: none !important;
 }
 

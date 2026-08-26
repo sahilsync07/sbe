@@ -9,7 +9,7 @@
       <!-- Top Bar -->
       <header class="hub-topbar">
         <div class="hub-topbar__left">
-          <button type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
+          <button v-if="route.path !== '/'" type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
             <i class="fa-solid fa-arrow-left"></i>
           </button>
           <div class="hub-topbar__date">
@@ -18,7 +18,7 @@
           </div>
         </div>
 
-        <div class="hub-topbar__right" v-if="isAdmin || isSuperAdmin">
+        <div class="hub-topbar__right">
           <button
             v-if="isAdmin && !isSuperAdmin"
             @click="updateStockData"
@@ -37,6 +37,15 @@
             <i class="fa-solid fa-terminal"></i>
           </button>
           <button
+            v-if="!isAdmin && !isSuperAdmin"
+            @click="$router.push({ query: { login: 'admin' } })"
+            class="hub-icon-btn hub-icon-btn--accent"
+            title="Admin Login"
+          >
+            <i class="fa-solid fa-lock"></i>
+          </button>
+          <button
+            v-if="isAdmin || isSuperAdmin"
             @click="handleLogout"
             class="hub-icon-btn hub-icon-btn--danger"
             title="Logout"
@@ -52,7 +61,7 @@
           <span class="hub-hero__label">SBE</span>
           <span class="hub-hero__gradient">Hub</span>
         </h1>
-        <p class="hub-hero__sub">Your command center — every tool, one tap away.</p>
+        <p class="hub-hero__sub">{{ lastSyncText }}</p>
       </section>
 
       <!-- Bento Grid -->
@@ -96,12 +105,13 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAdmin } from '../composables/useAdmin';
 import { useStockData } from '../composables/useStockData';
 import ConsoleViewer from '../components/ConsoleViewer.vue';
 
 const router = useRouter();
+const route = useRoute();
 const { isAdmin, isSuperAdmin, logout } = useAdmin();
 
 const showConsole = ref(false); // collapsed by default
@@ -116,12 +126,18 @@ const handleLogout = async () => {
 };
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const { updateStockData, loading: isSyncing } = useStockData(isLocal);
+const { updateStockData, loading: isSyncing, lastRefresh } = useStockData(isLocal);
 
 // Date display
 const now = new Date();
 const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
 const currentDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+const lastSyncText = computed(() => {
+  if (!lastRefresh.value) return 'Fetching latest sync status...';
+  const d = new Date(lastRefresh.value);
+  return `Last synced: ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+});
 
 const links = [
   {
@@ -182,6 +198,14 @@ const links = [
     gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
   },
   {
+    path: '/pdf-gen?onetouch=true',
+    label: 'One Touch Share',
+    desc: 'Auto-share all brands',
+    icon: 'fa-bolt',
+    colorKey: 'violet',
+    gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+  },
+  {
     path: '/line-list',
     label: 'Line List',
     desc: 'Print area debtor balances',
@@ -217,6 +241,10 @@ const links = [
 
 const filteredLinks = computed(() => {
   return links.filter(item => {
+    // Hide Stock Table if we are already on the root route (e.g. inside SBE Hub)
+    if (item.path === '/' && route.path === '/') {
+      return false;
+    }
     if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation' || item.path === '/analyzer') && !isAdmin.value && !isSuperAdmin.value) {
       return false;
     }
