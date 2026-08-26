@@ -250,18 +250,6 @@ html {
   background: #f8fafc !important; /* Tailwind slate-50 */
 }
 
-/* Fix Analyzer sticky header (Goal 10) */
-.az-shell {
-  overflow-x: visible !important;
-  overflow: visible !important;
-}
-.platform-android .az-topbar {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 99 !important;
-  padding-top: calc(16px + env(safe-area-inset-top, 32px)) !important;
-  background: #f8f6f1 !important;
-}
 
 
 /* ============================================

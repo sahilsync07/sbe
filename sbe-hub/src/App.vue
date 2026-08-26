@@ -1,8 +1,5 @@
 <template>
   <div class="min-h-screen relative bg-slate-50">
-    <!-- Global Safe Area Mask for Android (prevents scroll-through) -->
-    <div v-if="isNativeApp" class="fixed top-0 w-full z-[100]" :class="headerMaskColor" style="height: env(safe-area-inset-top, 32px);"></div>
-    
     <!-- Global Ambient Glow Orbs -->
     <div class="hub-orb hub-orb--warm fixed top-0 left-0 w-96 h-96 bg-gradient-to-tr from-amber-200/20 to-orange-400/20 rounded-full blur-[80px] -z-10 pointer-events-none mix-blend-multiply opacity-70"></div>
     <div class="hub-orb hub-orb--accent fixed top-40 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-blue-300/20 to-violet-500/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-multiply opacity-60"></div>
@@ -18,7 +15,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -36,15 +33,6 @@ import { useStockData } from '@/composables/useStockData';
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
-
-const isNativeApp = ref(Capacitor.isNativePlatform());
-
-// Determine the safe area mask color based on route
-const headerMaskColor = computed(() => {
-  if (route.path === '/') return 'bg-[#f8f6f1]/90 backdrop-blur-md';
-  if (route.path === '/analyzer') return 'bg-white/95 backdrop-blur-md';
-  return 'bg-slate-50/90 backdrop-blur-md';
-});
 
 // Extract metadata instantly on cache load
 watch(() => appStore.stockData, (newData) => {
