@@ -57,6 +57,63 @@ export function useAnalyzerData() {
     return latest;
   });
 
+  // ─── Exclusion Filters for Non-Debtors / Non-Creditors ────────────────
+  const EXCLUDED_GROUPS = new Set([
+    '_META_DATA_',
+    '&#4; Primary',
+    'Bank Accounts',
+    'Bank OD A/c',
+    'Capital Account',
+    'Cash-in-Hand',
+    'Current Assets',
+    'Current Liabilities',
+    'Direct Expenses',
+    'Direct Incomes',
+    'Duties & Taxes',
+    'Fixed Assets',
+    'Indirect Expenses',
+    'Indirect Incomes',
+    'Investments',
+    'Petty Expenses',
+    'Purchase Accounts',
+    'Sales Accounts',
+    'STAFF',
+    'Unsecured Loans'
+  ]);
+
+  const EXCLUDED_LEDGER_PATTERNS = [
+    /^profit\s*&\s*loss/i,
+    /^cash(\s+salary)?$/i,
+    /^tcs$/i,
+    /^tds/i,
+    /^(c|s|i|ut)?gst/i,
+    /^sale@gst/i,
+    /^purchase@gst/i,
+    /^round\s*off$/i,
+    /^\d{2,4}$/, // Loan codes like 222, 333, 444, 666
+    /staff/i,
+    /^bank\s/i,
+    /capital/i,
+    /drawings/i,
+    /freight/i,
+    /discount/i,
+    /expenses/i,
+    /insurance/i
+  ];
+
+  const isExcludedGroup = (gName) => {
+    const name = (gName || '').trim();
+    if (EXCLUDED_GROUPS.has(name)) return true;
+    if (/^(staff|bank|duty|duties|tax|expense|income|loan|asset|liabilit|capital)/i.test(name)) return true;
+    return false;
+  };
+
+  const isExcludedLedger = (lName) => {
+    const name = (lName || '').trim();
+    if (!name) return true;
+    return EXCLUDED_LEDGER_PATTERNS.some(pattern => pattern.test(name));
+  };
+
   // ─── Classification & Aging Computation ────────────────────────────────
   const processedData = computed(() => {
     if (!ledgerData.value || !Array.isArray(ledgerData.value)) {
@@ -68,9 +125,10 @@ export function useAnalyzerData() {
     const creditors = [];
 
     for (const group of ledgerData.value) {
-      if (group.groupName === '_META_DATA_' || !group.ledgers) continue;
+      if (isExcludedGroup(group.groupName) || !group.ledgers) continue;
 
       for (const ledger of group.ledgers) {
+        if (isExcludedLedger(ledger.ledgerName)) continue;
         const closing = ledger.closingBalance || 0;
         if (Math.abs(closing) < 0.01) continue; // Skip zero balance accounts
 

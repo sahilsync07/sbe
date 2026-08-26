@@ -141,6 +141,22 @@ const lastSyncText = computed(() => {
 
 const links = [
   {
+    path: '/pdf-gen?onetouch=true',
+    label: 'One Touch Share',
+    desc: 'Auto-share all brands in 1 tap',
+    icon: 'fa-bolt',
+    colorKey: 'violet',
+    gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+  },
+  {
+    path: '/analyzer',
+    label: 'Analyzer',
+    desc: 'Debtor aging & payment recovery',
+    icon: 'fa-chart-pie',
+    colorKey: 'teal',
+    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+  },
+  {
     path: '/',
     label: 'Stock Table',
     desc: 'Browse full product catalog with images & live stock',
@@ -198,14 +214,6 @@ const links = [
     gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
   },
   {
-    path: '/pdf-gen?onetouch=true',
-    label: 'One Touch Share',
-    desc: 'Auto-share all brands',
-    icon: 'fa-bolt',
-    colorKey: 'violet',
-    gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-  },
-  {
     path: '/line-list',
     label: 'Line List',
     desc: 'Print area debtor balances',
@@ -228,14 +236,6 @@ const links = [
     icon: 'fa-box-archive',
     colorKey: 'stone',
     gradient: 'linear-gradient(135deg, #a8a29e, #78716c)',
-  },
-  {
-    path: '/analyzer',
-    label: 'Analyzer',
-    desc: 'Debtor & creditor monthly analysis',
-    icon: 'fa-chart-pie',
-    colorKey: 'teal',
-    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
   },
 ];
 

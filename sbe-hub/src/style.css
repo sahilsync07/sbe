@@ -263,11 +263,6 @@ html {
   background: #f8f6f1 !important;
 }
 
-/* One Touch tile first (Goal 11) */
-.hub-card[href="#/pdf-gen?onetouch=true"],
-.hub-card[href="/pdf-gen?onetouch=true"] {
-  order: -1 !important;
-}
 
 /* ============================================
    AESTHETIC MOBILE TOAST STYLES (Bottom-Floating Glassmorphism Pill)

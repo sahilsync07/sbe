@@ -35,15 +35,15 @@ import { useStockData } from '@/composables/useStockData';
 
 const route = useRoute();
 const router = useRouter();
-
 const appStore = useAppStore();
 
 const isNativeApp = ref(Capacitor.isNativePlatform());
 
 // Determine the safe area mask color based on route
 const headerMaskColor = computed(() => {
-  if (route.path === '/analyzer') return 'bg-[#f8f6f1]';
-  return 'bg-slate-50';
+  if (route.path === '/') return 'bg-[#f8f6f1]/90 backdrop-blur-md';
+  if (route.path === '/analyzer') return 'bg-white/95 backdrop-blur-md';
+  return 'bg-slate-50/90 backdrop-blur-md';
 });
 
 // Extract metadata instantly on cache load
@@ -77,7 +77,6 @@ const showAdminModal = ref(false);
 // Load Config (Offline-First)
 const loadConfig = async () => {
     const CACHE_KEY = 'sbe-config-cache';
-    // 1. Immediately hydrate from cache in 0ms
     try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -85,7 +84,6 @@ const loadConfig = async () => {
         }
     } catch (e) {}
 
-    // 2. Fetch fresh config in background, silently falling back when offline
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
         const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
@@ -97,7 +95,6 @@ const loadConfig = async () => {
             } catch (e) {}
         }
     } catch (err) {
-        // Offline / network failure: silently continue with cached config
         console.log('[SBE Hub] Using cached configuration (offline mode).');
     }
 };
@@ -193,9 +190,6 @@ onUnmounted(() => {
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
-}
-
-.Toastify__toast-container {
   bottom: max(env(safe-area-inset-bottom, 32px), 32px) !important;
   left: 0 !important;
   right: 0 !important;
@@ -204,12 +198,10 @@ onUnmounted(() => {
   top: auto !important;
   transform: none !important;
 }
+
 .Toastify__toast {
   margin: 0 auto !important;
   border-radius: 99px !important; 
-}
-
-.Toastify__toast {
   pointer-events: auto !important;
   padding: 10px 24px !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 

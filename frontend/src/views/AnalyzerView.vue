@@ -5,7 +5,7 @@
     <div class="fixed top-48 right-0 w-[450px] h-[450px] bg-gradient-to-bl from-rose-200/25 to-amber-300/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-multiply opacity-65"></div>
 
     <!-- ═══ TOP BAR (Sticky Safe Area) ═══ -->
-    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-xs px-4 sm:px-6 py-3.5 transition-all">
+    <header class="az-topbar sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs px-4 sm:px-6 transition-all" style="padding-top: max(env(safe-area-inset-top, 32px), 24px); padding-bottom: 14px;">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <!-- Left: Back Button & Title -->
         <div class="flex items-center gap-3 min-w-0">
