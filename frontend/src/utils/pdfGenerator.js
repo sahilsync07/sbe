@@ -124,15 +124,21 @@ export const generateOrderPDF = async (cart, customerDetails) => {
 
 
         // --- 3. TABLE (Compact & Minimalist) ---
+        const hasComments = cart.some(i => (i.comment && i.comment.trim()) || (i.sizeRequirement && i.sizeRequirement.trim()));
+
         // Explicit alignment for headers
         const tableColumn = [
             { content: "#", styles: { halign: 'center' } },
             { content: "ARTICLE", styles: { halign: 'left' } },
             { content: "SIZE", styles: { halign: 'center' } },
-            { content: "COLOR", styles: { halign: 'left' } }, // Color body is default left
+            { content: "COLOR", styles: { halign: 'left' } },
             { content: "QTY", styles: { halign: 'center' } },
             { content: "STOCK", styles: { halign: 'center' } }
         ];
+
+        if (hasComments) {
+            tableColumn.push({ content: "REQUIREMENT / NOTE", styles: { halign: 'left' } });
+        }
 
         const tableRows = [];
 
@@ -146,6 +152,8 @@ export const generateOrderPDF = async (cart, customerDetails) => {
             const qtyLabel = item.quantity === 1 ? 'Set' : 'Sets';
             const stockLabel = stockQty === 1 ? 'Pair' : 'Pairs';
 
+            const commentText = (item.comment || item.sizeRequirement || '').trim();
+
             const rowData = [
                 index + 1,
                 cleanName,
@@ -154,8 +162,30 @@ export const generateOrderPDF = async (cart, customerDetails) => {
                 `${item.quantity} ${qtyLabel}`,
                 `${stockQty} ${stockLabel}`
             ];
+
+            if (hasComments) {
+                rowData.push(commentText || '-');
+            }
+
             tableRows.push(rowData);
         });
+
+        const columnStyles = hasComments ? {
+            0: { cellWidth: 8, halign: 'center', fontStyle: "bold", textColor: [100] },
+            1: { cellWidth: 'auto', fontStyle: "bold" },
+            2: { cellWidth: 18, halign: 'center' },
+            3: { cellWidth: 24, halign: 'left' },
+            4: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
+            5: { cellWidth: 22, halign: 'center', textColor: [120] },
+            6: { cellWidth: 45, halign: 'left', fontStyle: 'italic', textColor: [80] }
+        } : {
+            0: { cellWidth: 10, halign: 'center', fontStyle: "bold", textColor: [100] },
+            1: { cellWidth: 'auto', fontStyle: "bold" },
+            2: { cellWidth: 24, halign: 'center' },
+            3: { cellWidth: 30, halign: 'left' },
+            4: { cellWidth: 28, halign: 'center', fontStyle: 'bold' },
+            5: { cellWidth: 28, halign: 'center', textColor: [120] }
+        };
 
         autoTable(doc, {
             head: [tableColumn],
@@ -163,7 +193,7 @@ export const generateOrderPDF = async (cart, customerDetails) => {
             startY: startY + 20,
             theme: 'plain',
             styles: {
-                fontSize: 9,
+                fontSize: 8.5,
                 cellPadding: 3,
                 valign: 'middle',
                 font: 'helvetica',
@@ -175,7 +205,7 @@ export const generateOrderPDF = async (cart, customerDetails) => {
                 fillColor: false,
                 textColor: [0, 0, 0],
                 fontStyle: 'bold',
-                fontSize: 9,
+                fontSize: 8.5,
                 lineWidth: { bottom: 1.5 },
                 lineColor: [0, 0, 0]
             },
@@ -183,15 +213,7 @@ export const generateOrderPDF = async (cart, customerDetails) => {
                 lineColor: [200, 200, 200],
                 lineWidth: { bottom: 0.1 },
             },
-            // Column Specifics (Increased widths for side columns to reduce Article width)
-            columnStyles: {
-                0: { cellWidth: 10, halign: 'center', fontStyle: "bold", textColor: [100] },
-                1: { cellWidth: 'auto', fontStyle: "bold" },
-                2: { cellWidth: 24, halign: 'center' }, // Increased from 22
-                3: { cellWidth: 30, halign: 'left' },   // Increased from 28
-                4: { cellWidth: 28, halign: 'center', fontStyle: 'bold' }, // Increased from 25
-                5: { cellWidth: 28, halign: 'center', textColor: [120] }   // Increased from 25
-            }
+            columnStyles: columnStyles
         });
 
         // --- 4. FOOTER ---

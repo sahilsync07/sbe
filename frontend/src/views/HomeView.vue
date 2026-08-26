@@ -157,6 +157,14 @@ const links = [
     gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
   },
   {
+    path: '/order-maker',
+    label: 'Order Maker',
+    desc: 'Photo-by-photo rapid ordering',
+    icon: 'fa-wand-magic-sparkles',
+    colorKey: 'purple',
+    gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+  },
+  {
     path: '/',
     label: 'Stock Table',
     desc: 'Browse full product catalog with images & live stock',

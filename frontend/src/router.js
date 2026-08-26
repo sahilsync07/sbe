@@ -12,6 +12,7 @@ import RateChartView from "./views/RateChartView.vue";
 import LineListView from "./views/LineListView.vue";
 import QuotationView from "./views/QuotationView.vue";
 import AnalyzerView from "./views/AnalyzerView.vue";
+import OrderMakerView from "./views/OrderMakerView.vue";
 import { useAdmin } from "./composables/useAdmin";
 
 const isAndroid = Capacitor.getPlatform() === 'android';
@@ -34,6 +35,7 @@ const routes = [
   { path: "/old-stock", component: OldStockView },
   { path: "/quotation", component: QuotationView },
   { path: "/analyzer", component: AnalyzerView },
+  { path: "/order-maker", component: OrderMakerView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];
