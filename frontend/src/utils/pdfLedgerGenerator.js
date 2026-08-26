@@ -10,7 +10,34 @@ const formatCurrency = (amount) => {
   }).format(Math.abs(amount));
 };
 
-export const generateLedgerPDF = (ledger) => {
+const monthMap = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+};
+
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const parseEntryDate = (dateStr) => {
+  if (!dateStr) return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  const [day, monthStr, yearShort] = parts;
+  const month = monthMap[monthStr];
+  if (month === undefined) return null;
+  let year = parseInt(yearShort, 10);
+  year = year < 50 ? 2000 + year : 1900 + year;
+  return new Date(year, month, parseInt(day, 10));
+};
+
+const formatDateStr = (dateObj) => {
+  if (!dateObj) return '';
+  const d = dateObj.getDate();
+  const m = monthNames[dateObj.getMonth()];
+  const y = String(dateObj.getFullYear()).slice(-2);
+  return `${d}-${m}-${y}`;
+};
+
+export const generateLedgerPDF = (ledger, options = {}) => {
   // 1. Initialize Document
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -25,14 +52,56 @@ export const generateLedgerPDF = (ledger) => {
   const tableFontSize = 8;
   const headerFontSize = 9;
 
+  // Filter entries if monthsLimit specified (e.g. last 6 months)
+  const allRawEntries = (ledger.entries || []).map(e => ({
+    ...e,
+    _parsedDate: parseEntryDate(e.date)
+  }));
+
+  let latestDateObj = new Date();
+  allRawEntries.forEach(e => {
+    if (e._parsedDate && e._parsedDate > latestDateObj) {
+      latestDateObj = e._parsedDate;
+    }
+  });
+
+  let cutoffDate = null;
+  if (options.monthsLimit && typeof options.monthsLimit === 'number') {
+    cutoffDate = new Date(latestDateObj);
+    cutoffDate.setMonth(cutoffDate.getMonth() - options.monthsLimit);
+  }
+
+  let effectiveOpeningBalance = ledger.openingBalance || 0;
+  let effectiveEntries = [];
+
+  if (cutoffDate) {
+    allRawEntries.forEach(entry => {
+      if (entry._parsedDate && entry._parsedDate < cutoffDate) {
+        if (entry.drCr === 'Dr') {
+          effectiveOpeningBalance -= Math.abs(entry.amount);
+        } else {
+          effectiveOpeningBalance += Math.abs(entry.amount);
+        }
+      } else {
+        effectiveEntries.push(entry);
+      }
+    });
+  } else {
+    effectiveEntries = allRawEntries;
+  }
+
   // Track Totals exactly
   let totalDrAmount = 0;
   let totalCrAmount = 0;
-  let currentRunningBalance = ledger.openingBalance || 0; 
+  let currentRunningBalance = effectiveOpeningBalance;
   
   // Get date range
-  const firstDate = ledger.entries?.length > 0 ? ledger.entries[0].date : '1-Apr-25';
-  const lastDate = ledger.entries?.length > 0 ? ledger.entries[ledger.entries.length - 1].date : '31-Mar-26';
+  const firstDate = effectiveEntries.length > 0 && effectiveEntries[0].date 
+    ? effectiveEntries[0].date 
+    : (cutoffDate ? formatDateStr(cutoffDate) : '1-Apr-25');
+  const lastDate = effectiveEntries.length > 0 && effectiveEntries[effectiveEntries.length - 1].date 
+    ? effectiveEntries[effectiveEntries.length - 1].date 
+    : formatDateStr(latestDateObj);
   const dateRangeStr = `${firstDate} to ${lastDate}`;
 
   // 2. Build the Document Header
@@ -54,7 +123,7 @@ export const generateLedgerPDF = (ledger) => {
 
     doc.setFont(primaryFont, 'bold');
     doc.setFontSize(14);
-    doc.text(ledger.ledgerName.toUpperCase(), pageWidth / 2, 115, { align: 'center' });
+    doc.text((ledger.ledgerName || 'LEDGER').toUpperCase(), pageWidth / 2, 115, { align: 'center' });
     
     doc.setFont(primaryFont, 'normal');
     doc.setFontSize(10);
@@ -69,7 +138,7 @@ export const generateLedgerPDF = (ledger) => {
     doc.setFontSize(9);
     doc.text('M/S.SRI BRUNDABANA ENTERPRISES - (25-26)', 40, 40);
     doc.setFont(primaryFont, 'normal');
-    let titleStr = `${ledger.ledgerName.toUpperCase()}   Ledger Account     : ${dateRangeStr}`;
+    let titleStr = `${(ledger.ledgerName || 'LEDGER').toUpperCase()}   Ledger Account     : ${dateRangeStr}`;
     doc.text(titleStr, 40, 52);
     doc.text(`Page ${data.pageNumber}`, pageWidth - 40, 52, { align: 'right' });
     doc.setDrawColor(0);
@@ -88,15 +157,15 @@ export const generateLedgerPDF = (ledger) => {
   // Opening Balance Row
   let obDr = '';
   let obCr = '';
-  if (ledger.openingBalance < 0) {
-     obDr = formatCurrency(ledger.openingBalance);
-     totalDrAmount += Math.abs(ledger.openingBalance);
-  } else if (ledger.openingBalance > 0) {
-     obCr = formatCurrency(ledger.openingBalance);
-     totalCrAmount += Math.abs(ledger.openingBalance);
+  if (effectiveOpeningBalance < 0) {
+     obDr = formatCurrency(effectiveOpeningBalance);
+     totalDrAmount += Math.abs(effectiveOpeningBalance);
+  } else if (effectiveOpeningBalance > 0) {
+     obCr = formatCurrency(effectiveOpeningBalance);
+     totalCrAmount += Math.abs(effectiveOpeningBalance);
   }
   
-  if (ledger.openingBalance !== 0) {
+  if (effectiveOpeningBalance !== 0 || effectiveEntries.length === 0) {
     tableRows.push([
         { content: firstDate, styles: { fontStyle: 'normal' } },
         { content: 'Opening Balance', styles: { fontStyle: 'bold' } },
@@ -109,8 +178,7 @@ export const generateLedgerPDF = (ledger) => {
   }
 
   // Entries
-  const entries = ledger.entries || [];
-  entries.forEach(entry => {
+  effectiveEntries.forEach(entry => {
      let dr = '';
      let cr = '';
      if (entry.drCr === 'Dr') {
@@ -124,8 +192,8 @@ export const generateLedgerPDF = (ledger) => {
      }
      tableRows.push([
          entry.date || '',
-         entry.type,
-         entry.type,
+         entry.type || '',
+         entry.type || '',
          entry.voucherNo?.toString() || '',
          dr,
          cr,
@@ -212,6 +280,14 @@ export const generateLedgerPDF = (ledger) => {
      if (i < pageCount) {
          doc.text('continued ...', pageWidth - 40, doc.internal.pageSize.height - 20, { align: 'right' });
      }
+  }
+
+  if (options.returnBase64) {
+    return doc.output('datauristring');
+  }
+
+  if (options.returnBlob) {
+    return doc.output('blob');
   }
 
   const safeName = ledger.ledgerName ? ledger.ledgerName.replace(/[^a-zA-Z0-9]/g, '_') : 'Ledger';

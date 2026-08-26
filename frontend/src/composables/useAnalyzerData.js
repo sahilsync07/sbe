@@ -21,8 +21,10 @@ export function useAnalyzerData() {
     Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
   };
 
+  const dateCache = new Map();
   const parseDate = (dateStr) => {
     if (!dateStr) return null;
+    if (dateCache.has(dateStr)) return dateCache.get(dateStr);
     const parts = dateStr.split('-');
     if (parts.length !== 3) return null;
     const [day, monthStr, yearShort] = parts;
@@ -30,7 +32,9 @@ export function useAnalyzerData() {
     if (month === undefined) return null;
     let year = parseInt(yearShort, 10);
     year = year < 50 ? 2000 + year : 1900 + year;
-    return new Date(year, month, parseInt(day, 10));
+    const d = new Date(year, month, parseInt(day, 10));
+    dateCache.set(dateStr, d);
+    return d;
   };
 
   // Compute reference date (latest transaction date across all ledgers or today)
@@ -137,6 +141,7 @@ export function useAnalyzerData() {
           closingBalance: closing,
           totalOutstanding,
           isDebtor,
+          rawLedger: ledger,
           aging: {
             b0_30,
             b31_60,
@@ -335,9 +340,9 @@ export function useAnalyzerData() {
   };
 
   /**
-   * Generate WhatsApp payment follow-up message link
+   * Generate WhatsApp payment follow-up message text
    */
-  const getWhatsAppFollowupLink = (party) => {
+  const getWhatsAppFollowupText = (party) => {
     const name = party.ledgerName;
     const total = formatINR(party.totalOutstanding);
     const overdue = formatINR(party.aging.b61_90 + party.aging.b90_plus);
@@ -353,8 +358,17 @@ export function useAnalyzerData() {
       text += `• Critical (>90 days): *${formatINR(party.aging.b90_plus)}*\n`;
     }
 
+    text += `\n📄 *Detailed 6-Month Ledger Statement PDF attached for your verification.*\n`;
     text += `\nKindly verify and arrange for payment clearance at your earliest convenience.\n\nThank you! 🙏\n_Sri Balaji Enterprises_`;
 
+    return text;
+  };
+
+  /**
+   * Generate WhatsApp payment follow-up message link
+   */
+  const getWhatsAppFollowupLink = (party) => {
+    const text = getWhatsAppFollowupText(party);
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
   };
 
@@ -373,8 +387,10 @@ export function useAnalyzerData() {
     summaryStats,
     filteredParties,
     groupedViewData,
+    currentList,
     formatINR,
     formatShortINR,
+    getWhatsAppFollowupText,
     getWhatsAppFollowupLink
   };
 }

@@ -306,7 +306,7 @@
 
         <!-- Party Card List -->
         <div
-          v-for="party in filteredParties"
+          v-for="party in visibleParties"
           :key="party.ledgerName"
           class="bg-white/95 rounded-2xl p-4 sm:p-5 border transition-all duration-200 shadow-xs hover:shadow-md space-y-3.5"
           :class="party.aging.b90_plus > 500 ? 'border-rose-200/90 ring-1 ring-rose-500/10' : 'border-slate-200/80'"
@@ -407,16 +407,17 @@
               <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" :class="{ 'rotate-180': party.showHistory }"></i>
             </button>
 
-            <!-- WhatsApp 1-Tap Reminder -->
-            <a
-              :href="getWhatsAppFollowupLink(party)"
-              target="_blank"
-              class="px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#128C7E] active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
-              title="Send WhatsApp Payment Follow-up"
+            <!-- WhatsApp 1-Tap Statement & 6M PDF Share -->
+            <button
+              @click="handleSharePartyStatement(party)"
+              :disabled="sharingParty === party.ledgerName"
+              class="px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#128C7E] active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50"
+              title="Share 6-Month Ledger PDF & WhatsApp Reminder"
             >
-              <i class="fa-brands fa-whatsapp text-sm"></i>
-              <span>Follow-up</span>
-            </a>
+              <i v-if="sharingParty === party.ledgerName" class="fa-solid fa-spinner fa-spin text-sm"></i>
+              <i v-else class="fa-brands fa-whatsapp text-sm"></i>
+              <span>{{ sharingParty === party.ledgerName ? 'Preparing…' : 'Follow-up' }}</span>
+            </button>
           </div>
 
           <!-- Expandable Transaction History Drawer -->
@@ -439,6 +440,17 @@
               <span class="font-mono font-bold text-slate-900">{{ formatINR(entry.amount) }}</span>
             </div>
           </div>
+        </div>
+
+        <!-- Load More Pagination Button -->
+        <div v-if="hasMoreParties" class="text-center pt-3 pb-2">
+          <button
+            @click="loadMoreParties"
+            class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-700 rounded-2xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-2 mx-auto"
+          >
+            <i class="fa-solid fa-angles-down text-violet-500 text-xs"></i>
+            <span>Load More Accounts (Showing {{ visibleParties.length }} of {{ filteredParties.length }})</span>
+          </button>
         </div>
       </div>
 
@@ -525,14 +537,15 @@
               </div>
               <div class="flex items-center gap-3">
                 <span class="font-black text-slate-900 font-mono">{{ formatINR(party.totalOutstanding) }}</span>
-                <a
-                  :href="getWhatsAppFollowupLink(party)"
-                  target="_blank"
-                  class="w-7 h-7 rounded-lg bg-[#25D366] text-white flex items-center justify-center hover:bg-[#128C7E]"
-                  title="WhatsApp"
+                <button
+                  @click="handleSharePartyStatement(party)"
+                  :disabled="sharingParty === party.ledgerName"
+                  class="w-7 h-7 rounded-lg bg-[#25D366] text-white flex items-center justify-center hover:bg-[#128C7E] active:scale-95 disabled:opacity-50 transition-all"
+                  title="Share 6-Month Ledger PDF & WhatsApp Reminder"
                 >
-                  <i class="fa-brands fa-whatsapp text-xs"></i>
-                </a>
+                  <i v-if="sharingParty === party.ledgerName" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                  <i v-else class="fa-brands fa-whatsapp text-xs"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -544,9 +557,14 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount } from 'vue';
+import { onMounted, ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAnalyzerData } from '@/composables/useAnalyzerData';
+import { useAnalyzerData } from '../composables/useAnalyzerData';
+import { generateLedgerPDF } from '../utils/pdfLedgerGenerator.js';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
+import { toast } from 'vue3-toastify';
 
 const router = useRouter();
 
@@ -557,6 +575,7 @@ const {
   activeTab,
   viewMode,
   searchQuery,
+  selectedGroups,
   activeAgingFilter,
   sortBy,
   summaryStats,
@@ -565,11 +584,96 @@ const {
   currentList,
   formatINR,
   formatShortINR,
+  getWhatsAppFollowupText,
   getWhatsAppFollowupLink
 } = useAnalyzerData();
 
 const showSortDropdown = ref(false);
 const sortMenuRef = ref(null);
+const sharingParty = ref(null);
+
+// ─── Progressive Rendering / Pagination (prevents WebView freeze) ────────
+const itemsPerPage = 30;
+const page = ref(1);
+
+const visibleParties = computed(() => {
+  return filteredParties.value.slice(0, page.value * itemsPerPage);
+});
+
+const hasMoreParties = computed(() => {
+  return visibleParties.value.length < filteredParties.value.length;
+});
+
+const loadMoreParties = () => {
+  if (hasMoreParties.value) {
+    page.value++;
+  }
+};
+
+// Reset page whenever filters change
+watch([searchQuery, activeAgingFilter, selectedGroups, sortBy, activeTab], () => {
+  page.value = 1;
+});
+
+// ─── 6-Month Ledger PDF & WhatsApp Statement Sharing ─────────────────────
+const handleSharePartyStatement = async (party) => {
+  try {
+    sharingParty.value = party.ledgerName;
+    const text = getWhatsAppFollowupText(party);
+
+    // 1. Copy formatted reminder message to clipboard
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
+    } catch (e) {
+      console.warn('Clipboard write warning:', e);
+    }
+
+    // 2. Generate 6-month Statement PDF
+    const ledgerObj = party.rawLedger || party;
+
+    if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === 'android') {
+      const pdfBase64 = generateLedgerPDF(ledgerObj, {
+        returnBase64: true,
+        monthsLimit: 6
+      });
+
+      if (pdfBase64 && typeof pdfBase64 === 'string') {
+        const base64Data = pdfBase64.split(',')[1] || pdfBase64;
+        const safeName = (party.ledgerName || 'Ledger').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `Statement_${safeName}_6M_${Date.now()}.pdf`;
+
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache
+        });
+
+        await Share.share({
+          title: `Statement - ${party.ledgerName}`,
+          text: text,
+          files: [savedFile.uri]
+        });
+
+        toast.success('PDF ready! Message copied to clipboard.', { autoClose: 3000 });
+      }
+    } else {
+      // Web browser fallback: Download PDF and open WhatsApp
+      generateLedgerPDF(ledgerObj, { monthsLimit: 6 });
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+      toast.success('6-Month Ledger PDF downloaded & statement copied to clipboard!', { autoClose: 4000 });
+    }
+  } catch (err) {
+    console.error('Failed to share statement:', err);
+    // Fallback: direct WhatsApp link
+    const url = getWhatsAppFollowupLink(party);
+    window.open(url, '_blank');
+  } finally {
+    sharingParty.value = null;
+  }
+};
 
 const sortOptions = [
   { key: 'overdue_desc', label: 'Highest 90+ Overdue', icon: 'fa-solid fa-triangle-exclamation' },
