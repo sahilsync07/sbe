@@ -27,8 +27,11 @@
                 {{ activeTab }}
               </span>
             </div>
-            <p class="text-[11px] text-slate-400 font-semibold truncate mt-0.5">
+            <p v-if="!loading && !error && summaryStats" class="text-[11px] text-slate-400 font-semibold truncate mt-0.5">
               {{ summaryStats.totalCount }} Accounts • Market Balance: {{ formatShortINR(summaryStats.totalOutstanding) }}
+            </p>
+            <p v-else class="text-[11px] text-slate-400 font-semibold truncate mt-0.5">
+              Loading data…
             </p>
           </div>
         </div>
@@ -89,6 +92,19 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-3.5 sm:px-6 pt-4 space-y-4">
+      <!-- ═══ LOADING & ERROR STATES ═══ -->
+      <div v-if="loading" class="py-20 flex flex-col items-center justify-center space-y-4">
+        <div class="w-12 h-12 rounded-full border-3 border-violet-200 border-t-violet-600 animate-spin"></div>
+        <p class="text-sm font-bold text-slate-600">Calculating aging breakdown from ledger records…</p>
+      </div>
+
+      <div v-else-if="error" class="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center space-y-2">
+        <i class="fa-solid fa-circle-exclamation text-rose-500 text-2xl"></i>
+        <h3 class="text-base font-bold text-rose-900">Unable to load ledger data</h3>
+        <p class="text-xs text-rose-700 max-w-md mx-auto">{{ error }}</p>
+      </div>
+
+      <template v-else>
       <!-- ═══ TABS (Debtors vs Creditors) ═══ -->
       <div class="flex items-center justify-between gap-3">
         <!-- Dual Tab Switcher -->
@@ -127,7 +143,7 @@
       </div>
 
       <!-- ═══ KPI SUMMARY DASHBOARD (4 AGING CARDS) ═══ -->
-      <div v-if="!loading && !error" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         <!-- 0-30 Days: Fresh / Current -->
         <div
           @click="activeAgingFilter = activeAgingFilter === 'current' ? 'all' : 'current'"
@@ -217,7 +233,7 @@
       </div>
 
       <!-- ═══ SEARCH & SMART RISK FILTERS ═══ -->
-      <div v-if="!loading && !error" class="space-y-2.5">
+      <div class="space-y-2.5">
         <!-- Search Input Bar -->
         <div class="relative flex items-center">
           <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-sm pointer-events-none"></i>
@@ -274,20 +290,8 @@
         </div>
       </div>
 
-      <!-- ═══ LOADING & ERROR STATES ═══ -->
-      <div v-if="loading" class="py-20 flex flex-col items-center justify-center space-y-4">
-        <div class="w-12 h-12 rounded-full border-3 border-violet-200 border-t-violet-600 animate-spin"></div>
-        <p class="text-sm font-bold text-slate-600">Calculating aging breakdown from ledger records…</p>
-      </div>
-
-      <div v-else-if="error" class="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center space-y-2">
-        <i class="fa-solid fa-circle-exclamation text-rose-500 text-2xl"></i>
-        <h3 class="text-base font-bold text-rose-900">Unable to load ledger data</h3>
-        <p class="text-xs text-rose-700 max-w-md mx-auto">{{ error }}</p>
-      </div>
-
       <!-- ═══ PARTY VIEW (Individual Accounts) ═══ -->
-      <div v-else-if="viewMode === 'Party View'" class="space-y-3">
+      <div v-if="viewMode === 'Party View'" class="space-y-3">
         <!-- Empty Results -->
         <div v-if="filteredParties.length === 0" class="bg-white rounded-3xl p-12 text-center border border-slate-200 space-y-3">
           <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 text-xl">
@@ -439,7 +443,7 @@
       </div>
 
       <!-- ═══ GROUP / AREA VIEW ═══ -->
-      <div v-else-if="viewMode === 'Group View'" class="space-y-3">
+      <div v-else class="space-y-3">
         <div
           v-for="group in groupedViewData"
           :key="group.groupName"
@@ -534,6 +538,7 @@
           </div>
         </div>
       </div>
+      </template>
     </main>
   </div>
 </template>
