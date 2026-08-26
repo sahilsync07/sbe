@@ -41,7 +41,7 @@
           <span class="hidden sm:inline">Order Basket</span>
           <span
             v-if="orderItems.length > 0"
-            class="px-1.5 py-0.2 rounded-full bg-white text-violet-700 font-black text-[11px] min-w-[20px] text-center"
+            class="px-1.5 py-0.2 rounded-full bg-white text-violet-700 font-black text-[11px] min-w-[20px] text-center shadow-xs"
           >
             {{ totalOrderSets }}
           </span>
@@ -63,10 +63,86 @@
         >
           <span>{{ cat.icon }}</span>
           <span>{{ cat.label }}</span>
-          <span class="text-[10px] opacity-70 px-1 rounded-full bg-black/10">
+          <span class="text-[10px] opacity-70 px-1.5 py-0.2 rounded-full bg-black/10">
             {{ getCategoryCount(cat.id) }}
           </span>
         </button>
+      </div>
+    </div>
+
+    <!-- ═══ TOP BUBBLE TRAIL / PHOTO FILMSTRIP PREVIEW ═══ -->
+    <div v-if="currentCategoryProducts.length > 0" class="max-w-md mx-auto px-3.5 sm:px-4 pt-2">
+      <div class="bg-white/85 backdrop-blur-md rounded-2xl p-2 border border-slate-200/80 shadow-xs space-y-1.5">
+        <!-- Trail Navigation Controls Header -->
+        <div class="flex items-center justify-between px-1 text-[11px] font-bold text-slate-500">
+          <button
+            type="button"
+            @click="handlePrev"
+            :disabled="currentIndex === 0"
+            class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 text-[11px] font-bold"
+          >
+            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+            <span>Back</span>
+          </button>
+
+          <span class="text-slate-700 font-extrabold">
+            Photo {{ Math.min(currentIndex + 1, currentCategoryProducts.length) }} of {{ currentCategoryProducts.length }}
+          </span>
+
+          <button
+            type="button"
+            @click="handleNext"
+            :disabled="currentIndex >= currentCategoryProducts.length - 1"
+            class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 text-[11px] font-bold"
+          >
+            <span>Next</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+
+        <!-- Horizontal Scrollable Square Bubbles -->
+        <div
+          ref="bubbleTrailContainer"
+          class="flex items-center gap-2 overflow-x-auto py-1 px-1 hide-scrollbar scroll-smooth"
+        >
+          <button
+            v-for="(prod, idx) in currentCategoryProducts"
+            :key="idx"
+            :ref="el => setBubbleRef(el, idx)"
+            type="button"
+            @click="jumpToPhoto(idx)"
+            class="relative w-14 h-14 rounded-2xl flex-shrink-0 bg-slate-100 border transition-all duration-200 overflow-hidden group flex items-center justify-center p-1"
+            :class="idx === currentIndex
+              ? 'scale-110 border-violet-600 ring-2 ring-violet-500 ring-offset-2 shadow-md z-10 bg-white'
+              : idx < currentIndex
+                ? 'opacity-65 hover:opacity-100 border-slate-200 hover:border-slate-400 bg-slate-50'
+                : 'opacity-80 hover:opacity-100 border-slate-200 hover:border-slate-400 bg-white'"
+            :title="prod.productName"
+          >
+            <!-- Miniature Image -->
+            <img
+              v-if="prod.imageUrl"
+              :src="prod.imageUrl"
+              class="w-full h-full object-contain pointer-events-none"
+              loading="lazy"
+            />
+            <i v-else class="fa-solid fa-shoe-prints text-slate-300 text-xs"></i>
+
+            <!-- Order Indicator Badge (Checkmark if already added to cart) -->
+            <div
+              v-if="isProductInCart(prod.productName)"
+              class="absolute top-0.5 right-0.5 w-4 h-4 bg-emerald-600 text-white rounded-full flex items-center justify-center text-[8px] font-black shadow-xs"
+              title="Added to order"
+            >
+              <i class="fa-solid fa-check"></i>
+            </div>
+
+            <!-- Index Tag -->
+            <div class="absolute bottom-0.5 left-0.5 px-1 rounded bg-slate-900/70 text-white text-[8px] font-extrabold leading-tight backdrop-blur-2xs">
+              {{ idx + 1 }}
+            </div>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -106,7 +182,7 @@
         </div>
         <div class="flex items-center justify-center gap-3 pt-2">
           <button
-            @click="currentIndex = 0"
+            @click="jumpToPhoto(0)"
             class="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold"
           >
             <i class="fa-solid fa-rotate-left mr-1"></i> Restart Category
@@ -122,30 +198,6 @@
 
       <!-- Active Product Card -->
       <div v-else class="space-y-3 animate-fade-in">
-        <!-- Progress Counter Bar -->
-        <div class="flex items-center justify-between text-xs font-bold text-slate-500 px-1">
-          <span>Card {{ currentIndex + 1 }} of {{ currentCategoryProducts.length }}</span>
-          <div class="flex items-center gap-1.5">
-            <button
-              v-if="currentIndex > 0"
-              @click="currentIndex--"
-              class="px-2 py-0.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-[11px]"
-              title="Previous photo"
-            >
-              <i class="fa-solid fa-arrow-left text-[10px]"></i> Prev
-            </button>
-            <span class="text-[11px] text-slate-400">Jump to:</span>
-            <input
-              type="number"
-              min="1"
-              :max="currentCategoryProducts.length"
-              :value="currentIndex + 1"
-              @change="handleJumpToIndex($event)"
-              class="w-12 text-center py-0.5 bg-white border border-slate-200 rounded text-[11px] font-bold"
-            />
-          </div>
-        </div>
-
         <!-- Product Presentation Card -->
         <div class="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-md transition-all">
           <!-- Big Product Image -->
@@ -453,7 +505,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStockData } from '../composables/useStockData';
 import { BRAND_LISTS } from '../utils/constants';
@@ -541,6 +593,14 @@ const currentQty = ref(1);
 const currentComment = ref('');
 const customSizeMin = ref('');
 const customSizeMax = ref('');
+const bubbleTrailContainer = ref(null);
+const bubbleElements = ref({});
+
+const setBubbleRef = (el, idx) => {
+  if (el) {
+    bubbleElements.value[idx] = el;
+  }
+};
 
 const currentProduct = computed(() => {
   return currentCategoryProducts.value[currentIndex.value] || {};
@@ -559,13 +619,35 @@ const resetCardInputs = () => {
   customSizeMax.value = '';
 };
 
-const handleJumpToIndex = (e) => {
-  const val = parseInt(e.target.value, 10);
-  if (!isNaN(val) && val >= 1 && val <= currentCategoryProducts.value.length) {
-    currentIndex.value = val - 1;
+const jumpToPhoto = (idx) => {
+  if (idx >= 0 && idx < currentCategoryProducts.value.length) {
+    currentIndex.value = idx;
     resetCardInputs();
   }
 };
+
+const handlePrev = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--;
+    resetCardInputs();
+  }
+};
+
+const handleNext = () => {
+  if (currentIndex.value < currentCategoryProducts.value.length - 1) {
+    currentIndex.value++;
+    resetCardInputs();
+  }
+};
+
+// Auto scroll bubble trail so active square is always centered
+watch(currentIndex, async (newIdx) => {
+  await nextTick();
+  const el = bubbleElements.value[newIdx];
+  if (el && el.scrollIntoView) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+});
 
 // ─── Size Shortcuts & Comment Helpers ─────────────────────────────────
 const quickSizes = ['4x8', '5x9', '5x10', '6x9', '6x10', '7x10', '9x10', '11x13', '1x3', '4x7'];
@@ -613,6 +695,11 @@ const isExporting = ref(false);
 const totalOrderSets = computed(() => {
   return orderItems.value.reduce((sum, item) => sum + item.quantity, 0);
 });
+
+const isProductInCart = (productName) => {
+  if (!productName) return false;
+  return orderItems.value.some(i => i.product.productName === productName);
+};
 
 const handleSkip = () => {
   if (currentIndex.value < currentCategoryProducts.value.length) {
