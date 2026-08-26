@@ -1,6 +1,6 @@
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
-import { getOptimizedImageUrl } from '@/utils/formatters';
+import { getOptimizedImageUrl } from './formatters';
 
 const CACHE_DIR = 'image_cache';
 const CACHE_NAME = 'sbe-images-v1';

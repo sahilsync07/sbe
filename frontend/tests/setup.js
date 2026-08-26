@@ -1,4 +1,9 @@
 import { config } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+
+beforeEach(() => {
+    setActivePinia(createPinia());
+});
 
 // Mock Capacitor for tests
 config.global.mocks = {
