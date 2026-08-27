@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_008',
-  version: '1.3.0',
-  updatedAt: '27 Aug 2026, 11:35 AM',
-  commitTitle: 'SBE Update #008: Zomato-Inspired Order Maker UI with Story Avatars & Dish Cards',
+  code: 'sbe_009',
+  version: '1.3.1',
+  updatedAt: '27 Aug 2026, 11:45 AM',
+  commitTitle: 'SBE Update #009: Fixed Top Header & 80% Scrollable Menus Viewport on Home Page',
   changes: [
+    {
+      tag: 'sbe_009',
+      date: '27 Aug 2026',
+      title: 'Fixed Top Header & 80% Scrollable Menu Viewport',
+      details: 'Locked top header with location, SBE Hub title, and live sync status permanently in place, making the menu grid the smooth 80% scrollable viewport.'
+    },
     {
       tag: 'sbe_008',
       date: '27 Aug 2026',
