@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_013',
-  version: '1.4.0',
-  updatedAt: '27 Aug 2026, 04:10 PM',
-  commitTitle: 'SBE Update #013: Dynamic Brand Stock Summary Report Cover Page for Photo Sharing & One Touch',
+  code: 'sbe_014',
+  version: '1.4.1',
+  updatedAt: '27 Aug 2026, 06:15 PM',
+  commitTitle: 'SBE Update #014: Detailed Bill Due Breakdown & Concise WhatsApp Payment Follow-up in Analyzer',
   changes: [
+    {
+      tag: 'sbe_014',
+      date: '27 Aug 2026',
+      title: 'Detailed Bill Breakdown & Concise Follow-up Message',
+      details: 'Enhanced WhatsApp Follow-up to list all unpaid bills sorted from oldest to most recent with bill amount, exact days overdue, and aging category, along with non-zero aging summaries and direct concise greetings.'
+    },
     {
       tag: 'sbe_013',
       date: '27 Aug 2026',
@@ -39,18 +45,6 @@ export const APP_VERSION = {
       date: '27 Aug 2026',
       title: 'WhatsApp Follow-up PDF Attachment & Clean Text Copy',
       details: 'Fixed Follow Up button to share/attach 6-month ledger PDF file, copy clean text message to clipboard without "Ji", and handle zero/nil balance scenarios gracefully.'
-    },
-    {
-      tag: 'sbe_006',
-      date: '27 Aug 2026',
-      title: 'Sync Timestamp Extraction & Cache Persistence',
-      details: 'Extracted live metadata timestamp directly from the first lines of stock-data.json, ensured cache persistence across all storage tiers, and added relative time display (e.g. 19 hrs ago).'
-    },
-    {
-      tag: 'sbe_005',
-      date: '27 Aug 2026',
-      title: 'Full-Screen One Touch Share Mode & 2-Column Pill Toggles',
-      details: 'Transformed One Touch Mode into a dedicated full-screen interface with 2-column pill switches for Low Stock, With Photos, Min Qty Filter, and Select All Groups (Default ON).'
     }
   ]
 };

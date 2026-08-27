@@ -125,6 +125,7 @@ export function useAnalyzerData() {
         let b61_90 = 0;
         let b90_180 = 0;
         let b180_plus = 0;
+        const pendingBills = [];
 
         const invoiceEntries = entries.filter(e => e.drCr === 'Dr' || e.type === 'Tax Invoice' || e.type === 'Sales');
 
@@ -134,17 +135,33 @@ export function useAnalyzerData() {
           const daysOld = Math.max(0, Math.floor((refDate - inv.parsedDate) / (1000 * 60 * 60 * 24)));
           const amountToAllocate = Math.min(unallocatedBalance, inv.amount || 0);
 
+          let bucket = '0–30 days';
           if (daysOld <= 30) {
             b0_30 += amountToAllocate;
+            bucket = '0–30 days';
           } else if (daysOld <= 60) {
             b31_60 += amountToAllocate;
+            bucket = '31–60 days';
           } else if (daysOld <= 90) {
             b61_90 += amountToAllocate;
+            bucket = '61–90 days';
           } else if (daysOld <= 180) {
             b90_180 += amountToAllocate;
+            bucket = '90–180 days';
           } else {
             b180_plus += amountToAllocate;
+            bucket = '180+ days';
           }
+
+          pendingBills.push({
+            date: inv.date,
+            voucherNo: inv.voucherNo ? `Bill #${inv.voucherNo}` : (inv.type || 'Invoice'),
+            amount: amountToAllocate,
+            fullAmount: inv.amount || 0,
+            daysOld,
+            bucket,
+            parsedDate: inv.parsedDate
+          });
 
           unallocatedBalance -= amountToAllocate;
         }
@@ -152,7 +169,19 @@ export function useAnalyzerData() {
         // Remaining balance older than recent invoices falls into 180+
         if (unallocatedBalance > 0) {
           b180_plus += unallocatedBalance;
+          pendingBills.push({
+            date: 'Prior Balance',
+            voucherNo: 'Opening / Prior Balance',
+            amount: unallocatedBalance,
+            fullAmount: unallocatedBalance,
+            daysOld: 180,
+            bucket: '180+ days',
+            parsedDate: new Date(2000, 0, 1)
+          });
         }
+
+        // Sort pending bills in ascending order of date (Oldest to Most Recent)
+        pendingBills.sort((a, b) => a.parsedDate - b.parsedDate);
 
         // Percentage breakdown for progress bars
         const pct0_30 = totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0;
@@ -197,6 +226,7 @@ export function useAnalyzerData() {
             overdueTotal: b31_60 + b61_90 + b90_180 + b180_plus,
             criticalTotal: b90_180 + b180_plus
           },
+          pendingBills,
           entries: entries.slice(0, 8),
           totalEntriesCount: entries.length
         };
@@ -396,38 +426,78 @@ export function useAnalyzerData() {
   };
 
   /**
-   * Polite Redesigned WhatsApp Payment Reminder Message
+   * Concise WhatsApp Payment Follow-up with Pending Bills (Oldest to Recent) & Overdue Days
+   */
+/**
+   * Enterprise-Grade Professional WhatsApp Payment Follow-up with Bill Details & Overdue Days
    */
   const getWhatsAppFollowupText = (party) => {
     const name = party.ledgerName;
     const hasBalance = party.totalOutstanding && party.totalOutstanding > 0;
     const total = formatINR(party.totalOutstanding || 0);
 
+    const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+
     let text = `*Namaste ${name}* 🙏\n\n`;
-    text += `Warm greetings from *Sri Brundabana Enterprises, Rayagada*!\n\n`;
 
     if (hasBalance) {
-      text += `We hope your business is doing well. As part of our routine ledger account updates, here is your current account balance summary:\n\n`;
-      text += `📊 *Current Balance:* *${total}*\n`;
+      text += `*ACCOUNT STATEMENT & PAYMENT SUMMARY*\n`;
+      text += `🏢 *Sri Brundabana Enterprises, Rayagada*\n`;
+      text += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      text += `📊 *Total Outstanding Balance:* *${total}*\n\n`;
 
-      if (party.aging && party.aging.b180_plus > 0) {
-        text += `• Balance (>180 days): *${formatINR(party.aging.b180_plus)}*\n`;
-      }
-      if (party.aging && party.aging.b90_180 > 0) {
-        text += `• Balance (90–180 days): *${formatINR(party.aging.b90_180)}*\n`;
-      }
-      if (party.aging && party.aging.b61_90 > 0 && party.aging.b180_plus <= 0 && party.aging.b90_180 <= 0) {
-        text += `• Balance (61–90 days): *${formatINR(party.aging.b61_90)}*\n`;
+      const bills = party.pendingBills || [];
+      if (bills.length > 0) {
+        text += `*PENDING BILLS (Oldest to Recent):*\n`;
+        bills.forEach((b, idx) => {
+          const numBadge = idx < numberEmojis.length ? numberEmojis[idx] : `${idx + 1}.`;
+          const datePart = b.date !== 'Prior Balance' ? ` (${b.date})` : '';
+          text += `${numBadge} *${b.voucherNo}*${datePart}\n`;
+          text += `   • Amount: *${formatINR(b.amount)}*\n`;
+          text += `   • Status: *${b.daysOld} days due* [${b.bucket}]\n\n`;
+        });
       }
 
-      text += `\n📄 *We have attached your complete 6-month ledger statement for your kind review and verification.*\n\n`;
-      text += `Kindly review the statement at your convenience and arrange for the balance clearance.\n\n`;
+      // Overdue Aging Summary (Only non-zero buckets)
+      const agingLines = [];
+      if (party.aging) {
+        if (party.aging.b180_plus > 0) {
+          agingLines.push(`• Balance (>180 days): *${formatINR(party.aging.b180_plus)}*`);
+        }
+        if (party.aging.b90_180 > 0) {
+          agingLines.push(`• Balance (90–180 days): *${formatINR(party.aging.b90_180)}*`);
+        }
+        if (party.aging.b61_90 > 0) {
+          agingLines.push(`• Balance (61–90 days): *${formatINR(party.aging.b61_90)}*`);
+        }
+        if (party.aging.b31_60 > 0) {
+          agingLines.push(`• Balance (31–60 days): *${formatINR(party.aging.b31_60)}*`);
+        }
+        if (party.aging.b0_30 > 0) {
+          agingLines.push(`• Balance (0–30 days): *${formatINR(party.aging.b0_30)}*`);
+        }
+      }
+
+      if (agingLines.length > 0) {
+        text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `*AGING BREAKDOWN:*\n`;
+        text += agingLines.join('\n') + `\n\n`;
+      }
+
+      text += `📄 *Your complete 6-month ledger statement PDF is attached for verification.*\n`;
+      text += `Kindly review and arrange for the balance clearance.\n\n`;
     } else {
-      text += `We hope your business is doing well. Please find attached your latest statement of account for your kind records and verification.\n\n`;
+      text += `*ACCOUNT STATEMENT*\n`;
+      text += `🏢 *Sri Brundabana Enterprises, Rayagada*\n`;
+      text += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      text += `📄 *Your latest statement of account is attached for your records and verification.*\n\n`;
     }
 
-    text += `✨ *Thank you for placing your trust in Sri Brundabana Enterprises.* We work tirelessly to bring you the best footwear collections at the lowest wholesale prices possible! 👞👠\n\n`;
-    text += `_With Best Regards,_\n*Sri Brundabana Enterprises*\n_Rayagada, Odisha_`;
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `_With Regards,_\n`;
+    text += `*Sri Brundabana Enterprises*\n`;
+    text += `_Wholesale Footwear Distributors_\n`;
+    text += `_Rayagada, Odisha_`;
 
     return text;
   };
