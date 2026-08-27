@@ -2,7 +2,7 @@
   <div class="min-h-screen relative">
     <!-- Global Persistent App Layout (Shown when not on landing page or when searching) -->
     <DesktopToolbar
-      v-if="!hubPages.has($route.path) && ($route.path !== '/' || searchQuery)"
+      v-if="!hubPages.has($route.path) && (!showLanding || searchQuery || $route.path !== '/')"
       :loading="stockLoading"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"
@@ -84,7 +84,7 @@ const route = useRoute();
 const router = useRouter();
 
 const appStore = useAppStore();
-const { stockData, config, searchQuery, showSidePanel, showCart } = storeToRefs(appStore);
+const { stockData, config, searchQuery, showSidePanel, showCart, showLanding } = storeToRefs(appStore);
 
 watch(() => route.query, async (query) => {
   if (query.pwd) {

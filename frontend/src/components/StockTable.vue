@@ -222,6 +222,12 @@ const CachedImage = defineAsyncComponent(() => import('./StockTable/CachedImage.
 const BrandLanding = defineAsyncComponent(() => import('./StockTable/BrandLanding.vue'));
 const LatestStock = defineAsyncComponent(() => import('../android/components/LatestStock.vue'));
 
+import { useAppStore } from '../stores/appStore';
+import { storeToRefs } from 'pinia';
+
+const appStore = useAppStore();
+const { showLanding, showCart, showSidePanel } = storeToRefs(appStore);
+
 const route = useRoute();
 const router = useRouter();
 
@@ -229,11 +235,8 @@ const router = useRouter();
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const isAndroid = ref(Capacitor.getPlatform() === 'android');
 const showGoToTop = ref(false);
-const showSidePanel = ref(false);
-const showCart = ref(false);
 const showCatalogGen = ref(false);
 const showLedgerView = ref(false);
-const showLanding = ref(true); // Brand Landing Page State
 const expandedGroups = ref({});
 const activeScrollGroup = ref('');
 const userHasScrolled = ref(false);

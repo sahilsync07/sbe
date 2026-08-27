@@ -12,8 +12,12 @@ export const useAppStore = defineStore('app', {
     config: {},
     showCart: false,
     showSidePanel: false,
+    showLanding: true,
   }),
   actions: {
+    setShowLanding(status) {
+      this.showLanding = status;
+    },
     setAdmin(status) {
       this.isAdmin = status;
     },

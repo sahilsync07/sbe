@@ -180,11 +180,10 @@
       </div>
     </header>
 
-    <!-- Mobile Top Bar (Visible on Mobile only for Non-Landing or Group Views) -->
+    <!-- Mobile Top Bar (Visible on Mobile) -->
     <header 
-      v-if="$route.path !== '/' || searchQuery"
       class="lg:hidden fixed inset-x-0 top-0 z-[60] bg-[#121214]/95 backdrop-blur-md border-b border-white/10 shadow-sm transition-all"
-      style="padding-top: env(safe-area-inset-top, 20px)"
+      style="padding-top: env(safe-area-inset-top, 0px)"
     >
       <div class="h-[54px] flex items-center justify-between px-4 relative">
          <!-- Left: Sidebar Toggle -->
@@ -192,13 +191,14 @@
             <button
                @click="$emit('toggleSidebar')"
                class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:bg-amber-500 active:text-white transition-all border border-white/10"
+               title="Menu"
             >
                <i v-if="showSidePanel" class="fa-solid fa-xmark text-sm"></i>
                <i v-else class="fa-solid fa-bars text-sm"></i>
             </button>
 
             <button
-               @click="$router.push('/')"
+               @click="goHome"
                class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:bg-amber-500 active:text-white transition-all border border-white/10 shadow-sm"
                title="Home"
             >
@@ -208,7 +208,7 @@
 
          <!-- Center: e-SBE Logo Emblem -->
          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-            <img src="/assets/e-sbe-logo.png" alt="e-SBE" class="h-6 w-auto object-contain invert brightness-200 pointer-events-auto cursor-pointer" @click="$router.push('/')" />
+            <img src="/assets/e-sbe-logo.png" alt="e-SBE" class="h-6 w-auto object-contain invert brightness-200 pointer-events-auto cursor-pointer" @click="goHome" />
          </div>
 
          <!-- Right: PDF & Cart -->
@@ -216,6 +216,7 @@
             <button
                @click="$router.push('/pdf-gen')"
                class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 text-slate-300 border border-white/10"
+               title="PDF"
             >
               <i class="fa-solid fa-file-pdf text-xs"></i>
             </button>
@@ -223,6 +224,7 @@
             <button
               @click="$emit('toggleCart')"
               class="relative w-9 h-9 flex items-center justify-center rounded-full bg-[#c59b27] text-white shadow-md active:scale-95"
+              title="Cart"
             >
               <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-black">{{ cartTotalItems }}</div>
               <i class="fa-solid fa-bag-shopping text-xs"></i>
@@ -324,6 +326,12 @@ const statusColor = computed(() => {
 let logoPressTimer = null;
 let logoDidLongPress = false;
 
+const goHome = () => {
+    appStore.setShowLanding(true);
+    searchQuery.value = '';
+    router.push('/');
+};
+
 const logoStartPress = () => {
     logoDidLongPress = false;
     logoPressTimer = setTimeout(() => {
@@ -336,7 +344,7 @@ const logoStartPress = () => {
 const logoEndPress = () => {
     clearTimeout(logoPressTimer);
     if (!logoDidLongPress) {
-        router.push('/');
+        goHome();
     }
 };
 
