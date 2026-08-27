@@ -2,6 +2,8 @@
   <img 
     :src="displaySrc" 
     :alt="alt"
+    loading="lazy"
+    decoding="async"
     @error="handleError"
   />
 </template>
@@ -33,17 +35,20 @@ const loadImage = async () => {
   const keyToCheck = props.cacheKey || props.src;
 
   // 1. Try Native App Data Cache first (Zero Latency if already Delta Synced)
-  const nativeUri = await getLocalImageUri(keyToCheck);
+  const nativeUri = await getLocalImageUri(keyToCheck, props.src);
   if (nativeUri) {
     displaySrc.value = nativeUri;
     return;
   }
 
   // 2. Try Web API Cache
-  if ('caches' in window) {
+  if (typeof window !== 'undefined' && 'caches' in window) {
     try {
       const cache = await caches.open(CACHE_NAME);
-      const cachedResponse = await cache.match(keyToCheck);
+      let cachedResponse = await cache.match(props.src);
+      if (!cachedResponse && props.cacheKey) {
+        cachedResponse = await cache.match(props.cacheKey);
+      }
       
       if (cachedResponse) {
         const blob = await cachedResponse.blob();
@@ -52,12 +57,21 @@ const loadImage = async () => {
         return;
       }
     } catch (e) {
-      console.warn('Web Cache check failed', e);
+      // Non-fatal cache lookup fallback
     }
   }
 
-  // 3. Fallback to network
+  // 3. Fallback to network (and cache in background for next view)
   displaySrc.value = props.src;
+
+  if (typeof window !== 'undefined' && 'caches' in window && props.src.startsWith('http')) {
+    fetch(props.src, { mode: 'cors' }).then(async (res) => {
+      if (res.ok) {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(props.src, res);
+      }
+    }).catch(() => {});
+  }
 };
 
 const handleError = () => {

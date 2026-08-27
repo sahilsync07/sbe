@@ -226,7 +226,7 @@ export async function performDeltaSync(stockDataList = null) {
       }
 
       if (missingKeys.length > 0) {
-        console.log(`[SBE Hub DeltaSync] Syncing ${missingKeys.length} new/missing images in background...`);
+        console.log(`[SBE Native DeltaSync] Syncing ${missingKeys.length} new/missing images in background...`);
         const BATCH_SIZE = 5;
         for (let i = 0; i < missingKeys.length; i += BATCH_SIZE) {
           const chunk = missingKeys.slice(i, i + BATCH_SIZE);
@@ -234,13 +234,51 @@ export async function performDeltaSync(stockDataList = null) {
           // Brief 50ms pause between batches to keep device responsive
           await new Promise((r) => setTimeout(r, 50));
         }
-        console.log(`[SBE Hub DeltaSync] Done! Successfully synced ${missingKeys.length} images.`);
+        console.log(`[SBE Native DeltaSync] Done! Successfully synced ${missingKeys.length} images.`);
       } else {
-        console.log('[SBE Hub DeltaSync] All catalog images are up to date on device.');
+        console.log('[SBE Native DeltaSync] All catalog images are up to date on device.');
+      }
+    } else if (typeof window !== 'undefined' && 'caches' in window) {
+      // Web / PWA Browser Delta Sync via CacheStorage API
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        const cachedKeys = await cache.keys();
+        const existingUrls = new Set(cachedKeys.map(req => req.url));
+
+        const missing = [];
+        for (const [key, url] of requiredMap.entries()) {
+          const optUrl = getOptimizedImageUrl(url) || url;
+          if (!existingUrls.has(optUrl) && !existingUrls.has(url)) {
+            missing.push({ key, url, optUrl });
+          }
+        }
+
+        if (missing.length > 0) {
+          console.log(`[SBE Web DeltaSync] Pre-caching ${missing.length} new images in browser cache...`);
+          const BATCH_SIZE = 4;
+          for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+            const chunk = missing.slice(i, i + BATCH_SIZE);
+            await Promise.all(chunk.map(async (item) => {
+              try {
+                const res = await fetch(item.optUrl, { mode: 'cors' });
+                if (res.ok) {
+                  await cache.put(item.optUrl, res.clone());
+                  await cache.put(item.url, res);
+                }
+              } catch (e) {}
+            }));
+            await new Promise(r => setTimeout(r, 60));
+          }
+          console.log(`[SBE Web DeltaSync] Pre-cached ${missing.length} images in browser storage.`);
+        } else {
+          console.log('[SBE Web DeltaSync] All catalog images are cached in browser.');
+        }
+      } catch (webCacheErr) {
+        console.warn('[SBE Web DeltaSync] Web cache note:', webCacheErr);
       }
     }
   } catch (err) {
-    console.warn('[SBE Hub DeltaSync] Sync note:', err);
+    console.warn('[SBE DeltaSync] Sync note:', err);
   } finally {
     isSyncing = false;
   }
