@@ -1,4 +1,3 @@
-
 import { ref } from 'vue';
 import axios from 'axios';
 import { toast } from 'vue3-toastify';
@@ -15,23 +14,36 @@ export function useStockData(isLocal) {
     const uploadErrors = ref({});
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
+    const SYNC_KEY = 'sbe_last_sync_timestamp';
     const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
 
-    // Check if network is fast enough for background fetch
-    const isNetworkFast = () => {
-        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        if (!connection) return true; // Assume fast if API unavailable
-
-        // Check connection type
-        const type = connection.effectiveType || connection.type;
-        if (type === '2g' || type === 'slow-2g') return false;
-
-        // Check downlink speed (Mbps)
-        const downlink = connection.downlink;
-        if (downlink && downlink < 0.5) return false;
-
-        return true;
+    // Safely extract and apply metadata timestamp from any data array
+    const extractAndApplyMetadata = (dataArray) => {
+        if (!dataArray || !Array.isArray(dataArray)) return;
+        const metaItem = dataArray.find(g => g.groupName === '_META_DATA_' || g.group === '_META_DATA_');
+        if (metaItem && metaItem.lastSync) {
+            const syncDate = new Date(metaItem.lastSync);
+            if (!isNaN(syncDate.getTime())) {
+                lastRefresh.value = syncDate;
+                appStore.setSyncTime(syncDate);
+                try {
+                    localStorage.setItem(SYNC_KEY, metaItem.lastSync);
+                } catch (e) {}
+            }
+        }
     };
+
+    // Initialize persisted sync time immediately
+    try {
+        const savedSync = localStorage.getItem(SYNC_KEY);
+        if (savedSync && !lastRefresh.value) {
+            const parsed = new Date(savedSync);
+            if (!isNaN(parsed.getTime())) {
+                lastRefresh.value = parsed;
+                appStore.setSyncTime(parsed);
+            }
+        }
+    } catch (e) {}
 
     // Helper: Custom Grouping Interceptor
     const processCustomGroups = (data) => {
@@ -40,50 +52,42 @@ export function useStockData(isLocal) {
         // Custom Rule: P-TOES PARALITE
         const targetName = "P-TOES PARALITE";
         let foundProduct = null;
-        let originalGroupIndex = -1;
 
-        // 1. Find the product
         for (let i = 0; i < data.length; i++) {
             const group = data[i];
-            const pIndex = group.products.findIndex(p => p.productName.toUpperCase() === targetName);
+            if (!group.products || group.groupName === '_META_DATA_') continue;
+            const pIndex = group.products.findIndex(p => p.productName && p.productName.toUpperCase() === targetName);
 
             if (pIndex !== -1) {
                 foundProduct = group.products[pIndex];
-                // Remove from original group
                 group.products.splice(pIndex, 1);
-                // If group is empty, mark for cleanup (optional, skipping for safety)
                 break;
             }
         }
 
-        // 2. Create new group if found
         if (foundProduct) {
-            // Check if group already exists (avoid dupes on re-runs)
             const existingGroup = data.find(g => g.groupName === targetName);
             if (!existingGroup) {
                 data.push({
                     groupName: targetName,
                     products: [foundProduct],
-                    isSpecial: true // Optional flag for styling
+                    isSpecial: true
                 });
             }
         }
 
-        // Patch Goal 13: Extract Ajanta from Airson into its own group
+        // Extract Ajanta from Airson into its own group
         const airsonGroup = data.find(g => g.groupName === 'Airson' || g.group === 'Airson');
         if (airsonGroup && airsonGroup.brands) {
             const ajantaBrands = airsonGroup.brands.filter(b => b.brand === 'AJANTA');
             if (ajantaBrands.length > 0) {
-                // Remove from Airson
                 airsonGroup.brands = airsonGroup.brands.filter(b => b.brand !== 'AJANTA');
-                
-                // Add as new group if not exists
                 if (!data.some(g => g.groupName === 'AJANTA')) {
                     data.push({
                         groupName: 'AJANTA',
                         group: 'AJANTA',
                         brands: ajantaBrands,
-                        products: ajantaBrands.flatMap(b => b.products || []) // Flatten if products are under brands
+                        products: ajantaBrands.flatMap(b => b.products || [])
                     });
                 }
             }
@@ -103,10 +107,11 @@ export function useStockData(isLocal) {
             try {
                 const parsed = JSON.parse(cached);
                 if (parsed && Array.isArray(parsed)) {
+                    extractAndApplyMetadata(parsed);
                     stockData.value = processCustomGroups(parsed);
                     hasData = true;
-                    loading.value = false; // Show cached data immediately
-                    console.log("Loaded stock data from LocalStorage Cache (Tier 1)");
+                    loading.value = false;
+                    console.log("Loaded stock data from LocalStorage Cache (Tier 1), sync:", lastRefresh.value);
                 }
             } catch (e) {
                 console.error("Cache parse error", e);
@@ -115,7 +120,6 @@ export function useStockData(isLocal) {
         }
 
         // --- Tier 2: Local Bundle (Fast Fallback for First Time) ---
-        // If no cache, try fetching the local file bundled with the app
         if (!hasData) {
             try {
                 const baseUrl = import.meta.env.BASE_URL.endsWith('/')
@@ -125,15 +129,15 @@ export function useStockData(isLocal) {
                 const localUrl = `${baseUrl}assets/stock-data.json`;
                 console.log("Attempting Local Bundle fetch:", localUrl);
 
-                const response = await fetch(localUrl);
+                const response = await fetch(`${localUrl}?t=${Date.now()}`);
                 if (response.ok) {
                     const localData = await response.json();
+                    extractAndApplyMetadata(localData);
                     stockData.value = processCustomGroups(localData);
                     hasData = true;
-                    loading.value = false; // Show local data
-                    console.log("Loaded stock data from Local Bundle (Tier 2)");
+                    loading.value = false;
+                    console.log("Loaded stock data from Local Bundle (Tier 2), sync:", lastRefresh.value);
 
-                    // Seed the cache so next time is Tier 1
                     try {
                         localStorage.setItem(CACHE_KEY, JSON.stringify(localData));
                     } catch (e) { }
@@ -146,41 +150,38 @@ export function useStockData(isLocal) {
         // --- Tier 3: Live Network Fetch (Always Validate) ---
         try {
             if (isLocal && isLocal.value) {
-                console.log("Skipping Live Fetch (Tier 3) on localhost to preserve local edits.");
+                console.log("Skipping Live Fetch on localhost.");
                 return;
             }
             console.log("Starting Background Live Fetch (Tier 3)...");
 
-            // 5 second max wait time for live data
-            // Use GitHub raw URL for live network fetch to ensure mobile app and web always get the freshest sync data
-            const liveUrl = (import.meta.env.PROD && typeof window !== 'undefined' && window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost'))
-                ? `${import.meta.env.BASE_URL}assets/stock-data.json`
-                : REMOTE_DATA_URL;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 7000);
 
-            const response = await fetch(`${liveUrl}?t=${new Date().getTime()}`, {
+            const liveUrl = REMOTE_DATA_URL;
+
+            const response = await fetch(`${liveUrl}?t=${Date.now()}`, {
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                },
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
 
             if (response.ok) {
                 const liveData = await response.json();
-
-                // Extract metadata immediately from live data
-                const metaItem = liveData.find(g => g.groupName === '_META_DATA_' || g.group === '_META_DATA_');
-                if (metaItem && metaItem.lastSync) {
-                    lastRefresh.value = new Date(metaItem.lastSync);
-                }
-
-                // Update UI with fresh data
+                extractAndApplyMetadata(liveData);
                 stockData.value = processCustomGroups(liveData);
 
-                // Update Cache
-                localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
+                } catch (e) {}
 
                 console.log("Updated stock data from Live URL (Tier 3), sync:", lastRefresh.value);
 
                 if (!hasData) {
-                    loading.value = false; // Stop loading if we were still waiting
+                    loading.value = false;
                 }
             } else {
                 throw new Error("Live fetch failed");
@@ -188,30 +189,19 @@ export function useStockData(isLocal) {
         } catch (liveErr) {
             console.warn("Background live fetch failed or timed out:", liveErr);
             if (!hasData) {
-                // Only show error if we strictly have NO data (Tier 1, 2, and 3 all failed)
                 error.value = "Failed to load stock data. Please check connection.";
                 toast.error(error.value, { autoClose: 3000 });
                 loading.value = false;
             }
         }
 
-        // Process Metadata (run on whatever data we have)
+        // Final Metadata Clean-up for views
         if (stockData.value.length > 0) {
+            extractAndApplyMetadata(stockData.value);
             const data = stockData.value;
             const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
             if (metaIndex !== -1) {
-                const meta = data[metaIndex];
-                if (meta.lastSync) {
-                    lastRefresh.value = new Date(meta.lastSync);
-                }
-                // Don't splice metadata out of the reactive array to avoid issues with cache consistency or re-runs
-                // Ideally, we filter it out in the view, but the current app likely splices it. 
-                // Since we might be saving to cache, splicing it removes it from cache for next time.
-                // Let's splice it for the VIEW, but note:
-                // If we splice, stockData is modified.
                 data.splice(metaIndex, 1);
-            } else {
-                lastRefresh.value = null;
             }
             error.value = null;
         }
@@ -229,7 +219,6 @@ export function useStockData(isLocal) {
             const resData = response.data;
             let data = resData.data;
 
-            // Check if backend returned a Tally-down fallback
             if (resData.tallyError || resData.message?.includes('existing data') || resData.message?.includes('Tally unavailable')) {
                 toast.warning('Tally is offline — showing cached data', { autoClose: 4000 });
                 loading.value = false;
@@ -242,177 +231,68 @@ export function useStockData(isLocal) {
                 return;
             }
 
+            extractAndApplyMetadata(data);
+            stockData.value = processCustomGroups(data);
+            
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            } catch (e) {}
+
             const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
             if (metaIndex !== -1) {
-                const meta = data[metaIndex];
-                if (meta.lastSync) {
-                    lastRefresh.value = new Date(meta.lastSync);
-                }
                 data.splice(metaIndex, 1);
-            } else {
-                lastRefresh.value = new Date();
             }
 
-            stockData.value = processCustomGroups(data);
-            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-
-            // Show appropriate toast for ledger sync status
-            const ledgerOk = resData.ledgerSync?.success;
-            if (ledgerOk) {
-                toast.success('Stock & Ledger synced from Tally!', { autoClose: 2500 });
-            } else {
-                toast.success('Stock synced from Tally!', { autoClose: 2500 });
-                if (resData.ledgerSync?.error) {
-                    toast.warning('Ledger sync failed: ' + resData.ledgerSync.error, { autoClose: 4000 });
-                }
-            }
+            toast.success('Stock data updated successfully!', { autoClose: 2000 });
         } catch (err) {
-            // Network error or 5xx from backend
-            const serverMsg = err.response?.data?.error;
-            if (serverMsg?.includes('Tally') || serverMsg?.includes('connection refused')) {
-                toast.error('Tally is not running. Start Tally and try again.', { autoClose: 5000 });
-            } else {
-                toast.error(serverMsg || 'Sync failed. Check backend server.', { autoClose: 4000 });
-            }
-            error.value = serverMsg || 'Sync failed';
+            console.error(err);
+            error.value = "Failed to update stock data: " + (err.response?.data?.error || err.message);
+            toast.error(error.value, { autoClose: 4000 });
         } finally {
             loading.value = false;
         }
     };
 
+    const uploadImage = async (product, file, groupName) => {
+        const key = product.productName;
+        uploading.value[key] = true;
+        uploadErrors.value[key] = null;
 
-    // Image Upload
-    const handleFileChange = (event, productName) => {
-        imageFiles.value[productName] = event.target.files[0];
-        uploadErrors.value[productName] = null;
-    };
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('productName', product.productName);
+        formData.append('groupName', groupName);
 
-    const uploadImage = async (productName) => {
-        if (!imageFiles.value[productName]) return;
-        uploading.value[productName] = true;
-        uploadErrors.value[productName] = null;
         try {
-            const formData = new FormData();
-            formData.append("file", imageFiles.value[productName]);
-            formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                { method: "POST", body: formData }
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/uploadImage`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-            const data = await response.json();
 
-            if (!data.secure_url) {
-                throw new Error("Upload failed");
-            }
-
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/updateImage`, {
-                productName,
-                imageUrl: data.secure_url,
-            });
-
-            // Optimistic Update
-            stockData.value = stockData.value.map((group) => ({
-                ...group,
-                products: group.products.map((product) =>
-                    product.productName === productName
-                        ? { ...product, imageUrl: data.secure_url, imageUploadedAt: new Date().toISOString() }
-                        : product
-                ),
-            }));
-
-            // Update Cache
-            localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
-
-            toast.success("Image uploaded updated!", { autoClose: 2500 });
+            product.imageUrl = response.data.imageUrl;
+            delete imageFiles.value[key];
+            toast.success('Image uploaded successfully!', { autoClose: 2000 });
         } catch (err) {
-            uploadErrors.value[productName] = "Failed to load image";
-            toast.error(uploadErrors.value[productName], { autoClose: 3000 });
+            console.error(err);
+            uploadErrors.value[key] = err.response?.data?.error || err.message;
+            toast.error(`Failed to upload image: ${uploadErrors.value[key]}`, { autoClose: 4000 });
         } finally {
-            uploading.value[productName] = false;
-            imageFiles.value[productName] = null;
-        }
-    };
-
-    const deleteImage = async (productName) => {
-        try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/removeImage`, {
-                productName,
-            });
-
-            stockData.value = stockData.value.map((group) => ({
-                ...group,
-                products: group.products.map((product) =>
-                    product.productName === productName
-                        ? { ...product, imageUrl: null }
-                        : product
-                ),
-            }));
-
-            // Update Cache
-            localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
-
-            toast.success(`Image removed for ${productName}.`, { autoClose: 2500 });
-        } catch (err) {
-            toast.error("Failed to remove image", { autoClose: 3000 });
-        }
-    };
-
-    // Manual refresh for Android - force fetch fresh data
-    const refreshStockData = async () => {
-        isRefreshing.value = true;
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for manual refresh
-
-            const response = await fetch(`${REMOTE_DATA_URL}?t=${Date.now()}`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-                let data = await response.json();
-
-                // Process metadata
-                const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
-                if (metaIndex !== -1) {
-                    const meta = data[metaIndex];
-                    if (meta.lastSync) {
-                        lastRefresh.value = new Date(meta.lastSync);
-                    }
-                    data.splice(metaIndex, 1);
-                }
-
-                stockData.value = processCustomGroups(data);
-                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-                toast.success('Data updated!', { autoClose: 2000 });
-            } else {
-                throw new Error('Fetch failed');
-            }
-        } catch (err) {
-            console.warn('Refresh failed:', err);
-            toast.error('Update failed. Try again.', { autoClose: 2000 });
-        } finally {
-            isRefreshing.value = false;
+            uploading.value[key] = false;
         }
     };
 
     return {
         stockData,
         loading,
-        isRefreshing,
         error,
-        lastRefresh,
         uploading,
         uploadErrors,
         imageFiles,
+        lastRefresh,
+        isRefreshing,
         loadStockData,
         updateStockData,
-        refreshStockData,
-        handleFileChange,
-        uploadImage,
-        deleteImage,
-        isNetworkFast
+        uploadImage
     };
 }

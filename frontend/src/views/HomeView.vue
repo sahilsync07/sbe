@@ -138,7 +138,24 @@ const lastSyncText = computed(() => {
   const syncDate = lastRefresh.value || appStore.lastSyncTime;
   if (!syncDate) return 'Catalog up to date';
   const d = new Date(syncDate);
-  return `Last synced: ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+  if (isNaN(d.getTime())) return 'Catalog up to date';
+
+  const diffMs = Date.now() - d.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const dateFormatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const timeFormatted = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  if (diffHours < 1) {
+    const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+    return `Last synced: ${diffMins} min${diffMins > 1 ? 's' : ''} ago (${timeFormatted})`;
+  } else if (diffHours < 24) {
+    return `Last synced: ${diffHours} hr${diffHours > 1 ? 's' : ''} ago (${dateFormatted} at ${timeFormatted})`;
+  } else if (diffDays === 1) {
+    return `Last synced: Yesterday (${dateFormatted} at ${timeFormatted})`;
+  }
+  return `Last synced: ${dateFormatted} at ${timeFormatted}`;
 });
 
 const links = [

@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_005',
-  version: '1.2.7',
-  updatedAt: '27 Aug 2026, 10:15 AM',
-  commitTitle: 'SBE Update #005: Full-Screen One Touch Mode with 2-Column Pill Toggles & Select All',
+  code: 'sbe_006',
+  version: '1.2.8',
+  updatedAt: '27 Aug 2026, 10:25 AM',
+  commitTitle: 'SBE Update #006: Direct Metadata Sync Timestamp Extraction & Cache Persistence',
   changes: [
+    {
+      tag: 'sbe_006',
+      date: '27 Aug 2026',
+      title: 'Sync Timestamp Extraction & Cache Persistence',
+      details: 'Extracted live metadata timestamp directly from the first lines of stock-data.json, ensured cache persistence across all storage tiers, and added relative time display (e.g. 19 hrs ago).'
+    },
     {
       tag: 'sbe_005',
       date: '27 Aug 2026',
