@@ -431,6 +431,9 @@ export function useAnalyzerData() {
 /**
    * Enterprise-Grade Professional WhatsApp Payment Follow-up with Bill Details & Overdue Days
    */
+/**
+   * Enterprise-Grade Professional WhatsApp Payment Follow-up (Auto-fitted under WhatsApp 1024-char caption limit)
+   */
   const getWhatsAppFollowupText = (party) => {
     const name = party.ledgerName;
     const hasBalance = party.totalOutstanding && party.totalOutstanding > 0;
@@ -441,7 +444,7 @@ export function useAnalyzerData() {
     let text = `*Namaste ${name}* 🙏\n\n`;
 
     if (hasBalance) {
-      text += `*ACCOUNT STATEMENT & PAYMENT SUMMARY*\n`;
+      text += `*ACCOUNT STATEMENT & DUE SUMMARY*\n`;
       text += `🏢 *Sri Brundabana Enterprises, Rayagada*\n`;
       text += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
       text += `📊 *Total Outstanding Balance:* *${total}*\n\n`;
@@ -449,32 +452,41 @@ export function useAnalyzerData() {
       const bills = party.pendingBills || [];
       if (bills.length > 0) {
         text += `*PENDING BILLS (Oldest to Recent):*\n`;
-        bills.forEach((b, idx) => {
+        
+        // Show up to 5 critical oldest bills to strictly stay under WhatsApp 1024 char caption limit
+        const maxBillsToShow = 5;
+        const displayedBills = bills.slice(0, maxBillsToShow);
+        const remainingCount = bills.length - maxBillsToShow;
+
+        displayedBills.forEach((b, idx) => {
           const numBadge = idx < numberEmojis.length ? numberEmojis[idx] : `${idx + 1}.`;
           const datePart = b.date !== 'Prior Balance' ? ` (${b.date})` : '';
-          text += `${numBadge} *${b.voucherNo}*${datePart}\n`;
-          text += `   • Amount: *${formatINR(b.amount)}*\n`;
-          text += `   • Status: *${b.daysOld} days due* [${b.bucket}]\n\n`;
+          text += `${numBadge} *${b.voucherNo}*${datePart} — *${formatINR(b.amount)}* (${b.daysOld}d due • ${b.bucket})\n`;
         });
+
+        if (remainingCount > 0) {
+          text += `➕ _+ ${remainingCount} more recent bills in attached PDF statement_\n`;
+        }
+        text += `\n`;
       }
 
       // Overdue Aging Summary (Only non-zero buckets)
       const agingLines = [];
       if (party.aging) {
         if (party.aging.b180_plus > 0) {
-          agingLines.push(`• Balance (>180 days): *${formatINR(party.aging.b180_plus)}*`);
+          agingLines.push(`• Balance (>180d): *${formatINR(party.aging.b180_plus)}*`);
         }
         if (party.aging.b90_180 > 0) {
-          agingLines.push(`• Balance (90–180 days): *${formatINR(party.aging.b90_180)}*`);
+          agingLines.push(`• Balance (90–180d): *${formatINR(party.aging.b90_180)}*`);
         }
         if (party.aging.b61_90 > 0) {
-          agingLines.push(`• Balance (61–90 days): *${formatINR(party.aging.b61_90)}*`);
+          agingLines.push(`• Balance (61–90d): *${formatINR(party.aging.b61_90)}*`);
         }
         if (party.aging.b31_60 > 0) {
-          agingLines.push(`• Balance (31–60 days): *${formatINR(party.aging.b31_60)}*`);
+          agingLines.push(`• Balance (31–60d): *${formatINR(party.aging.b31_60)}*`);
         }
         if (party.aging.b0_30 > 0) {
-          agingLines.push(`• Balance (0–30 days): *${formatINR(party.aging.b0_30)}*`);
+          agingLines.push(`• Balance (0–30d): *${formatINR(party.aging.b0_30)}*`);
         }
       }
 
@@ -484,7 +496,7 @@ export function useAnalyzerData() {
         text += agingLines.join('\n') + `\n\n`;
       }
 
-      text += `📄 *Your complete 6-month ledger statement PDF is attached for verification.*\n`;
+      text += `📄 *Attached is your 6-month statement PDF for verification.*\n`;
       text += `Kindly review and arrange for the balance clearance.\n\n`;
     } else {
       text += `*ACCOUNT STATEMENT*\n`;
@@ -495,9 +507,7 @@ export function useAnalyzerData() {
 
     text += `━━━━━━━━━━━━━━━━━━━━━\n`;
     text += `_With Regards,_\n`;
-    text += `*Sri Brundabana Enterprises*\n`;
-    text += `_Wholesale Footwear Distributors_\n`;
-    text += `_Rayagada, Odisha_`;
+    text += `*Sri Brundabana Enterprises, Rayagada*`;
 
     return text;
   };
