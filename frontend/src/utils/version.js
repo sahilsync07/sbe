@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_007',
-  version: '1.2.9',
-  updatedAt: '27 Aug 2026, 11:25 AM',
-  commitTitle: 'SBE Update #007: WhatsApp Follow-up PDF Attachment & Clean Text Copy',
+  code: 'sbe_008',
+  version: '1.3.0',
+  updatedAt: '27 Aug 2026, 11:35 AM',
+  commitTitle: 'SBE Update #008: Zomato-Inspired Order Maker UI with Story Avatars & Dish Cards',
   changes: [
+    {
+      tag: 'sbe_008',
+      date: '27 Aug 2026',
+      title: 'Zomato-Inspired Order Maker UI',
+      details: 'Redesigned Order Maker with Zomato design language: location header, search & photo mode toggle, circular story avatars, filter chips, restaurant-style product cards with stock badges, and floating bottom action dock.'
+    },
     {
       tag: 'sbe_007',
       date: '27 Aug 2026',

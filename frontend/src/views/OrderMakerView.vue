@@ -1,136 +1,209 @@
 <template>
-  <div class="h-screen h-[100dvh] max-h-[100dvh] flex flex-col bg-slate-50 relative text-slate-800 antialiased selection:bg-violet-500 selection:text-white overflow-hidden">
-    <!-- Ambient Subtle Background -->
-    <div class="fixed inset-0 pointer-events-none -z-10" style="background: radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.08) 0%, transparent 40%), radial-gradient(circle at 10% 90%, rgba(244, 63, 94, 0.06) 0%, transparent 40%), #f8fafc;"></div>
-
-    <!-- ═══ 1. COMPACT TOP HEADER ═══ -->
-    <header class="az-topbar flex-shrink-0 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 px-3 sm:px-5 py-2 flex items-center justify-between gap-2 shadow-2xs" style="padding-top: max(env(safe-area-inset-top, 24px), 12px);">
-      <!-- Left: Back Button & Title -->
-      <div class="flex items-center gap-2.5 min-w-0">
-        <button
-          type="button"
-          @click="handleBack"
-          class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all flex-shrink-0 cursor-pointer"
-          title="Back to Home"
-        >
-          <i class="fa-solid fa-arrow-left text-xs"></i>
-        </button>
-        <div class="min-w-0">
-          <div class="flex items-center gap-1.5">
-            <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none truncate">
-              Order Maker
-            </h1>
-            <VersionBadge />
+  <div class="h-screen h-[100dvh] max-h-[100dvh] flex flex-col bg-[#f8f9fa] relative text-slate-800 antialiased selection:bg-rose-500 selection:text-white overflow-hidden font-sans">
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         1. FIXED TOP 20%: LOCATION, SEARCH, CATEGORIES & FILTERS
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="flex-shrink-0 bg-white border-b border-slate-200/80 shadow-2xs z-30">
+      
+      <!-- Row 1: Location & Order Basket -->
+      <header class="px-3.5 sm:px-5 py-2 flex items-center justify-between gap-2" style="padding-top: max(env(safe-area-inset-top, 24px), 10px);">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            @click="handleBack"
+            class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 flex items-center justify-center transition-all flex-shrink-0 cursor-pointer shadow-2xs"
+            title="Back to Home"
+          >
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+          </button>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-location-dot text-rose-600 text-sm"></i>
+              <h1 class="text-xs sm:text-sm font-black text-slate-900 leading-tight truncate flex items-center gap-1">
+                <span>Sri Brundabana</span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+              </h1>
+              <VersionBadge />
+            </div>
+            <p class="text-[10px] text-slate-400 font-semibold truncate leading-none mt-0.5">
+              Rayagada Wholesale Hub • {{ filteredCatalogProducts.length }} Articles
+            </p>
           </div>
-          <p class="text-[10px] text-slate-400 font-semibold truncate">
-            {{ activeCategoryObj.label }} • {{ currentIndex + 1 }}/{{ currentCategoryProducts.length }}
-          </p>
+        </div>
+
+        <!-- Basket Pill (Zomato Cart Style) -->
+        <button
+          @click="showOrderModal = true"
+          class="h-8 px-3 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-black text-xs flex items-center gap-1.5 shadow-xs transition-all flex-shrink-0 cursor-pointer"
+        >
+          <i class="fa-solid fa-bag-shopping text-xs"></i>
+          <span>Basket</span>
+          <span
+            v-if="orderItems.length > 0"
+            class="px-1.5 py-0.2 rounded-full bg-white text-rose-700 font-black text-[10px]"
+          >
+            {{ totalOrderSets }}
+          </span>
+        </button>
+      </header>
+
+      <!-- Row 2: Search Input + Photo Mode Toggle (Zomato Veg-Mode Style) -->
+      <div class="px-3.5 py-1.5 flex items-center gap-2.5">
+        <div class="flex-1 flex items-center bg-slate-100 rounded-2xl px-3 py-1.5 border border-slate-200/70 shadow-inner">
+          <i class="fa-solid fa-magnifying-glass text-rose-500 text-xs mr-2"></i>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder='Search "Cushion, Hawai, Paralite, Sparx..."'
+            class="w-full bg-transparent text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none"
+          />
+          <button v-if="searchQuery" @click="searchQuery = ''" class="text-slate-400 hover:text-slate-600 ml-1">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+
+        <div
+          @click="photoOnlyMode = !photoOnlyMode"
+          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl cursor-pointer border select-none transition-all flex-shrink-0 shadow-2xs"
+          :class="photoOnlyMode ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-400/20' : 'bg-slate-50 border-slate-200'"
+        >
+          <span class="text-[9px] font-black uppercase tracking-wider" :class="photoOnlyMode ? 'text-emerald-800' : 'text-slate-500'">
+            Photos
+          </span>
+          <div
+            class="w-7 h-4 rounded-full relative transition-colors duration-200"
+            :class="photoOnlyMode ? 'bg-emerald-500' : 'bg-slate-300'"
+          >
+            <div
+              class="absolute top-[2px] w-3 h-3 rounded-full bg-white shadow-xs transition-all duration-200"
+              :class="photoOnlyMode ? 'left-[14px]' : 'left-[2px]'"
+            ></div>
+          </div>
         </div>
       </div>
 
-      <!-- Right: Order Basket Button -->
-      <button
-        @click="showOrderModal = true"
-        class="h-8 px-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 active:scale-95 text-white font-black text-xs flex items-center gap-1.5 shadow-xs transition-all flex-shrink-0 cursor-pointer"
-      >
-        <i class="fa-solid fa-bag-shopping text-xs"></i>
-        <span class="hidden xs:inline">Basket</span>
-        <span
-          v-if="orderItems.length > 0"
-          class="px-1.5 py-0.2 rounded-full bg-white text-violet-700 font-black text-[10px]"
-        >
-          {{ totalOrderSets }}
-        </span>
-      </button>
-    </header>
-
-    <!-- ═══ 2. COMPACT BRAND / CATEGORY TABS ═══ -->
-    <div class="flex-shrink-0 px-3 py-1.5 bg-white border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
-      <button
-        v-for="cat in categoryList"
-        :key="cat.id"
-        @click="selectCategory(cat.id)"
-        class="px-2.5 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap flex items-center gap-1 transition-all flex-shrink-0 border cursor-pointer"
-        :class="activeCategoryId === cat.id
-          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-          : 'bg-slate-50 text-slate-600 border-slate-200/70 hover:bg-slate-100'"
-      >
-        <span>{{ cat.icon }}</span>
-        <span>{{ cat.label }}</span>
-      </button>
-    </div>
-
-    <!-- ═══ 3. COMPACT FILMSTRIP PREVIEW BUBBLE TRAIL ═══ -->
-    <div v-if="currentCategoryProducts.length > 0" class="flex-shrink-0 px-3 py-1 bg-slate-100/60 border-b border-slate-200/60 flex items-center gap-1.5 overflow-x-auto hide-scrollbar scroll-smooth" ref="bubbleTrailContainer">
-      <button
-        v-for="(prod, idx) in currentCategoryProducts"
-        :key="idx"
-        :ref="el => setBubbleRef(el, idx)"
-        type="button"
-        @click="jumpToPhoto(idx)"
-        class="relative w-10 h-10 rounded-xl flex-shrink-0 bg-white border transition-all duration-150 overflow-hidden flex items-center justify-center p-0.5 cursor-pointer"
-        :class="idx === currentIndex
-          ? 'scale-105 border-violet-600 ring-2 ring-violet-500 shadow-xs z-10'
-          : idx < currentIndex
-            ? 'opacity-60 border-slate-200 bg-slate-50'
-            : 'opacity-80 border-slate-200 hover:opacity-100'"
-        :title="prod.productName"
-      >
-        <img
-          v-if="prod.imageUrl"
-          :src="prod.imageUrl"
-          class="w-full h-full object-contain pointer-events-none"
-          loading="lazy"
-        />
-        <i v-else class="fa-solid fa-shoe-prints text-slate-300 text-[10px]"></i>
-
-        <!-- Checkmark Badge if added -->
+      <!-- Row 3: Circular Story Avatars (Zomato Dish Avatars) -->
+      <div class="px-3 py-1.5 flex items-center gap-3 overflow-x-auto hide-scrollbar">
         <div
-          v-if="isProductInCart(prod.productName)"
-          class="absolute top-0 right-0 w-3 h-3 bg-emerald-600 text-white rounded-full flex items-center justify-center text-[7px] font-black"
+          v-for="cat in categoryList"
+          :key="cat.id"
+          @click="selectCategory(cat.id)"
+          class="flex flex-col items-center flex-shrink-0 cursor-pointer group"
         >
-          ✓
+          <div
+            class="w-11 h-11 rounded-full p-0.5 border-2 transition-all flex items-center justify-center overflow-hidden bg-slate-50 relative"
+            :class="activeCategoryId === cat.id
+              ? 'border-rose-500 shadow-xs scale-105 bg-rose-50/50'
+              : 'border-slate-200 group-hover:border-slate-300'"
+          >
+            <img
+              v-if="cat.sampleImg"
+              :src="cat.sampleImg"
+              :alt="cat.label"
+              class="w-full h-full object-cover rounded-full"
+              loading="lazy"
+            />
+            <span v-else class="text-lg">{{ cat.icon }}</span>
+          </div>
+
+          <span
+            class="text-[10px] font-black mt-1 whitespace-nowrap transition-colors"
+            :class="activeCategoryId === cat.id ? 'text-rose-600' : 'text-slate-600'"
+          >
+            {{ cat.label }}
+          </span>
+
+          <div
+            class="h-0.5 w-6 rounded-full mt-0.5 transition-all"
+            :class="activeCategoryId === cat.id ? 'bg-rose-500' : 'bg-transparent'"
+          ></div>
         </div>
-      </button>
+      </div>
+
+      <!-- Row 4: Quick Filter Chips -->
+      <div class="px-3 py-1.5 bg-slate-50 border-t border-slate-200/60 flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
+        <button
+          @click="activeFilter = (activeFilter === 'core' ? 'all' : 'core')"
+          class="px-2.5 py-1 rounded-xl text-[10px] font-black whitespace-nowrap flex items-center gap-1 transition-all flex-shrink-0 border cursor-pointer shadow-2xs"
+          :class="activeFilter === 'core'
+            ? 'bg-rose-600 text-white border-rose-600'
+            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'"
+        >
+          <i class="fa-solid fa-bolt text-[9px]"></i>
+          <span>Core Compulsory</span>
+        </button>
+
+        <button
+          @click="activeFilter = (activeFilter === 'instock' ? 'all' : 'instock')"
+          class="px-2.5 py-1 rounded-xl text-[10px] font-black whitespace-nowrap flex items-center gap-1 transition-all flex-shrink-0 border cursor-pointer shadow-2xs"
+          :class="activeFilter === 'instock'
+            ? 'bg-emerald-600 text-white border-emerald-600'
+            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'"
+        >
+          <i class="fa-solid fa-boxes-stacked text-[9px]"></i>
+          <span>In Stock (10+ Prs)</span>
+        </button>
+
+        <button
+          @click="activeFilter = (activeFilter === 'under200' ? 'all' : 'under200')"
+          class="px-2.5 py-1 rounded-xl text-[10px] font-black whitespace-nowrap flex items-center gap-1 transition-all flex-shrink-0 border cursor-pointer shadow-2xs"
+          :class="activeFilter === 'under200'
+            ? 'bg-amber-600 text-white border-amber-600'
+            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'"
+        >
+          <i class="fa-solid fa-tag text-[9px]"></i>
+          <span>Under ₹200</span>
+        </button>
+
+        <span class="text-[10px] text-slate-400 font-bold ml-auto flex-shrink-0">
+          {{ currentIndex + 1 }} of {{ filteredCatalogProducts.length }}
+        </span>
+      </div>
     </div>
 
-    <!-- ═══ 4. MAIN PRODUCT DISPLAY (Flex-1 Fits Exactly in Viewport) ═══ -->
-    <main class="flex-1 min-h-0 flex flex-col justify-between p-2.5 sm:p-3 max-w-md mx-auto w-full">
+    <!-- ═══════════════════════════════════════════════════════════
+         2. SCROLLABLE 80%: PRODUCT HERO CARD & SIZE OPTIONS
+         ═══════════════════════════════════════════════════════════ -->
+    <main class="flex-1 overflow-y-auto min-h-0 p-3 sm:p-4 max-w-md mx-auto w-full custom-scrollbar space-y-3">
+      
       <!-- Loading State -->
-      <div v-if="stockLoading" class="flex-1 flex flex-col items-center justify-center space-y-2">
-        <div class="w-8 h-8 rounded-full border-2 border-violet-300 border-t-violet-600 animate-spin"></div>
+      <div v-if="stockLoading" class="py-16 flex flex-col items-center justify-center space-y-2">
+        <div class="w-8 h-8 rounded-full border-2 border-rose-300 border-t-rose-600 animate-spin"></div>
         <p class="text-xs font-bold text-slate-500">Loading catalog items…</p>
       </div>
 
       <!-- No Products -->
-      <div v-else-if="currentCategoryProducts.length === 0" class="flex-1 flex flex-col items-center justify-center text-center p-4">
+      <div v-else-if="filteredCatalogProducts.length === 0" class="py-16 flex flex-col items-center justify-center text-center p-4 bg-white rounded-3xl border border-slate-200">
         <i class="fa-solid fa-box-open text-3xl text-slate-300 mb-2"></i>
-        <p class="text-xs font-bold text-slate-600">No items available in {{ activeCategoryObj.label }}</p>
-        <button @click="selectCategory('general')" class="mt-2 px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold cursor-pointer">
-          Switch to General
+        <p class="text-xs font-bold text-slate-600">No items match current filters</p>
+        <button @click="searchQuery = ''; activeFilter = 'all'; selectCategory('general')" class="mt-3 px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs">
+          Reset Filters
         </button>
       </div>
 
       <!-- Category Completed -->
-      <div v-else-if="currentIndex >= currentCategoryProducts.length" class="flex-1 flex flex-col items-center justify-center text-center p-4 space-y-3">
-        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mx-auto">
+      <div v-else-if="currentIndex >= filteredCatalogProducts.length" class="py-12 flex flex-col items-center justify-center text-center p-6 bg-white rounded-3xl border border-slate-200 space-y-3">
+        <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
           <i class="fa-solid fa-check"></i>
         </div>
-        <h3 class="text-sm font-black text-slate-900">All {{ currentCategoryProducts.length }} items reviewed!</h3>
-        <div class="flex items-center gap-2">
-          <button @click="jumpToPhoto(0)" class="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">
-            Restart
+        <h3 class="text-sm font-black text-slate-900">All {{ filteredCatalogProducts.length }} items reviewed!</h3>
+        <p class="text-xs text-slate-400 font-medium">You can restart this group or review items in your basket.</p>
+        <div class="flex items-center gap-2 pt-2">
+          <button @click="jumpToPhoto(0)" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">
+            Restart Group
           </button>
-          <button @click="showOrderModal = true" class="px-3 py-1.5 bg-violet-600 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer">
-            View Order ({{ orderItems.length }})
+          <button @click="showOrderModal = true" class="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">
+            View Basket ({{ orderItems.length }})
           </button>
         </div>
       </div>
 
-      <!-- Active Article Card -->
-      <div v-else class="flex-1 min-h-0 flex flex-col justify-between bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden p-2.5 sm:p-3 space-y-2">
-        <!-- Big Photo Box (Flex Shrinks/Grows Responsively) -->
-        <div class="relative flex-1 min-h-[140px] max-h-[260px] w-full bg-slate-50 rounded-xl flex items-center justify-center overflow-hidden p-1">
+      <!-- Zomato Restaurant-Style Hero Product Card -->
+      <div v-else class="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden p-3.5 space-y-3">
+        
+        <!-- Large Photo Preview Box -->
+        <div class="relative w-full h-52 sm:h-64 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden p-2 border border-slate-100 shadow-inner">
           <img
             v-if="currentProduct.imageUrl"
             :src="currentProduct.imageUrl"
@@ -140,67 +213,84 @@
           />
           <div v-else class="text-slate-300 text-3xl flex flex-col items-center">
             <i class="fa-solid fa-shoe-prints"></i>
-            <span class="text-[10px] font-bold text-slate-400 mt-1">No Photo</span>
+            <span class="text-[10px] font-bold text-slate-400 mt-1">No Photo Available</span>
           </div>
 
-          <!-- Badges: Group & Stock -->
-          <div class="absolute top-1.5 left-1.5 flex items-center gap-1">
-            <span class="px-2 py-0.5 rounded-md bg-slate-900/80 text-white text-[9px] font-black uppercase">
+          <!-- Top-Left Brand / Group Tag -->
+          <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+            <span class="px-2.5 py-1 rounded-xl bg-slate-900/85 backdrop-blur-xs text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
               {{ currentProduct.groupName }}
             </span>
-            <span v-if="currentProduct.isCompulsory" class="px-1.5 py-0.5 rounded-md bg-amber-500 text-white text-[9px] font-black">
+            <span v-if="currentProduct.isCompulsory" class="px-2 py-1 rounded-xl bg-rose-600 text-white text-[9px] font-black uppercase shadow-xs">
               ★ Core
             </span>
           </div>
 
-          <div class="absolute top-1.5 right-1.5">
+          <!-- Top-Right Rating / Stock Badge (Zomato Style) -->
+          <div class="absolute top-2.5 right-2.5">
             <span
-              class="px-2 py-0.5 rounded-md text-[9px] font-black text-white"
-              :class="currentProduct.closingBalance > 0 ? 'bg-emerald-600' : 'bg-slate-600'"
+              class="px-2.5 py-1 rounded-xl text-[10px] font-black text-white flex items-center gap-1 shadow-xs"
+              :class="currentProduct.closingBalance > 0 ? 'bg-emerald-600' : 'bg-slate-700'"
             >
-              {{ currentProduct.closingBalance || currentProduct.quantity || 0 }} prs
+              <i class="fa-solid fa-star text-[9px] text-amber-300"></i>
+              <span>{{ currentProduct.closingBalance || currentProduct.quantity || 0 }} Prs In Stock</span>
+            </span>
+          </div>
+
+          <!-- Bottom Pagination Indicator Dots -->
+          <div class="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 bg-black/50 backdrop-blur-xs px-2.5 py-0.5 rounded-full shadow-2xs">
+            <span class="text-[10px] font-mono font-black text-white">
+              {{ currentIndex + 1 }} / {{ filteredCatalogProducts.length }}
             </span>
           </div>
         </div>
 
-        <!-- Article Title & Qty Stepper Row -->
-        <div class="flex items-center justify-between gap-2">
+        <!-- Article Title, Rate & Stepper Row -->
+        <div class="flex items-start justify-between gap-2 pt-1">
           <div class="min-w-0 flex-1">
-            <h2 class="text-xs sm:text-sm font-black text-slate-900 truncate">
+            <h2 class="text-sm sm:text-base font-black text-slate-900 truncate leading-snug">
               {{ currentProduct.productName }}
             </h2>
-            <p v-if="currentProduct.rate" class="text-[11px] font-black text-violet-700">
-              ₹{{ currentProduct.rate }}
-            </p>
+            <div class="flex items-center gap-2 mt-1">
+              <span v-if="currentProduct.rate" class="text-sm font-black text-rose-600">
+                ₹{{ currentProduct.rate }} / pair
+              </span>
+              <span class="text-[11px] text-slate-400 font-semibold truncate">
+                • Wholesale Best Margin
+              </span>
+            </div>
           </div>
 
           <!-- Quantity Stepper -->
-          <div class="flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/80 flex-shrink-0">
+          <div class="flex items-center bg-slate-100 rounded-2xl p-1 border border-slate-200/80 flex-shrink-0 shadow-2xs">
             <button
               @click="currentQty = Math.max(1, currentQty - 1)"
-              class="w-6 h-6 rounded-lg bg-white text-slate-700 flex items-center justify-center font-bold text-xs active:scale-95 shadow-2xs cursor-pointer"
+              class="w-7 h-7 rounded-xl bg-white text-slate-800 flex items-center justify-center font-black text-sm active:scale-95 shadow-2xs cursor-pointer"
             >-</button>
-            <span class="w-8 text-center font-black text-xs text-slate-900">{{ currentQty }} <span class="text-[8px] font-normal block -mt-1">Sets</span></span>
+            <span class="w-9 text-center font-black text-xs text-slate-900">
+              {{ currentQty }}
+              <span class="text-[8px] font-normal block -mt-1 text-slate-400">Sets</span>
+            </span>
             <button
               @click="currentQty++"
-              class="w-6 h-6 rounded-lg bg-white text-slate-700 flex items-center justify-center font-bold text-xs active:scale-95 shadow-2xs cursor-pointer"
+              class="w-7 h-7 rounded-xl bg-white text-slate-800 flex items-center justify-center font-black text-sm active:scale-95 shadow-2xs cursor-pointer"
             >+</button>
           </div>
         </div>
 
-        <!-- ═══ DIRECT 1-TAP SIZE PROMPT (For Cushion & Compulsory Articles) ═══ -->
-        <div v-if="currentProduct.suggestedSizes && currentProduct.suggestedSizes.length > 0" class="p-1.5 bg-amber-50/80 rounded-xl border border-amber-200/70 space-y-1">
+        <!-- Customer Requirement / Suggested Sizes Chips -->
+        <div v-if="currentProduct.suggestedSizes && currentProduct.suggestedSizes.length > 0" class="p-2.5 bg-amber-50/90 rounded-2xl border border-amber-200 space-y-1.5 shadow-2xs">
           <div class="text-[10px] font-black text-amber-900 uppercase flex items-center justify-between">
             <span>Customer size requirement:</span>
             <span class="text-[9px] font-normal text-amber-700">1-tap pick</span>
           </div>
-          <div class="flex flex-wrap gap-1">
+          <div class="flex flex-wrap gap-1.5">
             <button
               v-for="sizeOpt in currentProduct.suggestedSizes"
               :key="sizeOpt"
               type="button"
               @click="appendSuggestedSize(sizeOpt)"
-              class="px-2 py-0.5 rounded-lg text-[11px] font-black transition-all active:scale-95 border cursor-pointer"
+              class="px-2.5 py-1 rounded-xl text-[11px] font-black transition-all active:scale-95 border cursor-pointer"
               :class="currentComment.includes(sizeOpt)
                 ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
                 : 'bg-white text-amber-950 border-amber-300 hover:bg-amber-100'"
@@ -210,52 +300,56 @@
           </div>
         </div>
 
-        <!-- ═══ GENERAL QUICK SIZE SHORTCUTS PILLS ═══ -->
-        <div class="space-y-1">
+        <!-- Quick Size Shortcut Pills -->
+        <div class="space-y-1.5 pt-1">
           <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Quick Sizes</span>
-            <button v-if="currentComment" @click="currentComment = ''" class="text-[9px] text-rose-500 font-bold hover:underline cursor-pointer">
+            <button v-if="currentComment" @click="currentComment = ''" class="text-[10px] text-rose-500 font-bold hover:underline cursor-pointer">
               Clear ({{ currentComment }})
             </button>
           </div>
-          <div class="flex flex-wrap gap-1">
+          <div class="flex flex-wrap gap-1.5">
             <button
               v-for="size in quickSizes"
               :key="size"
               type="button"
               @click="appendSizeShortcut(size)"
-              class="px-2 py-0.5 rounded-md text-[10px] font-bold transition-all border cursor-pointer active:scale-95"
-              :class="currentComment.includes(size) ? 'bg-violet-600 text-white border-violet-600' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'"
+              class="px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all border cursor-pointer active:scale-95"
+              :class="currentComment.includes(size) ? 'bg-rose-600 text-white border-rose-600 shadow-2xs' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'"
             >
               {{ size }}
             </button>
           </div>
         </div>
-
-        <!-- ═══ 5. SKIP (RED) & ADD & NEXT (GREEN) ACTION BUTTONS (ALWAYS VISIBLE) ═══ -->
-        <div class="grid grid-cols-2 gap-2 pt-1 flex-shrink-0">
-          <button
-            type="button"
-            @click="handleSkip"
-            class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 active:scale-95 font-black text-xs flex items-center justify-center gap-1.5 border border-rose-200 transition-all cursor-pointer"
-          >
-            <i class="fa-solid fa-xmark text-sm text-rose-600"></i>
-            <span>Skip</span>
-          </button>
-
-          <button
-            type="button"
-            @click="handleAddAndNext"
-            class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95 font-black text-xs flex items-center justify-center gap-1.5 border border-emerald-700 transition-all shadow-xs cursor-pointer"
-          >
-            <i class="fa-solid fa-check text-sm"></i>
-            <span>Add & Next</span>
-          </button>
-        </div>
       </div>
     </main>
 
-    <!-- ═══ ORDER SUMMARY DRAWER ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════
+         3. FIXED BOTTOM ACTION DOCK: SKIP & ADD & NEXT
+         ═══════════════════════════════════════════════════════════ -->
+    <footer class="flex-shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 shadow-lg z-30" style="padding-bottom: max(env(safe-area-inset-bottom, 24px), 12px);">
+      <div class="grid grid-cols-2 gap-2.5 max-w-md mx-auto w-full">
+        <button
+          type="button"
+          @click="handleSkip"
+          class="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-95 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 transition-all cursor-pointer shadow-2xs"
+        >
+          <i class="fa-solid fa-forward-step text-xs text-slate-400"></i>
+          <span>Skip Article</span>
+        </button>
+
+        <button
+          type="button"
+          @click="handleAddAndNext"
+          class="py-3 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white active:scale-95 font-black text-xs sm:text-sm flex items-center justify-center gap-2 border border-rose-700 transition-all shadow-md cursor-pointer"
+        >
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Add {{ currentQty }} Set{{ currentQty > 1 ? 's' : '' }} & Next</span>
+        </button>
+      </div>
+    </footer>
+
+    <!-- ═══ ORDER BASKET MODAL (ZOMATO CART STYLE) ═══ -->
     <Transition name="fade">
       <div
         v-if="showOrderModal"
@@ -264,11 +358,16 @@
       >
         <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-slide-up">
           <div class="p-3.5 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-black text-slate-900">Current Order Basket</h3>
-              <p class="text-[10px] text-slate-400 font-semibold">
-                {{ orderItems.length }} Articles • {{ totalOrderSets }} Total Sets
-              </p>
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm font-black">
+                🛒
+              </div>
+              <div>
+                <h3 class="text-sm font-black text-slate-900">Your Order Basket</h3>
+                <p class="text-[10px] text-slate-400 font-semibold">
+                  {{ orderItems.length }} Articles • {{ totalOrderSets }} Total Sets
+                </p>
+              </div>
             </div>
             <button
               @click="showOrderModal = false"
@@ -286,7 +385,7 @@
                 v-model="customerName"
                 type="text"
                 placeholder="Customer Name"
-                class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
               />
             </div>
             <div>
@@ -295,12 +394,12 @@
                 v-model="customerPhone"
                 type="tel"
                 placeholder="e.g. 9876543210"
-                class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
               />
             </div>
           </div>
 
-          <!-- Items Table -->
+          <!-- Items List -->
           <div class="flex-1 overflow-y-auto p-3 divide-y divide-slate-100">
             <div v-if="orderItems.length === 0" class="py-8 text-center text-slate-400 text-xs font-bold">
               Your order basket is currently empty.
@@ -311,7 +410,7 @@
               :key="idx"
               class="py-2.5 flex items-center justify-between gap-2.5 text-xs"
             >
-              <div class="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+              <div class="w-10 h-10 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
                 <img v-if="item.product.imageUrl" :src="item.product.imageUrl" class="w-full h-full object-contain" />
                 <i v-else class="fa-solid fa-shoe-prints text-slate-300 text-[10px]"></i>
               </div>
@@ -324,10 +423,10 @@
               </div>
 
               <div class="flex items-center gap-1.5 flex-shrink-0">
-                <div class="flex items-center bg-slate-100 rounded-lg p-0.5">
-                  <button @click="updateOrderItemQty(idx, -1)" class="w-5 h-5 rounded bg-white flex items-center justify-center font-bold text-xs cursor-pointer">-</button>
+                <div class="flex items-center bg-slate-100 rounded-xl p-0.5">
+                  <button @click="updateOrderItemQty(idx, -1)" class="w-5 h-5 rounded-lg bg-white flex items-center justify-center font-bold text-xs cursor-pointer">-</button>
                   <span class="w-5 text-center font-bold text-xs">{{ item.quantity }}</span>
-                  <button @click="updateOrderItemQty(idx, 1)" class="w-5 h-5 rounded bg-white flex items-center justify-center font-bold text-xs cursor-pointer">+</button>
+                  <button @click="updateOrderItemQty(idx, 1)" class="w-5 h-5 rounded-lg bg-white flex items-center justify-center font-bold text-xs cursor-pointer">+</button>
                 </div>
                 <button
                   @click="removeOrderItem(idx)"
@@ -353,7 +452,7 @@
               <button
                 @click="handleExportPDF"
                 :disabled="orderItems.length === 0 || isExporting"
-                class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-bold text-xs flex items-center gap-1 disabled:opacity-40 cursor-pointer"
+                class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-bold text-xs flex items-center gap-1 disabled:opacity-40 cursor-pointer"
               >
                 <i class="fa-solid fa-file-pdf text-rose-400 text-xs"></i>
                 <span>PDF</span>
@@ -362,7 +461,7 @@
               <button
                 @click="handleExportWhatsApp"
                 :disabled="orderItems.length === 0 || isExporting"
-                class="px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#128C7E] active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs disabled:opacity-40 cursor-pointer"
+                class="px-3.5 py-2 rounded-2xl bg-[#25D366] hover:bg-[#128C7E] active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm disabled:opacity-40 cursor-pointer"
               >
                 <i class="fa-brands fa-whatsapp text-sm"></i>
                 <span>WhatsApp</span>
@@ -376,7 +475,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStockData } from '../composables/useStockData';
 import { BRAND_LISTS } from '../utils/constants';
@@ -390,23 +489,26 @@ import { toast } from 'vue3-toastify';
 const router = useRouter();
 const { stockData, loadStockData, loading: stockLoading } = useStockData(ref(false));
 
+const searchQuery = ref('');
+const photoOnlyMode = ref(true);
+const activeFilter = ref('all');
+
 const categoryList = [
-  { id: 'general', label: 'General', icon: '✨', brands: [] },
-  { id: 'paragon_gents', label: 'Paragon Gents', icon: '👞', brands: ['Max', 'PARAGON GENTS', 'Escoute'] },
-  { id: 'paragon_ladies', label: 'Paragon Ladies', icon: '👠', brands: ['PARAGON LADIES'] },
-  { id: 'eeken', label: 'Eeken', icon: '🏃', brands: ['EEKEN'] },
-  { id: 'cubix', label: 'Cubix', icon: '👟', brands: ['CUBIX', 'CUBIX 2'] },
-  { id: 'florex', label: 'Florex', icon: '🌸', brands: ['Florex (Swastik)'] },
-  { id: 'action', label: 'Action', icon: '⚡', brands: ['ACTION'] },
-  { id: 'reliance', label: 'Reliance', icon: '🔷', brands: ['RELIANCE FOOTWEAR'] },
-  { id: 'ajanta', label: 'Ajanta', icon: '👡', brands: ['AJANTA'] },
-  { id: 'box_packing', label: 'General Box Packing', icon: '📥', brands: [...BRAND_LISTS.generalBoxPacking] },
-  { id: 'loose_packing', label: 'General Loose Packing', icon: '📦', brands: [...BRAND_LISTS.generalLoosePacking] },
-  { id: 'ptos', label: 'P-Toes', icon: '🟠', brands: ['P-TOES'] },
-  { id: 'paralite', label: 'Paralite', icon: '🔶', brands: ['PARALITE'] },
-  { id: 'ladies_40', label: 'Paragon Ladies 40%', icon: '🏷️', brands: ['SOLEA DISC 40% OFFER'] },
-  { id: 'gents_40', label: 'Paragon Gents 40%', icon: '🏷️', brands: ['PARAGON GENTS 40%'] },
-  { id: 'socks', label: 'Socks', icon: '🧦', brands: ['Barun', 'Pareek Soucks', 'LEO'] }
+  { id: 'general', label: 'All', icon: '✨', sampleImg: 'https://res.cloudinary.com/dg365ewal/image/upload/v1773125726/CUSHION_NEW.jpg', brands: [] },
+  { id: 'hawai', label: 'Hawai', icon: '🩴', sampleImg: 'https://res.cloudinary.com/dg365ewal/image/upload/v1773125726/CUSHION_NEW.jpg', brands: ['Hawai Chappal', 'CUSHION'] },
+  { id: 'paragon_gents', label: 'Paragon Gents', icon: '👞', sampleImg: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770909765/1251_BKR.jpg', brands: ['Max', 'PARAGON GENTS', 'Escoute'] },
+  { id: 'paragon_ladies', label: 'Paragon Ladies', icon: '👠', sampleImg: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770548064/16048_MIG.jpg', brands: ['PARAGON LADIES'] },
+  { id: 'paralite', label: 'Paralite', icon: '🔶', sampleImg: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770919216/16048_BLK.jpg', brands: ['PARALITE'] },
+  { id: 'eeken', label: 'Eeken', icon: '🏃', sampleImg: '', brands: ['EEKEN'] },
+  { id: 'cubix', label: 'Cubix', icon: '👟', sampleImg: '', brands: ['CUBIX', 'CUBIX 2'] },
+  { id: 'florex', label: 'Florex', icon: '🌸', sampleImg: '', brands: ['Florex (Swastik)'] },
+  { id: 'action', label: 'Action', icon: '⚡', sampleImg: '', brands: ['ACTION'] },
+  { id: 'reliance', label: 'Reliance', icon: '🔷', sampleImg: '', brands: ['RELIANCE FOOTWEAR'] },
+  { id: 'ajanta', label: 'Ajanta', icon: '👡', sampleImg: '', brands: ['AJANTA'] },
+  { id: 'box_packing', label: 'Box Packing', icon: '📥', sampleImg: '', brands: [...BRAND_LISTS.generalBoxPacking] },
+  { id: 'loose_packing', label: 'Loose Packing', icon: '📦', sampleImg: '', brands: [...BRAND_LISTS.generalLoosePacking] },
+  { id: 'ptos', label: 'P-Toes', icon: '🟠', sampleImg: '', brands: ['P-TOES'] },
+  { id: 'socks', label: 'Socks', icon: '🧦', sampleImg: '', brands: ['Barun', 'Pareek Soucks', 'LEO'] }
 ];
 
 const activeCategoryId = ref('general');
@@ -517,19 +619,42 @@ const currentCategoryProducts = computed(() => {
   });
 });
 
+const filteredCatalogProducts = computed(() => {
+  let list = currentCategoryProducts.value;
+
+  // 1. Photo Only Filter
+  if (photoOnlyMode.value) {
+    list = list.filter(p => p.imageUrl && p.imageUrl.trim().length > 0);
+  }
+
+  // 2. Search Query Filter
+  if (searchQuery.value && searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim();
+    list = list.filter(p =>
+      (p.productName && p.productName.toLowerCase().includes(q)) ||
+      (p.groupName && p.groupName.toLowerCase().includes(q))
+    );
+  }
+
+  // 3. Quick Filter Chips
+  if (activeFilter.value === 'core') {
+    list = list.filter(p => p.isCompulsory);
+  } else if (activeFilter.value === 'instock') {
+    list = list.filter(p => (p.closingBalance || p.quantity || 0) >= 10);
+  } else if (activeFilter.value === 'under200') {
+    list = list.filter(p => p.rate && p.rate <= 200);
+  }
+
+  return list;
+});
+
 // Card State
 const currentIndex = ref(0);
 const currentQty = ref(1);
 const currentComment = ref('');
-const bubbleTrailContainer = ref(null);
-const bubbleElements = ref({});
-
-const setBubbleRef = (el, idx) => {
-  if (el) bubbleElements.value[idx] = el;
-};
 
 const currentProduct = computed(() => {
-  return currentCategoryProducts.value[currentIndex.value] || {};
+  return filteredCatalogProducts.value[currentIndex.value] || {};
 });
 
 const selectCategory = (id) => {
@@ -544,19 +669,11 @@ const resetCardInputs = () => {
 };
 
 const jumpToPhoto = (idx) => {
-  if (idx >= 0 && idx < currentCategoryProducts.value.length) {
+  if (idx >= 0 && idx < filteredCatalogProducts.value.length) {
     currentIndex.value = idx;
     resetCardInputs();
   }
 };
-
-watch(currentIndex, async (newIdx) => {
-  await nextTick();
-  const el = bubbleElements.value[newIdx];
-  if (el && el.scrollIntoView) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  }
-});
 
 const quickSizes = ['4x8', '5x9', '5x10', '6x9', '6x10', '7x10', '9x10', '11x13', '1x3', '4x7'];
 
@@ -589,13 +706,8 @@ const totalOrderSets = computed(() => {
   return orderItems.value.reduce((sum, item) => sum + item.quantity, 0);
 });
 
-const isProductInCart = (productName) => {
-  if (!productName) return false;
-  return orderItems.value.some(i => i.product.productName === productName);
-};
-
 const handleSkip = () => {
-  if (currentIndex.value < currentCategoryProducts.value.length) {
+  if (currentIndex.value < filteredCatalogProducts.value.length) {
     currentIndex.value++;
     resetCardInputs();
   }
