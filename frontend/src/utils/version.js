@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_006',
-  version: '1.2.8',
-  updatedAt: '27 Aug 2026, 10:25 AM',
-  commitTitle: 'SBE Update #006: Direct Metadata Sync Timestamp Extraction & Cache Persistence',
+  code: 'sbe_007',
+  version: '1.2.9',
+  updatedAt: '27 Aug 2026, 11:25 AM',
+  commitTitle: 'SBE Update #007: WhatsApp Follow-up PDF Attachment & Clean Text Copy',
   changes: [
+    {
+      tag: 'sbe_007',
+      date: '27 Aug 2026',
+      title: 'WhatsApp Follow-up PDF Attachment & Clean Text Copy',
+      details: 'Fixed Follow Up button to share/attach 6-month ledger PDF file, copy clean text message to clipboard without "Ji", and handle zero/nil balance scenarios gracefully.'
+    },
     {
       tag: 'sbe_006',
       date: '27 Aug 2026',

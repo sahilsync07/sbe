@@ -639,19 +639,63 @@ const sharePartyLedgerPDF = async (party) => {
   }
 };
 
-// WhatsApp Follow-up with automatic text copy & WhatsApp link open
+// WhatsApp Follow-up: Attach PDF + Copy text to clipboard
 const sendWhatsAppReminderWithPDF = async (party) => {
+  if (!party) return;
+
   const text = getWhatsAppFollowupText(party);
 
+  // 1. Copy formatted text message to clipboard
   try {
     if (navigator?.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Clipboard write failed:', e);
+  }
 
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
-  toast.success('Follow-up message copied & WhatsApp opened!', { autoClose: 2500 });
+  // 2. Prepare Ledger Payload
+  const raw = party.rawLedger || party;
+  const ledgerPayload = {
+    ledgerName: party.ledgerName,
+    groupName: party.groupName || raw.groupName,
+    openingBalance: raw.openingBalance || 0,
+    closingBalance: party.closingBalance !== undefined ? party.closingBalance : (raw.closingBalance || 0),
+    entries: raw.entries || party.entries || []
+  };
+
+  try {
+    if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === 'android') {
+      const pdfDataUri = generateLedgerPDF(ledgerPayload, {
+        monthsLimit: 6,
+        returnBase64: true
+      });
+
+      const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
+      const fileName = `Statement_${party.ledgerName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`;
+
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Cache
+      });
+
+      await Share.share({
+        title: `Ledger Statement - ${party.ledgerName}`,
+        files: [savedFile.uri]
+      });
+
+      toast.success('PDF attached & message copied! Paste into WhatsApp.', { autoClose: 3000 });
+    } else {
+      generateLedgerPDF(ledgerPayload, { monthsLimit: 6 });
+      window.open('https://wa.me/', '_blank');
+      toast.success('PDF downloaded & message copied to clipboard!', { autoClose: 3000 });
+    }
+  } catch (err) {
+    console.error('Follow-up PDF error:', err);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    toast.success('Message copied to clipboard!', { autoClose: 2500 });
+  }
 };
 
 onMounted(async () => {

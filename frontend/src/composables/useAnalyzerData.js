@@ -400,25 +400,32 @@ export function useAnalyzerData() {
    */
   const getWhatsAppFollowupText = (party) => {
     const name = party.ledgerName;
-    const total = formatINR(party.totalOutstanding);
+    const hasBalance = party.totalOutstanding && party.totalOutstanding > 0;
+    const total = formatINR(party.totalOutstanding || 0);
 
-    let text = `*Namaste ${name} Ji* 🙏\n\n`;
+    let text = `*Namaste ${name}* 🙏\n\n`;
     text += `Warm greetings from *Sri Brundabana Enterprises, Rayagada*!\n\n`;
-    text += `We hope your business is doing well. As part of our routine ledger account updates, here is your current account balance summary:\n\n`;
-    text += `📊 *Current Balance:* *${total}*\n`;
 
-    if (party.aging.b180_plus > 0) {
-      text += `• Balance (>180 days): *${formatINR(party.aging.b180_plus)}*\n`;
-    }
-    if (party.aging.b90_180 > 0) {
-      text += `• Balance (90–180 days): *${formatINR(party.aging.b90_180)}*\n`;
-    }
-    if (party.aging.b61_90 > 0 && party.aging.b180_plus <= 0 && party.aging.b90_180 <= 0) {
-      text += `• Balance (61–90 days): *${formatINR(party.aging.b61_90)}*\n`;
+    if (hasBalance) {
+      text += `We hope your business is doing well. As part of our routine ledger account updates, here is your current account balance summary:\n\n`;
+      text += `📊 *Current Balance:* *${total}*\n`;
+
+      if (party.aging && party.aging.b180_plus > 0) {
+        text += `• Balance (>180 days): *${formatINR(party.aging.b180_plus)}*\n`;
+      }
+      if (party.aging && party.aging.b90_180 > 0) {
+        text += `• Balance (90–180 days): *${formatINR(party.aging.b90_180)}*\n`;
+      }
+      if (party.aging && party.aging.b61_90 > 0 && party.aging.b180_plus <= 0 && party.aging.b90_180 <= 0) {
+        text += `• Balance (61–90 days): *${formatINR(party.aging.b61_90)}*\n`;
+      }
+
+      text += `\n📄 *We have attached your complete 6-month ledger statement for your kind review and verification.*\n\n`;
+      text += `Kindly review the statement at your convenience and arrange for the balance clearance.\n\n`;
+    } else {
+      text += `We hope your business is doing well. Please find attached your latest statement of account for your kind records and verification.\n\n`;
     }
 
-    text += `\n📄 *We have attached your complete 6-month ledger statement for your kind review and verification.*\n\n`;
-    text += `Kindly review the statement at your convenience and arrange for the balance clearance.\n\n`;
     text += `✨ *Thank you for placing your trust in Sri Brundabana Enterprises.* We work tirelessly to bring you the best footwear collections at the lowest wholesale prices possible! 👞👠\n\n`;
     text += `_With Best Regards,_\n*Sri Brundabana Enterprises*\n_Rayagada, Odisha_`;
 
