@@ -2,94 +2,100 @@
   <div class="hub-shell">
     <!-- Main Content Area -->
     <main class="hub-main">
-      <!-- Top Bar -->
-      <header class="hub-topbar">
-        <div class="hub-topbar__left">
-          <button v-if="route.path !== '/home' && route.path !== '/'" type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
-            <i class="fa-solid fa-arrow-left"></i>
-          </button>
-          <div class="hub-topbar__date">
-            <span class="hub-topbar__day">{{ currentDay }}</span>
-            <span class="hub-topbar__full-date">{{ currentDate }}</span>
-          </div>
-        </div>
-
-        <div class="hub-topbar__right">
-          <!-- Build Version Tag with Info Popover -->
-          <VersionBadge />
-
-          <button
-            v-if="isAdmin && !isSuperAdmin"
-            @click="updateStockData"
-            class="hub-icon-btn hub-icon-btn--accent"
-            title="Sync Data"
-          >
-            <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
-          </button>
-          <button
-            v-if="isAdmin || isSuperAdmin"
-            @click="toggleConsole"
-            class="hub-icon-btn hub-icon-btn--console hidden lg:flex"
-            :class="{ 'hub-icon-btn--active': showConsole }"
-            title="Toggle Console"
-          >
-            <i class="fa-solid fa-terminal"></i>
-          </button>
-          <button
-            v-if="!isAdmin && !isSuperAdmin"
-            @click="$router.push({ query: { login: 'admin' } })"
-            class="hub-icon-btn hub-icon-btn--accent"
-            title="Admin Login"
-          >
-            <i class="fa-solid fa-lock"></i>
-          </button>
-          <button
-            v-if="isAdmin || isSuperAdmin"
-            @click="handleLogout"
-            class="hub-icon-btn hub-icon-btn--danger"
-            title="Logout"
-          >
-            <i class="fa-solid fa-right-from-bracket"></i>
-          </button>
-        </div>
-      </header>
-
-      <!-- Hero Section -->
-      <section class="hub-hero">
-        <h1 class="hub-hero__title">
-          <span class="hub-hero__label">SBE</span>
-          <span class="hub-hero__gradient">Hub</span>
-        </h1>
-        <p class="hub-hero__sub">{{ lastSyncText }}</p>
-      </section>
-
-      <!-- Bento Grid -->
-      <section class="hub-grid">
-        <router-link
-          v-for="(item, index) in filteredLinks"
-          :key="item.path"
-          :to="item.path"
-          class="hub-card"
-          :class="[`hub-card--${item.colorKey}`, item.featured ? 'hub-card--featured' : '']"
-          :style="{ '--card-delay': `${index * 0.04}s` }"
-        >
-          <div class="hub-card__icon-wrap">
-            <div class="hub-card__icon" :style="{ background: item.gradient }">
-              <i :class="['fa-solid', item.icon]"></i>
+      <!-- Fixed Header Zone (Top Bar + SBE Hub Title) -->
+      <div class="hub-header-wrap">
+        <!-- Top Bar -->
+        <header class="hub-topbar">
+          <div class="hub-topbar__left">
+            <button v-if="route.path !== '/home' && route.path !== '/'" type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="hub-topbar__date">
+              <span class="hub-topbar__day">{{ currentDay }}</span>
+              <span class="hub-topbar__full-date">{{ currentDate }}</span>
             </div>
           </div>
-          <div class="hub-card__body">
-            <h3 class="hub-card__title">{{ item.label }}</h3>
-            <p class="hub-card__desc">{{ item.desc }}</p>
-          </div>
-          <div class="hub-card__arrow">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </router-link>
-      </section>
 
-      <div class="hub-footer">
-        <span>Sri Brundabana Enterprises • Rayagada</span>
+          <div class="hub-topbar__right">
+            <!-- Build Version Tag with Info Popover -->
+            <VersionBadge />
+
+            <button
+              v-if="isAdmin && !isSuperAdmin"
+              @click="updateStockData"
+              class="hub-icon-btn hub-icon-btn--accent"
+              title="Sync Data"
+            >
+              <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
+            </button>
+            <button
+              v-if="isAdmin || isSuperAdmin"
+              @click="toggleConsole"
+              class="hub-icon-btn hub-icon-btn--console hidden lg:flex"
+              :class="{ 'hub-icon-btn--active': showConsole }"
+              title="Toggle Console"
+            >
+              <i class="fa-solid fa-terminal"></i>
+            </button>
+            <button
+              v-if="!isAdmin && !isSuperAdmin"
+              @click="$router.push({ query: { login: 'admin' } })"
+              class="hub-icon-btn hub-icon-btn--accent"
+              title="Admin Login"
+            >
+              <i class="fa-solid fa-lock"></i>
+            </button>
+            <button
+              v-if="isAdmin || isSuperAdmin"
+              @click="handleLogout"
+              class="hub-icon-btn hub-icon-btn--danger"
+              title="Logout"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hub-hero">
+          <h1 class="hub-hero__title">
+            <span class="hub-hero__label">SBE</span>
+            <span class="hub-hero__gradient">Hub</span>
+          </h1>
+          <p class="hub-hero__sub">{{ lastSyncText }}</p>
+        </section>
+      </div>
+
+      <!-- Scrollable Cards Body with Imaginary Line Fade Mask -->
+      <div class="hub-scroll-body">
+        <!-- Bento Grid -->
+        <section class="hub-grid">
+          <router-link
+            v-for="(item, index) in filteredLinks"
+            :key="item.path"
+            :to="item.path"
+            class="hub-card"
+            :class="[`hub-card--${item.colorKey}`, item.featured ? 'hub-card--featured' : '']"
+            :style="{ '--card-delay': `${index * 0.04}s` }"
+          >
+            <div class="hub-card__icon-wrap">
+              <div class="hub-card__icon" :style="{ background: item.gradient }">
+                <i :class="['fa-solid', item.icon]"></i>
+              </div>
+            </div>
+            <div class="hub-card__body">
+              <h3 class="hub-card__title">{{ item.label }}</h3>
+              <p class="hub-card__desc">{{ item.desc }}</p>
+            </div>
+            <div class="hub-card__arrow">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </router-link>
+        </section>
+
+        <div class="hub-footer">
+          <span>Sri Brundabana Enterprises • Rayagada</span>
+        </div>
       </div>
     </main>
 
@@ -294,16 +300,25 @@ onMounted(async () => {
   flex: 1;
   min-width: 0;
   height: 100%;
+  display: flex;
+  flex-direction: column;
   position: relative;
   padding: 0 clamp(16px, 4vw, 48px);
-  padding-bottom: 48px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════
-   TOP BAR (Scrolls away on scroll)
+   HEADER ZONE (Fixed at top)
+   ══════════════════════════════════════ */
+.hub-header-wrap {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+  padding-bottom: 6px;
+}
+
+/* ══════════════════════════════════════
+   TOP BAR
    ══════════════════════════════════════ */
 .hub-topbar {
   position: relative;
@@ -312,7 +327,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding-top: max(env(safe-area-inset-top, 24px), 16px);
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .hub-topbar__left,
@@ -380,20 +395,13 @@ onMounted(async () => {
 .hub-icon-btn--active:hover { background: #0f172a !important; }
 
 /* ══════════════════════════════════════
-   HERO SECTION (Sticky Seamless Collapsing Header)
+   HERO SECTION
    ══════════════════════════════════════ */
 .hub-hero {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  padding-top: max(env(safe-area-inset-top, 24px), 12px);
-  padding-bottom: 8px;
+  position: relative;
+  padding-top: 2px;
+  padding-bottom: 2px;
   background: transparent;
-  pointer-events: none;
-}
-
-.hub-hero > * {
-  pointer-events: auto;
 }
 
 .hub-hero__title {
@@ -419,11 +427,27 @@ onMounted(async () => {
 }
 
 .hub-hero__sub {
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: clamp(12px, 1.2vw, 15px);
   color: #94a3b8;
   font-weight: 500;
   letter-spacing: 0.01em;
+}
+
+/* ══════════════════════════════════════
+   SCROLLABLE BODY & IMAGINARY LINE MASK
+   ══════════════════════════════════════ */
+.hub-scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 10px;
+  padding-bottom: 48px;
+  /* Imaginary Line Mask: Cards dissolve smoothly before reaching the top header */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 22px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0px, black 22px, black 100%);
 }
 
 /* ══════════════════════════════════════
@@ -435,7 +459,7 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
-  padding: 28px 0 0;
+  padding: 4px 0 0;
 }
 
 /* ══════════════════════════════════════
