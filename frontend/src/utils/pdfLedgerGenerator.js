@@ -367,51 +367,50 @@ export const generateLedgerPDF = (ledger, options = {}) => {
   // 5. EXECUTIVE AGING ANALYSIS & PARTNERSHIP PROSPERITY REPORT (ANNEXURE)
   // ═══════════════════════════════════════════════════════════════════════
   doc.addPage();
-  const summaryPageNum = doc.internal.getNumberOfPages();
 
   const agingData = computeLedgerAgingAndBills(ledger, effectiveOpeningBalance, latestDateObj);
   const partyName = (ledger.ledgerName || 'Valued Partner').toUpperCase();
   const groupName = ledger.groupName || 'Rayagada Local';
 
-  // 5.1 Company Header
+  // 5.1 Company Header (High Readability 14pt)
   doc.setFont(primaryFont, 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(14);
   doc.setTextColor(15, 23, 42); // #0f172a
   doc.text('SRI BRUNDABANA ENTERPRISES', pageWidth / 2, 40, { align: 'center' });
 
   doc.setFont(primaryFont, 'normal');
-  doc.setFontSize(8);
+  doc.setFontSize(8.5);
   doc.setTextColor(71, 85, 105); // #475569
-  doc.text('NEW COLONY, KAPILAS ROAD, RAYAGADA-765001 (ODISHA) • WHOLESALE FOOTWEAR DISTRIBUTORS', pageWidth / 2, 52, { align: 'center' });
+  doc.text('NEW COLONY, KAPILAS ROAD, RAYAGADA-765001 (ODISHA) • WHOLESALE FOOTWEAR DISTRIBUTORS', pageWidth / 2, 53, { align: 'center' });
 
   // 5.2 Document Title Banner
   doc.setFillColor(30, 41, 59); // #1e293b
-  doc.roundedRect(36, 62, pageWidth - 72, 22, 4, 4, 'F');
+  doc.roundedRect(36, 64, pageWidth - 72, 24, 4, 4, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont(primaryFont, 'bold');
-  doc.setFontSize(10);
-  doc.text('OFFICIAL ACCOUNT SETTLEMENT & AGING ANALYSIS REPORT', pageWidth / 2, 76, { align: 'center' });
+  doc.setFontSize(10.5);
+  doc.text('ACCOUNT STATEMENT & BILL-WISE AGING ANALYSIS', pageWidth / 2, 80, { align: 'center' });
 
   // 5.3 Party Info Row
-  let annY = 100;
+  let annY = 105;
   doc.setTextColor(15, 23, 42);
-  doc.setFontSize(10);
+  doc.setFontSize(10.5);
   doc.text(`Party: ${partyName}`, 36, annY);
   doc.setTextColor(180, 83, 9); // Amber-700
   const closingStr = ledger.closingBalance < 0 ? `₹${formatCurrency(ledger.closingBalance)} Dr` : (ledger.closingBalance > 0 ? `₹${formatCurrency(ledger.closingBalance)} Cr` : '₹0.00 Nil');
   doc.text(`Net Balance Due: ${closingStr}`, pageWidth - 36, annY, { align: 'right' });
 
-  annY += 14;
+  annY += 15;
   doc.setTextColor(100, 116, 139);
-  doc.setFontSize(8);
+  doc.setFontSize(8.5);
   doc.setFont(primaryFont, 'normal');
   doc.text(`Area / Line: ${groupName}`, 36, annY);
   doc.text(`Statement Period: ${dateRangeStr}`, pageWidth - 36, annY, { align: 'right' });
 
   // 5.4 KPI Summary Cards (4 Cards)
-  annY += 12;
+  annY += 14;
   const cardW = (pageWidth - 72 - 18) / 4;
-  const cardH = 38;
+  const cardH = 40;
   const kpis = [
     { label: 'OPENING BALANCE', val: `₹${formatCurrency(effectiveOpeningBalance)}` },
     { label: 'TOTAL PURCHASES', val: `₹${formatCurrency(totalDrAmount)}` },
@@ -422,50 +421,59 @@ export const generateLedgerPDF = (ledger, options = {}) => {
   kpis.forEach((k, idx) => {
     const cx = 36 + idx * (cardW + 6);
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(cx, annY, cardW, cardH, 3, 3, 'F');
+    doc.roundedRect(cx, annY, cardW, cardH, 4, 4, 'F');
     doc.setDrawColor(226, 232, 240);
-    doc.setLineWidth(0.75);
-    doc.roundedRect(cx, annY, cardW, cardH, 3, 3, 'D');
+    doc.setLineWidth(1);
+    doc.roundedRect(cx, annY, cardW, cardH, 4, 4, 'D');
     
     doc.setFont(primaryFont, 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(100, 116, 139);
-    doc.text(k.label, cx + cardW / 2, annY + 13, { align: 'center' });
-    
-    doc.setFontSize(8.5);
-    doc.setTextColor(idx === 3 ? 180 : 15, idx === 3 ? 83 : 23, idx === 3 ? 9 : 42);
-    doc.text(k.val, cx + cardW / 2, annY + 28, { align: 'center' });
-  });
-
-  // 5.5 5-Bucket Aging Breakdown Badges
-  annY += cardH + 10;
-  const agingBadges = [
-    { l: '0–30 Days', v: `₹${formatCurrency(agingData.b0_30)}` },
-    { l: '31–60 Days', v: `₹${formatCurrency(agingData.b31_60)}` },
-    { l: '61–90 Days', v: `₹${formatCurrency(agingData.b61_90)}` },
-    { l: '90–180 Days', v: `₹${formatCurrency(agingData.b90_180)}` },
-    { l: '180+ Days', v: `₹${formatCurrency(agingData.b180_plus)}` }
-  ];
-  const bW = (pageWidth - 72 - 16) / 5;
-  agingBadges.forEach((b, idx) => {
-    const bx = 36 + idx * (bW + 4);
-    doc.setFillColor(241, 245, 249);
-    doc.roundedRect(bx, annY, bW, 26, 3, 3, 'F');
-    doc.setFont(primaryFont, 'bold');
-    doc.setFontSize(6.5);
-    doc.setTextColor(71, 85, 105);
-    doc.text(b.l, bx + bW / 2, annY + 10, { align: 'center' });
     doc.setFontSize(7.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(b.v, bx + bW / 2, annY + 20, { align: 'center' });
+    doc.setTextColor(100, 116, 139);
+    doc.text(k.label, cx + cardW / 2, annY + 14, { align: 'center' });
+    
+    doc.setFontSize(9);
+    doc.setTextColor(idx === 3 ? 180 : 15, idx === 3 ? 83 : 23, idx === 3 ? 9 : 42);
+    doc.text(k.val, cx + cardW / 2, annY + 29, { align: 'center' });
   });
 
-  // 5.6 Detailed Pending Invoices Table (Oldest to Recent)
-  annY += 34;
+  // 5.5 Dynamic Active Non-Zero Aging Badges (Omit zero categories!)
+  annY += cardH + 12;
+  const activeAgingBuckets = [];
+  if (agingData.b0_30 > 0) activeAgingBuckets.push({ label: '0–30 Days (Current)', val: `₹${formatCurrency(agingData.b0_30)}` });
+  if (agingData.b31_60 > 0) activeAgingBuckets.push({ label: '31–60 Days (Overdue)', val: `₹${formatCurrency(agingData.b31_60)}` });
+  if (agingData.b61_90 > 0) activeAgingBuckets.push({ label: '61–90 Days (Overdue)', val: `₹${formatCurrency(agingData.b61_90)}` });
+  if (agingData.b90_180 > 0) activeAgingBuckets.push({ label: '90–180 Days (Critical)', val: `₹${formatCurrency(agingData.b90_180)}` });
+  if (agingData.b180_plus > 0) activeAgingBuckets.push({ label: '180+ Days (Severe Overdue)', val: `₹${formatCurrency(agingData.b180_plus)}` });
+
+  if (activeAgingBuckets.length === 0) {
+    activeAgingBuckets.push({ label: 'Aging Status', val: 'All Bills Cleared / Nil Balance' });
+  }
+
+  const badgeW = (pageWidth - 72 - (activeAgingBuckets.length - 1) * 8) / activeAgingBuckets.length;
+  activeAgingBuckets.forEach((b, idx) => {
+    const bx = 36 + idx * (badgeW + 8);
+    doc.setFillColor(241, 245, 249);
+    doc.roundedRect(bx, annY, badgeW, 30, 4, 4, 'F');
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(1);
+    doc.roundedRect(bx, annY, badgeW, 30, 4, 4, 'D');
+    
+    doc.setFont(primaryFont, 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    doc.text(b.label, bx + badgeW / 2, annY + 12, { align: 'center' });
+    
+    doc.setFontSize(9.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(b.val, bx + badgeW / 2, annY + 23, { align: 'center' });
+  });
+
+  // 5.6 Detailed Bill-Wise Aging Breakdown Table (Oldest to Recent)
+  annY += 42;
   doc.setFont(primaryFont, 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
-  doc.text('DETAILED PENDING BILLS BREAKDOWN (OLDEST TO MOST RECENT)', 36, annY);
+  doc.text('DETAILED BILL-WISE AGING BREAKDOWN (OLDEST TO MOST RECENT)', 36, annY);
 
   const billRows = (agingData.pendingBills || []).map((b, idx) => [
     `${idx + 1}`,
@@ -482,27 +490,27 @@ export const generateLedgerPDF = (ledger, options = {}) => {
 
   autoTable(doc, {
     startY: annY + 6,
-    head: [['Sl', 'Bill / Voucher No.', 'Date', 'Unpaid Amount (Rs.)', 'Overdue', 'Aging Category']],
+    head: [['Sl', 'Bill / Voucher No.', 'Bill Date', 'Unpaid Amount (Rs.)', 'Overdue Days', 'Aging Bucket']],
     body: billRows,
     theme: 'striped',
-    styles: { font: primaryFont, fontSize: 7.5, cellPadding: 3, textColor: [30, 41, 59] },
-    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+    styles: { font: primaryFont, fontSize: 8.5, cellPadding: 4.5, textColor: [30, 41, 59] },
+    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
     columnStyles: {
-      0: { cellWidth: 20, halign: 'center' },
-      1: { cellWidth: 140 },
-      2: { cellWidth: 65 },
-      3: { cellWidth: 90, halign: 'right' },
-      4: { cellWidth: 65, halign: 'center' },
+      0: { cellWidth: 25, halign: 'center' },
+      1: { cellWidth: 135 },
+      2: { cellWidth: 70 },
+      3: { cellWidth: 95, halign: 'right' },
+      4: { cellWidth: 70, halign: 'center' },
       5: { cellWidth: 'auto' }
     },
     margin: { left: 36, right: 36 }
   });
 
-  const finalAnnTableY = doc.lastAutoTable.finalY || annY + 120;
+  const finalAnnTableY = doc.lastAutoTable.finalY || annY + 80;
 
   // 5.7 Warm Partnership & Prosperity Encouragement Letter
-  const noteY = finalAnnTableY + 10;
-  const noteH = 76;
+  const noteY = finalAnnTableY + 14;
+  const noteH = 80;
   doc.setFillColor(254, 252, 232); // #fefce8 warm gold background
   doc.roundedRect(36, noteY, pageWidth - 72, noteH, 4, 4, 'F');
   doc.setDrawColor(254, 240, 138); // #fef08a border
@@ -510,30 +518,30 @@ export const generateLedgerPDF = (ledger, options = {}) => {
   doc.roundedRect(36, noteY, pageWidth - 72, noteH, 4, 4, 'D');
 
   doc.setFont(primaryFont, 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(8.5);
   doc.setTextColor(180, 83, 9); // Amber-700
   doc.text('✨ PARTNERSHIP & PROSPERITY NOTE • SRI BRUNDABANA ENTERPRISES ✨', 46, noteY + 14);
 
   doc.setFont(primaryFont, 'normal');
-  doc.setFontSize(7.2);
+  doc.setFontSize(7.8);
   doc.setTextColor(51, 65, 85);
   const msg = 'Dear Valued Business Partner, We sincerely cherish our business association with you. At Sri Brundabana Enterprises, Rayagada, your retail prosperity and commercial success are at the core of our business. We constantly strive to provide you with the freshest footwear collections at the lowest wholesale prices.\n\nTimely settlement of outstanding invoices ensures smooth credit cycles, immediate dispatches, and priority allocation of the season\'s high-demand footwear. We wish you and your enterprise boundless success, soaring sales, and a golden season of prosperity ahead!';
   doc.text(doc.splitTextToSize(msg, pageWidth - 92), 46, noteY + 28);
 
   // 5.8 Authorised Signatory Footer
-  const footerY = noteY + noteH + 14;
+  const footerY = noteY + noteH + 16;
   doc.setFont(primaryFont, 'italic');
-  doc.setFontSize(7.5);
+  doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
   doc.text('Kindly verify the statement above and arrange for the balance clearance at your earliest convenience.', 36, footerY);
 
   doc.setFont(primaryFont, 'bold');
-  doc.setFontSize(8.5);
+  doc.setFontSize(9);
   doc.setTextColor(15, 23, 42);
   doc.text('For M/S. SRI BRUNDABANA ENTERPRISES', pageWidth - 36, footerY, { align: 'right' });
   doc.setFont(primaryFont, 'normal');
-  doc.setFontSize(7.5);
-  doc.text('Authorised Signatory / Accounts Desk • Rayagada, Odisha', pageWidth - 36, footerY + 12, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('Authorised Signatory / Accounts Desk • Rayagada, Odisha', pageWidth - 36, footerY + 13, { align: 'right' });
 
   // 6. Page Numbers & Continuation Markers
   const pageCount = doc.internal.getNumberOfPages();
