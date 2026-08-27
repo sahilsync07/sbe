@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_016',
-  version: '1.4.3',
-  updatedAt: '27 Aug 2026, 06:50 PM',
-  commitTitle: 'SBE Update #016: Complete Removal of White Header Background Overlay for 100% Seamless Ambient Flow',
+  code: 'sbe_017',
+  version: '1.4.4',
+  updatedAt: '27 Aug 2026, 07:30 PM',
+  commitTitle: 'SBE Update #017: Dedicated Executive Aging Analysis & Partnership Prosperity Report at End of Ledger PDF',
   changes: [
+    {
+      tag: 'sbe_017',
+      date: '27 Aug 2026',
+      title: 'Executive Aging Analysis & Partnership Annexure in PDF',
+      details: 'Added a dedicated final summary page to the Ledger Statement PDF featuring account metrics (Opening, Purchases, Payments, Closing), 5-bucket aging breakdown, full pending bill breakdown table (oldest to recent with exact days due), and an encouraging partnership & business growth letter from Sri Brundabana Enterprises, Rayagada.'
+    },
     {
       tag: 'sbe_016',
       date: '27 Aug 2026',
@@ -21,12 +27,6 @@ export const APP_VERSION = {
       date: '27 Aug 2026',
       title: 'Detailed Bill Breakdown & Concise Follow-up Message',
       details: 'Enhanced WhatsApp Follow-up to list all unpaid bills sorted from oldest to most recent with bill amount, exact days overdue, and aging category, along with non-zero aging summaries and direct concise greetings.'
-    },
-    {
-      tag: 'sbe_013',
-      date: '27 Aug 2026',
-      title: 'Dynamic Brand Stock Summary Report Cover Page',
-      details: 'Generates a high-impact dynamic summary report card as Page 1 for photo sharing and One Touch, detailing brand name, sync date, total designs, total stock pairs, min/max quantity spread, and wholesale pricing.'
     }
   ]
 };
