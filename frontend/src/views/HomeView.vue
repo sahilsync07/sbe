@@ -387,14 +387,8 @@ onMounted(async () => {
   top: 0;
   z-index: 40;
   padding-top: max(env(safe-area-inset-top, 24px), 12px);
-  padding-bottom: 16px;
-  background: linear-gradient(to bottom, rgba(248, 246, 241, 0.96) 0%, rgba(248, 246, 241, 0.82) 65%, rgba(248, 246, 241, 0) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  margin-left: calc(-1 * clamp(16px, 4vw, 48px));
-  margin-right: calc(-1 * clamp(16px, 4vw, 48px));
-  padding-left: clamp(16px, 4vw, 48px);
-  padding-right: clamp(16px, 4vw, 48px);
+  padding-bottom: 8px;
+  background: transparent;
   pointer-events: none;
 }
 

@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_019',
-  version: '1.4.6',
-  updatedAt: '27 Aug 2026, 07:45 PM',
-  commitTitle: 'SBE Update #019: Customer-Centric Account Summary, Respectful Invoice Tenure Wording & Polished PDF Layout',
+  code: 'sbe_020',
+  version: '1.4.7',
+  updatedAt: '27 Aug 2026, 10:20 PM',
+  commitTitle: 'SBE Update #020: 100% Transparent Hero Header (Removed Background Gradient Overlay Strip)',
   changes: [
+    {
+      tag: 'sbe_020',
+      date: '27 Aug 2026',
+      title: 'Complete Removal of Header Gradient Overlay Strip',
+      details: 'Completely set .hub-hero background to 100% transparent and removed all linear-gradient overlays, backdrop filters, and negative margins, restoring the pure ambient background across the entire Home screen.'
+    },
     {
       tag: 'sbe_019',
       date: '27 Aug 2026',
@@ -15,12 +21,6 @@ export const APP_VERSION = {
       date: '27 Aug 2026',
       title: 'Dynamic Non-Zero Aging & Enhanced PDF Readability',
       details: 'Enhanced the PDF aging annexure to dynamically display only active non-zero aging buckets (omitting zero-balance categories), added crystal-clear bill-wise aging breakdown, and increased typography font sizes for effortless readability.'
-    },
-    {
-      tag: 'sbe_017',
-      date: '27 Aug 2026',
-      title: 'Executive Aging Analysis & Partnership Annexure in PDF',
-      details: 'Added a dedicated final summary page to the Ledger Statement PDF featuring account metrics, full pending bill breakdown table, and an encouraging partnership & business growth letter from Sri Brundabana Enterprises, Rayagada.'
     }
   ]
 };
