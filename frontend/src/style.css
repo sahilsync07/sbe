@@ -28,7 +28,7 @@ body {
    ============================================ */
 
 .safe-area-top {
-  padding-top: max(env(safe-area-inset-top, 24px), 16px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .safe-area-top-fixed {
@@ -37,10 +37,10 @@ body {
 }
 
 .safe-area-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Main content offset */
+/* Main content offset for non-landing catalog view */
 .platform-android .main-content-offset {
   margin-top: calc(54px + env(safe-area-inset-top, 0px));
 }
@@ -51,7 +51,7 @@ body {
 }
 
 body:not(.platform-android) .main-content-offset {
-  margin-top: 60px;
+  margin-top: 54px;
 }
 @media (min-width: 768px) {
   body:not(.platform-android) .main-content-offset {

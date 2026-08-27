@@ -165,7 +165,8 @@ export async function performDeltaSync(stockDataList = null) {
     let data = stockDataList;
     if (!data || !Array.isArray(data) || data.length === 0) {
       try {
-        const res = await fetch('/assets/stock-data.json');
+        const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+        const res = await fetch(`${baseUrl}assets/stock-data.json?t=${Date.now()}`);
         if (res.ok) data = await res.json();
       } catch (e) {}
     }

@@ -2,9 +2,9 @@
   <div class="brand-landing pb-24 text-slate-900 font-sans">
     
     <!-- ══════════════════════════════════════════════════════════
-         1. TOP BAR: Zomato-Style Location Header & Action Badges
+         1. TOP BAR: Zomato-Style Location Header & Cart
          ══════════════════════════════════════════════════════════ -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-3 sm:px-6 pt-3 pb-2 transition-all">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-3 sm:px-6 pt-2.5 pb-2 transition-all">
       <div class="flex items-center justify-between gap-3">
         <!-- Left: Location Info (Zomato Style) -->
         <div class="flex items-center gap-2.5 min-w-0 cursor-pointer select-none group" @click="$emit('select-category', 'All')">
@@ -21,51 +21,22 @@
             <div class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 truncate">
               <span class="text-amber-700 font-semibold">Rayagada</span>
               <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-              <span class="text-slate-400">{{ formattedLastSync || 'Main Catalog' }}</span>
+              <span class="text-slate-400">Official Store</span>
             </div>
           </div>
         </div>
 
-        <!-- Right: Actions (Sync, Admin Badge, Cart) -->
+        <!-- Right: Shopping Bag Cart Button -->
         <div class="flex items-center gap-2 shrink-0">
-          <!-- Sync Button -->
-          <button
-            @click="handleSync"
-            class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80 flex items-center justify-center transition-all active:scale-95 shadow-sm"
-            title="Sync Data"
-          >
-            <i class="fa-solid fa-rotate text-xs" :class="{ 'animate-spin text-[#c59b27]': isSyncing }"></i>
-          </button>
-
-          <!-- Admin / Hub Button -->
-          <button
-            v-if="isAdmin || isSuperAdmin"
-            @click="$router.push('/home')"
-            class="h-9 px-3 rounded-full bg-[#18181b] text-amber-400 border border-amber-500/30 flex items-center gap-1.5 text-xs font-bold transition-all hover:bg-black active:scale-95 shadow-sm"
-            title="Admin Hub"
-          >
-            <i class="fa-solid fa-shield-halved text-[11px]"></i>
-            <span class="hidden sm:inline">Admin</span>
-          </button>
-          <button
-            v-else
-            @click="$router.push({ query: { login: 'admin' } })"
-            class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/80 flex items-center justify-center transition-all active:scale-95 shadow-sm"
-            title="Admin Login"
-          >
-            <i class="fa-solid fa-lock text-xs"></i>
-          </button>
-
-          <!-- Cart Icon with Dynamic Count -->
           <button
             @click="appStore.toggleCart(true)"
-            class="relative w-9 h-9 rounded-full bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10"
+            class="relative w-10 h-10 rounded-full bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10"
             title="View Cart"
           >
             <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-white animate-pulse">
               {{ cartTotalItems }}
             </div>
-            <i class="fa-solid fa-bag-shopping text-xs text-amber-400"></i>
+            <i class="fa-solid fa-bag-shopping text-sm text-amber-400"></i>
           </button>
         </div>
       </div>
@@ -73,7 +44,7 @@
       <!-- ══════════════════════════════════════════════════════════
            2. SEARCH BAR: Zomato-Style with Clean View Switch
            ══════════════════════════════════════════════════════════ -->
-      <div class="mt-3 relative" ref="searchContainerRef">
+      <div class="mt-2.5 relative" ref="searchContainerRef">
         <div class="flex items-center gap-2 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-1 pl-3.5 focus-within:border-[#c59b27] focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
           <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm shrink-0"></i>
           
@@ -82,7 +53,7 @@
             @focus="showDropdown = true"
             @keydown.enter="handleSearchSubmit(localQuery)"
             type="text"
-            placeholder='Search "Paragon, Eeken, Sandals, Size 8x10..."'
+            placeholder="Search products..."
             class="flex-1 min-w-0 bg-transparent text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none py-1.5"
           />
 
@@ -198,7 +169,7 @@
       <!-- ══════════════════════════════════════════════════════════
            3. BRAND TABS: Circular Brand Icons (Zomato Category Bar)
            ══════════════════════════════════════════════════════════ -->
-      <div class="mt-3 -mx-3 sm:-mx-6 px-3 sm:px-6 overflow-x-auto no-scrollbar border-t border-slate-100/60 pt-2.5">
+      <div class="mt-2.5 -mx-3 sm:-mx-6 px-3 sm:px-6 overflow-x-auto no-scrollbar border-t border-slate-100/60 pt-2">
         <div class="flex items-center gap-4 sm:gap-6 min-w-max pb-1">
           <button
             v-for="tab in brandTabs"
@@ -243,7 +214,7 @@
     <!-- ══════════════════════════════════════════════════════════
          4. STICKY FILTER PILLS: Quick Filter Chips Bar
          ══════════════════════════════════════════════════════════ -->
-    <div class="sticky top-[148px] z-30 bg-[#fcfbf9]/95 backdrop-blur-md py-2.5 px-3 sm:px-6 border-b border-slate-200/50">
+    <div class="sticky top-[138px] sm:top-[146px] z-30 bg-[#fcfbf9]/95 backdrop-blur-md py-2.5 px-3 sm:px-6 border-b border-slate-200/50">
       <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
         <!-- Filters Button -->
         <button
@@ -312,76 +283,6 @@
         </button>
       </div>
     </div>
-
-    <!-- ══════════════════════════════════════════════════════════
-         5. EXPLORE MORE SECTION: Zomato 4-Card Quick Hub
-         ══════════════════════════════════════════════════════════ -->
-    <section class="mt-4 px-3 sm:px-6">
-      <div class="flex items-center justify-between mb-2.5">
-        <h2 class="text-xs font-extrabold uppercase tracking-widest text-slate-400">
-          EXPLORE MORE
-        </h2>
-        <span class="text-[11px] font-bold text-amber-700">Quick Access</span>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
-        <!-- 1. One Touch Share -->
-        <router-link
-          to="/pdf-gen?onetouch=true"
-          class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between group cursor-pointer relative overflow-hidden"
-        >
-          <div class="w-10 h-10 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition-transform">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-violet-700 transition-colors">One Touch</h3>
-            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">Share catalog in 1 tap</p>
-          </div>
-        </router-link>
-
-        <!-- 2. Line Debtors Analyzer -->
-        <router-link
-          to="/analyzer"
-          class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between group cursor-pointer relative overflow-hidden"
-        >
-          <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition-transform">
-            <i class="fa-solid fa-chart-pie"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-teal-700 transition-colors">Debtors</h3>
-            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">Payment recovery</p>
-          </div>
-        </router-link>
-
-        <!-- 3. Order Maker -->
-        <router-link
-          to="/order-maker"
-          class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between group cursor-pointer relative overflow-hidden"
-        >
-          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition-transform">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors">Order Maker</h3>
-            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">Photo ordering</p>
-          </div>
-        </router-link>
-
-        <!-- 4. Ledger & Daybook -->
-        <router-link
-          to="/ledger"
-          class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between group cursor-pointer relative overflow-hidden"
-        >
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition-transform">
-            <i class="fa-solid fa-book-open"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-amber-700 transition-colors">Ledger</h3>
-            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">Balances & entries</p>
-          </div>
-        </router-link>
-      </div>
-    </section>
 
     <!-- ══════════════════════════════════════════════════════════
          6. PARAGON 40% DISCOUNT STRIP: Eye-Catching Marquee
@@ -757,16 +658,6 @@
         </div>
       </button>
     </div>
-
-    <!-- Admin: Catalog Generator FAB -->
-    <button
-      v-if="isAdmin || isSuperAdmin"
-      @click="$emit('open-catalog-gen')"
-      class="fixed bottom-6 right-6 z-40 w-13 h-13 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-2xl shadow-amber-500/40 flex items-center justify-center text-white text-lg hover:scale-110 active:scale-95 transition-all"
-      title="Generate Catalog Images"
-    >
-      <i class="fa-solid fa-bolt"></i>
-    </button>
 
   </div>
 </template>

@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen relative">
-    <!-- Global Persistent App Layout -->
+    <!-- Global Persistent App Layout (Shown when not on landing page or when searching) -->
     <DesktopToolbar
-      v-if="!hubPages.has($route.path)"
+      v-if="!hubPages.has($route.path) && ($route.path !== '/' || searchQuery)"
       :loading="stockLoading"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"

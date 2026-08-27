@@ -21,7 +21,8 @@
       
 
       <main 
-         class="flex-1 w-full px-2 sm:px-4 lg:px-6 space-y-8 min-w-0 transition-all duration-300 main-content-offset"
+         class="flex-1 w-full min-w-0 transition-all duration-300"
+         :class="(showLanding && !searchQuery) ? 'px-0' : 'px-2 sm:px-4 lg:px-6 space-y-8 main-content-offset'"
       >
         <!-- Ledger Placeholder -->
         <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">

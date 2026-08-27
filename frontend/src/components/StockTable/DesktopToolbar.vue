@@ -230,55 +230,6 @@
          </div>
       </div>
     </header>
-
-    <!-- Mobile Floating Navigation Pill (Zomato-Style Bottom Bar) -->
-    <div
-      v-if="$route.path === '/'"
-      class="lg:hidden fixed bottom-3 left-4 right-4 z-[60] bg-[#121214]/95 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-1.5 shadow-2xl shadow-black/40"
-      style="padding-bottom: max(env(safe-area-inset-bottom, 8px), 8px)"
-    >
-       <div class="flex items-center justify-around">
-          <!-- Catalog / Home -->
-          <button
-             @click="$router.push('/')"
-             class="flex flex-col items-center gap-0.5 px-3 py-1 text-amber-400 font-bold"
-          >
-             <i class="fa-solid fa-house text-sm"></i>
-             <span class="text-[9px] uppercase tracking-wider">Catalog</span>
-          </button>
-
-          <!-- One Touch -->
-          <button
-             @click="$router.push('/pdf-gen?onetouch=true')"
-             class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-white transition-colors"
-          >
-             <i class="fa-solid fa-bolt text-sm text-purple-400"></i>
-             <span class="text-[9px] uppercase tracking-wider">Share</span>
-          </button>
-
-          <!-- Cart with Live Count -->
-          <button
-             @click="$emit('toggleCart')"
-             class="flex flex-col items-center gap-0.5 px-4 py-1 bg-[#c59b27] text-white rounded-2xl shadow-md font-bold relative active:scale-95 transition-transform"
-          >
-             <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-[#121214]">
-                {{ cartTotalItems }}
-             </div>
-             <i class="fa-solid fa-bag-shopping text-sm"></i>
-             <span class="text-[9px] uppercase tracking-wider">Cart</span>
-          </button>
-
-          <!-- Hub / Tools -->
-          <button
-             @click="$router.push('/home')"
-             class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-white transition-colors"
-          >
-             <i class="fa-solid fa-grid-2 text-sm text-amber-400"></i>
-             <span class="text-[9px] uppercase tracking-wider">Hub</span>
-          </button>
-       </div>
-    </div>
-
   </div>
 </template>
 
