@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_015',
-  version: '1.4.2',
-  updatedAt: '27 Aug 2026, 06:35 PM',
-  commitTitle: 'SBE Update #015: Compact Single-Line Bill Formatting & WhatsApp 1024-Char Caption Limit Protection',
+  code: 'sbe_016',
+  version: '1.4.3',
+  updatedAt: '27 Aug 2026, 06:50 PM',
+  commitTitle: 'SBE Update #016: Complete Removal of White Header Background Overlay for 100% Seamless Ambient Flow',
   changes: [
+    {
+      tag: 'sbe_016',
+      date: '27 Aug 2026',
+      title: 'Removed White Header Background Overlay',
+      details: 'Completely removed the pale/white gradient background overlay and backdrop filter from SBE Hub hero header, allowing the natural warm ambient background to flow 100% seamlessly without any visible strips or bands.'
+    },
     {
       tag: 'sbe_015',
       date: '27 Aug 2026',
@@ -21,12 +27,6 @@ export const APP_VERSION = {
       date: '27 Aug 2026',
       title: 'Dynamic Brand Stock Summary Report Cover Page',
       details: 'Generates a high-impact dynamic summary report card as Page 1 for photo sharing and One Touch, detailing brand name, sync date, total designs, total stock pairs, min/max quantity spread, and wholesale pricing.'
-    },
-    {
-      tag: 'sbe_012',
-      date: '27 Aug 2026',
-      title: 'Safe Area & Seamless Blended Sticky Header',
-      details: 'Added safe area top padding for status bar/battery indicators and converted sticky SBE Hub header background to a seamless transparent gradient fade with zero rectangular borders or hard straps.'
     }
   ]
 };
