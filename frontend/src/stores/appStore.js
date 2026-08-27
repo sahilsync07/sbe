@@ -10,6 +10,8 @@ export const useAppStore = defineStore('app', {
     searchQuery: '',
     cleanView: true,
     config: {},
+    showCart: false,
+    showSidePanel: false,
   }),
   actions: {
     setAdmin(status) {
@@ -32,6 +34,19 @@ export const useAppStore = defineStore('app', {
     },
     setCleanView(status) {
       this.cleanView = status;
+    },
+    toggleCart(forceVal) {
+      this.showCart = forceVal !== undefined ? forceVal : !this.showCart;
+      if (this.showCart) {
+        this.searchQuery = '';
+      }
+    },
+    toggleSidePanel(forceVal) {
+      this.showSidePanel = forceVal !== undefined ? forceVal : !this.showSidePanel;
+      if (this.showSidePanel) {
+        this.searchQuery = '';
+      }
     }
   }
 });
+

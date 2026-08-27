@@ -160,11 +160,8 @@ export function useStockData(isLocal) {
 
             const liveUrl = REMOTE_DATA_URL;
 
+            // Simple GET request without custom headers avoids CORS OPTIONS preflight check
             const response = await fetch(`${liveUrl}?t=${Date.now()}`, {
-                headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache'
-                },
                 signal: controller.signal
             });
             clearTimeout(timeoutId);

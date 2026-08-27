@@ -3,16 +3,17 @@
   <div>
     <!-- Desktop Toolbar (Hidden on Mobile) -->
     <header 
-      class="hidden lg:block fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300 safe-area-top-fixed rounded-b-3xl"
+      class="hidden lg:block fixed inset-x-0 top-0 z-[60] bg-[#121214]/95 backdrop-blur-md border-b border-amber-500/20 shadow-lg transition-all duration-300 safe-area-top-fixed rounded-b-3xl"
     >
       <!-- Inner content wrapper with fixed height -->
       <div class="h-[72px] flex items-center justify-between px-6">
-       <!-- Left Section: Sidebar, Sync, Search -->
-       <div class="flex items-center gap-4 flex-1 min-w-0 mr-4">
+        <!-- Left Section: Sidebar, Sync, Search -->
+        <div class="flex items-center gap-3.5 flex-1 min-w-0 mr-4">
           <button
             @click="$emit('toggleSidebar')"
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95 shrink-0"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:bg-[#c59b27] hover:text-white transition-all active:scale-95 shrink-0 border border-white/10"
             :class="{ 'opacity-0 pointer-events-none': showCart }"
+            title="All Brands Menu"
           >
              <i v-if="showSidePanel" class="fa-solid fa-xmark text-sm"></i>
              <i v-else class="fa-solid fa-bars text-sm"></i>
@@ -23,15 +24,15 @@
             <button
                v-if="isAdmin && !isSuperAdmin"
                @click="$emit('updateStockData')"
-               class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 hover:text-blue-500 transition-all border border-white/5"
+               class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:bg-white/10 hover:text-amber-400 transition-all border border-white/10"
                title="Sync Data"
             >
-              <i class="fa-solid fa-rotate" :class="{ 'animate-spin': loading }"></i>
+              <i class="fa-solid fa-rotate" :class="{ 'animate-spin text-amber-400': loading }"></i>
             </button>
-             <button
+            <button
               v-if="isSuperAdmin"
               @click="$router.push('/ledger')"
-              class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 transition-colors border border-white/5"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:bg-white/10 hover:text-amber-400 transition-colors border border-white/10"
               title="Ledger View"
             >
                <i class="fa-solid fa-book-open"></i>
@@ -40,7 +41,7 @@
 
           <!-- Search Bar (Flexible) -->
           <div v-if="$route.path === '/'" class="relative flex-1 max-w-sm group" ref="desktopSearchRef">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-400 transition-colors">
                  <i class="fa-solid fa-magnifying-glass text-sm"></i>
               </span>
               <input
@@ -49,8 +50,8 @@
                 @keydown.enter="executeSearch(localQuery)"
                 @focus="showDesktopDropdown = true"
                 type="text"
-                placeholder="Search..."
-                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-900 border border-white/20 ring-1 ring-white/10 focus:bg-black focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-all text-sm font-medium text-white placeholder-slate-400"
+                placeholder='Search products...'
+                class="w-full pl-10 pr-4 py-2 rounded-full bg-white/5 border border-white/15 focus:bg-black focus:border-[#c59b27] focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition-all text-sm font-medium text-white placeholder-slate-400"
               />
               
               <!-- Desktop Smart Dropdown -->
@@ -63,14 +64,14 @@
                 leave-to-class="translate-y-2 opacity-0"
               >
                 <div v-if="showDesktopDropdown && localQuery.trim().length > 0" 
-                     class="fixed top-[84px] left-4 right-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-[800px] max-w-full bg-neutral-900 border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-[70] max-h-[60vh] flex flex-col">
-                  <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 custom-scrollbar">
+                     class="fixed top-[84px] left-4 right-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-[800px] max-w-full bg-[#18181b] border border-amber-500/30 rounded-2xl shadow-2xl overflow-hidden z-[70] max-h-[60vh] flex flex-col">
+                  <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 no-scrollbar">
                     <button 
                       @click="executeSearch(localQuery)"
-                      class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3 border border-transparent hover:border-white/5"
+                      class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors flex items-center gap-3 border border-transparent"
                     >
-                       <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                          <i class="fa-solid fa-magnifying-glass text-blue-400 text-sm"></i>
+                       <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                          <i class="fa-solid fa-magnifying-glass text-amber-400 text-sm"></i>
                        </div>
                        <div class="flex-1 overflow-hidden">
                           <div class="text-white font-medium truncate text-sm">Search for "{{ localQuery.trim() }}"</div>
@@ -84,15 +85,15 @@
                       v-for="product in searchSuggestions"
                       :key="product.productName"
                       @click="executeSearch(product)"
-                      class="w-full text-left px-5 py-4 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-4 border border-transparent hover:border-white/5"
+                      class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/5 transition-colors flex items-center gap-4 border border-transparent"
                     >
                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
-                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-90" />
+                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover" />
                           <i v-else class="fa-solid fa-box text-slate-500 text-lg"></i>
                        </div>
                        <div class="flex-1 overflow-hidden">
-                          <div class="text-white font-['Clash_Display'] font-bold tracking-wide truncate text-lg">{{ formatProductNameToolbar(product.productName) }}</div>
-                          <div class="text-slate-300 font-medium text-sm mt-1 truncate flex items-center gap-2.5">
+                          <div class="text-white font-['Clash_Display'] font-bold tracking-wide truncate text-base">{{ formatProductNameToolbar(product.productName) }}</div>
+                          <div class="text-slate-300 font-medium text-xs mt-1 truncate flex items-center gap-2.5">
                             <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
                               <span class="w-2.5 h-2.5 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
                               <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
@@ -103,7 +104,7 @@
                               <span class="w-1 h-1 rounded-full bg-slate-600"></span>
                             </span>
                             <span v-if="product.quantity > 0" class="text-emerald-400">{{ product.quantity }} pairs</span>
-                            <span v-else class="text-rose-400 flex items-center gap-1"><i class="fa-solid fa-xmark text-[10px]"></i> Out of Stock</span>
+                            <span v-else class="text-rose-400">Out of Stock</span>
                             <span class="w-1 h-1 rounded-full bg-slate-600"></span>
                             <span>{{ getPriceInfo(product.productName).label }} ₹{{ getPriceInfo(product.productName).price }}</span>
                           </div>
@@ -118,251 +119,163 @@
                 </div>
               </transition>
           </div>
-       </div>
+        </div>
 
-       <!-- Center Section: Logo (Absolute) -->
-       <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 pointer-events-none">
-          <h1 
-               class="text-2xl font-semibold tracking-tighter text-white select-none pointer-events-auto cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
-               @mousedown="logoStartPress"
-               @mouseup="logoEndPress"
-               @mouseleave="logoCancelPress"
-               @touchstart.prevent="logoStartPress"
-               @touchend.prevent="logoEndPress"
-               @touchcancel="logoCancelPress"
-               @contextmenu.prevent
-               title="Tap: Home • Long Press: Admin"
-             >
-               <span class="text-white font-['Clash_Display'] font-bold text-3xl tracking-wide uppercase">{{ companyFirstName }}</span>
-               <span class="text-slate-400 font-['Clash_Display'] font-light text-3xl tracking-wide ml-1.5">{{ companyRestName }}</span>
-          </h1>
-          <!-- Status Pill -->
-          <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-neutral-900 border border-white/10 px-2 py-0.5 rounded-full shadow-sm">
-               <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
-               <span>{{ formattedLastRefresh || 'Offline' }}</span>
+        <!-- Center Section: New e-SBE Logo -->
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 pointer-events-none">
+          <div 
+            class="select-none pointer-events-auto cursor-pointer flex items-center gap-2"
+            @mousedown="logoStartPress"
+            @mouseup="logoEndPress"
+            @mouseleave="logoCancelPress"
+            @touchstart.prevent="logoStartPress"
+            @touchend.prevent="logoEndPress"
+            @touchcancel="logoCancelPress"
+            @contextmenu.prevent
+            title="Tap: Home • Long Press: Admin"
+          >
+            <img src="/assets/e-sbe-logo.png" alt="e-SBE" class="h-8 w-auto object-contain invert brightness-200" />
           </div>
-       </div>
+          <!-- Status Pill -->
+          <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full shadow-sm mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
+            <span>{{ formattedLastRefresh || 'Live Catalog' }}</span>
+          </div>
+        </div>
 
-       <!-- Right Section: PDF, Toggles, Cart -->
-       <div class="flex items-center gap-4 flex-1 justify-end ml-4">
-           <!-- PDF Gen -->
-           <button
+        <!-- Right Section: PDF, Toggles, Cart -->
+        <div class="flex items-center gap-3 flex-1 justify-end ml-4">
+            <!-- PDF Gen -->
+            <button
               @click="$router.push('/pdf-gen')"
-              class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-900 text-slate-400 hover:bg-neutral-800 hover:text-red-500 transition-all border border-white/5 shrink-0"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:bg-white/10 hover:text-red-400 transition-all border border-white/10 shrink-0"
               title="Generate PDF"
             >
               <i class="fa-solid fa-file-pdf"></i>
-           </button>
+            </button>
 
-           <!-- Toggles -->
-           <div class="flex items-center gap-2">
-               <button 
-                  @click="cleanView = !cleanView"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
-                  :class="cleanView ? 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400 text-black shadow-md' : 'bg-neutral-900 border-white/5 text-slate-400 hover:bg-neutral-800 hover:text-slate-200'"
-                  title="Clean View (Images Only & In Stock)"
-               >
-                  <i class="fa-solid fa-wand-magic-sparkles text-sm transition-all duration-500"></i>
-               </button>
-           </div>
+            <!-- Toggles -->
+            <button 
+              @click="cleanView = !cleanView"
+              class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300"
+              :class="cleanView ? 'bg-gradient-to-br from-amber-400 to-amber-600 border-amber-400 text-black shadow-md font-bold' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-amber-400'"
+              title="Clean View (Images Only & In Stock)"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+            </button>
 
-           <!-- Cart -->
-           <button
-             @click="$emit('toggleCart')"
-             class="relative w-11 h-11 flex items-center justify-center rounded-full bg-white text-black hover:bg-slate-200 transition-all shadow-lg shadow-white/10 active:scale-95 shrink-0"
-             :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
-           >
-             <i v-if="showCart" class="fa-solid fa-xmark text-lg"></i>
-             <div v-else class="flex items-center justify-center w-full h-full">
-                <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-sm z-10 ring-2 ring-black">{{ cartTotalItems }}</div>
+            <!-- Cart -->
+            <button
+              @click="$emit('toggleCart')"
+              class="relative w-11 h-11 flex items-center justify-center rounded-full bg-[#c59b27] text-white hover:bg-amber-500 transition-all shadow-lg shadow-amber-500/20 active:scale-95 shrink-0"
+              :class="{ 'opacity-0 pointer-events-none': showSidePanel }"
+            >
+              <i v-if="showCart" class="fa-solid fa-xmark text-lg"></i>
+              <div v-else class="flex items-center justify-center w-full h-full">
+                <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full shadow-sm z-10 ring-2 ring-black">{{ cartTotalItems }}</div>
                 <i class="fa-solid fa-bag-shopping text-base"></i>
-             </div>
-           </button>
-       </div>
+              </div>
+            </button>
+        </div>
       </div>
     </header>
 
-
-    <!-- Mobile Top Bar (Visible on Mobile) -->
+    <!-- Mobile Top Bar (Visible on Mobile only for Non-Landing or Group Views) -->
     <header 
-      class="lg:hidden fixed inset-x-0 top-0 z-[60] bg-black/90 backdrop-blur-md border-b border-white/10 shadow-sm transition-all"
+      v-if="$route.path !== '/' || searchQuery"
+      class="lg:hidden fixed inset-x-0 top-0 z-[60] bg-[#121214]/95 backdrop-blur-md border-b border-white/10 shadow-sm transition-all"
       style="padding-top: env(safe-area-inset-top, 20px)"
     >
-      <!-- Inner content wrapper with fixed height -->
       <div class="h-[54px] flex items-center justify-between px-4 relative">
-         <!-- Left: Sidebar + Cache Button (Android + Admin) -->
+         <!-- Left: Sidebar Toggle -->
          <div class="flex items-center gap-2">
-            <!-- Sidebar Toggle -->
             <button
                @click="$emit('toggleSidebar')"
-               class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all"
+               class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:bg-amber-500 active:text-white transition-all border border-white/10"
             >
                <i v-if="showSidePanel" class="fa-solid fa-xmark text-sm"></i>
                <i v-else class="fa-solid fa-bars text-sm"></i>
             </button>
 
-            <!-- Home Button -->
             <button
                @click="$router.push('/')"
-               class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 active:bg-blue-600 active:text-white transition-all shadow-sm"
+               class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:bg-amber-500 active:text-white transition-all border border-white/10 shadow-sm"
                title="Home"
             >
                <i class="fa-solid fa-house text-sm"></i>
             </button>
          </div>
 
-         <!-- Center: Logo (Smaller in Admin Mode) -->
-         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-            <h1 
-               class="text-lg font-semibold tracking-tighter text-white select-none flex items-center gap-1 pointer-events-auto cursor-pointer transition-all"
-               :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'"
-               @mousedown="logoStartPress"
-               @mouseup="logoEndPress"
-               @mouseleave="logoCancelPress"
-               @touchstart.prevent="logoStartPress"
-               @touchend.prevent="logoEndPress"
-               @touchcancel="logoCancelPress"
-               @contextmenu.prevent
-             >
-               <span class="text-white font-['Clash_Display'] font-bold tracking-wide uppercase" :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'">{{ companyFirstName }}</span>
-               <span class="text-slate-400 font-['Clash_Display'] font-light tracking-wide ml-1" :class="(isAdmin || isSuperAdmin) ? 'text-lg' : 'text-2xl'">{{ companyRestName }}</span>
-            </h1>
-            <div class="flex items-center gap-1.5 mt-0.5">
-                <span class="w-1.5 h-1.5 rounded-full" :class="statusColor"></span>
-                <span class="text-[9px] font-medium text-slate-400">{{ formattedLastRefresh || 'Offline' }}</span>
-            </div>
+         <!-- Center: e-SBE Logo Emblem -->
+         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+            <img src="/assets/e-sbe-logo.png" alt="e-SBE" class="h-6 w-auto object-contain invert brightness-200 pointer-events-auto cursor-pointer" @click="$router.push('/')" />
          </div>
 
-         <!-- Right: Refresh (Android), PDF & Cart -->
+         <!-- Right: PDF & Cart -->
          <div class="flex items-center gap-2">
-
-
             <button
                @click="$router.push('/pdf-gen')"
-               class="w-9 h-9 flex items-center justify-center rounded-full bg-neutral-900 text-slate-400 border border-white/10"
+               class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 text-slate-300 border border-white/10"
             >
-              <i class="fa-solid fa-file-pdf"></i>
-           </button>
+              <i class="fa-solid fa-file-pdf text-xs"></i>
+            </button>
 
-           <button
-             @click="$emit('toggleCart')"
-             class="relative w-9 h-9 flex items-center justify-center rounded-full bg-white text-black shadow-md active:scale-95"
-           >
-             <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-black">{{ cartTotalItems }}</div>
-             <i class="fa-solid fa-cart-shopping text-xs"></i>
-           </button>
+            <button
+              @click="$emit('toggleCart')"
+              class="relative w-9 h-9 flex items-center justify-center rounded-full bg-[#c59b27] text-white shadow-md active:scale-95"
+            >
+              <div v-if="cartTotalItems > 0" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-black">{{ cartTotalItems }}</div>
+              <i class="fa-solid fa-bag-shopping text-xs"></i>
+            </button>
          </div>
       </div>
     </header>
 
-
-    <!-- Mobile Bottom Bar (Fixed) — hidden on routes like ledger/daybook -->
+    <!-- Mobile Floating Navigation Pill (Zomato-Style Bottom Bar) -->
     <div
       v-if="$route.path === '/'"
-      class="lg:hidden fixed bottom-0 left-0 w-full z-[60] bg-black border-t border-white/10 p-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-4px_20px_rgba(255,255,255,0.05)] rounded-t-3xl"
+      class="lg:hidden fixed bottom-3 left-4 right-4 z-[60] bg-[#121214]/95 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-1.5 shadow-2xl shadow-black/40"
+      style="padding-bottom: max(env(safe-area-inset-bottom, 8px), 8px)"
     >
-       <div class="flex items-center gap-3">
-          <!-- Search -->
-          <div class="relative flex-1" ref="mobileSearchRef">
-             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
-                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
-             </span>
-             <input
-                :value="localQuery"
-                @input="handleSearchInput"
-                @keydown.enter="executeSearch(localQuery)"
-                @focus="showMobileDropdown = true"
-                type="text"
-                placeholder="Search products..."
-                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-white/20 ring-1 ring-white/10 focus:bg-black focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-medium text-white placeholder-slate-400"
-              />
-              
-              <!-- Mobile Smart Dropdown (Opens Upward) -->
-              <transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="translate-y-2 opacity-0"
-                enter-to-class="translate-y-0 opacity-100"
-                leave-active-class="transition duration-150 ease-in"
-                leave-from-class="translate-y-0 opacity-100"
-                leave-to-class="translate-y-2 opacity-0"
-              >
-                <div v-if="showMobileDropdown && localQuery.trim().length > 0" 
-                     class="fixed bottom-[calc(max(env(safe-area-inset-bottom),12px)+74px)] left-3 right-3 bg-neutral-900 border border-white/20 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-[70] max-h-[60vh] flex flex-col">
-                  <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 custom-scrollbar">
-                    <button 
-                      @click="executeSearch(localQuery)"
-                      class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3"
-                    >
-                       <div class="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                          <i class="fa-solid fa-magnifying-glass text-blue-400 text-xs"></i>
-                       </div>
-                       <div class="flex-1 overflow-hidden">
-                          <div class="text-white font-medium truncate text-sm">Search for "{{ localQuery.trim() }}"</div>
-                       </div>
-                    </button>
-                    
-                    <div v-if="searchSuggestions.length > 0" class="h-px bg-white/10 my-1 mx-3"></div>
-                    
-                    <button
-                      v-for="product in searchSuggestions"
-                      :key="product.productName"
-                      @click="executeSearch(product)"
-                      class="w-full text-left px-4 py-3.5 rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-3.5"
-                    >
-                       <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
-                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover opacity-90" />
-                          <i v-else class="fa-solid fa-box text-slate-500 text-base"></i>
-                       </div>
-                       <div class="flex-1 overflow-hidden">
-                          <div class="text-white font-['Clash_Display'] font-bold tracking-wide truncate text-base leading-tight">{{ formatProductNameToolbar(product.productName) }}</div>
-                          <div class="text-slate-300 font-medium text-xs sm:text-sm mt-1.5 truncate flex items-center gap-2">
-                            <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
-                              <span class="w-2 h-2 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
-                              <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
-                              <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                            </span>
-                            <span v-if="getProductSize(product.productName)" class="flex items-center gap-1">
-                              <span class="font-bold text-slate-300">Size {{ getProductSize(product.productName) }}</span>
-                              <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                            </span>
-                            <span v-if="product.quantity > 0" class="text-emerald-400">{{ product.quantity }} prs</span>
-                            <span v-else class="text-rose-400">Out of Stock</span>
-                            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                            <span>{{ getPriceInfo(product.productName).label }} ₹{{ getPriceInfo(product.productName).price }}</span>
-                          </div>
-                       </div>
-                    </button>
-                    
-                    <div v-if="searchSuggestions.length === 0" class="px-3 py-4 text-center text-slate-400 text-xs">
-                       No products matching "{{ localQuery.trim() }}"
-                    </div>
-                  </div>
-                </div>
-              </transition>
-          </div>
+       <div class="flex items-center justify-around">
+          <!-- Catalog / Home -->
+          <button
+             @click="$router.push('/')"
+             class="flex flex-col items-center gap-0.5 px-3 py-1 text-amber-400 font-bold"
+          >
+             <i class="fa-solid fa-house text-sm"></i>
+             <span class="text-[9px] uppercase tracking-wider">Catalog</span>
+          </button>
 
-           <!-- Toggles & Actions -->
-           <div class="flex items-center gap-2 shrink-0">
-               <!-- Android Refresh (Moved here) -->
-               <button
-                  class="android-only-btn w-10 h-10 items-center justify-center rounded-xl bg-white text-black border border-slate-200 shadow-md active:scale-95 transition-all hidden"
-                  @click="$emit('refreshData')"
-                  :disabled="isRefreshing"
-                  title="Refresh Data"
-               >
-                 <i v-if="isRefreshing" class="fa-solid fa-spinner fa-spin text-sm"></i>
-                 <i v-else class="fa-solid fa-arrows-rotate text-sm"></i>
-               </button>
+          <!-- One Touch -->
+          <button
+             @click="$router.push('/pdf-gen?onetouch=true')"
+             class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-white transition-colors"
+          >
+             <i class="fa-solid fa-bolt text-sm text-purple-400"></i>
+             <span class="text-[9px] uppercase tracking-wider">Share</span>
+          </button>
 
-               <button 
-                  @click="cleanView = !cleanView"
-                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border overflow-hidden"
-                  :class="cleanView ? 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400 text-black shadow-md' : 'bg-neutral-900 border-white/10 text-slate-400'"
-                  title="Clean View"
-               >
-                  <i class="fa-solid fa-wand-magic-sparkles text-sm transition-all duration-500"></i>
-               </button>
-           </div>
+          <!-- Cart with Live Count -->
+          <button
+             @click="$emit('toggleCart')"
+             class="flex flex-col items-center gap-0.5 px-4 py-1 bg-[#c59b27] text-white rounded-2xl shadow-md font-bold relative active:scale-95 transition-transform"
+          >
+             <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-[#121214]">
+                {{ cartTotalItems }}
+             </div>
+             <i class="fa-solid fa-bag-shopping text-sm"></i>
+             <span class="text-[9px] uppercase tracking-wider">Cart</span>
+          </button>
+
+          <!-- Hub / Tools -->
+          <button
+             @click="$router.push('/home')"
+             class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-white transition-colors"
+          >
+             <i class="fa-solid fa-grid-2 text-sm text-amber-400"></i>
+             <span class="text-[9px] uppercase tracking-wider">Hub</span>
+          </button>
        </div>
     </div>
 
@@ -408,7 +321,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  /** Hide fixed mobile bottom bar (product search + quick toggles) — use on ledger/daybook etc. */
   hideMobileBottomBar: {
     type: Boolean,
     default: false
@@ -425,12 +337,6 @@ const emit = defineEmits([
   'refreshData'
 ]);
 
-const companyFirstName = computed(() => props.companyName.split(' ')[0]);
-const companyRestName = computed(() => {
-  const rest = props.companyName.split(' ').slice(1).join(' ');
-  // Convert to Title Case: "RAYAGADA" -> "Rayagada"
-  return rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
-});
 const formattedLastRefresh = computed(() => {
   if (!lastRefresh.value) return "";
   const date = new Date(lastRefresh.value);
@@ -440,31 +346,30 @@ const formattedLastRefresh = computed(() => {
 
   let timeString = "";
   if (diffInHours <= 7) timeString = "Recently";
-  else if (diffInHours < 24) timeString = `${Math.floor(diffInHours)} hours ago`;
-  else if (diffInDays < 7) timeString = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  else if (diffInHours < 24) timeString = `${Math.floor(diffInHours)}h ago`;
+  else if (diffInDays < 7) timeString = `${diffInDays}d ago`;
   else {
       timeString = date.toLocaleString("en-IN", { 
           day: 'numeric',
           month: 'short'
       });
   }
-  return `Last Synced ${timeString}`;
+  return `Synced ${timeString}`;
 });
 
 const statusColor = computed(() => {
-  if (!lastRefresh.value) return "bg-rose-500"; // Offline/No Data
+  if (!lastRefresh.value) return "bg-rose-500";
   const date = new Date(lastRefresh.value);
   const now = new Date();
   const diffInHours = (now - date) / (1000 * 60 * 60);
   const diffInDays = diffInHours / 24;
 
-  if (diffInDays < 1) return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]";   // Fresh (< 1 day) - Green
-  if (diffInDays <= 3) return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]";    // Stale (1-3 days) - Yellow
-  return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]";                           // Old (> 3 days) - Red
+  if (diffInDays < 1) return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]";
+  if (diffInDays <= 3) return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]";
+  return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]";
 });
 
 // --- Long Press Logic for Logo ---
-// Single tap → Home, Long press (600ms) → Admin Login
 let logoPressTimer = null;
 let logoDidLongPress = false;
 
@@ -473,7 +378,6 @@ const logoStartPress = () => {
     logoPressTimer = setTimeout(() => {
         logoDidLongPress = true;
         emit('promptAdminLogin');
-        // Haptic-like visual feedback
         if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate(50);
     }, 600);
 };
@@ -481,7 +385,6 @@ const logoStartPress = () => {
 const logoEndPress = () => {
     clearTimeout(logoPressTimer);
     if (!logoDidLongPress) {
-        // Short tap → navigate home
         router.push('/');
     }
 };
@@ -490,20 +393,15 @@ const logoCancelPress = () => {
     clearTimeout(logoPressTimer);
 };
 
-
 // --- Smart Dropdown Search Logic ---
 const localQuery = ref(searchQuery.value || '');
 const showDesktopDropdown = ref(false);
-const showMobileDropdown = ref(false);
 const desktopSearchRef = ref(null);
-const mobileSearchRef = ref(null);
 
-// Format product name for dropdown (clean: remove color, price, size, special chars → Title Case)
 const formatProductNameToolbar = (fullName) => {
     if (!fullName) return '';
     let clean = fullName;
 
-    // Remove Colors
     const colorData = extractColor(fullName);
     if (colorData && colorData.originalTokens) {
         colorData.originalTokens.forEach(token => {
@@ -512,18 +410,13 @@ const formatProductNameToolbar = (fullName) => {
         });
     }
 
-    // Remove Price pattern (RS 123, MRP 123, @ 123)
     clean = clean.replace(/((?:RS|MRP|@))[.\s]*(\d+(\.\d+)?)/gi, '');
-    // Remove Size pattern (e.g. 6x10, 7X11)
     clean = clean.replace(/(?:^|[\s(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s)]|$)/g, ' ');
-
-    // Clean up leftover separators and parens
     clean = clean.replace(/\(\s*\)/g, '');
     clean = clean.replace(/[/\-.]+\s*$/g, '')
                  .replace(/^\s*[/\-.]+/g, '')
                  .replace(/\s*[/\-.]+\s*/g, ' ');
 
-    // Collapse whitespace, trim, and Title Case each word
     return clean
         .replace(/\s+/g, ' ')
         .trim()
@@ -533,36 +426,28 @@ const formatProductNameToolbar = (fullName) => {
         .join(' ');
 };
 
-// Extract color info from product name
 const getProductColor = (name) => extractColor(name);
 
-// Extract size info from product name
 const getProductSize = (name) => {
     if (!name) return null;
     const match = name.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/);
     if (match) {
         const n1 = parseInt(match[1]);
         const n2 = parseInt(match[2]);
-        const low = Math.min(n1, n2);
-        const high = Math.max(n1, n2);
-        return `${low}x${high}`;
+        return `${Math.min(n1, n2)}x${Math.max(n1, n2)}`;
     }
     return null;
 };
 
-// Extract price info using regex (matches StockTable.vue logic)
 const getPriceInfo = (name) => {
     if (!name) return { label: 'Net Rate', price: '?' };
-    // Try to find specific price patterns: MRP 123, RS 123, @ 123
     const match = name.match(/((?:RS|MRP|@))[.\s]*(\d+(\.\d+)?)/i);
     if (match) {
-        const prefix = match[1].toUpperCase();
         return {
-            label: prefix === 'MRP' ? 'MRP' : 'Net Rate',
+            label: match[1].toUpperCase() === 'MRP' ? 'MRP' : 'Net Rate',
             price: match[2]
         };
     }
-    // Fallback: just find the last number
     const fallback = name.match(/(\d+(\.\d+)?)(?!.*\d)/);
     return {
         label: 'Net Rate',
@@ -578,7 +463,6 @@ const searchSuggestions = computed(() => {
   const matches = [];
   const maxSuggestions = 8;
   
-  // Search through nested stockData
   if (stockData.value && Array.isArray(stockData.value)) {
     for (const group of stockData.value) {
       if (group.products && Array.isArray(group.products)) {
@@ -607,14 +491,12 @@ const executeSearch = (itemOrQuery) => {
   } else if (itemOrQuery && itemOrQuery.productName) {
     query = itemOrQuery.productName;
     const isClean = !!itemOrQuery.imageUrl && Number(itemOrQuery.quantity) >= 4;
-    cleanView.value = isClean; // Update Pinia directly
+    cleanView.value = isClean;
   }
   
-  searchQuery.value = query; // Update Pinia directly
-  localQuery.value = ''; // Empty the search bar instead of pasting the result
+  searchQuery.value = query;
+  localQuery.value = '';
   showDesktopDropdown.value = false;
-  showMobileDropdown.value = false;
-  // Blur active element to hide keyboard on mobile
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
@@ -622,25 +504,18 @@ const executeSearch = (itemOrQuery) => {
 
 const handleSearchInput = (event) => {
   localQuery.value = event.target.value;
-  // Let the user keep typing; dropdown will update reactivity
-  // We no longer automatically emit the search query to filter the huge list
   showDesktopDropdown.value = true;
-  showMobileDropdown.value = true;
 };
 
-// Handle clicks outside the search containers to close dropdowns
 const handleClickOutside = (event) => {
   if (desktopSearchRef.value && !desktopSearchRef.value.contains(event.target)) {
     showDesktopDropdown.value = false;
-  }
-  if (mobileSearchRef.value && !mobileSearchRef.value.contains(event.target)) {
-    showMobileDropdown.value = false;
   }
 };
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside);
-  document.addEventListener('touchstart', handleClickOutside); // For mobile
+  document.addEventListener('touchstart', handleClickOutside);
 });
 
 onUnmounted(() => {
@@ -648,10 +523,10 @@ onUnmounted(() => {
   document.removeEventListener('touchstart', handleClickOutside);
 });
 
-// Sync external changes (e.g. clear search from parent)
 watch(() => searchQuery.value, (newVal) => {
   if (newVal === '') {
     localQuery.value = '';
   }
 });
 </script>
+
