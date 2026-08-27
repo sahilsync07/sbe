@@ -594,27 +594,25 @@ const openLedgerDetail = (party) => {
 
 // 6-Month Ledger PDF Export
 const sharePartyLedgerPDF = async (party) => {
-  if (!party || !party.rawLedger) return;
+  if (!party) return;
 
   try {
-    const raw = party.rawLedger;
-    const entries = raw.entries || [];
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const pdfBase64 = await generateLedgerPDF(
-      party.ledgerName,
-      raw.groupName,
-      sixMonthsAgo,
-      new Date(),
-      raw.openingBalance || 0,
-      party.closingBalance || 0,
-      entries,
-      true
-    );
+    const raw = party.rawLedger || party;
+    const ledgerPayload = {
+      ledgerName: party.ledgerName,
+      groupName: party.groupName || raw.groupName,
+      openingBalance: raw.openingBalance || 0,
+      closingBalance: party.closingBalance !== undefined ? party.closingBalance : (raw.closingBalance || 0),
+      entries: raw.entries || party.entries || []
+    };
 
     if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === 'android') {
-      const base64Data = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64;
+      const pdfDataUri = generateLedgerPDF(ledgerPayload, {
+        monthsLimit: 6,
+        returnBase64: true
+      });
+
+      const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
       const fileName = `Statement_${party.ledgerName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`;
 
       const savedFile = await Filesystem.writeFile({
@@ -628,19 +626,12 @@ const sharePartyLedgerPDF = async (party) => {
         files: [savedFile.uri]
       });
 
-      toast.success('6-Month Ledger PDF generated & ready to share!', { autoClose: 2500 });
+      toast.success('6-Month Ledger PDF ready to share!', { autoClose: 2500 });
     } else {
-      await generateLedgerPDF(
-        party.ledgerName,
-        raw.groupName,
-        sixMonthsAgo,
-        new Date(),
-        raw.openingBalance || 0,
-        party.closingBalance || 0,
-        entries,
-        false
-      );
-      toast.success('Ledger PDF downloaded successfully!', { autoClose: 2500 });
+      generateLedgerPDF(ledgerPayload, {
+        monthsLimit: 6
+      });
+      toast.success('6-Month Ledger PDF downloaded successfully!', { autoClose: 2500 });
     }
   } catch (err) {
     console.error('PDF export error:', err);
@@ -648,7 +639,7 @@ const sharePartyLedgerPDF = async (party) => {
   }
 };
 
-// WhatsApp Follow-up with automatic text copy & PDF generation
+// WhatsApp Follow-up with automatic text copy & WhatsApp link open
 const sendWhatsAppReminderWithPDF = async (party) => {
   const text = getWhatsAppFollowupText(party);
 
@@ -660,12 +651,7 @@ const sendWhatsAppReminderWithPDF = async (party) => {
 
   const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
-  toast.success('Follow-up message copied & WhatsApp opened!', { autoClose: 3000 });
-
-  // Prompt PDF share as well
-  setTimeout(() => {
-    sharePartyLedgerPDF(party);
-  }, 800);
+  toast.success('Follow-up message copied & WhatsApp opened!', { autoClose: 2500 });
 };
 
 onMounted(async () => {

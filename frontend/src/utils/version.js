@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_003',
-  version: '1.2.5',
-  updatedAt: '27 Aug 2026, 09:15 AM',
-  commitTitle: 'SBE Update #003: Pure Line Debtors Analyzer, 180+ Aging & 1-Screen Rapid Order Maker',
+  code: 'sbe_004',
+  version: '1.2.6',
+  updatedAt: '27 Aug 2026, 10:05 AM',
+  commitTitle: 'SBE Update #004: 6-Month Ledger PDF Generation & Sharing Fix in Analyzer',
   changes: [
+    {
+      tag: 'sbe_004',
+      date: '27 Aug 2026',
+      title: '6-Month Ledger PDF Generator Fix',
+      details: 'Fixed ledger payload argument structure in Line Debtors Analyzer for instant 6-month PDF statement generation, downloading, and native WhatsApp sharing.'
+    },
     {
       tag: 'sbe_003',
       date: '27 Aug 2026',
