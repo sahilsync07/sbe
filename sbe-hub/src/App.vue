@@ -1,9 +1,5 @@
 <template>
-  <div class="min-h-screen relative bg-slate-50">
-    <!-- Global Ambient Glow Orbs -->
-    <div class="hub-orb hub-orb--warm fixed top-0 left-0 w-96 h-96 bg-gradient-to-tr from-amber-200/20 to-orange-400/20 rounded-full blur-[80px] -z-10 pointer-events-none mix-blend-multiply opacity-70"></div>
-    <div class="hub-orb hub-orb--accent fixed top-40 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-blue-300/20 to-violet-500/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-multiply opacity-60"></div>
-
+  <div class="min-h-screen relative" style="background-color: #f8f6f1; background-image: radial-gradient(circle at 85% 15%, rgba(253, 230, 138, 0.4) 0%, rgba(251, 191, 36, 0.12) 35%, transparent 70%), radial-gradient(circle at 15% 85%, rgba(196, 181, 253, 0.3) 0%, rgba(139, 92, 246, 0.1) 35%, transparent 65%); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">
     <router-view></router-view>
     
     <AdminLoginModal 
@@ -27,7 +23,6 @@ import AdminLoginModal from '@/components/StockTable/AdminLoginModal.vue';
 import { useAppStore } from '@/stores/appStore';
 import { useAdmin } from '@/composables/useAdmin';
 import { performDeltaSync } from '@/utils/nativeCache';
-import { setupDailySyncNotification } from '@/utils/notifications';
 import { useStockData } from '@/composables/useStockData';
 
 const route = useRoute();
@@ -112,7 +107,6 @@ onMounted(async () => {
   await loadConfig();
   await checkAdminState();
   await loadStockData();
-  // await setupDailySyncNotification();
   await performDeltaSync();
   
   // Android App Update Check
@@ -144,9 +138,9 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    if (backListener) {
-        backListener.remove();
-    }
+  if (backListener) {
+    backListener.remove();
+  }
 });
 </script>
 

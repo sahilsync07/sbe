@@ -2,17 +2,17 @@ import { ref, computed } from 'vue';
 import { useLedgerData } from '@/composables/useLedgerData';
 
 /**
- * Composable for the Debtors & Creditors Aging & Payment Recovery Analyzer.
- * Computes 0-30, 31-60, 61-90, and 90+ days aging buckets per party and per group.
+ * Composable for the Debtors Aging & Payment Recovery Analyzer.
+ * Filtered strictly to Line Debtors (including Rayagada Local).
+ * Computes 0-30, 31-60, 61-90, 90-180, and 180+ days mutually exclusive aging buckets.
  */
 export function useAnalyzerData() {
   const { ledgerData, loading, error, loadLedgerData } = useLedgerData();
 
-  const activeTab = ref('Debtors'); // 'Debtors' | 'Creditors'
   const viewMode = ref('Party View'); // 'Party View' | 'Group View'
   const searchQuery = ref('');
   const selectedGroups = ref([]);
-  const activeAgingFilter = ref('all'); // 'all' | '90plus' | '60plus' | '30plus' | 'current'
+  const activeAgingFilter = ref('all'); // 'all' | '180plus' | '90_180' | '61_90' | '31_60' | '0_30'
   const sortBy = ref('overdue_desc'); // 'overdue_desc' | 'balance_desc' | 'balance_asc' | 'name_asc' | 'name_desc'
 
   // ─── Date Parsing Helpers ──────────────────────────────────────────────
@@ -57,89 +57,60 @@ export function useAnalyzerData() {
     return latest;
   });
 
-  // ─── Exclusion Filters for Non-Debtors / Non-Creditors ────────────────
-  const EXCLUDED_GROUPS = new Set([
-    '_META_DATA_',
-    '&#4; Primary',
-    'Bank Accounts',
-    'Bank OD A/c',
-    'Capital Account',
-    'Cash-in-Hand',
-    'Current Assets',
-    'Current Liabilities',
-    'Direct Expenses',
-    'Direct Incomes',
-    'Duties & Taxes',
-    'Fixed Assets',
-    'Indirect Expenses',
-    'Indirect Incomes',
-    'Investments',
-    'Petty Expenses',
-    'Purchase Accounts',
-    'Sales Accounts',
-    'STAFF',
-    'Unsecured Loans'
-  ]);
+  // ─── Strictly Allowed Line Debtors Groups (From Line List + Rayagada Local) ──
+  const ALLOWED_LINE_GROUPS_SET = new Set([
+    'BALIMELA,CHITROKUNDA,MALKANGIRI',
+    'Bissam Cuttack',
+    'DURGI-KD-THERUBALI-JK LINE',
+    'GUDARI & GUNUPUR',
+    'Gunupur Line',
+    'Jeypur',
+    'Jk Line',
+    'KALYAN SINGHPUR LINE',
+    'Kashipur Line',
+    'KORAPUT LINE',
+    'Kotpeta Line',
+    'MUNIGUDA & B.CTC LINE',
+    'Parlakhimundi Line',
+    'PARVATHIPURAM',
+    'PHULBAANI LINE',
+    'RAYAGADA LOCAL',
+    'Srikakulam Line',
+    'TIKIRI & KASIPUR LINE'
+  ].map(g => g.toLowerCase().trim()));
 
-  const EXCLUDED_LEDGER_PATTERNS = [
-    /^profit\s*&\s*loss/i,
-    /^cash(\s+salary)?$/i,
-    /^tcs$/i,
-    /^tds/i,
-    /^(c|s|i|ut)?gst/i,
-    /^sale@gst/i,
-    /^purchase@gst/i,
-    /^round\s*off$/i,
-    /^\d{2,4}$/, // Loan codes like 222, 333, 444, 666
-    /staff/i,
-    /^bank\s/i,
-    /capital/i,
-    /drawings/i,
-    /freight/i,
-    /discount/i,
-    /expenses/i,
-    /insurance/i
-  ];
-
-  const isExcludedGroup = (gName) => {
-    const name = (gName || '').trim();
-    if (EXCLUDED_GROUPS.has(name)) return true;
-    if (/^(staff|bank|duty|duties|tax|expense|income|loan|asset|liabilit|capital)/i.test(name)) return true;
-    return false;
+  const isAllowedLineGroup = (gName) => {
+    const name = (gName || '').toLowerCase().trim();
+    return ALLOWED_LINE_GROUPS_SET.has(name);
   };
 
   const isExcludedLedger = (lName) => {
     const name = (lName || '').trim();
     if (!name) return true;
-    return EXCLUDED_LEDGER_PATTERNS.some(pattern => pattern.test(name));
+    return /^(profit|loss|cash|tcs|tds|gst|sale@|purchase@|round off|staff|bank|capital|drawings|freight|discount|expenses|insurance)/i.test(name) || /^\d{2,4}$/.test(name);
   };
 
-  // ─── Classification & Aging Computation ────────────────────────────────
+  // ─── Classification & 5-Bucket Aging Computation ───────────────────────
   const processedData = computed(() => {
     if (!ledgerData.value || !Array.isArray(ledgerData.value)) {
-      return { debtors: [], creditors: [] };
+      return { debtors: [] };
     }
 
     const refDate = referenceDate.value;
     const debtors = [];
-    const creditors = [];
 
     for (const group of ledgerData.value) {
-      if (isExcludedGroup(group.groupName) || !group.ledgers) continue;
+      if (!isAllowedLineGroup(group.groupName) || !group.ledgers) continue;
 
       for (const ledger of group.ledgers) {
         if (isExcludedLedger(ledger.ledgerName)) continue;
         const closing = ledger.closingBalance || 0;
         if (Math.abs(closing) < 0.01) continue; // Skip zero balance accounts
 
-        // Accounting classification:
-        // closing < 0 (Dr) -> Debtor (Customer owes SBE)
-        // closing > 0 (Cr) -> Creditor (SBE owes Supplier)
-        const isDebtor = closing < 0;
+        // Strictly customer debtor outstanding
         const totalOutstanding = Math.abs(closing);
 
-        // Calculate Aging Buckets using FIFO / Invoices
-        // Collect invoices (Dr entries for Debtors, Cr entries for Creditors)
+        // Collect invoices (Dr entries or Sales)
         const entries = (ledger.entries || []).map(e => ({
           ...e,
           parsedDate: parseDate(e.date)
@@ -152,16 +123,10 @@ export function useAnalyzerData() {
         let b0_30 = 0;
         let b31_60 = 0;
         let b61_90 = 0;
-        let b90_plus = 0;
+        let b90_180 = 0;
+        let b180_plus = 0;
 
-        // Relevant invoice entry type for aging
-        const invoiceEntries = entries.filter(e => {
-          if (isDebtor) {
-            return e.drCr === 'Dr' || e.type === 'Tax Invoice' || e.type === 'Sales';
-          } else {
-            return e.drCr === 'Cr' || e.type === 'Tax Invoice' || e.type === 'Purchase';
-          }
-        });
+        const invoiceEntries = entries.filter(e => e.drCr === 'Dr' || e.type === 'Tax Invoice' || e.type === 'Sales');
 
         for (const inv of invoiceEntries) {
           if (unallocatedBalance <= 0) break;
@@ -175,28 +140,33 @@ export function useAnalyzerData() {
             b31_60 += amountToAllocate;
           } else if (daysOld <= 90) {
             b61_90 += amountToAllocate;
+          } else if (daysOld <= 180) {
+            b90_180 += amountToAllocate;
           } else {
-            b90_plus += amountToAllocate;
+            b180_plus += amountToAllocate;
           }
 
           unallocatedBalance -= amountToAllocate;
         }
 
-        // Any remaining balance not covered by recent invoices is older than 90 days
+        // Remaining balance older than recent invoices falls into 180+
         if (unallocatedBalance > 0) {
-          b90_plus += unallocatedBalance;
+          b180_plus += unallocatedBalance;
         }
 
-        // Percentage breakdown for visual progress bar
+        // Percentage breakdown for progress bars
         const pct0_30 = totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0;
         const pct31_60 = totalOutstanding > 0 ? (b31_60 / totalOutstanding) * 100 : 0;
         const pct61_90 = totalOutstanding > 0 ? (b61_90 / totalOutstanding) * 100 : 0;
-        const pct90_plus = totalOutstanding > 0 ? (b90_plus / totalOutstanding) * 100 : 0;
+        const pct90_180 = totalOutstanding > 0 ? (b90_180 / totalOutstanding) * 100 : 0;
+        const pct180_plus = totalOutstanding > 0 ? (b180_plus / totalOutstanding) * 100 : 0;
 
-        // Determine Mutually Exclusive Primary Aging Group (Priority: Oldest unpaid debt)
+        // Mutually Exclusive Primary Bucket Allocation
         let primaryBucket = '0_30';
-        if (b90_plus > 100) {
-          primaryBucket = '90plus';
+        if (b180_plus > 100) {
+          primaryBucket = '180plus';
+        } else if (b90_180 > 100) {
+          primaryBucket = '90_180';
         } else if (b61_90 > 100) {
           primaryBucket = '61_90';
         } else if (b31_60 > 100) {
@@ -207,45 +177,42 @@ export function useAnalyzerData() {
 
         const partyRecord = {
           ledgerName: ledger.ledgerName || 'Unknown Party',
-          groupName: group.groupName || 'General',
+          groupName: group.groupName || 'Rayagada Local',
           closingBalance: closing,
           totalOutstanding,
-          isDebtor,
+          isDebtor: true,
           primaryBucket,
           rawLedger: ledger,
           aging: {
             b0_30,
             b31_60,
             b61_90,
-            b90_plus,
+            b90_180,
+            b180_plus,
             pct0_30,
             pct31_60,
             pct61_90,
-            pct90_plus,
-            overdueTotal: b31_60 + b61_90 + b90_plus,
-            criticalTotal: b90_plus
+            pct90_180,
+            pct180_plus,
+            overdueTotal: b31_60 + b61_90 + b90_180 + b180_plus,
+            criticalTotal: b90_180 + b180_plus
           },
-          entries: entries.slice(0, 8), // Recent 8 entries for quick preview
+          entries: entries.slice(0, 8),
           totalEntriesCount: entries.length
         };
 
-        if (isDebtor) {
-          debtors.push(partyRecord);
-        } else {
-          creditors.push(partyRecord);
-        }
+        debtors.push(partyRecord);
       }
     }
 
-    return { debtors, creditors };
+    return { debtors };
   });
 
-  // Current active dataset (Debtors or Creditors)
   const currentList = computed(() => {
-    return activeTab.value === 'Debtors' ? processedData.value.debtors : processedData.value.creditors;
+    return processedData.value.debtors;
   });
 
-  // Unique group list for filter dropdown
+  // Unique Line Groups List
   const groupList = computed(() => {
     const map = new Map();
     for (const item of currentList.value) {
@@ -257,7 +224,8 @@ export function useAnalyzerData() {
           b0_30: 0,
           b31_60: 0,
           b61_90: 0,
-          b90_plus: 0
+          b90_180: 0,
+          b180_plus: 0
         });
       }
       const g = map.get(item.groupName);
@@ -266,20 +234,24 @@ export function useAnalyzerData() {
       g.b0_30 += item.aging.b0_30;
       g.b31_60 += item.aging.b31_60;
       g.b61_90 += item.aging.b61_90;
-      g.b90_plus += item.aging.b90_plus;
+      g.b90_180 += item.aging.b90_180;
+      g.b180_plus += item.aging.b180_plus;
     }
     return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
-  // KPI Summary Statistics for Top Cards
+  // 5 KPI Summary Statistics for Top Cards
   const summaryStats = computed(() => {
     const list = currentList.value;
     let totalOutstanding = 0;
     let b0_30 = 0;
     let b31_60 = 0;
     let b61_90 = 0;
-    let b90_plus = 0;
-    let count90plus = 0;
+    let b90_180 = 0;
+    let b180_plus = 0;
+
+    let count180_plus = 0;
+    let count90_180 = 0;
     let count61_90 = 0;
     let count31_60 = 0;
     let count0_30 = 0;
@@ -289,9 +261,11 @@ export function useAnalyzerData() {
       b0_30 += item.aging.b0_30;
       b31_60 += item.aging.b31_60;
       b61_90 += item.aging.b61_90;
-      b90_plus += item.aging.b90_plus;
+      b90_180 += item.aging.b90_180;
+      b180_plus += item.aging.b180_plus;
 
-      if (item.primaryBucket === '90plus') count90plus++;
+      if (item.primaryBucket === '180plus') count180_plus++;
+      else if (item.primaryBucket === '90_180') count90_180++;
       else if (item.primaryBucket === '61_90') count61_90++;
       else if (item.primaryBucket === '31_60') count31_60++;
       else count0_30++;
@@ -303,21 +277,22 @@ export function useAnalyzerData() {
       b0_30,
       b31_60,
       b61_90,
-      b90_plus,
-      count90plus,
+      b90_180,
+      b180_plus,
+      count180_plus,
+      count90_180,
       count61_90,
       count31_60,
       count0_30,
-      criticalCount: count90plus,
-      overdueCount: count61_90 + count31_60,
       pct0_30: totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0,
       pct31_60: totalOutstanding > 0 ? (b31_60 / totalOutstanding) * 100 : 0,
       pct61_90: totalOutstanding > 0 ? (b61_90 / totalOutstanding) * 100 : 0,
-      pct90_plus: totalOutstanding > 0 ? (b90_plus / totalOutstanding) * 100 : 0
+      pct90_180: totalOutstanding > 0 ? (b90_180 / totalOutstanding) * 100 : 0,
+      pct180_plus: totalOutstanding > 0 ? (b180_plus / totalOutstanding) * 100 : 0
     };
   });
 
-  // Filtered & Sorted Parties
+  // Filtered & Sorted Parties (Mutually Exclusive Buckets)
   const filteredParties = computed(() => {
     let result = [...currentList.value];
 
@@ -335,9 +310,11 @@ export function useAnalyzerData() {
       result = result.filter(item => selectedGroups.value.includes(item.groupName));
     }
 
-    // 3. Mutually Exclusive Aging Risk Filter (No repetitive overlap across buckets)
-    if (activeAgingFilter.value === '90plus') {
-      result = result.filter(item => item.primaryBucket === '90plus');
+    // 3. Mutually Exclusive Aging Risk Filter
+    if (activeAgingFilter.value === '180plus') {
+      result = result.filter(item => item.primaryBucket === '180plus');
+    } else if (activeAgingFilter.value === '90_180') {
+      result = result.filter(item => item.primaryBucket === '90_180');
     } else if (activeAgingFilter.value === '61_90') {
       result = result.filter(item => item.primaryBucket === '61_90');
     } else if (activeAgingFilter.value === '31_60') {
@@ -349,7 +326,7 @@ export function useAnalyzerData() {
     // 4. Sorting
     result.sort((a, b) => {
       if (sortBy.value === 'overdue_desc') {
-        return (b.aging.b90_plus + b.aging.b61_90) - (a.aging.b90_plus + a.aging.b61_90);
+        return (b.aging.b180_plus + b.aging.b90_180 + b.aging.b61_90) - (a.aging.b180_plus + a.aging.b90_180 + a.aging.b61_90);
       } else if (sortBy.value === 'balance_desc') {
         return b.totalOutstanding - a.totalOutstanding;
       } else if (sortBy.value === 'balance_asc') {
@@ -378,7 +355,8 @@ export function useAnalyzerData() {
           b0_30: 0,
           b31_60: 0,
           b61_90: 0,
-          b90_plus: 0,
+          b90_180: 0,
+          b180_plus: 0,
           isExpanded: false
         });
       }
@@ -388,7 +366,8 @@ export function useAnalyzerData() {
       g.b0_30 += party.aging.b0_30;
       g.b31_60 += party.aging.b31_60;
       g.b61_90 += party.aging.b61_90;
-      g.b90_plus += party.aging.b90_plus;
+      g.b90_180 += party.aging.b90_180;
+      g.b180_plus += party.aging.b180_plus;
     }
 
     const groupsArr = Array.from(groupsMap.values());
@@ -396,22 +375,20 @@ export function useAnalyzerData() {
       g.pct0_30 = g.totalOutstanding > 0 ? (g.b0_30 / g.totalOutstanding) * 100 : 0;
       g.pct31_60 = g.totalOutstanding > 0 ? (g.b31_60 / g.totalOutstanding) * 100 : 0;
       g.pct61_90 = g.totalOutstanding > 0 ? (g.b61_90 / g.totalOutstanding) * 100 : 0;
-      g.pct90_plus = g.totalOutstanding > 0 ? (g.b90_plus / g.totalOutstanding) * 100 : 0;
+      g.pct90_180 = g.totalOutstanding > 0 ? (g.b90_180 / g.totalOutstanding) * 100 : 0;
+      g.pct180_plus = g.totalOutstanding > 0 ? (g.b180_plus / g.totalOutstanding) * 100 : 0;
     }
 
-    return groupsArr.sort((a, b) => b.totalOutstanding - a.totalOutstanding);
+    return groupsArr.sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
-  // ─── Formatters & Utility Functions ────────────────────────────────────
   const formatINR = (val) => {
-    if (val === undefined || val === null) return '₹0';
-    const num = Math.round(Number(val));
+    const num = Math.round(val || 0);
     return '₹' + num.toLocaleString('en-IN');
   };
 
-  const formatShortINR = (val) => {
-    if (!val || val === 0) return '₹0';
-    const num = Math.abs(Number(val));
+  const formatCompactINR = (val) => {
+    const num = Math.round(val || 0);
     if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + ' Cr';
     if (num >= 100000) return '₹' + (num / 100000).toFixed(2) + ' L';
     if (num >= 1000) return '₹' + (num / 1000).toFixed(1) + ' k';
@@ -419,33 +396,35 @@ export function useAnalyzerData() {
   };
 
   /**
-   * Generate WhatsApp payment follow-up message text
+   * Polite Redesigned WhatsApp Payment Reminder Message
    */
   const getWhatsAppFollowupText = (party) => {
     const name = party.ledgerName;
     const total = formatINR(party.totalOutstanding);
-    const overdue = formatINR(party.aging.b61_90 + party.aging.b90_plus);
-    const isOverdue = (party.aging.b61_90 + party.aging.b90_plus) > 0;
 
-    let text = `*Payment Statement Reminder*\n\nDear *${name}*,\nGreetings from *Sri Balaji Enterprises*.\n\n`;
-    text += `Your total current ledger balance is: *${total}*.\n`;
+    let text = `*Namaste ${name} Ji* 🙏\n\n`;
+    text += `Warm greetings from *Sri Brundabana Enterprises, Rayagada*!\n\n`;
+    text += `We hope your business is doing well. As part of our routine ledger account updates, here is your current account balance summary:\n\n`;
+    text += `📊 *Current Balance:* *${total}*\n`;
 
-    if (isOverdue) {
-      text += `• Overdue (>60 days): *${overdue}*\n`;
+    if (party.aging.b180_plus > 0) {
+      text += `• Balance (>180 days): *${formatINR(party.aging.b180_plus)}*\n`;
     }
-    if (party.aging.b90_plus > 0) {
-      text += `• Critical (>90 days): *${formatINR(party.aging.b90_plus)}*\n`;
+    if (party.aging.b90_180 > 0) {
+      text += `• Balance (90–180 days): *${formatINR(party.aging.b90_180)}*\n`;
+    }
+    if (party.aging.b61_90 > 0 && party.aging.b180_plus <= 0 && party.aging.b90_180 <= 0) {
+      text += `• Balance (61–90 days): *${formatINR(party.aging.b61_90)}*\n`;
     }
 
-    text += `\n📄 *Detailed 6-Month Ledger Statement PDF attached for your verification.*\n`;
-    text += `\nKindly verify and arrange for payment clearance at your earliest convenience.\n\nThank you! 🙏\n_Sri Balaji Enterprises_`;
+    text += `\n📄 *We have attached your complete 6-month ledger statement for your kind review and verification.*\n\n`;
+    text += `Kindly review the statement at your convenience and arrange for the balance clearance.\n\n`;
+    text += `✨ *Thank you for placing your trust in Sri Brundabana Enterprises.* We work tirelessly to bring you the best footwear collections at the lowest wholesale prices possible! 👞👠\n\n`;
+    text += `_With Best Regards,_\n*Sri Brundabana Enterprises*\n_Rayagada, Odisha_`;
 
     return text;
   };
 
-  /**
-   * Generate WhatsApp payment follow-up message link
-   */
   const getWhatsAppFollowupLink = (party) => {
     const text = getWhatsAppFollowupText(party);
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -456,19 +435,19 @@ export function useAnalyzerData() {
     loading,
     error,
     loadLedgerData,
-    activeTab,
     viewMode,
     searchQuery,
     selectedGroups,
     activeAgingFilter,
     sortBy,
+    referenceDate,
+    currentList,
     groupList,
     summaryStats,
     filteredParties,
     groupedViewData,
-    currentList,
     formatINR,
-    formatShortINR,
+    formatCompactINR,
     getWhatsAppFollowupText,
     getWhatsAppFollowupLink
   };
