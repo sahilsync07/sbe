@@ -275,8 +275,8 @@ onMounted(async () => {
    ══════════════════════════════════════ */
 .hub-shell {
   display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   /* Seamless responsive radial gradients directly on background — eliminates all bounding-box artifacts */
   background-color: #f8f6f1;
   background-image: 
@@ -287,29 +287,31 @@ onMounted(async () => {
   background-size: cover;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .hub-main {
   flex: 1;
   min-width: 0;
+  height: 100%;
   position: relative;
   padding: 0 clamp(16px, 4vw, 48px);
   padding-bottom: 48px;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ══════════════════════════════════════
-   TOP BAR
+   TOP BAR (Scrolls away on scroll)
    ══════════════════════════════════════ */
 .hub-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
+  padding: 16px 0 8px;
 }
 
 .hub-topbar__left,
@@ -377,23 +379,32 @@ onMounted(async () => {
 .hub-icon-btn--active:hover { background: #0f172a !important; }
 
 /* ══════════════════════════════════════
-   HERO SECTION
+   HERO SECTION (Sticky Collapsing Header)
    ══════════════════════════════════════ */
 .hub-hero {
-  position: relative;
-  z-index: 1;
-  padding: 32px 0 10px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 16px 0 12px;
+  background: rgba(248, 246, 241, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-left: calc(-1 * clamp(16px, 4vw, 48px));
+  margin-right: calc(-1 * clamp(16px, 4vw, 48px));
+  padding-left: clamp(16px, 4vw, 48px);
+  padding-right: clamp(16px, 4vw, 48px);
 }
 
 .hub-hero__title {
   font-family: 'Clash Display', sans-serif;
   font-weight: 700;
-  font-size: clamp(40px, 7vw, 72px);
-  line-height: 1;
+  font-size: clamp(32px, 5.5vw, 64px);
+  line-height: 1.05;
   letter-spacing: -0.03em;
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: 12px;
 }
 
 .hub-hero__label {
@@ -408,10 +419,10 @@ onMounted(async () => {
 }
 
 .hub-hero__sub {
-  margin-top: 10px;
-  font-size: clamp(13px, 1.4vw, 16px);
+  margin-top: 6px;
+  font-size: clamp(12px, 1.2vw, 15px);
   color: #94a3b8;
-  font-weight: 450;
+  font-weight: 500;
   letter-spacing: 0.01em;
 }
 

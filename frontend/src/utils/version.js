@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_010',
-  version: '1.3.2',
-  updatedAt: '27 Aug 2026, 02:15 PM',
-  commitTitle: 'SBE Update #010: Reverted Home Page UI to Original Design',
+  code: 'sbe_011',
+  version: '1.3.3',
+  updatedAt: '27 Aug 2026, 02:25 PM',
+  commitTitle: 'SBE Update #011: Dual Scrolling Collapsing Header with Sticky SBE Hub & Live Sync on Home Page',
   changes: [
+    {
+      tag: 'sbe_011',
+      date: '27 Aug 2026',
+      title: 'Dual Scrolling Collapsing SBE Hub Header',
+      details: 'Implemented dual scrolling on Home page: top bar (date, login, sync) scrolls away on scroll down, pinning the big SBE Hub title & last sync timestamp sticky at the top while all bento cards scroll smoothly beneath it.'
+    },
     {
       tag: 'sbe_010',
       date: '27 Aug 2026',
