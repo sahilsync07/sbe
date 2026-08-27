@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_004',
-  version: '1.2.6',
-  updatedAt: '27 Aug 2026, 10:05 AM',
-  commitTitle: 'SBE Update #004: 6-Month Ledger PDF Generation & Sharing Fix in Analyzer',
+  code: 'sbe_005',
+  version: '1.2.7',
+  updatedAt: '27 Aug 2026, 10:15 AM',
+  commitTitle: 'SBE Update #005: Full-Screen One Touch Mode with 2-Column Pill Toggles & Select All',
   changes: [
+    {
+      tag: 'sbe_005',
+      date: '27 Aug 2026',
+      title: 'Full-Screen One Touch Share Mode & 2-Column Pill Toggles',
+      details: 'Transformed One Touch Mode into a dedicated full-screen interface with 2-column pill switches for Low Stock, With Photos, Min Qty Filter, and Select All Groups (Default ON).'
+    },
     {
       tag: 'sbe_004',
       date: '27 Aug 2026',

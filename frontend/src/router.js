@@ -17,7 +17,7 @@ import { useAdmin } from "./composables/useAdmin";
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 
-const PdfGenerator = () => isAndroid ? import('./android/components/PdfGenerator.vue') : import('./components/PdfGenerator.vue');
+const PdfGenerator = () => import('./components/PdfGenerator.vue');
 const LatestStock = () => import('./android/components/LatestStock.vue');
 
 const routes = [
