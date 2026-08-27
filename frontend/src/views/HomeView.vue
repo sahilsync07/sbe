@@ -1,133 +1,99 @@
 <template>
-  <div class="h-screen h-[100dvh] max-h-[100dvh] flex flex-col bg-[#f8f6f1] relative text-slate-800 antialiased overflow-hidden font-sans" style="background-image: radial-gradient(circle at 85% 15%, rgba(253, 230, 138, 0.35) 0%, rgba(251, 191, 36, 0.1) 35%, transparent 70%), radial-gradient(circle at 15% 85%, rgba(196, 181, 253, 0.25) 0%, rgba(139, 92, 246, 0.08) 35%, transparent 65%); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         1. FIXED TOP PART: LOCATION, TOPBAR, SBE HUB TITLE & SYNC
-         ═══════════════════════════════════════════════════════════ -->
-    <header class="flex-shrink-0 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-8 py-3 shadow-2xs z-30 transition-all duration-300" style="padding-top: max(env(safe-area-inset-top, 24px), 12px);">
-      <div class="max-w-6xl mx-auto w-full">
-        <!-- Top Bar Row -->
-        <div class="flex items-center justify-between gap-3">
-          <!-- Left: Location / Date -->
-          <div class="flex items-center gap-2.5 min-w-0">
-            <button v-if="route.path !== '/home' && route.path !== '/'" type="button" @click="router.push('/')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 flex items-center justify-center transition-all flex-shrink-0 cursor-pointer shadow-2xs" title="Back to Stock">
-              <i class="fa-solid fa-arrow-left text-xs"></i>
-            </button>
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5 cursor-pointer">
-                <i class="fa-solid fa-location-dot text-amber-600 text-xs"></i>
-                <span class="text-xs sm:text-sm font-black text-slate-900 leading-tight truncate">Sri Brundabana Enterprises</span>
-              </div>
-              <p class="text-[10px] text-slate-400 font-semibold truncate leading-none mt-0.5">
-                {{ currentDay }}, {{ currentDate }} • Rayagada
-              </p>
-            </div>
-          </div>
-
-          <!-- Right: Controls -->
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <VersionBadge />
-
-            <button
-              v-if="isAdmin && !isSuperAdmin"
-              @click="updateStockData"
-              class="w-8 h-8 rounded-full bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-              title="Sync Data"
-            >
-              <i class="fa-solid fa-rotate text-xs" :class="{ 'animate-spin': isSyncing }"></i>
-            </button>
-            
-            <button
-              v-if="isAdmin || isSuperAdmin"
-              @click="toggleConsole"
-              class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 hidden lg:flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-              :class="{ 'bg-slate-900 text-white': showConsole }"
-              title="Toggle Console"
-            >
-              <i class="fa-solid fa-terminal text-xs"></i>
-            </button>
-
-            <button
-              v-if="!isAdmin && !isSuperAdmin"
-              @click="$router.push({ query: { login: 'admin' } })"
-              class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-              title="Admin Login"
-            >
-              <i class="fa-solid fa-lock text-xs"></i>
-            </button>
-
-            <button
-              v-if="isAdmin || isSuperAdmin"
-              @click="handleLogout"
-              class="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-              title="Logout"
-            >
-              <i class="fa-solid fa-right-from-bracket text-xs"></i>
-            </button>
+  <div class="hub-shell">
+    <!-- Main Content Area -->
+    <main class="hub-main">
+      <!-- Top Bar -->
+      <header class="hub-topbar">
+        <div class="hub-topbar__left">
+          <button v-if="route.path !== '/home' && route.path !== '/'" type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="hub-topbar__date">
+            <span class="hub-topbar__day">{{ currentDay }}</span>
+            <span class="hub-topbar__full-date">{{ currentDate }}</span>
           </div>
         </div>
 
-        <!-- SBE Hub Hero Branding Row (Fixed with Last Sync Time) -->
-        <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-          <div class="flex items-baseline gap-2">
-            <h1 class="text-xl sm:text-2xl font-black text-slate-900 leading-none tracking-tight">
-              <span>SBE</span>
-              <span class="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent ml-1">Hub</span>
-            </h1>
-            <span class="px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-900 text-[9px] font-black uppercase tracking-wider">
-              Wholesale
-            </span>
-          </div>
+        <div class="hub-topbar__right">
+          <!-- Build Version Tag with Info Popover -->
+          <VersionBadge />
 
-          <div class="flex items-center gap-1.5 text-right">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <p class="text-[10px] sm:text-xs font-bold text-slate-500 truncate">
-              {{ lastSyncText }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- ═══════════════════════════════════════════════════════════
-         2. SCROLLABLE 80%: ALL MENUS & BENTO GRID
-         ═══════════════════════════════════════════════════════════ -->
-    <main class="flex-1 overflow-y-auto min-h-0 px-4 sm:px-8 py-4 custom-scrollbar">
-      <div class="max-w-6xl mx-auto w-full space-y-4 pb-12">
-        
-        <!-- Bento Grid of Menus -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <router-link
-            v-for="(item, index) in filteredLinks"
-            :key="item.path"
-            :to="item.path"
-            class="hub-card group"
-            :class="[`hub-card--${item.colorKey}`, item.featured ? 'sm:col-span-2 lg:col-span-3' : '']"
-            :style="{ '--card-delay': `${index * 0.03}s` }"
+          <button
+            v-if="isAdmin && !isSuperAdmin"
+            @click="updateStockData"
+            class="hub-icon-btn hub-icon-btn--accent"
+            title="Sync Data"
           >
-            <div class="hub-card__icon-wrap">
-              <div class="hub-card__icon" :style="{ background: item.gradient }">
-                <i :class="['fa-solid', item.icon]"></i>
-              </div>
-            </div>
-            <div class="hub-card__body">
-              <h3 class="hub-card__title group-hover:text-amber-700 transition-colors">{{ item.label }}</h3>
-              <p class="hub-card__desc">{{ item.desc }}</p>
-            </div>
-            <div class="hub-card__arrow">
-              <i class="fa-solid fa-arrow-right"></i>
-            </div>
-          </router-link>
-        </section>
-
-        <!-- Footer Note -->
-        <div class="pt-6 text-center text-xs text-slate-400 font-semibold">
-          <span>Sri Brundabana Enterprises • Wholesale Footwear • Rayagada, Odisha</span>
+            <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
+          </button>
+          <button
+            v-if="isAdmin || isSuperAdmin"
+            @click="toggleConsole"
+            class="hub-icon-btn hub-icon-btn--console hidden lg:flex"
+            :class="{ 'hub-icon-btn--active': showConsole }"
+            title="Toggle Console"
+          >
+            <i class="fa-solid fa-terminal"></i>
+          </button>
+          <button
+            v-if="!isAdmin && !isSuperAdmin"
+            @click="$router.push({ query: { login: 'admin' } })"
+            class="hub-icon-btn hub-icon-btn--accent"
+            title="Admin Login"
+          >
+            <i class="fa-solid fa-lock"></i>
+          </button>
+          <button
+            v-if="isAdmin || isSuperAdmin"
+            @click="handleLogout"
+            class="hub-icon-btn hub-icon-btn--danger"
+            title="Logout"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
         </div>
+      </header>
+
+      <!-- Hero Section -->
+      <section class="hub-hero">
+        <h1 class="hub-hero__title">
+          <span class="hub-hero__label">SBE</span>
+          <span class="hub-hero__gradient">Hub</span>
+        </h1>
+        <p class="hub-hero__sub">{{ lastSyncText }}</p>
+      </section>
+
+      <!-- Bento Grid -->
+      <section class="hub-grid">
+        <router-link
+          v-for="(item, index) in filteredLinks"
+          :key="item.path"
+          :to="item.path"
+          class="hub-card"
+          :class="[`hub-card--${item.colorKey}`, item.featured ? 'hub-card--featured' : '']"
+          :style="{ '--card-delay': `${index * 0.04}s` }"
+        >
+          <div class="hub-card__icon-wrap">
+            <div class="hub-card__icon" :style="{ background: item.gradient }">
+              <i :class="['fa-solid', item.icon]"></i>
+            </div>
+          </div>
+          <div class="hub-card__body">
+            <h3 class="hub-card__title">{{ item.label }}</h3>
+            <p class="hub-card__desc">{{ item.desc }}</p>
+          </div>
+          <div class="hub-card__arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </router-link>
+      </section>
+
+      <div class="hub-footer">
+        <span>Sri Brundabana Enterprises • Rayagada</span>
       </div>
     </main>
 
-    <!-- Admin Console Sidebar (Desktop only) -->
+    <!-- Admin Console Sidebar (Desktop only, collapsible) -->
     <Transition name="console-slide">
       <aside v-if="(isAdmin || isSuperAdmin) && showConsole" class="hub-console hidden lg:flex">
         <ConsoleViewer />
@@ -199,209 +165,378 @@ const links = [
     desc: 'Auto-share all brands in 1 tap',
     icon: 'fa-bolt',
     colorKey: 'violet',
-    gradient: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
-    featured: true,
-    badge: '1-TAP'
+    gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
   },
   {
     path: '/analyzer',
     label: 'Line Debtors Analyzer',
-    desc: 'Route outstanding & 5-bucket aging risk',
+    desc: 'Debtor aging & payment recovery',
     icon: 'fa-chart-pie',
     colorKey: 'teal',
-    gradient: 'linear-gradient(135deg, #0d9488, #059669)',
-    featured: true,
-    badge: 'NEW'
+    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
   },
   {
     path: '/order-maker',
     label: 'Order Maker',
-    desc: 'Rapid 1-tap ordering & size groups',
-    icon: 'fa-cart-plus',
-    colorKey: 'rose',
-    gradient: 'linear-gradient(135deg, #f43f5e, #e11d48)',
-    featured: true,
-    badge: 'RAPID'
-  },
-  {
-    path: '/quotation',
-    label: 'Quotation Maker',
-    desc: 'Create quotations with images & WhatsApp PDF',
-    icon: 'fa-file-invoice-dollar',
-    colorKey: 'emerald',
-    gradient: 'linear-gradient(135deg, #10b981, #059669)',
-    featured: true
-  },
-  {
-    path: '/rate-chart',
-    label: 'Rate Chart',
-    desc: 'Brand wholesale prices & MRP list',
-    icon: 'fa-chart-simple',
-    colorKey: 'blue',
-    gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)'
-  },
-  {
-    path: '/line-list',
-    label: 'Line List',
-    desc: 'Outstanding balance by party & area',
-    icon: 'fa-list-check',
-    colorKey: 'amber',
-    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)'
-  },
-  {
-    path: '/sample-room',
-    label: 'Sample Room',
-    desc: 'Live showroom catalog & photo gallery',
+    desc: 'Rapid 1-screen photo ordering',
     icon: 'fa-wand-magic-sparkles',
-    colorKey: 'pink',
-    gradient: 'linear-gradient(135deg, #ec4899, #db2777)'
-  },
-  {
-    path: '/stock-trend',
-    label: 'Stock Trend',
-    desc: '30-day inventory movements & velocity',
-    icon: 'fa-arrow-trend-up',
     colorKey: 'purple',
-    gradient: 'linear-gradient(135deg, #a855f7, #9333ea)'
+    gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)',
   },
   {
-    path: '/old-stock',
-    label: 'Old Stock',
-    desc: 'Aging inventory & slow-moving items',
-    icon: 'fa-clock-rotate-left',
-    colorKey: 'orange',
-    gradient: 'linear-gradient(135deg, #f97316, #ea580c)'
+    path: '/',
+    label: 'Stock Table',
+    desc: 'Browse full product catalog with images & live stock',
+    icon: 'fa-table-cells-large',
+    colorKey: 'slate',
+    gradient: 'linear-gradient(135deg, #64748b, #334155)',
+    featured: true,
+  },
+  {
+    path: '/ledger',
+    label: 'Ledger',
+    desc: 'Account balances & entries',
+    icon: 'fa-book-open',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
   },
   {
     path: '/pdf-gen',
     label: 'PDF Generator',
-    desc: 'Batch catalog generator with custom branding',
+    desc: 'One-touch share & batches',
     icon: 'fa-file-pdf',
-    colorKey: 'indigo',
-    gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)'
+    colorKey: 'rose',
+    gradient: 'linear-gradient(135deg, #f43f5e, #e11d48)',
   },
   {
-    path: '/upload',
-    label: 'Upload Images',
-    desc: 'Manage article photos & Cloudinary links',
-    icon: 'fa-cloud-arrow-up',
-    colorKey: 'cyan',
-    gradient: 'linear-gradient(135deg, #06b6d4, #0891b2)',
-    adminOnly: true
+    path: '/daybook',
+    label: 'Daybook',
+    desc: 'Daily voucher transactions',
+    icon: 'fa-calendar-day',
+    colorKey: 'emerald',
+    gradient: 'linear-gradient(135deg, #10b981, #059669)',
   },
   {
-    path: '/',
-    label: 'Full Stock Catalog',
-    desc: 'Complete inventory database & table view',
-    icon: 'fa-boxes-stacked',
-    colorKey: 'slate',
-    gradient: 'linear-gradient(135deg, #64748b, #475569)'
-  }
+    path: '/rate-chart',
+    label: 'Rate Chart',
+    desc: 'Print brand price lists',
+    icon: 'fa-file-invoice-dollar',
+    colorKey: 'pink',
+    gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+  },
+  {
+    path: '/line-list',
+    label: 'Line List',
+    desc: 'Print area debtor balances',
+    icon: 'fa-map-location-dot',
+    colorKey: 'violet',
+    gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+  },
+  {
+    path: '/quotation',
+    label: 'Quotation & Bill',
+    desc: 'Generate general & tax bills',
+    icon: 'fa-file-invoice',
+    colorKey: 'green',
+    gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
+  },
+  {
+    path: '/old-stock',
+    label: 'Old Stock',
+    desc: 'View discontinued items',
+    icon: 'fa-box-archive',
+    colorKey: 'stone',
+    gradient: 'linear-gradient(135deg, #a8a29e, #78716c)',
+  },
 ];
 
 const filteredLinks = computed(() => {
-  return links.filter(l => !l.adminOnly || isAdmin.value || isSuperAdmin.value);
+  return links.filter(item => {
+    if (item.path === '/' && route.path === '/') {
+      return false;
+    }
+    if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation' || item.path === '/analyzer') && !isAdmin.value && !isSuperAdmin.value) {
+      return false;
+    }
+    return true;
+  });
 });
 
 onMounted(async () => {
-  if (!stockData.value || stockData.value.length === 0) {
+  if (!lastRefresh.value) {
     await loadStockData();
   }
 });
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 99px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+/* ══════════════════════════════════════
+   SHELL & RESPONSIVE SEAMLESS GRADIENT
+   ══════════════════════════════════════ */
+.hub-shell {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* Seamless responsive radial gradients directly on background — eliminates all bounding-box artifacts */
+  background-color: #f8f6f1;
+  background-image: 
+    radial-gradient(circle at 85% 15%, rgba(253, 230, 138, 0.45) 0%, rgba(251, 191, 36, 0.15) 35%, transparent 70%),
+    radial-gradient(circle at 15% 85%, rgba(196, 181, 253, 0.35) 0%, rgba(139, 92, 246, 0.12) 35%, transparent 65%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+  overflow-x: hidden;
 }
 
+.hub-main {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  padding: 0 clamp(16px, 4vw, 48px);
+  padding-bottom: 48px;
+  overflow-y: auto;
+}
+
+/* ══════════════════════════════════════
+   TOP BAR
+   ══════════════════════════════════════ */
+.hub-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+
+.hub-topbar__left,
+.hub-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-topbar__date {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.hub-topbar__day {
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+}
+.hub-topbar__full-date {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Icon Buttons */
+.hub-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.06);
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(.4,0,.2,1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+.hub-icon-btn:hover {
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.hub-icon-btn:active { transform: scale(0.95); }
+
+.hub-icon-btn--accent { color: #6366f1; }
+.hub-icon-btn--accent:hover { color: #4f46e5; background: #eef2ff; }
+.hub-icon-btn--danger { color: #ef4444; }
+.hub-icon-btn--danger:hover { color: #dc2626; background: #fef2f2; }
+.hub-icon-btn--console { color: #64748b; }
+.hub-icon-btn--console:hover { color: #475569; background: #f1f5f9; }
+.hub-icon-btn--active {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+.hub-icon-btn--active:hover { background: #0f172a !important; }
+
+/* ══════════════════════════════════════
+   HERO SECTION
+   ══════════════════════════════════════ */
+.hub-hero {
+  position: relative;
+  z-index: 1;
+  padding: 32px 0 10px;
+}
+
+.hub-hero__title {
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.hub-hero__label {
+  color: #1e293b;
+}
+
+.hub-hero__gradient {
+  background: linear-gradient(135deg, #d97706, #ea580c, #dc2626);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hub-hero__sub {
+  margin-top: 10px;
+  font-size: clamp(13px, 1.4vw, 16px);
+  color: #94a3b8;
+  font-weight: 450;
+  letter-spacing: 0.01em;
+}
+
+/* ══════════════════════════════════════
+   BENTO GRID
+   ══════════════════════════════════════ */
+.hub-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 28px 0 0;
+}
+
+/* ══════════════════════════════════════
+   CARD
+   ══════════════════════════════════════ */
 .hub-card {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 16px;
+  padding: 20px 22px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.04), 0 8px 24px -4px rgba(0,0,0,0.03);
+  background: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.04), 0 8px 24px -4px rgba(0,0,0,0.04);
   text-decoration: none;
   color: inherit;
-  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  animation: cardAppear 0.5s cubic-bezier(.4,0,.2,1) backwards;
+  animation-delay: var(--card-delay, 0s);
+}
+
+@keyframes cardAppear {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .hub-card:hover {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 8px 24px -4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 30px -4px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04);
   transform: translateY(-2px);
 }
 .hub-card:active { transform: scale(0.98); }
+
+.hub-card--featured {
+  grid-column: 1 / -1;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.95);
+  box-shadow: 0 4px 20px -2px rgba(0,0,0,0.06);
+}
 
 .hub-card__icon-wrap {
   flex-shrink: 0;
 }
 .hub-card__icon {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 18px;
-  box-shadow: 0 4px 12px -2px rgba(0,0,0,0.15);
-  transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+  font-size: 20px;
+  box-shadow: 0 4px 14px -2px rgba(0,0,0,0.15);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
 }
-.hub-card:hover .hub-card__icon { transform: scale(1.06) rotate(-2deg); }
+.hub-card:hover .hub-card__icon { transform: scale(1.08) rotate(-2deg); }
 
 .hub-card__body {
   flex: 1;
   min-width: 0;
 }
 .hub-card__title {
-  font-weight: 700;
-  font-size: 15px;
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
   color: #1e293b;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 .hub-card__desc {
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
   margin-top: 2px;
-  line-height: 1.2;
-  font-weight: 500;
+  line-height: 1.3;
 }
 
 .hub-card__arrow {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #cbd5e1;
-  font-size: 11px;
+  font-size: 12px;
   transition: all 0.2s ease;
 }
 .hub-card:hover .hub-card__arrow {
-  color: #d97706;
+  color: #6366f1;
   transform: translateX(3px);
 }
 
+/* ══════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════ */
+.hub-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 48px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ══════════════════════════════════════
+   ADMIN CONSOLE PANEL (Sidebar)
+   ══════════════════════════════════════ */
 .hub-console {
   width: 480px;
   flex-shrink: 0;

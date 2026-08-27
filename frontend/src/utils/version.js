@@ -1,14 +1,14 @@
 export const APP_VERSION = {
-  code: 'sbe_009',
-  version: '1.3.1',
-  updatedAt: '27 Aug 2026, 11:45 AM',
-  commitTitle: 'SBE Update #009: Fixed Top Header & 80% Scrollable Menus Viewport on Home Page',
+  code: 'sbe_010',
+  version: '1.3.2',
+  updatedAt: '27 Aug 2026, 02:15 PM',
+  commitTitle: 'SBE Update #010: Reverted Home Page UI to Original Design',
   changes: [
     {
-      tag: 'sbe_009',
+      tag: 'sbe_010',
       date: '27 Aug 2026',
-      title: 'Fixed Top Header & 80% Scrollable Menu Viewport',
-      details: 'Locked top header with location, SBE Hub title, and live sync status permanently in place, making the menu grid the smooth 80% scrollable viewport.'
+      title: 'Reverted Home Page UI',
+      details: 'Reverted Home Page layout, bento cards, and top bar to the original clean UI styling.'
     },
     {
       tag: 'sbe_008',
