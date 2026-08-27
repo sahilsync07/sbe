@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_011',
-  version: '1.3.3',
-  updatedAt: '27 Aug 2026, 02:25 PM',
-  commitTitle: 'SBE Update #011: Dual Scrolling Collapsing Header with Sticky SBE Hub & Live Sync on Home Page',
+  code: 'sbe_012',
+  version: '1.3.4',
+  updatedAt: '27 Aug 2026, 03:55 PM',
+  commitTitle: 'SBE Update #012: Safe Area Inset Support & Seamless Blended Sticky SBE Hub Header',
   changes: [
+    {
+      tag: 'sbe_012',
+      date: '27 Aug 2026',
+      title: 'Safe Area & Seamless Blended Sticky Header',
+      details: 'Added safe area top padding for status bar/battery indicators and converted sticky SBE Hub header background to a seamless transparent gradient fade with zero rectangular borders or hard straps.'
+    },
     {
       tag: 'sbe_011',
       date: '27 Aug 2026',
