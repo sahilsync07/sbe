@@ -812,6 +812,7 @@ const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/paragonLo
 
 const brandTabs = [
   { id: 'All', label: 'All', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
+  { id: 'ParagonCore', label: 'Core', icon: 'fa-solid fa-fire', iconColor: 'text-orange-500' },
   { id: 'NewArrivals', label: 'New', icon: 'fa-solid fa-wand-magic-sparkles', iconColor: 'text-amber-500' },
   { id: 'Paragon', label: 'Paragon', image: ParagonLogo },
   { id: 'EEKEN', label: 'Eeken', image: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp' },
@@ -933,6 +934,24 @@ const getBrandProducts = (groupNames) => {
 };
 
 const localCarousals = {
+  'ParagonCore': [
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1136.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1170.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1180.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1181.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1190.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1210.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1215.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1220.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1250-BKR.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1250-TQN.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-1251-BKR.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-16048-BLK.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-16048-MIG.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-16049-BLK.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-16049-RYB.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/Core-cushion.png'
+  ],
   'EEKEN': [
     'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-1.jpg',
     'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-2.jpg',
@@ -981,6 +1000,7 @@ const looseGroupNames = ['ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNE
 const boxGroupNames = ['Mini F/w', 'ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC', 'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR', 'Kohinoor', 'UAM FOOTWEAR', 'BROCKKIE'];
 
 const paragonCards = [
+  { id: 'ParagonCore', label: 'Paragon Core', groupNames: ['PARAGON GENTS', 'PARAGON LADIES', 'PARALITE', 'P-TOES', 'Hawai Chappal'] },
   { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'] },
   { id: 'PARALITE', label: 'Paralite', groupNames: ['PARALITE', 'PARALITE OLD', 'P-TOES PARALITE'] },
   { id: 'LoosePacking', label: 'Loose Packing', groupNames: looseGroupNames },
