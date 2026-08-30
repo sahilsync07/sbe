@@ -101,106 +101,102 @@ export function useStockData(isLocal) {
         loading.value = true;
         let hasData = false;
 
-        // --- Tier 1: LocalStorage Cache (Instant) ---
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-                if (parsed && Array.isArray(parsed)) {
-                    extractAndApplyMetadata(parsed);
-                    stockData.value = processCustomGroups(parsed);
-                    hasData = true;
-                    loading.value = false;
-                    console.log("Loaded stock data from LocalStorage Cache (Tier 1), sync:", lastRefresh.value);
+        try {
+            // --- Tier 1: LocalStorage Cache (Instant) ---
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && Array.isArray(parsed)) {
+                        extractAndApplyMetadata(parsed);
+                        stockData.value = processCustomGroups(parsed);
+                        hasData = true;
+                        loading.value = false;
+                        console.log("Loaded stock data from LocalStorage Cache (Tier 1), sync:", lastRefresh.value);
+                    }
+                } catch (e) {
+                    console.error("Cache parse error", e);
+                    localStorage.removeItem(CACHE_KEY);
                 }
-            } catch (e) {
-                console.error("Cache parse error", e);
-                localStorage.removeItem(CACHE_KEY);
             }
-        }
 
-        // --- Tier 2: Local Bundle (Fast Fallback for First Time) ---
-        if (!hasData) {
+            // --- Tier 2: Local Bundle (Fast Fallback for First Time) ---
+            if (!hasData) {
+                try {
+                    const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+                        ? import.meta.env.BASE_URL
+                        : `${import.meta.env.BASE_URL}/`;
+
+                    const localUrl = `${baseUrl}assets/stock-data.json`;
+                    console.log("Attempting Local Bundle fetch:", localUrl);
+
+                    const response = await fetch(`${localUrl}?t=${Date.now()}`);
+                    if (response.ok) {
+                        const localData = await response.json();
+                        extractAndApplyMetadata(localData);
+                        stockData.value = processCustomGroups(localData);
+                        hasData = true;
+                        loading.value = false;
+                        console.log("Loaded stock data from Local Bundle (Tier 2), sync:", lastRefresh.value);
+
+                        try {
+                            localStorage.setItem(CACHE_KEY, JSON.stringify(localData));
+                        } catch (e) { }
+                    }
+                } catch (localErr) {
+                    console.warn("Local Bundle fetch failed:", localErr);
+                }
+            }
+
+            // --- Tier 3: Live Network Fetch (Always Validate) ---
             try {
-                const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-                    ? import.meta.env.BASE_URL
-                    : `${import.meta.env.BASE_URL}/`;
+                if (isLocal && isLocal.value) {
+                    console.log("Skipping Live Fetch on localhost.");
+                    return;
+                }
+                console.log("Starting Background Live Fetch (Tier 3)...");
 
-                const localUrl = `${baseUrl}assets/stock-data.json`;
-                console.log("Attempting Local Bundle fetch:", localUrl);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 7000);
 
-                const response = await fetch(`${localUrl}?t=${Date.now()}`);
+                const liveUrl = REMOTE_DATA_URL;
+
+                // Simple GET request without custom headers avoids CORS OPTIONS preflight check
+                const response = await fetch(`${liveUrl}?t=${Date.now()}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
                 if (response.ok) {
-                    const localData = await response.json();
-                    extractAndApplyMetadata(localData);
-                    stockData.value = processCustomGroups(localData);
-                    hasData = true;
-                    loading.value = false;
-                    console.log("Loaded stock data from Local Bundle (Tier 2), sync:", lastRefresh.value);
+                    const liveData = await response.json();
+                    extractAndApplyMetadata(liveData);
+                    stockData.value = processCustomGroups(liveData);
 
                     try {
-                        localStorage.setItem(CACHE_KEY, JSON.stringify(localData));
-                    } catch (e) { }
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
+                    } catch (e) {}
+
+                    console.log("Updated stock data from Live URL (Tier 3), sync:", lastRefresh.value);
                 }
-            } catch (localErr) {
-                console.warn("Local Bundle fetch failed:", localErr);
-            }
-        }
-
-        // --- Tier 3: Live Network Fetch (Always Validate) ---
-        try {
-            if (isLocal && isLocal.value) {
-                console.log("Skipping Live Fetch on localhost.");
-                return;
-            }
-            console.log("Starting Background Live Fetch (Tier 3)...");
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 7000);
-
-            const liveUrl = REMOTE_DATA_URL;
-
-            // Simple GET request without custom headers avoids CORS OPTIONS preflight check
-            const response = await fetch(`${liveUrl}?t=${Date.now()}`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-                const liveData = await response.json();
-                extractAndApplyMetadata(liveData);
-                stockData.value = processCustomGroups(liveData);
-
-                try {
-                    localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
-                } catch (e) {}
-
-                console.log("Updated stock data from Live URL (Tier 3), sync:", lastRefresh.value);
-
+            } catch (liveErr) {
+                console.warn("Background live fetch failed or timed out:", liveErr);
                 if (!hasData) {
-                    loading.value = false;
+                    error.value = "Failed to load stock data. Please check connection.";
                 }
-            } else {
-                throw new Error("Live fetch failed");
             }
-        } catch (liveErr) {
-            console.warn("Background live fetch failed or timed out:", liveErr);
-            if (!hasData) {
-                error.value = "Failed to load stock data. Please check connection.";
-                toast.error(error.value, { autoClose: 3000 });
-                loading.value = false;
-            }
-        }
 
-        // Final Metadata Clean-up for views
-        if (stockData.value.length > 0) {
-            extractAndApplyMetadata(stockData.value);
-            const data = stockData.value;
-            const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
-            if (metaIndex !== -1) {
-                data.splice(metaIndex, 1);
+            // Final Metadata Clean-up for views
+            if (stockData.value && Array.isArray(stockData.value) && stockData.value.length > 0) {
+                extractAndApplyMetadata(stockData.value);
+                const data = stockData.value;
+                const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+                if (metaIndex !== -1) {
+                    data.splice(metaIndex, 1);
+                }
+                error.value = null;
             }
-            error.value = null;
+        } finally {
+            loading.value = false;
         }
     };
 

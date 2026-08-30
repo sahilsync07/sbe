@@ -3,16 +3,7 @@
   <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800 pb-20">
     
 
-    <Transition
-      enter-active-class="transition-opacity duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-300 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <FunLoader v-if="isFiltering" />
-    </Transition>
+
 
     <div class="flex w-full">
       
@@ -181,15 +172,7 @@
       </div>
     </transition>
 
-    <!-- Admin Data Loading Overlay -->
-     <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="loading" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-         <div class="bg-white px-6 py-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3">
-             <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-             <span class="text-sm font-bold text-slate-700">Updating...</span>
-         </div>
-      </div>
-    </transition>
+
   </div>
 </template>
 
