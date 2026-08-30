@@ -32,6 +32,8 @@ const routes = [
   { path: "/line-list", component: LineListView },
   { path: "/latest-stock", component: LatestStock },
   { path: "/home", component: HomeView },
+  { path: "/sbe-hub", redirect: "/home" },
+  { path: "/hub", redirect: "/home" },
   { path: "/old-stock", component: OldStockView },
   { path: "/quotation", component: QuotationView },
   { path: "/analyzer", component: AnalyzerView },

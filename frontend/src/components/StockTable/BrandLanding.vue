@@ -309,9 +309,32 @@
               <i class="fa-solid fa-image text-2xl opacity-20"></i>
             </div>
 
-            <!-- Floating Add Button on Image -->
+            <!-- Floating Cart Controls / Add Button on Image -->
+            <div 
+              v-if="getCartQty(product) > 0" 
+              class="absolute bottom-2 right-2 z-20 flex items-center gap-1 p-0.5 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-amber-200/80 animate-fade-in"
+              @click.stop
+            >
+              <button 
+                @click.stop="updateCart(product, -1)" 
+                class="w-6 h-6 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 active:scale-90 transition-all"
+                title="Decrease"
+              >
+                <i class="fa-solid fa-minus text-[9px]"></i>
+              </button>
+              <span class="min-w-[16px] text-center text-xs font-black text-slate-900 px-0.5">
+                {{ getCartQty(product) }}
+              </span>
+              <button 
+                @click.stop="updateCart(product, 1)" 
+                class="w-6 h-6 flex items-center justify-center rounded-full bg-[#18181b] text-amber-400 hover:bg-black active:scale-90 transition-all shadow-xs"
+                title="Increase"
+              >
+                <i class="fa-solid fa-plus text-[9px]"></i>
+              </button>
+            </div>
             <button
-              v-if="product.quantity > 0"
+              v-else-if="product.quantity > 0"
               @click.stop="addToCart(product)"
               class="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/95 text-slate-800 hover:bg-[#18181b] hover:text-amber-400 shadow-md border border-slate-200/60 flex items-center justify-center transition-all active:scale-90"
               title="Add to Cart"
@@ -467,9 +490,32 @@
                     <i class="fa-solid fa-image text-2xl opacity-20"></i>
                   </div>
 
-                  <!-- Floating Add Button on Image -->
+                  <!-- Floating Cart Controls / Add Button on Image -->
+                  <div 
+                    v-if="getCartQty(product) > 0" 
+                    class="absolute bottom-2 right-2 z-20 flex items-center gap-1 p-0.5 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-amber-200/80 animate-fade-in"
+                    @click.stop
+                  >
+                    <button 
+                      @click.stop="updateCart(product, -1)" 
+                      class="w-6 h-6 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 active:scale-90 transition-all"
+                      title="Decrease"
+                    >
+                      <i class="fa-solid fa-minus text-[9px]"></i>
+                    </button>
+                    <span class="min-w-[16px] text-center text-xs font-black text-slate-900 px-0.5">
+                      {{ getCartQty(product) }}
+                    </span>
+                    <button 
+                      @click.stop="updateCart(product, 1)" 
+                      class="w-6 h-6 flex items-center justify-center rounded-full bg-[#18181b] text-amber-400 hover:bg-black active:scale-90 transition-all shadow-xs"
+                      title="Increase"
+                    >
+                      <i class="fa-solid fa-plus text-[9px]"></i>
+                    </button>
+                  </div>
                   <button
-                    v-if="product.quantity > 0"
+                    v-else-if="product.quantity > 0"
                     @click.stop="addToCart(product)"
                     class="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/95 text-slate-800 hover:bg-[#18181b] hover:text-amber-400 shadow-md border border-slate-200/60 flex items-center justify-center transition-all active:scale-90"
                     title="Add to Cart"
@@ -596,11 +642,35 @@
                     <i class="fa-solid fa-image text-xl opacity-20"></i>
                   </div>
 
-                  <!-- Add to cart -->
+                  <!-- Floating Cart Controls / Add Button on Image -->
+                  <div 
+                    v-if="getCartQty(product) > 0" 
+                    class="absolute bottom-2 right-2 z-20 flex items-center gap-1 p-0.5 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-amber-200/80 animate-fade-in"
+                    @click.stop
+                  >
+                    <button 
+                      @click.stop="updateCart(product, -1)" 
+                      class="w-5 h-5 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 active:scale-90 transition-all"
+                      title="Decrease"
+                    >
+                      <i class="fa-solid fa-minus text-[8px]"></i>
+                    </button>
+                    <span class="min-w-[14px] text-center text-[11px] font-black text-slate-900 px-0.5">
+                      {{ getCartQty(product) }}
+                    </span>
+                    <button 
+                      @click.stop="updateCart(product, 1)" 
+                      class="w-5 h-5 flex items-center justify-center rounded-full bg-[#18181b] text-amber-400 hover:bg-black active:scale-90 transition-all shadow-xs"
+                      title="Increase"
+                    >
+                      <i class="fa-solid fa-plus text-[8px]"></i>
+                    </button>
+                  </div>
                   <button
-                    v-if="product.quantity > 0"
+                    v-else-if="product.quantity > 0"
                     @click.stop="addToCart(product)"
                     class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white text-slate-800 shadow border border-slate-200 flex items-center justify-center transition-all hover:bg-[#18181b] hover:text-amber-400 active:scale-90"
+                    title="Add to Cart"
                   >
                     <i class="fa-solid fa-plus text-[9px]"></i>
                   </button>
@@ -749,7 +819,7 @@ const { cartTotalItems } = storeToRefs(cartStore);
 
 const { isAdmin, isSuperAdmin } = useAdmin();
 const { stockData, loading: isSyncing, updateStockData } = useStockData();
-const { addToCart } = useCart();
+const { addToCart, updateCart, getCartQty } = useCart();
 
 const emit = defineEmits(['select-category', 'open-image-popup', 'open-catalog-gen', 'open-cart']);
 
