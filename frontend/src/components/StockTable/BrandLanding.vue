@@ -146,17 +146,17 @@
            2. BRAND TABS: Circular Brand Icons (Zomato Category Bar)
            ══════════════════════════════════════════════════════════ -->
       <div class="mt-2.5 -mx-3 sm:-mx-6 px-3 sm:px-6 overflow-x-auto no-scrollbar border-t border-slate-100/60 pt-2">
-        <div class="flex items-center gap-3.5 sm:gap-5 min-w-max pb-1">
+        <div class="flex items-center gap-3 sm:gap-4.5 min-w-max pb-1">
           <button
             v-for="tab in brandTabs"
             :key="tab.id"
             @click="selectTab(tab.id)"
-            class="flex flex-col items-center gap-1.5 group select-none transition-all relative pb-2"
+            class="flex flex-col items-center gap-1.5 group select-none transition-all relative pb-2 shrink-0 min-w-[56px] sm:min-w-[64px]"
           >
             <!-- Circle Thumbnail / Badge -->
             <div
-              class="w-13 h-13 sm:w-15 sm:h-15 rounded-full flex items-center justify-center p-2 transition-all duration-300 relative"
-              :class="activeTab === tab.id ? 'ring-2 ring-[#c59b27] ring-offset-2 bg-amber-50/70 shadow-md scale-105' : 'bg-slate-50 border border-slate-200/80 hover:bg-slate-100/80 hover:scale-102'"
+              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center p-2 transition-all duration-300 relative overflow-hidden shrink-0"
+              :class="activeTab === tab.id ? 'ring-2 ring-[#c59b27] ring-offset-2 bg-amber-50 shadow-md scale-105' : 'bg-slate-50 border border-slate-200/80 hover:bg-slate-100/80 hover:scale-102'"
             >
               <img
                 v-if="tab.image"
@@ -164,7 +164,7 @@
                 :alt="tab.label"
                 class="w-full h-full object-contain transition-transform group-hover:scale-110"
               />
-              <div v-else-if="tab.icon" class="text-lg sm:text-xl" :class="tab.iconColor || 'text-slate-700'">
+              <div v-else-if="tab.icon" class="text-base sm:text-lg" :class="tab.iconColor || 'text-slate-700'">
                 <i :class="tab.icon"></i>
               </div>
             </div>
