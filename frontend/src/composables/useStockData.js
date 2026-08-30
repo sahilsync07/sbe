@@ -207,31 +207,23 @@ export function useStockData(isLocal) {
         const toastId = toast.loading("Syncing stock from Tally...", { autoClose: false, closeButton: false });
         try {
             const response = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`
+                `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`,
+                {},
+                { timeout: 15000 }
             );
             
             const resData = response.data;
             let data = resData.data;
 
+            toast.remove(toastId);
+
             if (resData.tallyError || resData.message?.includes('existing data') || resData.message?.includes('Tally unavailable')) {
-                toast.update(toastId, {
-                    render: 'Tally is offline — showing cached data',
-                    type: 'warning',
-                    isLoading: false,
-                    autoClose: 5000,
-                    closeButton: true
-                });
+                toast.warning('Tally is offline — showing cached data', { autoClose: 4000 });
                 return;
             }
 
             if (!data || !Array.isArray(data)) {
-                toast.update(toastId, {
-                    render: 'Unexpected response from server: ' + (resData.message || 'No data returned'),
-                    type: 'error',
-                    isLoading: false,
-                    autoClose: 5000,
-                    closeButton: true
-                });
+                toast.error('Unexpected response: ' + (resData.message || 'No data returned'), { autoClose: 4000 });
                 return;
             }
 
@@ -247,24 +239,22 @@ export function useStockData(isLocal) {
                 data.splice(metaIndex, 1);
             }
 
-            toast.update(toastId, {
-                render: `✓ Stock synced (${data.length} brands updated)!`,
-                type: 'success',
-                isLoading: false,
-                autoClose: 3500,
-                closeButton: true
-            });
+            toast.success(`✓ Stock synced (${data.length} brands updated)!`, { autoClose: 3000 });
         } catch (err) {
             console.error(err);
-            const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
-            error.value = "Failed to update stock data: " + errMsg;
-            toast.update(toastId, {
-                render: error.value,
-                type: 'error',
-                isLoading: false,
-                autoClose: 6000,
-                closeButton: true
-            });
+            toast.remove(toastId);
+
+            let userMsg = '';
+            if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'ECONNREFUSED') {
+                userMsg = 'Sync server is offline or unreachable (Make sure local sync server is running).';
+            } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+                userMsg = 'Sync request timed out. Please verify Tally connection.';
+            } else {
+                userMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to update stock';
+            }
+
+            error.value = userMsg;
+            toast.error(userMsg, { autoClose: 4500 });
         } finally {
             loading.value = false;
         }

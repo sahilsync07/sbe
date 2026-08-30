@@ -223,11 +223,12 @@ const handleCacheImages = async () => {
       toast.update(toastId, { render: `Downloading assets ${current}/${total} (${percent}%)...`, type: 'info', isLoading: true, autoClose: false });
     });
     
+    toast.remove(toastId);
     if (result.success > 0) {
-      toast.update(toastId, { render: `✓ ${result.success} assets cached!`, type: 'success', isLoading: false, autoClose: 4000 });
+      toast.success(`✓ ${result.success} assets cached!`, { autoClose: 3500 });
     }
     if (result.failed > 0) {
-      toast.warning(`${result.failed} assets failed.`, { autoClose: 3000 });
+      toast.warning(`${result.failed} assets failed.`, { autoClose: 3500 });
     }
 };
 

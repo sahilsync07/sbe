@@ -311,17 +311,12 @@ const handleCacheImages = async () => {
     });
     
     // Final success/failure toast
+    toast.remove(toastId);
     if (result.success > 0) {
-      toast.update(toastId, {
-        render: `✓ ${result.success} assets cached for offline use!`,
-        type: 'success',
-        isLoading: false,
-        autoClose: 4000
-      });
+      toast.success(`✓ ${result.success} assets cached for offline use!`, { autoClose: 3500 });
     }
-    
     if (result.failed > 0) {
-      toast.warning(`${result.failed} assets failed to download.`, { autoClose: 3000 });
+      toast.warning(`${result.failed} assets failed to download.`, { autoClose: 3500 });
     }
   };
 
