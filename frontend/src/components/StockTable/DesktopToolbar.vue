@@ -121,7 +121,7 @@
           </div>
         </div>
 
-        <!-- Center Section: New e-SBE Logo -->
+        <!-- Center Section: Title & Status -->
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 pointer-events-none">
           <div 
             class="select-none pointer-events-auto cursor-pointer flex items-center gap-2"
@@ -134,7 +134,7 @@
             @contextmenu.prevent
             title="Tap: Home • Long Press: Admin"
           >
-            <img src="/assets/e-sbe-logo.png" alt="e-SBE" class="h-8 w-auto object-contain invert brightness-200" />
+            <span class="font-['Clash_Display'] font-black text-base text-amber-400 tracking-widest uppercase">CATALOG</span>
           </div>
           <!-- Status Pill -->
           <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full shadow-sm mt-0.5">
@@ -186,7 +186,7 @@
       style="padding-top: env(safe-area-inset-top, 0px)"
     >
       <div class="h-[54px] flex items-center justify-between px-4 relative">
-         <!-- Left: Sidebar Toggle -->
+         <!-- Left: Sidebar Toggle & Home -->
          <div class="flex items-center gap-2">
             <button
                @click="$emit('toggleSidebar')"
@@ -204,11 +204,6 @@
             >
                <i class="fa-solid fa-house text-sm"></i>
             </button>
-         </div>
-
-         <!-- Center: e-SBE Logo Emblem -->
-         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-            <img src="/assets/e-sbe-logo.png" alt="e-SBE" class="h-6 w-auto object-contain invert brightness-200 pointer-events-auto cursor-pointer" @click="goHome" />
          </div>
 
          <!-- Right: PDF & Cart -->
