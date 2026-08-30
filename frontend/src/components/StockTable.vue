@@ -32,6 +32,7 @@
           @select-category="handleCategorySelect"
           @open-image-popup="openImagePopup"
           @open-catalog-gen="showCatalogGen = true"
+          @prompt-admin-login="showAdminModal = true"
         />
 
         <div v-else class="space-y-8">

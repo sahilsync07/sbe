@@ -333,8 +333,20 @@ onMounted(async () => {
   display: inline-flex !important;
 }
 
-.Vue3Toastify__progress-bar,
-.Vue3Toastify__close-button {
+.Vue3Toastify__progress-bar {
   display: none !important;
+}
+
+.Vue3Toastify__close-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 0.8 !important;
+  margin-left: 10px !important;
+  align-self: center !important;
+  cursor: pointer !important;
+}
+
+.Vue3Toastify__close-button:hover {
+  opacity: 1 !important;
+  color: #ffffff !important;
 }
 </style>

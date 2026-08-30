@@ -204,6 +204,7 @@ export function useStockData(isLocal) {
     const updateStockData = async () => {
         loading.value = true;
         error.value = null;
+        const toastId = toast.loading("Syncing stock from Tally...", { autoClose: false, closeButton: false });
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`
@@ -213,14 +214,24 @@ export function useStockData(isLocal) {
             let data = resData.data;
 
             if (resData.tallyError || resData.message?.includes('existing data') || resData.message?.includes('Tally unavailable')) {
-                toast.warning('Tally is offline — showing cached data', { autoClose: 4000 });
-                loading.value = false;
+                toast.update(toastId, {
+                    render: 'Tally is offline — showing cached data',
+                    type: 'warning',
+                    isLoading: false,
+                    autoClose: 5000,
+                    closeButton: true
+                });
                 return;
             }
 
             if (!data || !Array.isArray(data)) {
-                toast.error('Unexpected response from server', { autoClose: 3000 });
-                loading.value = false;
+                toast.update(toastId, {
+                    render: 'Unexpected response from server: ' + (resData.message || 'No data returned'),
+                    type: 'error',
+                    isLoading: false,
+                    autoClose: 5000,
+                    closeButton: true
+                });
                 return;
             }
 
@@ -236,11 +247,24 @@ export function useStockData(isLocal) {
                 data.splice(metaIndex, 1);
             }
 
-            toast.success('Stock data updated successfully!', { autoClose: 2000 });
+            toast.update(toastId, {
+                render: `✓ Stock synced (${data.length} brands updated)!`,
+                type: 'success',
+                isLoading: false,
+                autoClose: 3500,
+                closeButton: true
+            });
         } catch (err) {
             console.error(err);
-            error.value = "Failed to update stock data: " + (err.response?.data?.error || err.message);
-            toast.error(error.value, { autoClose: 4000 });
+            const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+            error.value = "Failed to update stock data: " + errMsg;
+            toast.update(toastId, {
+                render: error.value,
+                type: 'error',
+                isLoading: false,
+                autoClose: 6000,
+                closeButton: true
+            });
         } finally {
             loading.value = false;
         }

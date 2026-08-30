@@ -129,6 +129,34 @@
           </transition>
         </div>
 
+        <!-- Sync Button (Admin Mode) -->
+        <button
+          v-if="isAdmin || isSuperAdmin"
+          @click="handleSync"
+          class="w-11 h-11 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0"
+          title="Sync Stock from Tally"
+        >
+          <i class="fa-solid fa-rotate text-sm" :class="{ 'animate-spin text-amber-500': isSyncing }"></i>
+        </button>
+
+        <!-- Admin Login / Hub Button -->
+        <button
+          v-if="!isAdmin && !isSuperAdmin"
+          @click="emit('promptAdminLogin')"
+          class="w-11 h-11 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all hover:bg-slate-50 active:scale-95 shadow-sm shrink-0"
+          title="Admin Login"
+        >
+          <i class="fa-solid fa-lock text-sm"></i>
+        </button>
+        <button
+          v-else
+          @click="$router.push('/home')"
+          class="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-300/80 text-amber-700 hover:bg-amber-100 flex items-center justify-center transition-all active:scale-95 shadow-sm shrink-0"
+          title="SBE Hub"
+        >
+          <i class="fa-solid fa-shield-halved text-sm"></i>
+        </button>
+
         <!-- Right: Shopping Bag Cart Button -->
         <button
           @click="appStore.toggleCart(true)"
@@ -821,7 +849,7 @@ const { isAdmin, isSuperAdmin } = useAdmin();
 const { stockData, loading: isSyncing, updateStockData } = useStockData();
 const { addToCart, updateCart, getCartQty } = useCart();
 
-const emit = defineEmits(['select-category', 'open-image-popup', 'open-catalog-gen', 'open-cart']);
+const emit = defineEmits(['select-category', 'open-image-popup', 'open-catalog-gen', 'open-cart', 'promptAdminLogin']);
 
 // UI States
 const activeTab = ref('All');
