@@ -78,7 +78,7 @@
                     <i class="fa-solid fa-magnifying-glass text-xs"></i>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-bold text-slate-800 truncate">Search for "{{ localQuery.trim() }}"</div>
+                    <div class="text-sm font-bold text-slate-800 truncate">Show all results for "{{ localQuery.trim() }}"</div>
                     <div class="text-xs text-slate-400">View all matching products</div>
                   </div>
                   <i class="fa-solid fa-arrow-right text-xs text-slate-400"></i>
@@ -289,9 +289,242 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         CATEGORY PRODUCT GRID: Shown directly under bubbles when a bubble is clicked
+         1. SEARCH RESULTS VIEW: Shown when user is actively searching
          ══════════════════════════════════════════════════════════ -->
-    <section v-if="activeTab !== 'All'" class="mt-4 px-3 sm:px-6">
+    <section v-if="isSearchActive" class="mt-4 px-3 sm:px-6">
+      <div class="flex items-center justify-between mb-4 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-sm sm:text-base font-black font-['Clash_Display'] text-slate-900 uppercase truncate">
+            Search: "{{ searchQuery }}"
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black shrink-0">
+            {{ (selectedItem ? 1 : 0) + otherSearchResults.length }} products found
+          </span>
+        </div>
+        <button
+          @click="clearSearch"
+          class="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-all shrink-0"
+        >
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+          <span>Clear Search</span>
+        </button>
+      </div>
+
+      <!-- 1. SELECTED ITEM ON TOP (If user clicked a specific item from dropdown) -->
+      <div v-if="selectedItem" class="mb-6">
+        <div class="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-star text-amber-500"></i>
+          <span>Selected Product</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row bg-gradient-to-br from-amber-500/10 via-amber-50/40 to-white rounded-3xl p-4 sm:p-5 border-2 border-amber-400 shadow-md gap-4 sm:gap-6 relative overflow-hidden group/sel">
+          <!-- Image Section -->
+          <div 
+            class="relative w-full sm:w-[170px] aspect-[4/5] sm:aspect-square bg-white rounded-2xl overflow-hidden cursor-pointer shrink-0 border border-amber-200/60 shadow-sm flex items-center justify-center p-2"
+            @click="$emit('open-image-popup', selectedItem)"
+          >
+            <CachedImage
+              v-if="selectedItem.imageUrl"
+              :src="getOptimizedImageUrl(selectedItem.imageUrl, 'w_400,h_500,c_fill')"
+              :alt="selectedItem.productName"
+              class="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover/sel:scale-105"
+            />
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300">
+              <i class="fa-solid fa-image text-3xl opacity-20"></i>
+            </div>
+
+            <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-amber-400 text-[10px] font-black tracking-wider uppercase flex items-center gap-1">
+              <i class="fa-solid fa-check text-[9px]"></i> EXACT MATCH
+            </div>
+          </div>
+
+          <!-- Details Section -->
+          <div class="flex-1 flex flex-col justify-between min-w-0">
+            <div>
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="text-base sm:text-lg font-black font-['Clash_Display'] text-slate-900 tracking-tight leading-snug">
+                    {{ getCleanProductName(selectedItem.productName) }}
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-0.5 font-medium truncate">{{ selectedItem.productName }}</p>
+                </div>
+                <span 
+                  class="px-3 py-1 rounded-full text-xs font-black shrink-0 shadow-xs"
+                  :class="selectedItem.quantity > 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-700 border border-rose-200'"
+                >
+                  {{ selectedItem.quantity > 0 ? `${selectedItem.quantity} pairs in stock` : 'Out of Stock' }}
+                </span>
+              </div>
+
+              <!-- Color, Size & Price badges -->
+              <div class="flex flex-wrap items-center gap-2 mt-3 text-xs">
+                <span v-if="getProductColor(selectedItem.productName)" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs font-bold text-slate-700">
+                  <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: getProductColor(selectedItem.productName).hex }"></span>
+                  <span class="capitalize">{{ getProductColor(selectedItem.productName).text }}</span>
+                </span>
+                <span v-if="getProductSize(selectedItem.productName)" class="px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs font-extrabold text-slate-800">
+                  Size: {{ getProductSize(selectedItem.productName) }}
+                </span>
+                <div class="px-3 py-1 rounded-xl bg-slate-900 text-amber-400 font-black text-sm shadow-sm">
+                  ₹{{ getPriceInfo(selectedItem.productName).price }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Add to cart & Quick actions -->
+            <div class="mt-4 pt-3 border-t border-amber-200/60 flex items-center justify-between gap-3">
+              <div class="text-xs font-bold text-slate-600">
+                Order Quantity:
+              </div>
+
+              <div class="flex items-center gap-3">
+                <div 
+                  v-if="getCartQty(selectedItem) > 0" 
+                  class="flex items-center gap-2 p-1 bg-white rounded-2xl shadow-sm border border-amber-300"
+                >
+                  <button 
+                    @click.stop="updateCart(selectedItem, -1)" 
+                    class="w-7 h-7 flex items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 active:scale-90 transition-all font-black"
+                    title="Decrease"
+                  >
+                    <i class="fa-solid fa-minus text-xs"></i>
+                  </button>
+                  <span class="min-w-[24px] text-center text-sm font-black text-slate-900 px-1">
+                    {{ getCartQty(selectedItem) }}
+                  </span>
+                  <button 
+                    @click.stop="updateCart(selectedItem, 1)" 
+                    class="w-7 h-7 flex items-center justify-center rounded-xl bg-[#18181b] text-amber-400 hover:bg-black active:scale-90 transition-all shadow-xs font-black"
+                    title="Increase"
+                  >
+                    <i class="fa-solid fa-plus text-xs"></i>
+                  </button>
+                </div>
+                <button
+                  v-else
+                  @click.stop="addToCart(selectedItem)"
+                  class="px-5 py-2 rounded-2xl bg-[#18181b] text-amber-400 hover:bg-black font-black text-xs shadow-md transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <i class="fa-solid fa-plus text-xs"></i>
+                  <span>Add to Cart</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. ALL OTHER / MATCHING RESULTS GRID -->
+      <div v-if="otherSearchResults.length > 0">
+        <div v-if="selectedItem" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+          <i class="fa-solid fa-layer-group text-slate-400"></i>
+          <span>More Results Matching "{{ searchQuery }}" ({{ otherSearchResults.length }})</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
+          <div
+            v-for="product in otherSearchResults"
+            :key="product.productName"
+            class="flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 overflow-hidden relative group/card"
+          >
+            <!-- Image Area -->
+            <div 
+              class="relative w-full aspect-[4/5] bg-slate-50 cursor-pointer overflow-hidden"
+              @click="$emit('open-image-popup', product)"
+            >
+              <!-- Out of Stock Overlay -->
+              <div v-if="product.quantity <= 0" class="absolute inset-0 z-10 bg-slate-50/80 backdrop-blur-[2px] flex items-center justify-center">
+                <span class="px-2.5 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-bold rounded-full border border-slate-300">Out of Stock</span>
+              </div>
+
+              <CachedImage
+                v-if="product.imageUrl"
+                :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
+                alt="Product"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+              />
+              <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
+                <i class="fa-solid fa-image text-2xl opacity-20"></i>
+              </div>
+
+              <!-- Floating Cart Controls / Add Button on Image -->
+              <div 
+                v-if="getCartQty(product) > 0" 
+                class="absolute bottom-2 right-2 z-20 flex items-center gap-1 p-0.5 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-amber-200/80 animate-fade-in"
+                @click.stop
+              >
+                <button 
+                  @click.stop="updateCart(product, -1)" 
+                  class="w-6 h-6 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 active:scale-90 transition-all"
+                  title="Decrease"
+                >
+                  <i class="fa-solid fa-minus text-[9px]"></i>
+                </button>
+                <span class="min-w-[16px] text-center text-xs font-black text-slate-900 px-0.5">
+                  {{ getCartQty(product) }}
+                </span>
+                <button 
+                  @click.stop="updateCart(product, 1)" 
+                  class="w-6 h-6 flex items-center justify-center rounded-full bg-[#18181b] text-amber-400 hover:bg-black active:scale-90 transition-all shadow-xs"
+                  title="Increase"
+                >
+                  <i class="fa-solid fa-plus text-[9px]"></i>
+                </button>
+              </div>
+              <button
+                v-else
+                @click.stop="addToCart(product)"
+                class="absolute bottom-2 right-2 z-20 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md text-slate-800 shadow-md border border-slate-200/80 flex items-center justify-center hover:bg-[#18181b] hover:text-amber-400 active:scale-90 transition-all group-hover/card:scale-105"
+                title="Add to cart"
+              >
+                <i class="fa-solid fa-plus text-xs"></i>
+              </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-2.5 flex flex-col flex-1">
+              <h4 class="text-[11px] sm:text-xs font-bold text-slate-800 leading-snug line-clamp-1 group-hover/card:text-[#c59b27] transition-colors" :title="product.productName">
+                {{ getCleanProductName(product.productName) }}
+              </h4>
+
+              <div class="flex items-center justify-between mt-1 text-[10px] text-slate-500">
+                <span v-if="getProductColor(product.productName)" class="flex items-center gap-1 truncate max-w-[60px]">
+                  <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                  <span class="capitalize truncate">{{ getProductColor(product.productName).text }}</span>
+                </span>
+                <span v-if="getProductSize(product.productName)" class="font-bold text-slate-600 px-1 rounded bg-slate-100">
+                  {{ getProductSize(product.productName) }}
+                </span>
+              </div>
+
+              <div class="mt-2 flex items-baseline justify-between pt-1 border-t border-slate-100">
+                <div class="text-xs sm:text-sm font-black text-slate-900">
+                  <span class="text-[10px] font-medium mr-[1px]">₹</span>{{ getPriceInfo(product.productName).price }}
+                </div>
+                <span class="text-[10px] font-bold text-slate-400">
+                  {{ product.quantity }} prs
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State if no other results and no selected item -->
+      <div v-else-if="!selectedItem" class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
+        <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-2"></i>
+        <p class="text-sm font-bold text-slate-600">No products found matching "{{ searchQuery }}"</p>
+        <p v-if="cleanView" class="text-xs text-amber-600 mt-1 font-medium">Clean View is active (showing only in-stock items with images)</p>
+        <button @click="clearSearch" class="mt-3 px-4 py-2 bg-[#18181b] text-white text-xs font-bold rounded-xl">
+          Clear Search
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════
+         2. CATEGORY PRODUCT GRID: Shown directly under bubbles when a bubble is clicked
+         ══════════════════════════════════════════════════════════ -->
+    <section v-else-if="activeTab !== 'All'" class="mt-4 px-3 sm:px-6">
       <div class="flex items-center justify-between mb-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
         <div class="flex items-center gap-2 min-w-0">
           <span class="text-sm sm:text-base font-black font-['Clash_Display'] text-slate-900 uppercase truncate">
@@ -936,7 +1169,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import SlideshowCard from './SlideshowCard.vue';
 import { isNewArrival, getOptimizedImageUrl, formatProductName } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
@@ -950,6 +1184,9 @@ import { useCartStore } from '../../stores/cartStore';
 import { storeToRefs } from 'pinia';
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
+
+const route = useRoute();
+const router = useRouter();
 
 const appStore = useAppStore();
 const cartStore = useCartStore();
@@ -967,9 +1204,37 @@ const activeTab = ref('All');
 const activeFilter = ref('all');
 const inStockOnly = ref(false);
 const maxPriceFilter = ref(null);
-const localQuery = ref('');
+const localQuery = ref(searchQuery.value || '');
 const showDropdown = ref(false);
 const searchContainerRef = ref(null);
+const selectedItem = ref(null);
+
+watch(() => route.query, (query) => {
+  if (query.brand) {
+    activeTab.value = query.brand;
+    searchQuery.value = '';
+    localQuery.value = '';
+    selectedItem.value = null;
+  } else if (query.club) {
+    activeTab.value = query.club;
+    searchQuery.value = '';
+    localQuery.value = '';
+    selectedItem.value = null;
+  } else if (query.q) {
+    searchQuery.value = query.q;
+    localQuery.value = query.q;
+    selectedItem.value = null;
+  }
+}, { immediate: true });
+
+watch(() => searchQuery.value, (newVal) => {
+  if (!newVal) {
+    localQuery.value = '';
+    selectedItem.value = null;
+  } else if (localQuery.value !== newVal) {
+    localQuery.value = newVal;
+  }
+});
 
 const handleSync = async () => {
   if (updateStockData) {
@@ -1045,16 +1310,21 @@ const handleClickOutside = (e) => {
 const searchSuggestions = computed(() => {
   if (!localQuery.value || localQuery.value.trim().length < 2) return [];
   const q = localQuery.value.toLowerCase().trim();
-  const parts = q.split(/\s+/);
+  const parts = q.split(/\s+/).filter(Boolean);
   const matches = [];
+  const seen = new Set();
 
   if (stockData.value) {
     for (const group of stockData.value) {
       if (group.products) {
         for (const p of group.products) {
-          if (p.productName) {
+          if (p.productName && !seen.has(p.productName)) {
             const pName = p.productName.toLowerCase();
             if (parts.every(part => pName.includes(part))) {
+              if (cleanView.value) {
+                if (!p.imageUrl || Number(p.quantity) < 4) continue;
+              }
+              seen.add(p.productName);
               matches.push(p);
               if (matches.length >= 8) return matches;
             }
@@ -1068,16 +1338,73 @@ const searchSuggestions = computed(() => {
 
 const handleSearchSubmit = (q) => {
   showDropdown.value = false;
-  if (!q) return;
-  searchQuery.value = q;
-  activeTab.value = 'All';
+  selectedItem.value = null; // Clear single-item selection to show all matching results
+  const val = (q || localQuery.value || '').trim();
+  searchQuery.value = val;
+  localQuery.value = val;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const handleProductSelect = (product) => {
   showDropdown.value = false;
-  localQuery.value = '';
-  emit('open-image-popup', product);
+  selectedItem.value = product;
+  searchQuery.value = product.productName;
+  localQuery.value = product.productName;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+const clearSearch = () => {
+  selectedItem.value = null;
+  searchQuery.value = '';
+  localQuery.value = '';
+  showDropdown.value = false;
+};
+
+const isSearchActive = computed(() => {
+  return Boolean(searchQuery.value && searchQuery.value.trim().length > 0) || Boolean(selectedItem.value);
+});
+
+const searchResults = computed(() => {
+  if (!searchQuery.value || !stockData.value) return [];
+  const q = searchQuery.value.toLowerCase().trim();
+  const parts = q.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return [];
+
+  const list = [];
+  const seen = new Set();
+
+  for (const group of stockData.value) {
+    if (group.products) {
+      for (const p of group.products) {
+        if (p.productName && !seen.has(p.productName)) {
+          const pName = p.productName.toLowerCase();
+          if (parts.every(part => pName.includes(part))) {
+            seen.add(p.productName);
+            list.push(p);
+          }
+        }
+      }
+    }
+  }
+
+  // Filter with Clean View, In Stock Only, Max Price
+  return list.filter(p => {
+    if (cleanView.value) {
+      if (!p.imageUrl || Number(p.quantity) < 4) return false;
+    }
+    if (inStockOnly.value && Number(p.quantity) <= 0) return false;
+    if (maxPriceFilter.value) {
+      const price = parseFloat(getPriceInfo(p.productName).price);
+      if (!isNaN(price) && price > maxPriceFilter.value) return false;
+    }
+    return true;
+  });
+});
+
+const otherSearchResults = computed(() => {
+  if (!selectedItem.value) return searchResults.value;
+  return searchResults.value.filter(p => p.productName !== selectedItem.value.productName);
+});
 
 // Brand Tabs Data (Zomato-Style Circular Icons)
 const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp';
@@ -1105,6 +1432,10 @@ const brandTabs = [
 
 const selectTab = (tabId) => {
   activeTab.value = tabId;
+  selectedItem.value = null;
+  searchQuery.value = '';
+  localQuery.value = '';
+  showDropdown.value = false;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 

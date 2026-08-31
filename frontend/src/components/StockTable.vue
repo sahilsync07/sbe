@@ -12,8 +12,7 @@
       
 
       <main 
-         class="flex-1 w-full min-w-0 transition-all duration-300"
-         :class="(showLanding && !searchQuery) ? 'px-0' : 'px-2 sm:px-4 lg:px-6 space-y-8 main-content-offset'"
+         class="flex-1 w-full min-w-0 transition-all duration-300 px-0"
       >
         <!-- Ledger Placeholder -->
         <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
@@ -24,103 +23,13 @@
           <p class="text-slate-400 mt-2">Check back soon for accounting features.</p>
         </div>
 
-        <!-- Welcome Splash Removed -->
-
-        <!-- Brand Landing Page -->
+        <!-- Brand Landing Page (Persistent Storefront Component) -->
         <BrandLanding
-          v-else-if="showLanding && !searchQuery"
+          v-else
           @select-category="handleCategorySelect"
           @open-image-popup="openImagePopup"
           @open-catalog-gen="showCatalogGen = true"
-          @prompt-admin-login="showAdminModal = true"
         />
-
-        <div v-else class="space-y-8">
-          <!-- Back to Landing REMOVED -->
-          <!-- Error Banner -->
-          <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 border border-red-100">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span class="font-medium text-sm">{{ error }}</span>
-          </div>
-
-          <!-- GROUP LIST -->
-          <div class="flex flex-col gap-1 pb-10">
-            <div
-              v-for="(group, index) in filteredStockData"
-              :key="group.groupName"
-              :id="'group-grid-' + normalizeId(group.groupName)"
-              class="relative scroll-mt-28 transition-all duration-300"
-              :class="expandedGroups[group.groupName] ? 'mb-8' : 'mb-1'"
-            >
-              <!-- Group Header (Sticky Glass) -->
-              <div
-                @click="toggleGroup(group.groupName)"
-                class="flex items-center justify-between cursor-pointer select-none py-3 sticky z-30 transition-all duration-300 group/header sticky-group-header"
-                :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
-              >
-                <!-- Backdrop for sticky readability -->
-                 <div class="absolute inset-x-[-8px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
-                      :class="expandedGroups[group.groupName] ? 'opacity-100' : 'opacity-0 delay-200'"></div>
-
-                 <div class="flex items-center gap-4 z-10 pl-2">
-                   <!-- Special "New Arrivals" Style -->
-                   <div v-if="group.isSpecial" class="flex items-center gap-3">
-                      <h2 class="text-xl lg:text-3xl font-['Clash_Display'] font-bold tracking-wide holographic-text">
-                         ✨ {{ group.groupName }}
-                      </h2>
-                   </div>
-
-                   <!-- Regular Group Style -->
-                   <div v-else class="flex items-center gap-3">
-                       <h2 class="text-lg lg:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
-                         {{ formatGroupName(group.groupName) }}
-                       </h2>
-                      <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">
-                        {{ group.products.length }}
-                      </span>
-                   </div>
-                 </div>
-
-                 <!-- Actions -->
-                 <div class="flex items-center gap-2 z-10 pr-2">
-                    <button 
-                         @click.stop="shareBrand(group.groupName)"
-                         class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm border border-slate-100"
-                         title="Share"
-                      >
-                         <i class="fa-solid fa-share-nodes text-xs"></i>
-                    </button>
-                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 shadow-sm border border-slate-100 transition-transform duration-300"
-                         :class="expandedGroups[group.groupName] ? 'rotate-180 bg-slate-100' : ''">
-                       <i class="fa-solid fa-chevron-down text-xs"></i>
-                    </div>
-                 </div>
-              </div>
-
-              <!-- Product Grid -->
-              <transition
-                enter-active-class="transition-all duration-500 ease-out"
-                enter-from-class="opacity-0 translate-y-4"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition-all duration-200 ease-in"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-              >
-                <div v-show="expandedGroups[group.groupName]">
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-2 gap-y-4">
-                      <ProductCard
-                        v-for="(product, pIndex) in group.products"
-                        :key="product.productName"
-                        :product="product"
-                        :index="index"
-                        @open-image-popup="(p, i) => openImagePopup(p, i)"
-                      />
-                    </div>
-                  </div>
-              </transition>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
 

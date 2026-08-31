@@ -2,6 +2,7 @@
   <div class="min-h-screen relative">
     <!-- Global Persistent App Layout -->
     <DesktopToolbar
+      v-if="!hubPages.has($route.path) && $route.path !== '/'"
       :loading="stockLoading"
       :is-caching-images="isCaching"
       :show-side-panel="showSidePanel"
