@@ -240,7 +240,7 @@ const {
 } = useStockData(isLocal);
 
 // 2. Admin
-const { isAdmin, isSuperAdmin } = useAdmin();
+const { isAdmin, isSuperAdmin, login: performLogin } = useAdmin();
 const showAdminModal = ref(false);
 
 // 7. Image Cache (Offline Support)
@@ -324,19 +324,15 @@ const promptAdminLogin = () => {
   showAdminModal.value = true;
 };
 
-const handleAdminLogin = (password) => {
+const handleAdminLogin = async (payload) => {
   showAdminModal.value = false;
-  if (!password) return;
-  if (password === 'admin123') {
-    isAdmin.value = true;
-    isSuperAdmin.value = false;
-    toast.success('Admin Mode Enabled', { autoClose: 2000 });
-  } else if (password === 'superadmin') {
-    isAdmin.value = false;
-    isSuperAdmin.value = true;
-    toast.success('Super Admin Mode Enabled', { autoClose: 2000 });
-  } else {
-    toast.error('Incorrect password', { autoClose: 3000 });
+  const pwd = typeof payload === 'object' ? payload?.password : payload;
+  const redirectHome = typeof payload === 'object' ? payload?.redirectHome : false;
+  if (!pwd) return;
+  
+  const success = await performLogin(pwd);
+  if (success && redirectHome) {
+    router.push('/home');
   }
 };
 
