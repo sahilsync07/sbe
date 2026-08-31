@@ -4,7 +4,7 @@
     <!-- ══════════════════════════════════════════════════════════
          1. TOP BAR: Search Bar & Cart (Single Row at the Very Top)
          ══════════════════════════════════════════════════════════ -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-3 sm:px-6 pt-2.5 pb-2 transition-all">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-3 sm:px-6 pb-2 transition-all" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
       <!-- Search Bar + Cart Button Row -->
       <div class="flex items-center gap-2.5">
         <div class="flex-1 relative" ref="searchContainerRef">

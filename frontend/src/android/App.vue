@@ -1,22 +1,5 @@
 <template>
   <div class="min-h-screen relative">
-    <!-- Global Persistent App Layout -->
-    <DesktopToolbar
-      v-if="!hubPages.has($route.path) && $route.path !== '/'"
-      :loading="stockLoading"
-      :is-caching-images="isCaching"
-      :show-side-panel="showSidePanel"
-      :show-cart="showCart"
-      :company-name="companyName"
-      :cloud-name="cloudName"
-      :hide-mobile-bottom-bar="hideMobileBottomBar"
-      @toggleSidebar="toggleSidebar"
-      @toggleCart="toggleCart"
-      @updateStockData="updateStockData"
-      @promptAdminLogin="showAdminModal = true"
-      @cacheImages="handleCacheImages"
-      @refreshData="refreshStockData"
-    />
 
     <BrandsSidebar
       :show-side-panel="showSidePanel"
@@ -64,7 +47,6 @@ import { toast } from 'vue3-toastify';
 import { storeToRefs } from 'pinia';
 
 import AdminLoginModal from '../components/StockTable/AdminLoginModal.vue';
-import DesktopToolbar from '../components/StockTable/DesktopToolbar.vue';
 import BrandsSidebar from '../components/StockTable/BrandsSidebar.vue';
 import CartSidebar from '../components/StockTable/CartSidebar.vue';
 
