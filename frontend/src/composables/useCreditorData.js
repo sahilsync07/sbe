@@ -204,7 +204,9 @@ export function useCreditorData() {
           dominantCategory,
           pendingBills,
           entriesCount: entries.length,
-          lastTransactionDate: entries.length > 0 ? entries[0].date : "N/A"
+          lastTransactionDate: entries.length > 0 ? entries[0].date : "N/A",
+          rawLedger: ledger,
+          entries: ledger.entries || []
         };
 
         creditors.push(partyRecord);
@@ -362,9 +364,51 @@ export function useCreditorData() {
     };
   });
 
-  const formatINR = (val) => {
-    if (val === undefined || val === null || isNaN(val)) return "₹0";
-    return "₹" + Math.round(val).toLocaleString("en-IN");
+  const getWhatsAppFollowupText = (party) => {
+    if (!party) return "";
+
+    let text = `╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n`;
+    text += `  🏢 *SRI BRUNDABANA ENTERPRISES*\n`;
+    text += `  📍 Rayagada, Odisha | SBE Hub\n`;
+    text += `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+
+    text += `📑 *SUPPLIER ACCOUNT STATEMENT*\n`;
+    text += `👤 *Supplier:* ${party.ledgerName}\n`;
+    text += `🏷️ *Group:* ${party.groupName}\n`;
+    text += `💰 *Net Balance Payable:* *${formatINR(party.totalPayable)}*\n\n`;
+
+    // Overdue / Aging Summary (Only non-zero buckets)
+    const agingLines = [];
+    if (party.b0_30 > 0) agingLines.push(`• 0–30 Days: *${formatINR(party.b0_30)}*`);
+    if (party.b31_60 > 0) agingLines.push(`• 31–60 Days: *${formatINR(party.b31_60)}*`);
+    if (party.b61_90 > 0) agingLines.push(`• 61–90 Days: *${formatINR(party.b61_90)}*`);
+    if (party.b90_180 > 0) agingLines.push(`• 90–180 Days: *${formatINR(party.b90_180)}*`);
+    if (party.b180_plus > 0) agingLines.push(`• 180+ Days: *${formatINR(party.b180_plus)}*`);
+
+    if (agingLines.length > 0) {
+      text += `📊 *Payables Tenure Summary:*\n`;
+      text += agingLines.join("\n") + `\n\n`;
+    }
+
+    if (party.pendingBills && party.pendingBills.length > 0) {
+      text += `🧾 *Recent Inward Bills:*\n`;
+      party.pendingBills.slice(0, 3).forEach((b) => {
+        text += `▫️ Bill #${b.voucherNo} (${b.date}) ➔ *${formatINR(b.amount)}* [${b.daysOld}d]\n`;
+      });
+      text += `\n`;
+    }
+
+    text += `📄 *Detailed 6-Month Ledger Statement & Pending Invoices are attached in the PDF for verification.*\n\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `_With Warm Regards,_\n`;
+    text += `*Sri Brundabana Enterprises, Rayagada*`;
+
+    return text;
+  };
+
+  const getWhatsAppFollowupLink = (party) => {
+    const text = getWhatsAppFollowupText(party);
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
   };
 
   return {
@@ -381,6 +425,9 @@ export function useCreditorData() {
     groupSummaries,
     summaryStats,
     referenceDate,
-    formatINR
+    formatINR,
+    getWhatsAppFollowupText,
+    getWhatsAppFollowupLink
   };
 }
+

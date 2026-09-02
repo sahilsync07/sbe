@@ -171,7 +171,7 @@
             <button
               v-if="searchQuery"
               @click="searchQuery = ''"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
             >
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -273,54 +273,70 @@
             </div>
           </div>
 
-          <!-- Bill-Wise Pending Invoices Collapsible -->
-          <div class="pt-2 border-t border-slate-100">
+          <!-- Bottom Actions: Bill-Wise Collapsible + WhatsApp + PDF -->
+          <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <button
               @click="togglePartyExpand(party.ledgerName)"
-              class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center justify-between w-full py-1 cursor-pointer"
+              class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer select-none"
             >
-              <span class="flex items-center gap-1.5">
-                <i :class="['fa-solid text-[10px] transition-transform', isExpanded(party.ledgerName) ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
-                {{ isExpanded(party.ledgerName) ? 'Hide' : 'View' }} Pending Purchase Invoices ({{ party.pendingBills.length }})
-              </span>
-              <span class="text-[11px] text-amber-700 font-bold hover:underline" @click.stop="handleWhatsAppShare(party)">
-                <i class="fa-brands fa-whatsapp text-emerald-600 mr-1"></i>
-                Share Statement
-              </span>
+              <i :class="['fa-solid text-[10px] transition-transform', isExpanded(party.ledgerName) ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+              <span>{{ isExpanded(party.ledgerName) ? 'Hide' : 'View' }} Invoices ({{ party.pendingBills.length }})</span>
             </button>
 
-            <!-- Bills Table -->
-            <div v-if="isExpanded(party.ledgerName)" class="mt-3 overflow-x-auto rounded-2xl border border-slate-200/70">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/60">
-                  <tr>
-                    <th class="p-2.5">Date</th>
-                    <th class="p-2.5">Bill / Voucher</th>
-                    <th class="p-2.5">Type</th>
-                    <th class="p-2.5 text-right">Unpaid Amount</th>
-                    <th class="p-2.5 text-center">Age</th>
-                    <th class="p-2.5 text-right">Tenure</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 font-medium">
-                  <tr v-for="(bill, bIdx) in party.pendingBills" :key="bIdx" class="hover:bg-slate-50/80">
-                    <td class="p-2.5 text-slate-700 font-semibold">{{ bill.date }}</td>
-                    <td class="p-2.5 text-slate-900 font-bold font-mono">{{ bill.voucherNo }}</td>
-                    <td class="p-2.5 text-slate-500">{{ bill.type }}</td>
-                    <td class="p-2.5 text-right font-black text-slate-900">{{ formatINR(bill.amount) }}</td>
-                    <td class="p-2.5 text-center font-bold text-slate-600">{{ bill.daysOld }} days</td>
-                    <td class="p-2.5 text-right">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                        :class="getTenureBadgeClass(bill.bucket)"
-                      >
-                        {{ bill.bucket }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="flex items-center gap-2 shrink-0">
+              <!-- View / Download PDF Statement -->
+              <button
+                @click="downloadPartyPDF(party)"
+                class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Download 6-Month Ledger PDF"
+              >
+                <i class="fa-solid fa-file-pdf text-rose-600 text-xs"></i>
+                <span>PDF Statement</span>
+              </button>
+
+              <!-- WhatsApp Statement + Auto-Copy Text + PDF Share -->
+              <button
+                @click="sendWhatsAppStatementWithPDF(party)"
+                class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                title="Share Statement via WhatsApp with PDF"
+              >
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>Share WhatsApp</span>
+              </button>
             </div>
+          </div>
+
+          <!-- Bills Table -->
+          <div v-if="isExpanded(party.ledgerName)" class="mt-3 overflow-x-auto rounded-2xl border border-slate-200/70">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/60">
+                <tr>
+                  <th class="p-2.5">Date</th>
+                  <th class="p-2.5">Bill / Voucher</th>
+                  <th class="p-2.5">Type</th>
+                  <th class="p-2.5 text-right">Unpaid Amount</th>
+                  <th class="p-2.5 text-center">Age</th>
+                  <th class="p-2.5 text-right">Tenure</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium">
+                <tr v-for="(bill, bIdx) in party.pendingBills" :key="bIdx" class="hover:bg-slate-50/80">
+                  <td class="p-2.5 text-slate-700 font-semibold">{{ bill.date }}</td>
+                  <td class="p-2.5 text-slate-900 font-bold font-mono">{{ bill.voucherNo }}</td>
+                  <td class="p-2.5 text-slate-500">{{ bill.type }}</td>
+                  <td class="p-2.5 text-right font-black text-slate-900">{{ formatINR(bill.amount) }}</td>
+                  <td class="p-2.5 text-center font-bold text-slate-600">{{ bill.daysOld }} days</td>
+                  <td class="p-2.5 text-right">
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      :class="getTenureBadgeClass(bill.bucket)"
+                    >
+                      {{ bill.bucket }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -378,6 +394,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useCreditorData } from '@/composables/useCreditorData';
+import { generateLedgerPDF } from '@/utils/pdfLedgerGenerator';
+import { toast } from 'vue3-toastify';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 const {
   loading,
@@ -392,7 +413,8 @@ const {
   filteredCreditors,
   groupSummaries,
   summaryStats,
-  formatINR
+  formatINR,
+  getWhatsAppFollowupText
 } = useCreditorData();
 
 onMounted(async () => {
@@ -430,33 +452,76 @@ const getTenureBadgeClass = (bucket) => {
   return 'bg-purple-100 text-purple-800';
 };
 
-const handleWhatsAppShare = (party) => {
+const buildLedgerPayload = (party) => {
+  const raw = party.rawLedger || party;
+  return {
+    ledgerName: party.ledgerName,
+    groupName: party.groupName || raw.groupName,
+    openingBalance: raw.openingBalance || 0,
+    closingBalance: party.closingBalance !== undefined ? party.closingBalance : (raw.closingBalance || 0),
+    entries: raw.entries || party.entries || []
+  };
+};
+
+const downloadPartyPDF = (party) => {
   if (!party) return;
-  
-  let msg = `*STATEMENT OF ACCOUNT (PAYABLES)*\n`;
-  msg += `*Sri Brundabana Enterprises, Rayagada*\n`;
-  msg += `------------------------------------\n`;
-  msg += `*Supplier:* ${party.ledgerName}\n`;
-  msg += `*Group:* ${party.groupName}\n`;
-  msg += `*Total Balance Payable:* Rs. ${Math.round(party.totalPayable).toLocaleString('en-IN')}\n\n`;
+  try {
+    const payload = buildLedgerPayload(party);
+    generateLedgerPDF(payload, { monthsLimit: 6 });
+    toast.success(`Generated 6-month statement for ${party.ledgerName}`, { autoClose: 2000 });
+  } catch (err) {
+    console.error('PDF error:', err);
+    toast.error('Failed to generate PDF', { autoClose: 3000 });
+  }
+};
 
-  msg += `*Aging Breakdown:*\n`;
-  if (party.b0_30 > 0) msg += `• 0-30 Days: Rs. ${Math.round(party.b0_30).toLocaleString('en-IN')}\n`;
-  if (party.b31_60 > 0) msg += `• 31-60 Days: Rs. ${Math.round(party.b31_60).toLocaleString('en-IN')}\n`;
-  if (party.b61_90 > 0) msg += `• 61-90 Days: Rs. ${Math.round(party.b61_90).toLocaleString('en-IN')}\n`;
-  if (party.b90_180 > 0) msg += `• 90-180 Days: Rs. ${Math.round(party.b90_180).toLocaleString('en-IN')}\n`;
-  if (party.b180_plus > 0) msg += `• 180+ Days: Rs. ${Math.round(party.b180_plus).toLocaleString('en-IN')}\n`;
+const sendWhatsAppStatementWithPDF = async (party) => {
+  if (!party) return;
 
-  if (party.pendingBills && party.pendingBills.length > 0) {
-    msg += `\n*Recent Pending Invoices:*\n`;
-    party.pendingBills.slice(0, 10).forEach((b, idx) => {
-      msg += `${idx + 1}. Bill #${b.voucherNo} (${b.date}): Rs. ${Math.round(b.amount).toLocaleString('en-IN')} [${b.daysOld}d]\n`;
-    });
+  const text = getWhatsAppFollowupText(party);
+
+  // 1. Automatically copy short, elegant summary text to clipboard
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    }
+  } catch (e) {
+    console.warn('Clipboard write failed:', e);
   }
 
-  msg += `\n_Generated from Sri Brundabana Enterprises SBE Hub_`;
+  // 2. Prepare Ledger Payload & Generate Detailed PDF
+  const payload = buildLedgerPayload(party);
 
-  const encoded = encodeURIComponent(msg);
-  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  try {
+    if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === 'android') {
+      const pdfDataUri = generateLedgerPDF(payload, {
+        monthsLimit: 6,
+        returnBase64: true
+      });
+
+      const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
+      const fileName = `Statement_${party.ledgerName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`;
+
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Cache
+      });
+
+      await Share.share({
+        title: `Ledger Statement - ${party.ledgerName}`,
+        files: [savedFile.uri]
+      });
+
+      toast.success('PDF attached & message copied! Paste into WhatsApp.', { autoClose: 3000 });
+    } else {
+      generateLedgerPDF(payload, { monthsLimit: 6 });
+      window.open('https://wa.me/', '_blank');
+      toast.success('PDF downloaded & message copied to clipboard!', { autoClose: 3000 });
+    }
+  } catch (err) {
+    console.error('WhatsApp follow-up error:', err);
+    toast.error('Could not share PDF. Please try downloading directly.', { autoClose: 3000 });
+  }
 };
 </script>
