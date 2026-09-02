@@ -444,8 +444,6 @@ const executeSearch = (itemOrQuery) => {
     query = itemOrQuery;
   } else if (itemOrQuery && itemOrQuery.productName) {
     query = itemOrQuery.productName;
-    const isClean = !!itemOrQuery.imageUrl && Number(itemOrQuery.quantity) >= 4;
-    cleanView.value = isClean;
   }
   
   searchQuery.value = query;

@@ -472,7 +472,7 @@
                 </button>
               </div>
               <button
-                v-else
+                v-else-if="product.quantity > 0"
                 @click.stop="addToCart(product)"
                 class="absolute bottom-2 right-2 z-20 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md text-slate-800 shadow-md border border-slate-200/80 flex items-center justify-center hover:bg-[#18181b] hover:text-amber-400 active:scale-90 transition-all group-hover/card:scale-105"
                 title="Add to cart"
@@ -501,8 +501,8 @@
                 <div class="text-xs sm:text-sm font-black text-slate-900">
                   <span class="text-[10px] font-medium mr-[1px]">₹</span>{{ getPriceInfo(product.productName).price }}
                 </div>
-                <span class="text-[10px] font-bold text-slate-400">
-                  {{ product.quantity }} prs
+                <span :class="product.quantity > 0 ? 'text-slate-400' : 'text-rose-500 font-bold'" class="text-[10px]">
+                  {{ product.quantity > 0 ? `${product.quantity} prs` : 'Out of Stock' }}
                 </span>
               </div>
             </div>
@@ -514,7 +514,7 @@
       <div v-else-if="!selectedItem" class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
         <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-2"></i>
         <p class="text-sm font-bold text-slate-600">No products found matching "{{ searchQuery }}"</p>
-        <p v-if="cleanView" class="text-xs text-amber-600 mt-1 font-medium">Clean View is active (showing only in-stock items with images)</p>
+        <p v-if="inStockOnly" class="text-xs text-amber-600 mt-1 font-medium">"In Stock Only" filter is active</p>
         <button @click="clearSearch" class="mt-3 px-4 py-2 bg-[#18181b] text-white text-xs font-bold rounded-xl">
           Clear Search
         </button>
@@ -1321,9 +1321,6 @@ const searchSuggestions = computed(() => {
           if (p.productName && !seen.has(p.productName)) {
             const pName = p.productName.toLowerCase();
             if (parts.every(part => pName.includes(part))) {
-              if (cleanView.value) {
-                if (!p.imageUrl || Number(p.quantity) < 4) continue;
-              }
               seen.add(p.productName);
               matches.push(p);
               if (matches.length >= 8) return matches;
@@ -1387,11 +1384,8 @@ const searchResults = computed(() => {
     }
   }
 
-  // Filter with Clean View, In Stock Only, Max Price
+  // Filter with In Stock Only (if explicitly toggled) & Max Price
   return list.filter(p => {
-    if (cleanView.value) {
-      if (!p.imageUrl || Number(p.quantity) < 4) return false;
-    }
     if (inStockOnly.value && Number(p.quantity) <= 0) return false;
     if (maxPriceFilter.value) {
       const price = parseFloat(getPriceInfo(p.productName).price);
@@ -1408,6 +1402,7 @@ const otherSearchResults = computed(() => {
 
 // Brand Tabs Data (Zomato-Style Circular Icons)
 const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp';
+const AjantaLogo = `${import.meta.env.BASE_URL}assets/ajanta-logo.png`;
 
 const brandTabs = [
   { id: 'All', label: 'All', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
@@ -1417,6 +1412,7 @@ const brandTabs = [
   { id: 'ParagonCore', label: 'Paragon Core', image: ParagonLogo },
   { id: 'ACTION', label: 'Action', image: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' },
   { id: 'EEKEN', label: 'Eeken', image: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp' },
+  { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo },
   { id: 'PARALITE', label: 'Paralite', image: ParagonLogo },
   { id: 'P-TOES PARALITE', label: 'P-Toes', image: ParagonLogo },
   { id: 'Cubix', label: 'Cubix', image: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
@@ -1570,6 +1566,8 @@ const getActiveTabProducts = () => {
     products = getBrandProducts(['ACTION']);
   } else if (tab === 'EEKEN') {
     products = getBrandProducts(['EEKEN']);
+  } else if (tab === 'AJANTA') {
+    products = getBrandProducts(['AJANTA', 'AJANTA FOOTWEAR']);
   } else if (tab === 'Cubix') {
     products = getBrandProducts(['CUBIX', 'CUBIX 2']);
   } else if (tab === 'Florex') {

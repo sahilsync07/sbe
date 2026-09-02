@@ -1672,6 +1672,7 @@ const getBrandLogo = (brandName) => {
     ACTION: 'https://res.cloudinary.com/dg365ewal/image/upload/action-logo_dzd5mq.png',
     Eeken: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp',
     Escoute: 'https://res.cloudinary.com/dg365ewal/image/upload/escouteLogo_maieji.jpg',
+    AJANTA: `${import.meta.env.BASE_URL}assets/ajanta-logo.png`,
   };
   // Fuzzy match logic
   const lowerName = brandName.toLowerCase();

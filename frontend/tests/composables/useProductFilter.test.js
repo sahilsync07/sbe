@@ -1,13 +1,22 @@
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useProductFilter } from '../../src/composables/useProductFilter';
 import { ref } from 'vue';
+import { setActivePinia, createPinia } from 'pinia';
+import { useAppStore } from '../../src/stores/appStore';
 
 describe('useProductFilter Composable', () => {
+    let appStore;
+
+    beforeEach(() => {
+        setActivePinia(createPinia());
+        appStore = useAppStore();
+    });
+
     const mockStockData = [
-        { groupName: 'BrandA', products: [{ productName: 'Shoe 1', imageUrl: 'url1' }, { productName: 'Old Shoe', imageUrl: 'url2' }] },
-        { groupName: 'BrandB', products: [{ productName: 'Shoe 2', imageUrl: null }] },
-        { groupName: 'OldBrand', products: [{ productName: 'Ancient Shoe', imageUrl: 'url3' }] }
+        { groupName: 'BrandA', products: [{ productName: 'Shoe 1', imageUrl: 'url1', quantity: 10 }, { productName: 'Old Shoe', imageUrl: 'url2', quantity: 0 }] },
+        { groupName: 'BrandB', products: [{ productName: 'Shoe 2', imageUrl: null, quantity: 5 }] },
+        { groupName: 'OldBrand', products: [{ productName: 'Ancient Shoe', imageUrl: 'url3', quantity: 8 }] }
     ];
 
     // Minimal config mock
@@ -20,37 +29,36 @@ describe('useProductFilter Composable', () => {
         }
     };
 
-    it('should filter by search query', () => {
+    it('should filter by search query and include out of stock items', () => {
         const stock = ref(mockStockData);
         const config = ref(mockConfig);
-        const { filteredStockData, searchQuery, showImagesOnly } = useProductFilter(stock, config);
+        const { filteredStockData, searchQuery } = useProductFilter(stock, config);
 
-        // Disable other filters for clarity
-        showImagesOnly.value = false;
-        searchQuery.value = 'Shoe 1';
+        // Search for 'Old Shoe' which has 0 quantity (out of stock)
+        searchQuery.value = 'Old Shoe';
 
         expect(filteredStockData.value).toHaveLength(1);
         expect(filteredStockData.value[0].groupName).toBe('BrandA');
         expect(filteredStockData.value[0].products).toHaveLength(1);
-        expect(filteredStockData.value[0].products[0].productName).toBe('Shoe 1');
+        expect(filteredStockData.value[0].products[0].productName).toBe('Old Shoe');
+        expect(filteredStockData.value[0].products[0].quantity).toBe(0);
     });
 
-    it('should filter by images only', () => {
+    it('should filter by clean view when not searching', () => {
         const stock = ref(mockStockData);
         const config = ref(mockConfig);
-        const { filteredStockData, showImagesOnly } = useProductFilter(stock, config);
+        const { filteredStockData, cleanView } = useProductFilter(stock, config);
 
-        showImagesOnly.value = true;
+        cleanView.value = true;
 
-        // BrandB has no images, so it should be removed
+        // BrandB has no images and Old Shoe has 0 quantity, so BrandA should only have Shoe 1
         const brandB = filteredStockData.value.find(g => g.groupName === 'BrandB');
         expect(brandB).toBeUndefined();
 
-        // Check BrandA
         const brandA = filteredStockData.value.find(g => g.groupName === 'BrandA');
         expect(brandA).toBeDefined();
-        // BrandA originally has 'Shoe 1' (url1) and 'Old Shoe' (url2). Both have images.
-        expect(brandA.products).toHaveLength(2);
+        expect(brandA.products).toHaveLength(1);
+        expect(brandA.products[0].productName).toBe('Shoe 1');
     });
 
     it('should filter old articles', () => {
@@ -68,9 +76,9 @@ describe('useProductFilter Composable', () => {
     it('should select specific group', () => {
         const stock = ref(mockStockData);
         const config = ref(mockConfig);
-        const { filteredStockData, selectedGroup, showImagesOnly } = useProductFilter(stock, config);
+        const { filteredStockData, selectedGroup, cleanView } = useProductFilter(stock, config);
 
-        showImagesOnly.value = false; // Disable image filter for this test
+        cleanView.value = false;
         selectedGroup.value = 'BrandB';
 
         expect(filteredStockData.value).toHaveLength(1);

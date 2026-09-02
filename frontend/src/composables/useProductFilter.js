@@ -72,8 +72,8 @@ export function useProductFilter(stockData, config) {
                 .filter((group) => group.products.length > 0);
         }
 
-        // Clean View Logic (Replaces Images Only & Hide Negative)
-        if (cleanView.value) {
+        // Clean View Logic (Replaces Images Only & Hide Negative) - applies when not searching
+        if (cleanView.value && !searchQuery.value) {
             filtered = filtered.map(group => ({
                 ...group,
                 products: group.products.filter(p => !!p.imageUrl && Number(p.quantity) >= 4)
@@ -194,7 +194,7 @@ export function useProductFilter(stockData, config) {
                     }
 
                     // Clean View Logic for New Arrivals
-                    if (cleanView.value) {
+                    if (cleanView.value && !searchQuery.value) {
                         if (!p.imageUrl || Number(p.quantity) < 4) return;
                     }
 
