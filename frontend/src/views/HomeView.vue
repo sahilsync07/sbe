@@ -166,6 +166,22 @@ const lastSyncText = computed(() => {
 
 const links = [
   {
+    path: '/workzone/sahil',
+    label: 'Sahil Workzone',
+    desc: 'Creditor analytics & executive workspace',
+    icon: 'fa-user-tie',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #f59e0b, #b45309)',
+  },
+  {
+    path: '/workzone/slnp',
+    label: 'SLNP Workzone',
+    desc: 'Creditor analytics & management workspace',
+    icon: 'fa-building-shield',
+    colorKey: 'teal',
+    gradient: 'linear-gradient(135deg, #0d9488, #047857)',
+  },
+  {
     path: '/pdf-gen?onetouch=true',
     label: 'One Touch Share',
     desc: 'Auto-share all brands in 1 tap',
