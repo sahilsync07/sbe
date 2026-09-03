@@ -154,9 +154,11 @@ const handleAdminLogin = async (payload) => {
   showAdminModal.value = false;
   if (!pwd) return;
   
-  const success = await performLogin(pwd);
+  const result = await performLogin(pwd);
 
-  if (success && redirectHome) {
+  if (result && typeof result === 'object' && result.workzone) {
+    router.push(`/workzone/${result.workzone}`);
+  } else if (result && redirectHome) {
     router.push('/home');
   }
 };

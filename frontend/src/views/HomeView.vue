@@ -112,6 +112,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAdmin } from '../composables/useAdmin';
+import { useWorkzoneAuth } from '../composables/useWorkzoneAuth';
 import { useStockData } from '../composables/useStockData';
 import { useAppStore } from '../stores/appStore';
 import ConsoleViewer from '../components/ConsoleViewer.vue';
@@ -121,6 +122,7 @@ const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const { isAdmin, isSuperAdmin, logout } = useAdmin();
+const { isWorkzoneAuthenticated, checkWorkzoneAuth } = useWorkzoneAuth();
 
 const showConsole = ref(false);
 const toggleConsole = () => {
@@ -172,6 +174,7 @@ const links = [
     icon: 'fa-user-tie',
     colorKey: 'amber',
     gradient: 'linear-gradient(135deg, #f59e0b, #b45309)',
+    workzone: 'sahil'
   },
   {
     path: '/workzone/slnp',
@@ -180,6 +183,7 @@ const links = [
     icon: 'fa-building-shield',
     colorKey: 'teal',
     gradient: 'linear-gradient(135deg, #0d9488, #047857)',
+    workzone: 'slnp'
   },
   {
     path: '/pdf-gen?onetouch=true',
@@ -277,6 +281,13 @@ const filteredLinks = computed(() => {
     if (item.path === '/' && route.path === '/') {
       return false;
     }
+    // Workzones: ONLY visible if authenticated for that zone
+    if (item.workzone === 'sahil' && !isWorkzoneAuthenticated('sahil')) {
+      return false;
+    }
+    if (item.workzone === 'slnp' && !isWorkzoneAuthenticated('slnp')) {
+      return false;
+    }
     if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation' || item.path === '/analyzer') && !isAdmin.value && !isSuperAdmin.value) {
       return false;
     }
@@ -285,6 +296,8 @@ const filteredLinks = computed(() => {
 });
 
 onMounted(async () => {
+  await checkWorkzoneAuth('sahil');
+  await checkWorkzoneAuth('slnp');
   if (!lastRefresh.value) {
     await loadStockData();
   }

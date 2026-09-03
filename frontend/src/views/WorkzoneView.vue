@@ -114,9 +114,15 @@ const tabs = [
 ];
 
 const verifyAccess = async () => {
+  if (isWorkzoneAuthenticated(currentZone.value)) {
+    showLoginModal.value = false;
+    return;
+  }
   const authed = await checkWorkzoneAuth(currentZone.value);
   if (!authed) {
     showLoginModal.value = true;
+  } else {
+    showLoginModal.value = false;
   }
 };
 

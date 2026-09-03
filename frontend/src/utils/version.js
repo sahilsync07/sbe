@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_024',
-  version: '1.5.1',
-  updatedAt: '02 Sep 2026, 05:50 AM',
-  commitTitle: 'SBE Update #024: Sahil & SLNP Private Workzones with Creditor Analytics (5-Bucket Payables Aging)',
+  code: 'sbe_025',
+  version: '1.5.2',
+  updatedAt: '03 Sep 2026, 10:18 PM',
+  commitTitle: 'SBE Update #025: Workzones Password Gate, Crash Fixes & Seamless Login',
   changes: [
+    {
+      tag: 'sbe_025',
+      date: '03 Sep 2026',
+      title: 'Hidden Workzones Password Gate & Crash Fixes',
+      details: 'Workzone cards remain hidden until unlocked with sahil123 or slnp123. Fixed formatINR undefined error in Creditor Analytics, fixed nested PWA icon path, unified login flow to route directly with zero double-asking.'
+    },
     {
       tag: 'sbe_024',
       date: '02 Sep 2026',
@@ -14,13 +20,7 @@ export const APP_VERSION = {
       tag: 'sbe_023',
       date: '28 Aug 2026',
       title: 'Verified 22 Cloudinary URLs (16 Paragon Core + 6 Hawai)',
-      details: 'Fetched exact Cloudinary resource URLs with security hashes via Admin API for all 16 Paragon Core articles and 6 Hawai/Walkaholic articles. Updated carousels and linked 199 active stock products with 100% working images.'
-    },
-    {
-      tag: 'sbe_022',
-      date: '28 Aug 2026',
-      title: 'Paragon Core 16 Running Images Integrated',
-      details: 'Added a dedicated Paragon Core showcase carousel to the Brand Landing page featuring all 16 core product images and linked them across inventory articles.'
+      details: 'Fetched exact Cloudinary resource URLs with security hashes via Admin API for all 16 Paragon Core articles and 6 Hawai/Walkaholic articles.'
     }
   ]
 };

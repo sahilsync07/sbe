@@ -15,6 +15,11 @@ export function useCreditorData() {
   const activeAgingFilter = ref("all"); // "all" | "180plus" | "90_180" | "61_90" | "31_60" | "0_30"
   const sortBy = ref("payable_desc"); // "payable_desc" | "overdue_desc" | "name_asc" | "name_desc"
 
+  const formatINR = (val) => {
+    if (val === undefined || val === null || isNaN(val)) return "₹0";
+    return "₹" + Math.round(val).toLocaleString("en-IN");
+  };
+
   // ─── Date Parsing Helpers ──────────────────────────────────────────────
   const monthMap = {
     Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
