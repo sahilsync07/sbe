@@ -255,6 +255,8 @@ export function useCreditorData() {
     // Active aging filter
     if (activeAgingFilter.value !== "all") {
       list = list.filter(p => {
+        if (activeAgingFilter.value === "overdue_90plus") return (p.b90_180 + p.b180_plus) > 0;
+        if (activeAgingFilter.value === "due_31_90") return (p.b31_60 + p.b61_90) > 0;
         if (activeAgingFilter.value === "0_30") return p.b0_30 > 0;
         if (activeAgingFilter.value === "31_60") return p.b31_60 > 0;
         if (activeAgingFilter.value === "61_90") return p.b61_90 > 0;
@@ -331,6 +333,9 @@ export function useCreditorData() {
     let count90_180 = 0;
     let count180_plus = 0;
 
+    let countOverdue90Plus = 0;
+    let countDue31_90 = 0;
+
     allCreditors.value.forEach(p => {
       totalPayable += p.totalPayable;
       b0_30 += p.b0_30;
@@ -344,9 +349,14 @@ export function useCreditorData() {
       if (p.b61_90 > 0) count61_90++;
       if (p.b90_180 > 0) count90_180++;
       if (p.b180_plus > 0) count180_plus++;
+
+      if (p.b90_180 + p.b180_plus > 0) countOverdue90Plus++;
+      if (p.b31_60 + p.b61_90 > 0) countDue31_90++;
     });
 
     const safeTotal = totalPayable > 0 ? totalPayable : 1;
+    const overdue90PlusAmount = b90_180 + b180_plus;
+    const due31_90Amount = b31_60 + b61_90;
 
     return {
       totalPayable,
@@ -356,16 +366,22 @@ export function useCreditorData() {
       b61_90,
       b90_180,
       b180_plus,
+      overdue90PlusAmount,
+      due31_90Amount,
       pct0_30: (b0_30 / safeTotal) * 100,
       pct31_60: (b31_60 / safeTotal) * 100,
       pct61_90: (b61_90 / safeTotal) * 100,
       pct90_180: (b90_180 / safeTotal) * 100,
       pct180_plus: (b180_plus / safeTotal) * 100,
+      pctOverdue90Plus: (overdue90PlusAmount / safeTotal) * 100,
+      pctDue31_90: (due31_90Amount / safeTotal) * 100,
       count0_30,
       count31_60,
       count61_90,
       count90_180,
-      count180_plus
+      count180_plus,
+      countOverdue90Plus,
+      countDue31_90
     };
   });
 

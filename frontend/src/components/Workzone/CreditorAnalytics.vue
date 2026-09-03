@@ -13,150 +13,176 @@
     </div>
 
     <template v-else>
-      <!-- ═══ 5 KPI SUMMARY DASHBOARD ═══ -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
-        <!-- 0-30 Days -->
+      <!-- ═══ EXECUTIVE SPOTLIGHT DASHBOARD: OVERDUE (90d+) & DUE (31-90d) ═══ -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- 🚨 Overdue 90+ Days (Critical / Urgent Action) -->
+        <div
+          @click="activeAgingFilter = activeAgingFilter === 'overdue_90plus' ? 'all' : 'overdue_90plus'"
+          class="bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-3xl p-4 sm:p-5 shadow-lg shadow-rose-500/20 cursor-pointer transition-all duration-200 active:scale-[0.99] relative overflow-hidden group"
+          :class="activeAgingFilter === 'overdue_90plus' ? 'ring-4 ring-rose-300' : 'hover:shadow-xl'"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-black uppercase tracking-widest bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5">
+              <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+              Overdue (>90 Days)
+            </span>
+            <span class="text-xs font-black bg-white/20 px-2 py-0.5 rounded-full">
+              {{ summaryStats.pctOverdue90Plus.toFixed(0) }}%
+            </span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-black font-['Clash_Display'] tracking-tight">
+            {{ formatINR(summaryStats.overdue90PlusAmount) }}
+          </div>
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/15 text-xs text-rose-100 font-bold">
+            <span>{{ summaryStats.countOverdue90Plus }} Vendors Urgent</span>
+            <span class="text-[11px] underline opacity-90 group-hover:opacity-100">
+              {{ activeAgingFilter === 'overdue_90plus' ? 'Showing Overdue ✕' : 'Tap to View ➔' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- ⚠️ Due 31–90 Days (Upcoming Due Clearance) -->
+        <div
+          @click="activeAgingFilter = activeAgingFilter === 'due_31_90' ? 'all' : 'due_31_90'"
+          class="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-3xl p-4 sm:p-5 shadow-lg shadow-amber-500/20 cursor-pointer transition-all duration-200 active:scale-[0.99] relative overflow-hidden group"
+          :class="activeAgingFilter === 'due_31_90' ? 'ring-4 ring-amber-300' : 'hover:shadow-xl'"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-black uppercase tracking-widest bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5">
+              <i class="fa-solid fa-clock text-xs"></i>
+              Due (31–90 Days)
+            </span>
+            <span class="text-xs font-black bg-white/20 px-2 py-0.5 rounded-full">
+              {{ summaryStats.pctDue31_90.toFixed(0) }}%
+            </span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-black font-['Clash_Display'] tracking-tight">
+            {{ formatINR(summaryStats.due31_90Amount) }}
+          </div>
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/15 text-xs text-amber-100 font-bold">
+            <span>{{ summaryStats.countDue31_90 }} Vendors Due</span>
+            <span class="text-[11px] underline opacity-90 group-hover:opacity-100">
+              {{ activeAgingFilter === 'due_31_90' ? 'Showing Due ✕' : 'Tap to View ➔' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 🟢 Current 0–30 Days (Within Normal Terms) -->
         <div
           @click="activeAgingFilter = activeAgingFilter === '0_30' ? 'all' : '0_30'"
-          class="bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === '0_30' ? 'border-emerald-500 ring-2 ring-emerald-400/20 bg-emerald-50/40' : 'border-slate-200/80 hover:border-emerald-300'"
+          class="bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-3xl p-4 sm:p-5 shadow-lg shadow-emerald-500/20 cursor-pointer transition-all duration-200 active:scale-[0.99] relative overflow-hidden group"
+          :class="activeAgingFilter === '0_30' ? 'ring-4 ring-emerald-300' : 'hover:shadow-xl'"
         >
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              0–30 Days
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-black uppercase tracking-widest bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-xs"></i>
+              Current (0–30 Days)
             </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+            <span class="text-xs font-black bg-white/20 px-2 py-0.5 rounded-full">
               {{ summaryStats.pct0_30.toFixed(0) }}%
             </span>
           </div>
-          <div class="text-sm sm:text-base font-black text-slate-900 tracking-tight">
+          <div class="text-2xl sm:text-3xl font-black font-['Clash_Display'] tracking-tight">
             {{ formatINR(summaryStats.b0_30) }}
           </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count0_30 }} Vendors (Current)</p>
-        </div>
-
-        <!-- 31-60 Days -->
-        <div
-          @click="activeAgingFilter = activeAgingFilter === '31_60' ? 'all' : '31_60'"
-          class="bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === '31_60' ? 'border-amber-500 ring-2 ring-amber-400/20 bg-amber-50/40' : 'border-slate-200/80 hover:border-amber-300'"
-        >
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-              31–60 Days
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
-              {{ summaryStats.pct31_60.toFixed(0) }}%
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/15 text-xs text-emerald-100 font-bold">
+            <span>{{ summaryStats.count0_30 }} Vendors Prompt</span>
+            <span class="text-[11px] underline opacity-90 group-hover:opacity-100">
+              {{ activeAgingFilter === '0_30' ? 'Showing Current ✕' : 'Tap to View ➔' }}
             </span>
           </div>
-          <div class="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-            {{ formatINR(summaryStats.b31_60) }}
-          </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count31_60 }} Vendors (Due)</p>
-        </div>
-
-        <!-- 61-90 Days -->
-        <div
-          @click="activeAgingFilter = activeAgingFilter === '61_90' ? 'all' : '61_90'"
-          class="bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === '61_90' ? 'border-orange-500 ring-2 ring-orange-400/20 bg-orange-50/40' : 'border-slate-200/80 hover:border-orange-300'"
-        >
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-black text-orange-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-              61–90 Days
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
-              {{ summaryStats.pct61_90.toFixed(0) }}%
-            </span>
-          </div>
-          <div class="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-            {{ formatINR(summaryStats.b61_90) }}
-          </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count61_90 }} Vendors (Aging)</p>
-        </div>
-
-        <!-- 90-180 Days -->
-        <div
-          @click="activeAgingFilter = activeAgingFilter === '90_180' ? 'all' : '90_180'"
-          class="bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden"
-          :class="activeAgingFilter === '90_180' ? 'border-rose-500 ring-2 ring-rose-400/20 bg-rose-50/40' : 'border-slate-200/80 hover:border-rose-300'"
-        >
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-black text-rose-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-              90–180 Days
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-800">
-              {{ summaryStats.pct90_180.toFixed(0) }}%
-            </span>
-          </div>
-          <div class="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-            {{ formatINR(summaryStats.b90_180) }}
-          </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count90_180 }} Vendors (Overdue)</p>
-        </div>
-
-        <!-- 180+ Days -->
-        <div
-          @click="activeAgingFilter = activeAgingFilter === '180plus' ? 'all' : '180plus'"
-          class="bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] relative overflow-hidden col-span-2 sm:col-span-1"
-          :class="activeAgingFilter === '180plus' ? 'border-purple-500 ring-2 ring-purple-400/20 bg-purple-50/40' : 'border-slate-200/80 hover:border-purple-300'"
-        >
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-black text-purple-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-              180+ Days
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800">
-              {{ summaryStats.pct180_plus.toFixed(0) }}%
-            </span>
-          </div>
-          <div class="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-            {{ formatINR(summaryStats.b180_plus) }}
-          </div>
-          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">{{ summaryStats.count180_plus }} Vendors (Critical)</p>
         </div>
       </div>
 
-      <!-- ═══ TOTAL PAYABLES BANNER ═══ -->
-      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <!-- ═══ 5 AGING BREAKDOWN MINI KPI CHIPS ═══ -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        <button
+          @click="activeAgingFilter = activeAgingFilter === '0_30' ? 'all' : '0_30'"
+          class="p-2.5 rounded-2xl bg-white border text-left transition-all cursor-pointer shadow-xs"
+          :class="activeAgingFilter === '0_30' ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-400/20' : 'border-slate-200 hover:border-emerald-300'"
+        >
+          <div class="text-[9px] font-black text-emerald-800 uppercase">0–30 Days</div>
+          <div class="text-xs sm:text-sm font-black text-slate-900">{{ formatINR(summaryStats.b0_30) }}</div>
+          <div class="text-[9px] text-slate-400 font-semibold">{{ summaryStats.count0_30 }} vendors</div>
+        </button>
+
+        <button
+          @click="activeAgingFilter = activeAgingFilter === '31_60' ? 'all' : '31_60'"
+          class="p-2.5 rounded-2xl bg-white border text-left transition-all cursor-pointer shadow-xs"
+          :class="activeAgingFilter === '31_60' ? 'border-amber-500 bg-amber-50/50 ring-2 ring-amber-400/20' : 'border-slate-200 hover:border-amber-300'"
+        >
+          <div class="text-[9px] font-black text-amber-800 uppercase">31–60 Days</div>
+          <div class="text-xs sm:text-sm font-black text-slate-900">{{ formatINR(summaryStats.b31_60) }}</div>
+          <div class="text-[9px] text-slate-400 font-semibold">{{ summaryStats.count31_60 }} vendors</div>
+        </button>
+
+        <button
+          @click="activeAgingFilter = activeAgingFilter === '61_90' ? 'all' : '61_90'"
+          class="p-2.5 rounded-2xl bg-white border text-left transition-all cursor-pointer shadow-xs"
+          :class="activeAgingFilter === '61_90' ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-400/20' : 'border-slate-200 hover:border-orange-300'"
+        >
+          <div class="text-[9px] font-black text-orange-800 uppercase">61–90 Days</div>
+          <div class="text-xs sm:text-sm font-black text-slate-900">{{ formatINR(summaryStats.b61_90) }}</div>
+          <div class="text-[9px] text-slate-400 font-semibold">{{ summaryStats.count61_90 }} vendors</div>
+        </button>
+
+        <button
+          @click="activeAgingFilter = activeAgingFilter === '90_180' ? 'all' : '90_180'"
+          class="p-2.5 rounded-2xl bg-white border text-left transition-all cursor-pointer shadow-xs"
+          :class="activeAgingFilter === '90_180' ? 'border-rose-500 bg-rose-50/50 ring-2 ring-rose-400/20' : 'border-slate-200 hover:border-rose-300'"
+        >
+          <div class="text-[9px] font-black text-rose-800 uppercase">90–180 Days</div>
+          <div class="text-xs sm:text-sm font-black text-slate-900">{{ formatINR(summaryStats.b90_180) }}</div>
+          <div class="text-[9px] text-slate-400 font-semibold">{{ summaryStats.count90_180 }} vendors</div>
+        </button>
+
+        <button
+          @click="activeAgingFilter = activeAgingFilter === '180plus' ? 'all' : '180plus'"
+          class="p-2.5 rounded-2xl bg-white border text-left transition-all cursor-pointer shadow-xs col-span-2 sm:col-span-1"
+          :class="activeAgingFilter === '180plus' ? 'border-purple-500 bg-purple-50/50 ring-2 ring-purple-400/20' : 'border-slate-200 hover:border-purple-300'"
+        >
+          <div class="text-[9px] font-black text-purple-800 uppercase">180+ Days</div>
+          <div class="text-xs sm:text-sm font-black text-slate-900">{{ formatINR(summaryStats.b180_plus) }}</div>
+          <div class="text-[9px] text-slate-400 font-semibold">{{ summaryStats.count180_plus }} vendors</div>
+        </button>
+      </div>
+
+      <!-- ═══ TOTAL PAYABLES & CONTROLS HEADER ═══ -->
+      <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-3xl p-4 sm:p-5 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-800">
         <div>
           <span class="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20">
-            Total Supplier Payables
+            Total Outstanding Payables
           </span>
-          <div class="text-2xl sm:text-3xl font-black font-['Clash_Display'] mt-2">
+          <div class="text-2xl sm:text-3xl font-black font-['Clash_Display'] mt-1.5">
             {{ formatINR(summaryStats.totalPayable) }}
           </div>
-          <p class="text-xs text-slate-300 mt-1">
-            Across {{ summaryStats.vendorCount }} Active Vendors in {{ groupList.length }} Groups (Paragon & Sundry Creditors)
+          <p class="text-xs text-slate-400 mt-1">
+            {{ summaryStats.vendorCount }} Suppliers Across {{ groupList.length }} Groups (Paragon & Sundry Creditors)
           </p>
         </div>
 
-        <!-- View Switcher (Desktop & Mobile) -->
-        <div class="flex items-center gap-2 bg-white/10 p-1.5 rounded-2xl backdrop-blur-md border border-white/10 shrink-0">
+        <!-- View Mode Switcher -->
+        <div class="flex items-center gap-1.5 bg-white/10 p-1.5 rounded-2xl backdrop-blur-md border border-white/10 shrink-0">
           <button
             @click="viewMode = 'Party View'"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
             :class="viewMode === 'Party View' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-300 hover:text-white'"
           >
             <i class="fa-solid fa-user-tie mr-1.5"></i>
-            Party View
+            Party View ({{ filteredCreditors.length }})
           </button>
           <button
             @click="viewMode = 'Group View'"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
             :class="viewMode === 'Group View' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-300 hover:text-white'"
           >
             <i class="fa-solid fa-layer-group mr-1.5"></i>
-            Group View
+            Group View ({{ groupSummaries.length }})
           </button>
         </div>
       </div>
 
-      <!-- ═══ SEARCH & CONTROLS BAR ═══ -->
+      <!-- ═══ SEARCH & SORT CONTROLS ═══ -->
       <div class="bg-white rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs space-y-3">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           <!-- Search Box -->
@@ -181,29 +207,29 @@
           <div class="flex items-center gap-2">
             <select
               v-model="sortBy"
-              class="px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 focus:outline-none focus:border-amber-500 cursor-pointer"
+              class="w-full sm:w-auto px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 focus:outline-none focus:border-amber-500 cursor-pointer"
             >
-              <option value="payable_desc">Sort: Highest Payable</option>
-              <option value="overdue_desc">Sort: Highest Overdue (90d+)</option>
-              <option value="name_asc">Sort: Name (A to Z)</option>
-              <option value="name_desc">Sort: Name (Z to A)</option>
+              <option value="overdue_desc">Sort: 🚨 Overdue & Priority First</option>
+              <option value="payable_desc">Sort: 💰 Highest Balance</option>
+              <option value="name_asc">Sort: 🔤 Name (A to Z)</option>
+              <option value="name_desc">Sort: 🔤 Name (Z to A)</option>
             </select>
           </div>
         </div>
 
-        <!-- Active Aging Filter Alert / Reset -->
+        <!-- Active Aging Filter Bar -->
         <div v-if="activeAgingFilter !== 'all'" class="flex items-center justify-between text-xs bg-amber-50 border border-amber-200 px-3.5 py-2 rounded-2xl text-amber-900">
           <div class="flex items-center gap-2 font-bold">
             <i class="fa-solid fa-filter text-amber-600"></i>
-            <span>Filtering by {{ getAgingFilterLabel(activeAgingFilter) }}</span>
+            <span>Filtering by {{ getAgingFilterLabel(activeAgingFilter) }} ({{ filteredCreditors.length }} Vendors)</span>
           </div>
-          <button @click="activeAgingFilter = 'all'" class="text-amber-700 font-extrabold hover:underline cursor-pointer">
-            Clear Filter
+          <button @click="activeAgingFilter = 'all'" class="text-amber-700 font-black hover:underline cursor-pointer">
+            Show All
           </button>
         </div>
       </div>
 
-      <!-- ═══ PARTY VIEW: INDIVIDUAL CREDITORS ═══ -->
+      <!-- ═══ PARTY VIEW: INDIVIDUAL CREDITORS (MOBILE & DESKTOP OPTIMIZED) ═══ -->
       <div v-if="viewMode === 'Party View'" class="space-y-3">
         <div v-if="filteredCreditors.length === 0" class="bg-white rounded-3xl p-12 text-center border border-slate-200/80">
           <i class="fa-solid fa-filter-circle-xmark text-3xl text-slate-300 mb-3"></i>
@@ -216,7 +242,7 @@
           class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3.5"
         >
           <!-- Vendor Header -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="text-base sm:text-lg font-black text-slate-900 leading-tight truncate">
@@ -230,16 +256,26 @@
                 </span>
               </div>
               <p class="text-xs text-slate-400 font-semibold mt-0.5">
-                {{ party.pendingBills.length }} Unsettled Purchases • Last Voucher: {{ party.lastTransactionDate }}
+                {{ party.pendingBills.length }} Purchases Pending • Last: {{ party.lastTransactionDate }}
               </p>
             </div>
 
-            <!-- Total Payable Badge -->
-            <div class="text-left sm:text-right shrink-0">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Payable</span>
-              <span class="text-lg sm:text-xl font-black text-slate-900 font-['Clash_Display']">
-                {{ formatINR(party.totalPayable) }}
+            <!-- Priority Badge & Total Payable Balance -->
+            <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+              <!-- Urgent Status Pill -->
+              <span
+                class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                :class="getDominantRiskBadgeClass(party)"
+              >
+                {{ getDominantRiskLabel(party) }}
               </span>
+
+              <div class="text-right">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Payable</span>
+                <span class="text-base sm:text-xl font-black text-slate-900 font-['Clash_Display']">
+                  {{ formatINR(party.totalPayable) }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -254,7 +290,7 @@
             </div>
 
             <!-- Bucket Breakdown Numbers -->
-            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar text-[11px] font-bold pt-1">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px] sm:text-[11px] font-bold pt-1">
               <span v-if="party.b0_30 > 0" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60 whitespace-nowrap">
                 0–30d: {{ formatINR(party.b0_30) }}
               </span>
@@ -273,17 +309,17 @@
             </div>
           </div>
 
-          <!-- Bottom Actions: Bill-Wise Collapsible + WhatsApp + PDF -->
-          <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <!-- Bottom Actions: Bill-Wise Collapsible + WhatsApp + PDF (Mobile Optimized) -->
+          <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
             <button
               @click="togglePartyExpand(party.ledgerName)"
-              class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer select-none"
+              class="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer select-none py-1"
             >
               <i :class="['fa-solid text-[10px] transition-transform', isExpanded(party.ledgerName) ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
               <span>{{ isExpanded(party.ledgerName) ? 'Hide' : 'View' }} Invoices ({{ party.pendingBills.length }})</span>
             </button>
 
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-2">
               <!-- View / Download PDF Statement -->
               <button
                 @click="downloadPartyPDF(party)"
@@ -291,7 +327,7 @@
                 title="Download 6-Month Ledger PDF"
               >
                 <i class="fa-solid fa-file-pdf text-rose-600 text-xs"></i>
-                <span>PDF Statement</span>
+                <span>PDF</span>
               </button>
 
               <!-- WhatsApp Statement + Auto-Copy Text + PDF Share -->
@@ -306,9 +342,9 @@
             </div>
           </div>
 
-          <!-- Bills Table -->
+          <!-- Bills Table (Mobile Optimized with Horizontal Scroll) -->
           <div v-if="isExpanded(party.ledgerName)" class="mt-3 overflow-x-auto rounded-2xl border border-slate-200/70">
-            <table class="w-full text-left text-xs">
+            <table class="w-full text-left text-xs min-w-[500px]">
               <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/60">
                 <tr>
                   <th class="p-2.5">Date</th>
@@ -321,7 +357,7 @@
               </thead>
               <tbody class="divide-y divide-slate-100 font-medium">
                 <tr v-for="(bill, bIdx) in party.pendingBills" :key="bIdx" class="hover:bg-slate-50/80">
-                  <td class="p-2.5 text-slate-700 font-semibold">{{ bill.date }}</td>
+                  <td class="p-2.5 text-slate-700 font-semibold whitespace-nowrap">{{ bill.date }}</td>
                   <td class="p-2.5 text-slate-900 font-bold font-mono">{{ bill.voucherNo }}</td>
                   <td class="p-2.5 text-slate-500">{{ bill.type }}</td>
                   <td class="p-2.5 text-right font-black text-slate-900">{{ formatINR(bill.amount) }}</td>
@@ -346,11 +382,11 @@
         <div
           v-for="group in groupSummaries"
           :key="group.groupName"
-          class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5"
+          class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3.5"
         >
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-lg font-black font-['Clash_Display'] text-slate-900 leading-none">
+              <h3 class="text-base sm:text-lg font-black font-['Clash_Display'] text-slate-900 leading-none">
                 {{ group.groupName }}
               </h3>
               <p class="text-xs text-slate-500 font-medium mt-1">
@@ -359,7 +395,7 @@
             </div>
             <div class="text-right">
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Group Total</span>
-              <span class="text-xl font-black text-slate-900 font-['Clash_Display']">
+              <span class="text-lg sm:text-xl font-black text-slate-900 font-['Clash_Display']">
                 {{ formatINR(group.totalPayable) }}
               </span>
             </div>
@@ -435,6 +471,8 @@ const isExpanded = (name) => expandedParties.value.has(name);
 
 const getAgingFilterLabel = (key) => {
   const map = {
+    'overdue_90plus': '🚨 Overdue (90+ Days)',
+    'due_31_90': '⚠️ Due (31–90 Days)',
     '0_30': '0–30 Days (Current)',
     '31_60': '31–60 Days (Due)',
     '61_90': '61–90 Days (Aging)',
@@ -442,6 +480,22 @@ const getAgingFilterLabel = (key) => {
     '180plus': '180+ Days (Critical)'
   };
   return map[key] || key;
+};
+
+const getDominantRiskLabel = (party) => {
+  if (party.b180_plus > 0) return '🚨 Critical (>180d)';
+  if (party.b90_180 > 0) return '🔴 Overdue (90-180d)';
+  if (party.b61_90 > 0) return '🟠 Aging (61-90d)';
+  if (party.b31_60 > 0) return '🟡 Due (31-60d)';
+  return '🟢 Current (0-30d)';
+};
+
+const getDominantRiskBadgeClass = (party) => {
+  if (party.b180_plus > 0) return 'bg-purple-100 text-purple-800 border border-purple-200';
+  if (party.b90_180 > 0) return 'bg-rose-100 text-rose-800 border border-rose-200';
+  if (party.b61_90 > 0) return 'bg-orange-100 text-orange-800 border border-orange-200';
+  if (party.b31_60 > 0) return 'bg-amber-100 text-amber-800 border border-amber-200';
+  return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
 };
 
 const getTenureBadgeClass = (bucket) => {

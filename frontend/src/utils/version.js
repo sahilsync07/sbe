@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_025',
-  version: '1.5.2',
-  updatedAt: '03 Sep 2026, 10:18 PM',
-  commitTitle: 'SBE Update #025: Workzones Password Gate, Crash Fixes & Seamless Login',
+  code: 'sbe_026',
+  version: '1.5.3',
+  updatedAt: '03 Sep 2026, 10:25 PM',
+  commitTitle: 'SBE Update #026: Mobile-Optimized Executive Creditor Dashboard (Overdue 90d+ & Due Spotlight)',
   changes: [
+    {
+      tag: 'sbe_026',
+      date: '03 Sep 2026',
+      title: 'Mobile-Optimized Executive Creditor Dashboard',
+      details: 'Built an executive landing spotlight featuring 90+ Days Overdue (Urgent) and 31-90 Days Due cards with live sums and counts. Default sorted by Overdue & Priority first. Tailored for phone view with smooth horizontal scrolling and touch-friendly actions.'
+    },
     {
       tag: 'sbe_025',
       date: '03 Sep 2026',
