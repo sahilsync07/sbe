@@ -157,7 +157,7 @@
             {{ formatINR(summaryStats.totalPayable) }}
           </div>
           <p class="text-xs text-slate-400 mt-1">
-            {{ summaryStats.vendorCount }} Suppliers Across {{ groupList.length }} Groups (Paragon & Sundry Creditors)
+            Across {{ groupList.length }} Groups (Paragon & Sundry Creditors)
           </p>
         </div>
 
@@ -251,7 +251,10 @@
                 <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider">
                   {{ party.groupName }}
                 </span>
-                <span v-if="party.city" class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold">
+                <span v-if="party.isConsolidated" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-black tracking-wide border border-amber-200">
+                  🏢 {{ party.branchCount }} Branches Clubbed
+                </span>
+                <span v-else-if="party.city" class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold">
                   📍 {{ party.city }}
                 </span>
               </div>
@@ -271,7 +274,7 @@
               </span>
 
               <div class="text-right">
-                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Payable</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Payable</span>
                 <span class="text-base sm:text-xl font-black text-slate-900 font-['Clash_Display']">
                   {{ formatINR(party.totalPayable) }}
                 </span>
@@ -309,15 +312,29 @@
             </div>
           </div>
 
-          <!-- Bottom Actions: Bill-Wise Collapsible + WhatsApp + PDF (Mobile Optimized) -->
+          <!-- Bottom Actions: Branch Breakdown + Bill-Wise Collapsible + WhatsApp + PDF -->
           <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
-            <button
-              @click="togglePartyExpand(party.ledgerName)"
-              class="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer select-none py-1"
-            >
-              <i :class="['fa-solid text-[10px] transition-transform', isExpanded(party.ledgerName) ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
-              <span>{{ isExpanded(party.ledgerName) ? 'Hide' : 'View' }} Invoices ({{ party.pendingBills.length }})</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <!-- Collapsible Branch Breakdown (for Consolidated Vendors like Paragon) -->
+              <button
+                v-if="party.isConsolidated"
+                @click="toggleBranchExpand(party.ledgerName)"
+                class="text-xs font-black text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-xl flex items-center gap-1.5 cursor-pointer select-none transition-colors"
+              >
+                <i class="fa-solid fa-code-branch text-[11px]"></i>
+                <span>{{ isBranchExpanded(party.ledgerName) ? 'Hide' : 'Show' }} Branches ({{ party.branchCount }})</span>
+                <i :class="['fa-solid text-[9px] transition-transform', isBranchExpanded(party.ledgerName) ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+              </button>
+
+              <!-- Collapsible Invoices Button -->
+              <button
+                @click="togglePartyExpand(party.ledgerName)"
+                class="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer select-none py-1"
+              >
+                <i :class="['fa-solid text-[10px] transition-transform', isExpanded(party.ledgerName) ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+                <span>{{ isExpanded(party.ledgerName) ? 'Hide' : 'View' }} Invoices ({{ party.pendingBills.length }})</span>
+              </button>
+            </div>
 
             <div class="flex items-center gap-2">
               <!-- View / Download PDF Statement -->
@@ -342,13 +359,46 @@
             </div>
           </div>
 
+          <!-- Branch Breakdown Sub-Card (for Consolidated Vendors like Paragon) -->
+          <div v-if="party.isConsolidated && isBranchExpanded(party.ledgerName)" class="mt-3 p-3 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-2">
+            <div class="flex items-center justify-between text-xs font-black text-amber-900">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-building text-amber-600"></i>
+                Branch-wise Accounts & Netted Balance
+              </span>
+              <span class="text-[10px] font-bold text-amber-700">Central payment settlement</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div
+                v-for="b in party.branches"
+                :key="b.name"
+                class="p-2.5 rounded-xl bg-white border border-amber-100 shadow-xs flex flex-col justify-between text-xs"
+              >
+                <div class="font-bold text-slate-900 truncate" :title="b.name">
+                  📍 {{ b.branch }}
+                </div>
+                <div class="text-[10px] text-slate-500 mt-1 flex justify-between">
+                  <span>Purchases: {{ formatINR(b.purchases) }}</span>
+                  <span>Paid: {{ formatINR(b.payments) }}</span>
+                </div>
+                <div class="mt-1.5 pt-1 border-t border-slate-100 flex justify-between items-center text-[11px] font-black">
+                  <span class="text-slate-400 uppercase text-[9px]">Account Balance</span>
+                  <span :class="b.closingBalance >= 0 ? 'text-slate-900' : 'text-emerald-700'">
+                    {{ formatINR(b.closingBalance) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Bills Table (Mobile Optimized with Horizontal Scroll) -->
           <div v-if="isExpanded(party.ledgerName)" class="mt-3 overflow-x-auto rounded-2xl border border-slate-200/70">
-            <table class="w-full text-left text-xs min-w-[500px]">
+            <table class="w-full text-left text-xs min-w-[520px]">
               <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/60">
                 <tr>
                   <th class="p-2.5">Date</th>
                   <th class="p-2.5">Bill / Voucher</th>
+                  <th v-if="party.isConsolidated" class="p-2.5">Branch</th>
                   <th class="p-2.5">Type</th>
                   <th class="p-2.5 text-right">Unpaid Amount</th>
                   <th class="p-2.5 text-center">Age</th>
@@ -359,6 +409,11 @@
                 <tr v-for="(bill, bIdx) in party.pendingBills" :key="bIdx" class="hover:bg-slate-50/80">
                   <td class="p-2.5 text-slate-700 font-semibold whitespace-nowrap">{{ bill.date }}</td>
                   <td class="p-2.5 text-slate-900 font-bold font-mono">{{ bill.voucherNo }}</td>
+                  <td v-if="party.isConsolidated" class="p-2.5">
+                    <span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold">
+                      {{ bill.branch || 'Central' }}
+                    </span>
+                  </td>
                   <td class="p-2.5 text-slate-500">{{ bill.type }}</td>
                   <td class="p-2.5 text-right font-black text-slate-900">{{ formatINR(bill.amount) }}</td>
                   <td class="p-2.5 text-center font-bold text-slate-600">{{ bill.daysOld }} days</td>
@@ -458,6 +513,7 @@ onMounted(async () => {
 });
 
 const expandedParties = ref(new Set());
+const expandedBranches = ref(new Set());
 
 const togglePartyExpand = (name) => {
   if (expandedParties.value.has(name)) {
@@ -468,6 +524,16 @@ const togglePartyExpand = (name) => {
 };
 
 const isExpanded = (name) => expandedParties.value.has(name);
+
+const toggleBranchExpand = (name) => {
+  if (expandedBranches.value.has(name)) {
+    expandedBranches.value.delete(name);
+  } else {
+    expandedBranches.value.add(name);
+  }
+};
+
+const isBranchExpanded = (name) => expandedBranches.value.has(name);
 
 const getAgingFilterLabel = (key) => {
   const map = {

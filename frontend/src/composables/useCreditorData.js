@@ -81,12 +81,20 @@ export function useCreditorData() {
 
     const refDate = referenceDate.value;
     const creditors = [];
+    const paragonBranches = [];
 
     for (const group of ledgerData.value) {
       if (!isCreditorGroup(group.groupName) || !group.ledgers) continue;
 
       for (const ledger of group.ledgers) {
         if (isExcludedLedger(ledger.ledgerName)) continue;
+
+        // Collect Paragon Polymer branch ledgers for unified consolidation
+        if (ledger.ledgerName.toUpperCase().includes("PARAGON POLYMER")) {
+          paragonBranches.push({ ledger, groupName: group.groupName });
+          continue;
+        }
+
         const closing = ledger.closingBalance || 0;
         
         // Non-zero payable balance
@@ -216,6 +224,173 @@ export function useCreditorData() {
 
         creditors.push(partyRecord);
       }
+    }
+
+    // ─── CONSOLIDATE MULTI-BRANCH PARAGON LEDGERS INTO 1 MASTER RECORD ───
+    if (paragonBranches.length > 0) {
+      let combinedClosing = 0;
+      let combinedOpening = 0;
+      let combinedPurchases = 0;
+      let combinedPayments = 0;
+      let combinedEntries = [];
+      const branchList = [];
+
+      for (const item of paragonBranches) {
+        const ledger = item.ledger;
+        combinedClosing += (ledger.closingBalance || 0);
+        combinedOpening += (ledger.openingBalance || 0);
+
+        // Extract branch name (e.g., Bangalore, Kerala, Haryana, Medak, Tamil Nadu, Central)
+        let branchTag = "Central";
+        const m = ledger.ledgerName.match(/\(([^)]+)\)/);
+        if (m) {
+          branchTag = m[1];
+        } else if (/medak/i.test(ledger.ledgerName)) {
+          branchTag = "Medak (Telangana)";
+        } else if (/tamil/i.test(ledger.ledgerName)) {
+          branchTag = "Tamil Nadu";
+        }
+
+        let bDr = 0;
+        let bCr = 0;
+
+        for (const e of (ledger.entries || [])) {
+          if (e.drCr === "Cr") bCr += (e.amount || 0);
+          if (e.drCr === "Dr") bDr += (e.amount || 0);
+          const pd = parseDate(e.date);
+          if (pd) {
+            combinedEntries.push({
+              ...e,
+              branch: branchTag,
+              parsedDate: pd
+            });
+          }
+        }
+
+        combinedPurchases += bCr;
+        combinedPayments += bDr;
+
+        branchList.push({
+          name: ledger.ledgerName,
+          branch: branchTag,
+          closingBalance: ledger.closingBalance || 0,
+          purchases: bCr,
+          payments: bDr,
+          entriesCount: (ledger.entries || []).length
+        });
+      }
+
+      // Sort branch list by highest purchases/balance
+      branchList.sort((a, b) => b.purchases - a.purchases);
+
+      // Sort pooled entries newest first
+      combinedEntries.sort((a, b) => b.parsedDate - a.parsedDate);
+
+      const totalPayable = combinedClosing > 0 ? combinedClosing : 0;
+      let unallocatedBalance = totalPayable;
+      let b0_30 = 0;
+      let b31_60 = 0;
+      let b61_90 = 0;
+      let b90_180 = 0;
+      let b180_plus = 0;
+      const pendingBills = [];
+
+      const invoiceEntries = combinedEntries.filter(e => e.drCr === "Cr" || e.type === "Purchase" || e.type === "Tax Invoice");
+
+      for (const inv of invoiceEntries) {
+        if (unallocatedBalance <= 0) break;
+        const daysOld = Math.max(0, Math.floor((refDate - inv.parsedDate) / (1000 * 60 * 60 * 24)));
+        const amountToAllocate = Math.min(unallocatedBalance, inv.amount || 0);
+
+        let bucket = "0–30 days";
+        if (daysOld <= 30) {
+          b0_30 += amountToAllocate;
+          bucket = "0–30 days";
+        } else if (daysOld <= 60) {
+          b31_60 += amountToAllocate;
+          bucket = "31–60 days";
+        } else if (daysOld <= 90) {
+          b61_90 += amountToAllocate;
+          bucket = "61–90 days";
+        } else if (daysOld <= 180) {
+          b90_180 += amountToAllocate;
+          bucket = "90–180 days";
+        } else {
+          b180_plus += amountToAllocate;
+          bucket = "180+ days";
+        }
+
+        pendingBills.push({
+          date: inv.date,
+          voucherNo: inv.voucherNo || "N/A",
+          type: inv.type || "Purchase",
+          branch: inv.branch || "Central",
+          amount: amountToAllocate,
+          totalBillAmount: inv.amount || 0,
+          daysOld,
+          bucket
+        });
+
+        unallocatedBalance -= amountToAllocate;
+      }
+
+      if (unallocatedBalance > 0) {
+        b180_plus += unallocatedBalance;
+        pendingBills.push({
+          date: "Opening Balance",
+          voucherNo: "OB",
+          type: "Opening",
+          branch: "Consolidated",
+          amount: unallocatedBalance,
+          totalBillAmount: unallocatedBalance,
+          daysOld: 181,
+          bucket: "180+ days"
+        });
+      }
+
+      const buckets = [
+        { key: "180plus", name: "180+ days", amount: b180_plus, priority: 5 },
+        { key: "90_180", name: "90–180 days", amount: b90_180, priority: 4 },
+        { key: "61_90", name: "61–90 days", amount: b61_90, priority: 3 },
+        { key: "31_60", name: "31–60 days", amount: b31_60, priority: 2 },
+        { key: "0_30", name: "0–30 days", amount: b0_30, priority: 1 }
+      ];
+      buckets.sort((a, b) => b.amount - a.amount || b.priority - a.priority);
+      const dominantCategory = buckets[0].amount > 0 ? buckets[0].key : "0_30";
+
+      const masterRecord = {
+        ledgerName: "PARAGON POLYMER PRODUCTS PVT LTD (All Branches Consolidated)",
+        groupName: "PARAGON",
+        city: "All State Branches",
+        isConsolidated: true,
+        branchCount: branchList.length,
+        branches: branchList,
+        closingBalance: combinedClosing,
+        totalPayable,
+        isAdvancePaid: combinedClosing < 0,
+        openingBalance: combinedOpening,
+        totalPurchases: combinedPurchases,
+        totalPayments: combinedPayments,
+        b0_30,
+        b31_60,
+        b61_90,
+        b90_180,
+        b180_plus,
+        dominantCategory,
+        pendingBills,
+        entriesCount: combinedEntries.length,
+        lastTransactionDate: combinedEntries.length > 0 ? combinedEntries[0].date : "N/A",
+        rawLedger: {
+          ledgerName: "PARAGON POLYMER PRODUCTS PVT LTD (All Branches Consolidated)",
+          groupName: "PARAGON",
+          openingBalance: combinedOpening,
+          closingBalance: combinedClosing,
+          entries: combinedEntries
+        },
+        entries: combinedEntries
+      };
+
+      creditors.push(masterRecord);
     }
 
     return { creditors };
@@ -393,18 +568,25 @@ export function useCreditorData() {
     text += `  📍 Rayagada, Odisha | SBE Hub\n`;
     text += `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-    text += `📑 *SUPPLIER ACCOUNT STATEMENT*\n`;
-    text += `👤 *Supplier:* ${party.ledgerName}\n`;
-    text += `🏷️ *Group:* ${party.groupName}\n`;
-    text += `💰 *Net Balance Payable:* *${formatINR(party.totalPayable)}*\n\n`;
+    if (party.isConsolidated) {
+      text += `📑 *CONSOLIDATED SUPPLIER STATEMENT*\n`;
+      text += `👤 *Supplier:* ${party.ledgerName}\n`;
+      text += `🏷️ *Branches Clubbed:* ${party.branchCount || party.branches?.length || '9'} State Branches\n`;
+      text += `💰 *Net Combined Balance Payable:* *${formatINR(party.totalPayable)}*\n\n`;
+    } else {
+      text += `📑 *SUPPLIER ACCOUNT STATEMENT*\n`;
+      text += `👤 *Supplier:* ${party.ledgerName}\n`;
+      text += `🏷️ *Group:* ${party.groupName}\n`;
+      text += `💰 *Net Balance Payable:* *${formatINR(party.totalPayable)}*\n\n`;
+    }
 
     // Overdue / Aging Summary (Only non-zero buckets)
     const agingLines = [];
-    if (party.b0_30 > 0) agingLines.push(`• 0–30 Days: *${formatINR(party.b0_30)}*`);
-    if (party.b31_60 > 0) agingLines.push(`• 31–60 Days: *${formatINR(party.b31_60)}*`);
-    if (party.b61_90 > 0) agingLines.push(`• 61–90 Days: *${formatINR(party.b61_90)}*`);
-    if (party.b90_180 > 0) agingLines.push(`• 90–180 Days: *${formatINR(party.b90_180)}*`);
-    if (party.b180_plus > 0) agingLines.push(`• 180+ Days: *${formatINR(party.b180_plus)}*`);
+    if (party.b0_30 > 0) agingLines.push(`• 0–30 Days (Current): *${formatINR(party.b0_30)}*`);
+    if (party.b31_60 > 0) agingLines.push(`• 31–60 Days (Due): *${formatINR(party.b31_60)}*`);
+    if (party.b61_90 > 0) agingLines.push(`• 61–90 Days (Due): *${formatINR(party.b61_90)}*`);
+    if (party.b90_180 > 0) agingLines.push(`• 90–180 Days (Overdue): *${formatINR(party.b90_180)}*`);
+    if (party.b180_plus > 0) agingLines.push(`• 180+ Days (Critical): *${formatINR(party.b180_plus)}*`);
 
     if (agingLines.length > 0) {
       text += `📊 *Payables Tenure Summary:*\n`;
@@ -412,9 +594,10 @@ export function useCreditorData() {
     }
 
     if (party.pendingBills && party.pendingBills.length > 0) {
-      text += `🧾 *Recent Inward Bills:*\n`;
-      party.pendingBills.slice(0, 3).forEach((b) => {
-        text += `▫️ Bill #${b.voucherNo} (${b.date}) ➔ *${formatINR(b.amount)}* [${b.daysOld}d]\n`;
+      text += `🧾 *Recent Unsettled Bills:*\n`;
+      party.pendingBills.slice(0, 4).forEach((b) => {
+        const branchTag = b.branch ? ` [${b.branch}]` : "";
+        text += `▫️ Bill #${b.voucherNo} (${b.date})${branchTag} ➔ *${formatINR(b.amount)}* [${b.daysOld}d]\n`;
       });
       text += `\n`;
     }

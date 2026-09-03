@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_026',
-  version: '1.5.3',
-  updatedAt: '03 Sep 2026, 10:25 PM',
-  commitTitle: 'SBE Update #026: Mobile-Optimized Executive Creditor Dashboard (Overdue 90d+ & Due Spotlight)',
+  code: 'sbe_027',
+  version: '1.5.4',
+  updatedAt: '03 Sep 2026, 10:37 PM',
+  commitTitle: 'SBE Update #027: Consolidated Multi-Branch Paragon Creditor (Unified Aging, Statement & Branch Breakdown)',
   changes: [
+    {
+      tag: 'sbe_027',
+      date: '03 Sep 2026',
+      title: 'Consolidated Multi-Branch Paragon Creditor',
+      details: 'Clubbed all 9 Paragon state branch accounts (Bangalore, Kerala, Central, Medak, Tamil Nadu, Haryana, Delhi, WB, Hyderabad) into 1 Master Consolidated Creditor (Rs. 87.85L net payable). Added branch tags to bills, expandable branch-wise breakdown, and unified WhatsApp & PDF statement sharing.'
+    },
     {
       tag: 'sbe_026',
       date: '03 Sep 2026',
