@@ -114,11 +114,12 @@ export function useCreditorData() {
         entries.sort((a, b) => b.parsedDate - a.parsedDate);
 
         let unallocatedBalance = totalPayable;
-        let b0_30 = 0;
-        let b31_60 = 0;
-        let b61_90 = 0;
-        let b90_180 = 0;
-        let b180_plus = 0;
+        let b_1m = 0;
+        let b_2m = 0;
+        let b_3m = 0;
+        let b_6m = 0;
+        let b_9m = 0;
+        let b_1y_plus = 0;
         const pendingBills = [];
 
         // For creditors, invoices are Cr entries (Purchases / Inward bills)
@@ -130,22 +131,25 @@ export function useCreditorData() {
           const daysOld = Math.max(0, Math.floor((refDate - inv.parsedDate) / (1000 * 60 * 60 * 24)));
           const amountToAllocate = Math.min(unallocatedBalance, inv.amount || 0);
 
-          let bucket = "0–30 days";
+          let bucket = "< 1 Month";
           if (daysOld <= 30) {
-            b0_30 += amountToAllocate;
-            bucket = "0–30 days";
+            b_1m += amountToAllocate;
+            bucket = "< 1 Month";
           } else if (daysOld <= 60) {
-            b31_60 += amountToAllocate;
-            bucket = "31–60 days";
+            b_2m += amountToAllocate;
+            bucket = "2 Months";
           } else if (daysOld <= 90) {
-            b61_90 += amountToAllocate;
-            bucket = "61–90 days";
+            b_3m += amountToAllocate;
+            bucket = "3 Months";
           } else if (daysOld <= 180) {
-            b90_180 += amountToAllocate;
-            bucket = "90–180 days";
+            b_6m += amountToAllocate;
+            bucket = "3–6 Months";
+          } else if (daysOld <= 270) {
+            b_9m += amountToAllocate;
+            bucket = "6–9 Months";
           } else {
-            b180_plus += amountToAllocate;
-            bucket = "180+ days";
+            b_1y_plus += amountToAllocate;
+            bucket = "1 Year+";
           }
 
           pendingBills.push({
@@ -163,29 +167,30 @@ export function useCreditorData() {
 
         // If residual balance remains unallocated to specific purchase bills (Opening balance)
         if (unallocatedBalance > 0) {
-          b180_plus += unallocatedBalance;
+          b_1y_plus += unallocatedBalance;
           pendingBills.push({
             date: "Opening Balance",
             voucherNo: "OB",
             type: "Opening",
             amount: unallocatedBalance,
             totalBillAmount: unallocatedBalance,
-            daysOld: 181,
-            bucket: "180+ days"
+            daysOld: 271,
+            bucket: "1 Year+"
           });
         }
 
         // Primary aging category (largest bucket)
         const buckets = [
-          { key: "180plus", name: "180+ days", amount: b180_plus, priority: 5 },
-          { key: "90_180", name: "90–180 days", amount: b90_180, priority: 4 },
-          { key: "61_90", name: "61–90 days", amount: b61_90, priority: 3 },
-          { key: "31_60", name: "31–60 days", amount: b31_60, priority: 2 },
-          { key: "0_30", name: "0–30 days", amount: b0_30, priority: 1 }
+          { key: "1y_plus", name: "1 Year+", amount: b_1y_plus, priority: 6 },
+          { key: "9m", name: "6–9 Months", amount: b_9m, priority: 5 },
+          { key: "6m", name: "3–6 Months", amount: b_6m, priority: 4 },
+          { key: "3m", name: "3 Months", amount: b_3m, priority: 3 },
+          { key: "2m", name: "2 Months", amount: b_2m, priority: 2 },
+          { key: "1m", name: "< 1 Month", amount: b_1m, priority: 1 }
         ];
 
         buckets.sort((a, b) => b.amount - a.amount || b.priority - a.priority);
-        const dominantCategory = buckets[0].amount > 0 ? buckets[0].key : "0_30";
+        const dominantCategory = buckets[0].amount > 0 ? buckets[0].key : "1m";
 
         // Extract city from ledger name if present in parentheses e.g. "Vendor Name (Delhi)"
         const cityMatch = ledger.ledgerName.match(/\(([^)]+)\)/);
@@ -209,11 +214,17 @@ export function useCreditorData() {
           openingBalance: ledger.openingBalance || 0,
           totalPurchases,
           totalPayments,
-          b0_30,
-          b31_60,
-          b61_90,
-          b90_180,
-          b180_plus,
+          b_1m,
+          b_2m,
+          b_3m,
+          b_6m,
+          b_9m,
+          b_1y_plus,
+          b0_30: b_1m,
+          b31_60: b_2m,
+          b61_90: b_3m,
+          b90_180: b_6m,
+          b180_plus: b_9m + b_1y_plus,
           dominantCategory,
           pendingBills,
           entriesCount: entries.length,
@@ -288,11 +299,12 @@ export function useCreditorData() {
 
       const totalPayable = combinedClosing > 0 ? combinedClosing : 0;
       let unallocatedBalance = totalPayable;
-      let b0_30 = 0;
-      let b31_60 = 0;
-      let b61_90 = 0;
-      let b90_180 = 0;
-      let b180_plus = 0;
+      let b_1m = 0;
+      let b_2m = 0;
+      let b_3m = 0;
+      let b_6m = 0;
+      let b_9m = 0;
+      let b_1y_plus = 0;
       const pendingBills = [];
 
       const invoiceEntries = combinedEntries.filter(e => e.drCr === "Cr" || e.type === "Purchase" || e.type === "Tax Invoice");
@@ -302,22 +314,25 @@ export function useCreditorData() {
         const daysOld = Math.max(0, Math.floor((refDate - inv.parsedDate) / (1000 * 60 * 60 * 24)));
         const amountToAllocate = Math.min(unallocatedBalance, inv.amount || 0);
 
-        let bucket = "0–30 days";
+        let bucket = "< 1 Month";
         if (daysOld <= 30) {
-          b0_30 += amountToAllocate;
-          bucket = "0–30 days";
+          b_1m += amountToAllocate;
+          bucket = "< 1 Month";
         } else if (daysOld <= 60) {
-          b31_60 += amountToAllocate;
-          bucket = "31–60 days";
+          b_2m += amountToAllocate;
+          bucket = "2 Months";
         } else if (daysOld <= 90) {
-          b61_90 += amountToAllocate;
-          bucket = "61–90 days";
+          b_3m += amountToAllocate;
+          bucket = "3 Months";
         } else if (daysOld <= 180) {
-          b90_180 += amountToAllocate;
-          bucket = "90–180 days";
+          b_6m += amountToAllocate;
+          bucket = "3–6 Months";
+        } else if (daysOld <= 270) {
+          b_9m += amountToAllocate;
+          bucket = "6–9 Months";
         } else {
-          b180_plus += amountToAllocate;
-          bucket = "180+ days";
+          b_1y_plus += amountToAllocate;
+          bucket = "1 Year+";
         }
 
         pendingBills.push({
@@ -335,7 +350,7 @@ export function useCreditorData() {
       }
 
       if (unallocatedBalance > 0) {
-        b180_plus += unallocatedBalance;
+        b_1y_plus += unallocatedBalance;
         pendingBills.push({
           date: "Opening Balance",
           voucherNo: "OB",
@@ -343,20 +358,21 @@ export function useCreditorData() {
           branch: "Consolidated",
           amount: unallocatedBalance,
           totalBillAmount: unallocatedBalance,
-          daysOld: 181,
-          bucket: "180+ days"
+          daysOld: 271,
+          bucket: "1 Year+"
         });
       }
 
       const buckets = [
-        { key: "180plus", name: "180+ days", amount: b180_plus, priority: 5 },
-        { key: "90_180", name: "90–180 days", amount: b90_180, priority: 4 },
-        { key: "61_90", name: "61–90 days", amount: b61_90, priority: 3 },
-        { key: "31_60", name: "31–60 days", amount: b31_60, priority: 2 },
-        { key: "0_30", name: "0–30 days", amount: b0_30, priority: 1 }
+        { key: "1y_plus", name: "1 Year+", amount: b_1y_plus, priority: 6 },
+        { key: "9m", name: "6–9 Months", amount: b_9m, priority: 5 },
+        { key: "6m", name: "3–6 Months", amount: b_6m, priority: 4 },
+        { key: "3m", name: "3 Months", amount: b_3m, priority: 3 },
+        { key: "2m", name: "2 Months", amount: b_2m, priority: 2 },
+        { key: "1m", name: "< 1 Month", amount: b_1m, priority: 1 }
       ];
       buckets.sort((a, b) => b.amount - a.amount || b.priority - a.priority);
-      const dominantCategory = buckets[0].amount > 0 ? buckets[0].key : "0_30";
+      const dominantCategory = buckets[0].amount > 0 ? buckets[0].key : "1m";
 
       const masterRecord = {
         ledgerName: "PARAGON POLYMER PRODUCTS PVT LTD (All Branches Consolidated)",
@@ -371,11 +387,17 @@ export function useCreditorData() {
         openingBalance: combinedOpening,
         totalPurchases: combinedPurchases,
         totalPayments: combinedPayments,
-        b0_30,
-        b31_60,
-        b61_90,
-        b90_180,
-        b180_plus,
+        b_1m,
+        b_2m,
+        b_3m,
+        b_6m,
+        b_9m,
+        b_1y_plus,
+        b0_30: b_1m,
+        b31_60: b_2m,
+        b61_90: b_3m,
+        b90_180: b_6m,
+        b180_plus: b_9m + b_1y_plus,
         dominantCategory,
         pendingBills,
         entriesCount: combinedEntries.length,
@@ -610,9 +632,18 @@ export function useCreditorData() {
     return text;
   };
 
-  const getWhatsAppFollowupLink = (party) => {
-    const text = getWhatsAppFollowupText(party);
-    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  const getActiveAgingBuckets = (party) => {
+    if (!party) return [];
+    const list = [
+      { key: '1m', label: '< 1 Month', amount: party.b_1m || party.b0_30 || 0, headerBg: 'bg-emerald-50 text-emerald-800', valueBg: 'bg-emerald-50/60 text-emerald-950', dot: 'bg-emerald-500' },
+      { key: '2m', label: '2 Months', amount: party.b_2m || party.b31_60 || 0, headerBg: 'bg-amber-50 text-amber-800', valueBg: 'bg-amber-50/60 text-amber-950', dot: 'bg-amber-500' },
+      { key: '3m', label: '3 Months', amount: party.b_3m || party.b61_90 || 0, headerBg: 'bg-orange-50 text-orange-800', valueBg: 'bg-orange-50/60 text-orange-950', dot: 'bg-orange-500' },
+      { key: '6m', label: '3–6 Months', amount: party.b_6m || party.b90_180 || 0, headerBg: 'bg-rose-50 text-rose-800', valueBg: 'bg-rose-50/60 text-rose-950', dot: 'bg-rose-500' },
+      { key: '9m', label: '6–9 Months', amount: party.b_9m || 0, headerBg: 'bg-purple-50 text-purple-800', valueBg: 'bg-purple-50/60 text-purple-950', dot: 'bg-purple-500' },
+      { key: '1y_plus', label: '1 Year+', amount: party.b_1y_plus || 0, headerBg: 'bg-red-50 text-red-900', valueBg: 'bg-red-50/60 text-red-950', dot: 'bg-red-500' }
+    ];
+    const active = list.filter(b => b.amount > 0);
+    return active.length > 0 ? active : [list[0]];
   };
 
   return {
@@ -631,7 +662,8 @@ export function useCreditorData() {
     referenceDate,
     formatINR,
     getWhatsAppFollowupText,
-    getWhatsAppFollowupLink
+    getWhatsAppFollowupLink,
+    getActiveAgingBuckets
   };
 }
 

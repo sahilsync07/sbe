@@ -376,59 +376,37 @@
             </div>
           </div>
 
-          <!-- 5-Segment Aging Proportional Color Bar -->
-          <div class="space-y-1">
-            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-              <div
-                class="h-full bg-emerald-500 transition-all duration-500"
-                :style="{ width: `${party.aging.pct0_30}%` }"
-                title="0-30 Days"
-              ></div>
-              <div
-                class="h-full bg-amber-500 transition-all duration-500"
-                :style="{ width: `${party.aging.pct31_60}%` }"
-                title="31-60 Days"
-              ></div>
-              <div
-                class="h-full bg-orange-500 transition-all duration-500"
-                :style="{ width: `${party.aging.pct61_90}%` }"
-                title="61-90 Days"
-              ></div>
-              <div
-                class="h-full bg-rose-500 transition-all duration-500"
-                :style="{ width: `${party.aging.pct90_180}%` }"
-                title="90-180 Days"
-              ></div>
-              <div
-                class="h-full bg-purple-600 transition-all duration-500"
-                :style="{ width: `${party.aging.pct180_plus}%` }"
-                title="180+ Days"
-              ></div>
-            </div>
-
-            <!-- 5 Aging Amount Breakdown Chips -->
-            <div class="grid grid-cols-5 gap-1 text-center pt-1 text-[10px]">
-              <div class="bg-emerald-50/80 rounded-lg p-1">
-                <span class="text-[9px] text-emerald-800 font-bold block">0-30d</span>
-                <span class="font-extrabold text-emerald-950 truncate block">{{ formatINR(party.aging.b0_30) }}</span>
-              </div>
-              <div class="bg-amber-50/80 rounded-lg p-1">
-                <span class="text-[9px] text-amber-800 font-bold block">31-60d</span>
-                <span class="font-extrabold text-amber-950 truncate block">{{ formatINR(party.aging.b31_60) }}</span>
-              </div>
-              <div class="bg-orange-50/80 rounded-lg p-1">
-                <span class="text-[9px] text-orange-800 font-bold block">61-90d</span>
-                <span class="font-extrabold text-orange-950 truncate block">{{ formatINR(party.aging.b61_90) }}</span>
-              </div>
-              <div class="bg-rose-50/80 rounded-lg p-1">
-                <span class="text-[9px] text-rose-800 font-bold block">90-180d</span>
-                <span class="font-extrabold text-rose-950 truncate block">{{ formatINR(party.aging.b90_180) }}</span>
-              </div>
-              <div class="bg-purple-50/80 rounded-lg p-1">
-                <span class="text-[9px] text-purple-800 font-bold block">180+d</span>
-                <span class="font-extrabold text-purple-950 truncate block">{{ formatINR(party.aging.b180_plus) }}</span>
-              </div>
-            </div>
+          <!-- ═══ 2-ROW DYNAMIC AESTHETIC ROUNDED AGING TABLE (ONLY ACTIVE COLUMNS) ═══ -->
+          <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-50/50 shadow-2xs">
+            <table class="w-full text-center text-xs border-collapse">
+              <thead>
+                <tr class="text-[10px] font-black uppercase tracking-wider divide-x divide-slate-200/70 border-b border-slate-200/70">
+                  <th
+                    v-for="bucket in getActiveAgingBuckets(party)"
+                    :key="bucket.key"
+                    class="py-1.5 px-2.5 transition-colors"
+                    :class="bucket.headerBg"
+                  >
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full" :class="bucket.dot"></span>
+                      {{ bucket.label }}
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="divide-x divide-slate-200/70 text-xs sm:text-sm font-black">
+                  <td
+                    v-for="bucket in getActiveAgingBuckets(party)"
+                    :key="bucket.key"
+                    class="py-2.5 px-2 transition-colors font-black"
+                    :class="bucket.valueBg"
+                  >
+                    {{ formatINR(bucket.amount) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <!-- Bottom Action Buttons: 6-Month Ledger PDF & Polite WhatsApp Follow-up -->
@@ -566,7 +544,8 @@ const {
   formatINR,
   formatCompactINR,
   getWhatsAppFollowupText,
-  getWhatsAppFollowupLink
+  getWhatsAppFollowupLink,
+  getActiveAgingBuckets
 } = useAnalyzerData();
 
 const showSortDropdown = ref(false);

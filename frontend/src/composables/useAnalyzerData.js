@@ -120,11 +120,12 @@ export function useAnalyzerData() {
         entries.sort((a, b) => b.parsedDate - a.parsedDate);
 
         let unallocatedBalance = totalOutstanding;
-        let b0_30 = 0;
-        let b31_60 = 0;
-        let b61_90 = 0;
-        let b90_180 = 0;
-        let b180_plus = 0;
+        let b_1m = 0;
+        let b_2m = 0;
+        let b_3m = 0;
+        let b_6m = 0;
+        let b_9m = 0;
+        let b_1y_plus = 0;
         const pendingBills = [];
 
         const invoiceEntries = entries.filter(e => e.drCr === 'Dr' || e.type === 'Tax Invoice' || e.type === 'Sales');
@@ -135,22 +136,25 @@ export function useAnalyzerData() {
           const daysOld = Math.max(0, Math.floor((refDate - inv.parsedDate) / (1000 * 60 * 60 * 24)));
           const amountToAllocate = Math.min(unallocatedBalance, inv.amount || 0);
 
-          let bucket = '0–30 days';
+          let bucket = '< 1 Month';
           if (daysOld <= 30) {
-            b0_30 += amountToAllocate;
-            bucket = '0–30 days';
+            b_1m += amountToAllocate;
+            bucket = '< 1 Month';
           } else if (daysOld <= 60) {
-            b31_60 += amountToAllocate;
-            bucket = '31–60 days';
+            b_2m += amountToAllocate;
+            bucket = '2 Months';
           } else if (daysOld <= 90) {
-            b61_90 += amountToAllocate;
-            bucket = '61–90 days';
+            b_3m += amountToAllocate;
+            bucket = '3 Months';
           } else if (daysOld <= 180) {
-            b90_180 += amountToAllocate;
-            bucket = '90–180 days';
+            b_6m += amountToAllocate;
+            bucket = '3–6 Months';
+          } else if (daysOld <= 270) {
+            b_9m += amountToAllocate;
+            bucket = '6–9 Months';
           } else {
-            b180_plus += amountToAllocate;
-            bucket = '180+ days';
+            b_1y_plus += amountToAllocate;
+            bucket = '1 Year+';
           }
 
           pendingBills.push({
@@ -166,22 +170,29 @@ export function useAnalyzerData() {
           unallocatedBalance -= amountToAllocate;
         }
 
-        // Remaining balance older than recent invoices falls into 180+
+        // Remaining balance older than recent invoices falls into 1 Year+
         if (unallocatedBalance > 0) {
-          b180_plus += unallocatedBalance;
+          b_1y_plus += unallocatedBalance;
           pendingBills.push({
             date: 'Prior Balance',
             voucherNo: 'Opening / Prior Balance',
             amount: unallocatedBalance,
             fullAmount: unallocatedBalance,
-            daysOld: 180,
-            bucket: '180+ days',
+            daysOld: 271,
+            bucket: '1 Year+',
             parsedDate: new Date(2000, 0, 1)
           });
         }
 
         // Sort pending bills in ascending order of date (Oldest to Most Recent)
         pendingBills.sort((a, b) => a.parsedDate - b.parsedDate);
+
+        // Backward compatibility properties
+        const b0_30 = b_1m;
+        const b31_60 = b_2m;
+        const b61_90 = b_3m;
+        const b90_180 = b_6m;
+        const b180_plus = b_9m + b_1y_plus;
 
         // Percentage breakdown for progress bars
         const pct0_30 = totalOutstanding > 0 ? (b0_30 / totalOutstanding) * 100 : 0;
@@ -192,13 +203,15 @@ export function useAnalyzerData() {
 
         // Mutually Exclusive Primary Bucket Allocation
         let primaryBucket = '0_30';
-        if (b180_plus > 100) {
-          primaryBucket = '180plus';
-        } else if (b90_180 > 100) {
+        if (b_1y_plus > 100) {
+          primaryBucket = '1y_plus';
+        } else if (b_9m > 100) {
+          primaryBucket = '9m';
+        } else if (b_6m > 100) {
           primaryBucket = '90_180';
-        } else if (b61_90 > 100) {
+        } else if (b_3m > 100) {
           primaryBucket = '61_90';
-        } else if (b31_60 > 100) {
+        } else if (b_2m > 100) {
           primaryBucket = '31_60';
         } else {
           primaryBucket = '0_30';
@@ -212,7 +225,19 @@ export function useAnalyzerData() {
           isDebtor: true,
           primaryBucket,
           rawLedger: ledger,
+          b_1m,
+          b_2m,
+          b_3m,
+          b_6m,
+          b_9m,
+          b_1y_plus,
           aging: {
+            b_1m,
+            b_2m,
+            b_3m,
+            b_6m,
+            b_9m,
+            b_1y_plus,
             b0_30,
             b31_60,
             b61_90,
@@ -512,9 +537,19 @@ export function useAnalyzerData() {
     return text;
   };
 
-  const getWhatsAppFollowupLink = (party) => {
-    const text = getWhatsAppFollowupText(party);
-    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  const getActiveAgingBuckets = (party) => {
+    if (!party) return [];
+    const aging = party.aging || party;
+    const list = [
+      { key: '1m', label: '< 1 Month', amount: party.b_1m || aging.b_1m || aging.b0_30 || 0, headerBg: 'bg-emerald-50 text-emerald-800', valueBg: 'bg-emerald-50/60 text-emerald-950', dot: 'bg-emerald-500' },
+      { key: '2m', label: '2 Months', amount: party.b_2m || aging.b_2m || aging.b31_60 || 0, headerBg: 'bg-amber-50 text-amber-800', valueBg: 'bg-amber-50/60 text-amber-950', dot: 'bg-amber-500' },
+      { key: '3m', label: '3 Months', amount: party.b_3m || aging.b_3m || aging.b61_90 || 0, headerBg: 'bg-orange-50 text-orange-800', valueBg: 'bg-orange-50/60 text-orange-950', dot: 'bg-orange-500' },
+      { key: '6m', label: '3–6 Months', amount: party.b_6m || aging.b_6m || aging.b90_180 || 0, headerBg: 'bg-rose-50 text-rose-800', valueBg: 'bg-rose-50/60 text-rose-950', dot: 'bg-rose-500' },
+      { key: '9m', label: '6–9 Months', amount: party.b_9m || aging.b_9m || 0, headerBg: 'bg-purple-50 text-purple-800', valueBg: 'bg-purple-50/60 text-purple-950', dot: 'bg-purple-500' },
+      { key: '1y_plus', label: '1 Year+', amount: party.b_1y_plus || aging.b_1y_plus || 0, headerBg: 'bg-red-50 text-red-900', valueBg: 'bg-red-50/60 text-red-950', dot: 'bg-red-500' }
+    ];
+    const active = list.filter(b => b.amount > 0);
+    return active.length > 0 ? active : [list[0]];
   };
 
   return {
@@ -536,6 +571,7 @@ export function useAnalyzerData() {
     formatINR,
     formatCompactINR,
     getWhatsAppFollowupText,
-    getWhatsAppFollowupLink
+    getWhatsAppFollowupLink,
+    getActiveAgingBuckets
   };
 }

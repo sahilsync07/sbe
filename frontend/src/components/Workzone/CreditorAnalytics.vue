@@ -282,59 +282,33 @@
             </div>
           </div>
 
-          <!-- ═══ 2-ROW AESTHETIC ROUNDED AGING TABLE ═══ -->
+          <!-- ═══ 2-ROW DYNAMIC AESTHETIC ROUNDED AGING TABLE (ONLY ACTIVE COLUMNS) ═══ -->
           <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-50/50 shadow-2xs">
-            <table class="w-full text-center text-xs min-w-[360px] border-collapse">
+            <table class="w-full text-center text-xs border-collapse">
               <thead>
                 <tr class="text-[10px] font-black uppercase tracking-wider divide-x divide-slate-200/70 border-b border-slate-200/70">
-                  <th class="py-1.5 px-2 bg-emerald-50/80 text-emerald-800">
-                    <span class="inline-flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      0–30d
-                    </span>
-                  </th>
-                  <th class="py-1.5 px-2 bg-amber-50/80 text-amber-800">
-                    <span class="inline-flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                      31–60d
-                    </span>
-                  </th>
-                  <th class="py-1.5 px-2 bg-orange-50/80 text-orange-800">
-                    <span class="inline-flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                      61–90d
-                    </span>
-                  </th>
-                  <th class="py-1.5 px-2 bg-rose-50/80 text-rose-800">
-                    <span class="inline-flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                      90–180d
-                    </span>
-                  </th>
-                  <th class="py-1.5 px-2 bg-purple-50/80 text-purple-800">
-                    <span class="inline-flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                      180+d
+                  <th
+                    v-for="bucket in getActiveAgingBuckets(party)"
+                    :key="bucket.key"
+                    class="py-1.5 px-2.5 transition-colors"
+                    :class="bucket.headerBg"
+                  >
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full" :class="bucket.dot"></span>
+                      {{ bucket.label }}
                     </span>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="divide-x divide-slate-200/70 text-xs sm:text-sm font-black">
-                  <td class="py-2 px-1.5 transition-colors" :class="party.b0_30 > 0 ? 'bg-emerald-50/60 text-emerald-950 font-black' : 'text-slate-300 bg-white font-normal'">
-                    {{ party.b0_30 > 0 ? formatINR(party.b0_30) : '—' }}
-                  </td>
-                  <td class="py-2 px-1.5 transition-colors" :class="party.b31_60 > 0 ? 'bg-amber-50/60 text-amber-950 font-black' : 'text-slate-300 bg-white font-normal'">
-                    {{ party.b31_60 > 0 ? formatINR(party.b31_60) : '—' }}
-                  </td>
-                  <td class="py-2 px-1.5 transition-colors" :class="party.b61_90 > 0 ? 'bg-orange-50/60 text-orange-950 font-black' : 'text-slate-300 bg-white font-normal'">
-                    {{ party.b61_90 > 0 ? formatINR(party.b61_90) : '—' }}
-                  </td>
-                  <td class="py-2 px-1.5 transition-colors" :class="party.b90_180 > 0 ? 'bg-rose-50/60 text-rose-950 font-black' : 'text-slate-300 bg-white font-normal'">
-                    {{ party.b90_180 > 0 ? formatINR(party.b90_180) : '—' }}
-                  </td>
-                  <td class="py-2 px-1.5 transition-colors" :class="party.b180_plus > 0 ? 'bg-purple-50/60 text-purple-950 font-black' : 'text-slate-300 bg-white font-normal'">
-                    {{ party.b180_plus > 0 ? formatINR(party.b180_plus) : '—' }}
+                  <td
+                    v-for="bucket in getActiveAgingBuckets(party)"
+                    :key="bucket.key"
+                    class="py-2.5 px-2 transition-colors font-black"
+                    :class="bucket.valueBg"
+                  >
+                    {{ formatINR(bucket.amount) }}
                   </td>
                 </tr>
               </tbody>
@@ -559,7 +533,8 @@ const {
   groupSummaries,
   summaryStats,
   formatINR,
-  getWhatsAppFollowupText
+  getWhatsAppFollowupText,
+  getActiveAgingBuckets
 } = useCreditorData();
 
 onMounted(async () => {

@@ -1,14 +1,20 @@
 export const APP_VERSION = {
-  code: 'sbe_028',
-  version: '1.5.5',
-  updatedAt: '03 Sep 2026, 10:46 PM',
-  commitTitle: 'SBE Update #028: Aesthetic 2-Row Rounded Aging Grid Table for Maximum Clarity',
+  code: 'sbe_029',
+  version: '1.5.6',
+  updatedAt: '03 Sep 2026, 10:56 PM',
+  commitTitle: 'SBE Update #029: Dynamic Active Columns Month-Based Aging Table for Debtors & Creditors',
   changes: [
+    {
+      tag: 'sbe_029',
+      date: '03 Sep 2026',
+      title: 'Dynamic Month-Based Aging in Debtors & Creditors',
+      details: 'Upgraded aging tenure to Month brackets (<1M, 2M, 3M, 3-6M, 6-9M, 1Y+). Applied dynamic 2-row rounded table to BOTH Debtors and Creditors that ONLY shows active columns with balance > 0, eliminating empty columns completely.'
+    },
     {
       tag: 'sbe_028',
       date: '03 Sep 2026',
       title: 'Aesthetic 2-Row Rounded Aging Table',
-      details: 'Replaced multi-colored progress bar with a high-contrast, rounded 2-row table (Headers + Tinted Value Cells) with subtle background fills and muted dashes for zero-balance buckets for instant executive scanability.'
+      details: 'Replaced multi-colored progress bar with a high-contrast, rounded 2-row table (Headers + Tinted Value Cells).'
     },
     {
       tag: 'sbe_027',
