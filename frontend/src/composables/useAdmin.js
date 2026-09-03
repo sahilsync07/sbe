@@ -70,15 +70,15 @@ export function useAdmin() {
                 appStore.setAdmin(true);
                 appStore.setSuperAdmin(false);
             } else if (value === 'superadmin') {
-                appStore.setAdmin(false);
+                appStore.setAdmin(true);
                 appStore.setSuperAdmin(true);
             } else if (value === 'sahil') {
                 appStore.setAdmin(true);
-                appStore.setSuperAdmin(false);
+                appStore.setSuperAdmin(true);
                 await checkWorkzoneAuth('sahil');
             } else if (value === 'slnp') {
                 appStore.setAdmin(true);
-                appStore.setSuperAdmin(false);
+                appStore.setSuperAdmin(true);
                 await checkWorkzoneAuth('slnp');
             }
         } catch (e) {
@@ -102,7 +102,7 @@ export function useAdmin() {
         if (hash === "1843142582894dbf0147fdc7a00e84dbf32e2e49ab5deee36b789ed50b712029") {
             // sahil123
             appStore.setAdmin(true);
-            appStore.setSuperAdmin(false);
+            appStore.setSuperAdmin(true);
             await setStoredRole('sahil');
             await loginWorkzone('sahil', password);
             isLoginModalOpen.value = false;
@@ -110,7 +110,7 @@ export function useAdmin() {
         } else if (hash === "56044901ecf7eaa11161c9362617080f0117da68659e62b46128b735b15ab844") {
             // slnp123
             appStore.setAdmin(true);
-            appStore.setSuperAdmin(false);
+            appStore.setSuperAdmin(true);
             await setStoredRole('slnp');
             await loginWorkzone('slnp', password);
             isLoginModalOpen.value = false;
@@ -125,7 +125,7 @@ export function useAdmin() {
             return { success: true, role: 'admin' };
         } else if (hash === "889a3a791b3875cfae413574b53da4bb8a90d53e7bfb616a1b24479e390c29ed") {
             // superadmin123
-            appStore.setAdmin(false);
+            appStore.setAdmin(true);
             appStore.setSuperAdmin(true);
             await setStoredRole('superadmin');
             toast.success("Super Admin Mode Enabled", { autoClose: 2000 });
