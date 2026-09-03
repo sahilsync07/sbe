@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_029',
-  version: '1.5.6',
-  updatedAt: '03 Sep 2026, 10:56 PM',
-  commitTitle: 'SBE Update #029: Dynamic Active Columns Month-Based Aging Table for Debtors & Creditors',
+  code: 'sbe_030',
+  version: '1.5.7',
+  updatedAt: '03 Sep 2026, 11:03 PM',
+  commitTitle: 'SBE Update #030: Restored WhatsApp Followup Link helper in useAnalyzerData & useCreditorData',
   changes: [
+    {
+      tag: 'sbe_030',
+      date: '03 Sep 2026',
+      title: 'WhatsApp Followup Helper Fix',
+      details: 'Restored getWhatsAppFollowupLink definition in both Debtors and Creditors composables, resolving runtime ReferenceError.'
+    },
     {
       tag: 'sbe_029',
       date: '03 Sep 2026',

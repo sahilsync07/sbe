@@ -537,6 +537,11 @@ export function useAnalyzerData() {
     return text;
   };
 
+  const getWhatsAppFollowupLink = (party) => {
+    const text = getWhatsAppFollowupText(party);
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  };
+
   const getActiveAgingBuckets = (party) => {
     if (!party) return [];
     const aging = party.aging || party;

@@ -632,6 +632,11 @@ export function useCreditorData() {
     return text;
   };
 
+  const getWhatsAppFollowupLink = (party) => {
+    const text = getWhatsAppFollowupText(party);
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  };
+
   const getActiveAgingBuckets = (party) => {
     if (!party) return [];
     const list = [
