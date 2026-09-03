@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen relative">
+  <div class="min-h-screen relative w-full max-w-full overflow-x-hidden">
 
     <BrandsSidebar
       :show-side-panel="showSidePanel"
@@ -100,17 +100,34 @@ const activeScrollGroup = ref('');
 const companyName = ref('SBE');
 
 
-// Load Config
+// Load Config with robust Offline Caching & Fallback
 const loadConfig = async () => {
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
-        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const conf = await response.json();
-        // Update store with loaded config
         appStore.$patch({ config: conf });
         companyName.value = conf.companyName || 'SBE';
+        try {
+            localStorage.setItem('sbe_config_cache', JSON.stringify(conf));
+        } catch (e) {}
     } catch (err) {
-        toast.error("Failed to load app configuration");
+        // Offline Fallback 1: LocalStorage Cache
+        try {
+            const cached = localStorage.getItem('sbe_config_cache');
+            if (cached) {
+                const conf = JSON.parse(cached);
+                appStore.$patch({ config: conf });
+                companyName.value = conf.companyName || 'SBE';
+                return;
+            }
+        } catch (e) {}
+        
+        // Offline Fallback 2: Built-in default config
+        const fallbackConfig = { companyName: 'SBE Rayagada', theme: 'blue' };
+        appStore.$patch({ config: fallbackConfig });
+        companyName.value = fallbackConfig.companyName;
     }
 };
 

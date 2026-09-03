@@ -1,6 +1,6 @@
 
 <template>
-  <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800 pb-20">
+  <div class="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 font-sans text-slate-800 pb-20">
     
 
 
@@ -50,6 +50,7 @@
       :current-product-index="currentProductIndex"
       :is-last-product="currentProductIndex >= currentGroupProducts.length - 1"
       :current-group-name="currentGroupName"
+      :total-products="currentGroupProducts.length"
       @close="closeImagePopup"
       @navigate="navigateImage"
     />
@@ -298,20 +299,56 @@ const currentProductIndex = ref(0);
 
 const openImagePopup = (product, groupIndex) => {
   currentProduct.value = product;
-  currentGroupIndex.value = groupIndex;
-  const group = filteredStockData.value[groupIndex];
-  if (group) {
-      currentGroupProducts.value = group.products;
-      currentGroupName.value = group.groupName;
-      currentProductIndex.value = group.products.findIndex((p) => p.productName === product.productName);
+  
+  const dataList = (filteredStockData.value && filteredStockData.value.length > 0)
+    ? filteredStockData.value
+    : (stockData.value || []);
+
+  let foundGroupIndex = groupIndex;
+  let foundGroup = null;
+
+  if (typeof foundGroupIndex === 'number' && dataList[foundGroupIndex]) {
+    foundGroup = dataList[foundGroupIndex];
+  } else {
+    // Search across dataList to find the group containing this product
+    for (let i = 0; i < dataList.length; i++) {
+      const g = dataList[i];
+      if (g.products && g.products.some(p => p.productName === product.productName)) {
+        foundGroupIndex = i;
+        foundGroup = g;
+        break;
+      }
+    }
+  }
+
+  if (foundGroup && Array.isArray(foundGroup.products) && foundGroup.products.length > 0) {
+    currentGroupIndex.value = foundGroupIndex;
+    currentGroupProducts.value = foundGroup.products;
+    currentGroupName.value = foundGroup.groupName;
+    const pIdx = foundGroup.products.findIndex(p => p.productName === product.productName);
+    currentProductIndex.value = pIdx >= 0 ? pIdx : 0;
+    currentProduct.value = foundGroup.products[currentProductIndex.value];
+  } else {
+    // Fallback: search all products across all groups
+    const allProducts = [];
+    dataList.forEach(g => {
+      if (g.products) allProducts.push(...g.products);
+    });
+    const pIdx = allProducts.findIndex(p => p.productName === product.productName);
+    currentGroupIndex.value = 0;
+    currentGroupProducts.value = allProducts.length > 0 ? allProducts : [product];
+    currentGroupName.value = foundGroup?.groupName || "Catalog";
+    currentProductIndex.value = pIdx >= 0 ? pIdx : 0;
   }
   
   showImagePopup.value = true;
   
   // URL Update
-  const url = new URL(window.location);
-  url.searchParams.set('product', product.productName);
-  window.history.pushState({}, '', url);
+  try {
+    const url = new URL(window.location);
+    url.searchParams.set('product', product.productName);
+    window.history.pushState({}, '', url);
+  } catch (e) {}
 };
 
 const closeImagePopup = ({ isPop = false } = {}) => {
@@ -323,12 +360,37 @@ const closeImagePopup = ({ isPop = false } = {}) => {
   currentProductIndex.value = 0;
   
   if (!isPop) {
-     selectedGroup.value = 'All'; // Reset group? Original logic did this.
-     window.history.replaceState(null, '', window.location.pathname);
+     selectedGroup.value = 'All';
+     try {
+       window.history.replaceState(null, '', window.location.pathname);
+     } catch (e) {}
   }
 };
 
+let isNavigating = false;
+
+const showToastOnce = (msg, id = 'nav-toast') => {
+  try {
+    toast.remove(id);
+    toast.info(msg, {
+      toastId: id,
+      autoClose: 1800,
+      closeOnClick: true,
+      pauseOnHover: false
+    });
+  } catch (e) {}
+};
+
 const navigateImage = (direction) => {
+  if (isNavigating) return;
+  isNavigating = true;
+  setTimeout(() => { isNavigating = false; }, 250);
+
+  if (!currentGroupProducts.value || currentGroupProducts.value.length === 0) {
+    showToastOnce("No products in current list", "nav-toast");
+    return;
+  }
+
   let newIndex = currentProductIndex.value + direction;
   
   // 1. Within current group
@@ -338,56 +400,56 @@ const navigateImage = (direction) => {
   } 
   // 2. Next Group
   else if (newIndex >= currentGroupProducts.value.length) {
-      // Find next group index
-      const nextGroupIndex = currentGroupIndex.value + 1;
-      if (nextGroupIndex < filteredStockData.value.length) {
-          // Switch to next group
-          currentGroupIndex.value = nextGroupIndex;
-          const nextGroup = filteredStockData.value[nextGroupIndex];
-          currentGroupProducts.value = nextGroup.products;
-          currentGroupName.value = nextGroup.groupName;
-          
-          // Start at 0
-          currentProductIndex.value = 0;
-          currentProduct.value = nextGroup.products[0];
-          
-          // Ensure group is expanded (optional interaction)
-          if (!expandedGroups.value[nextGroup.groupName]) {
-             expandedGroups.value[nextGroup.groupName] = true;
-          }
-      } else {
-          toast.info("You've reached the end of the list!");
-          return;
+    const dataList = (filteredStockData.value && filteredStockData.value.length > 0)
+      ? filteredStockData.value
+      : (stockData.value || []);
+      
+    const nextGroupIndex = (typeof currentGroupIndex.value === 'number' ? currentGroupIndex.value : 0) + 1;
+    if (nextGroupIndex < dataList.length) {
+      currentGroupIndex.value = nextGroupIndex;
+      const nextGroup = dataList[nextGroupIndex];
+      currentGroupProducts.value = nextGroup.products || [];
+      currentGroupName.value = nextGroup.groupName || "";
+      currentProductIndex.value = 0;
+      if (nextGroup.products && nextGroup.products[0]) {
+        currentProduct.value = nextGroup.products[0];
       }
+    } else {
+      showToastOnce("You've reached the end of the catalog!", "nav-toast");
+      return;
+    }
   }
   // 3. Previous Group
   else if (newIndex < 0) {
-      const prevGroupIndex = currentGroupIndex.value - 1;
-      if (prevGroupIndex >= 0) {
-          // Switch to prev group
-          currentGroupIndex.value = prevGroupIndex;
-          const prevGroup = filteredStockData.value[prevGroupIndex];
-          currentGroupProducts.value = prevGroup.products;
-          currentGroupName.value = prevGroup.groupName;
-          
-          // Start at last item
-          currentProductIndex.value = prevGroup.products.length - 1;
-          currentProduct.value = prevGroup.products[prevGroup.products.length - 1];
-          
-             // Ensure group is expanded
-          if (!expandedGroups.value[prevGroup.groupName]) {
-             expandedGroups.value[prevGroup.groupName] = true;
-          }
-      } else {
-          toast.info("This is the first item!");
-          return;
+    const dataList = (filteredStockData.value && filteredStockData.value.length > 0)
+      ? filteredStockData.value
+      : (stockData.value || []);
+      
+    const prevGroupIndex = (typeof currentGroupIndex.value === 'number' ? currentGroupIndex.value : 0) - 1;
+    if (prevGroupIndex >= 0) {
+      currentGroupIndex.value = prevGroupIndex;
+      const prevGroup = dataList[prevGroupIndex];
+      currentGroupProducts.value = prevGroup.products || [];
+      currentGroupName.value = prevGroup.groupName || "";
+      const lastIdx = (prevGroup.products && prevGroup.products.length > 0) ? prevGroup.products.length - 1 : 0;
+      currentProductIndex.value = lastIdx;
+      if (prevGroup.products && prevGroup.products[lastIdx]) {
+        currentProduct.value = prevGroup.products[lastIdx];
       }
+    } else {
+      showToastOnce("This is the first product in the catalog!", "nav-toast");
+      return;
+    }
   }
 
   // Update URL
-  const url = new URL(window.location);
-  url.searchParams.set('product', currentProduct.value.productName);
-  window.history.replaceState({}, '', url);
+  if (currentProduct.value && currentProduct.value.productName) {
+    try {
+      const url = new URL(window.location);
+      url.searchParams.set('product', currentProduct.value.productName);
+      window.history.replaceState({}, '', url);
+    } catch (e) {}
+  }
 };
 
 const toggleGroup = (groupName) => {
@@ -519,15 +581,31 @@ const handlePopState = () => {
     }
 };
 
-// Config Loading
+// Config Loading with robust Offline Caching & Fallback
 const loadConfig = async () => {
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
-        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         config.value = await response.json();
         companyName.value = config.value.companyName || 'SBE';
+        try {
+            localStorage.setItem('sbe_config_cache', JSON.stringify(config.value));
+        } catch (e) {}
     } catch (err) {
-        toast.error("Failed to load app configuration");
+        // Offline Fallback 1: LocalStorage Cache
+        try {
+            const cached = localStorage.getItem('sbe_config_cache');
+            if (cached) {
+                config.value = JSON.parse(cached);
+                companyName.value = config.value.companyName || 'SBE';
+                return;
+            }
+        } catch (e) {}
+        
+        // Offline Fallback 2: Built-in default config
+        config.value = { companyName: 'SBE Rayagada', theme: 'blue' };
+        companyName.value = config.value.companyName;
     }
 };
 

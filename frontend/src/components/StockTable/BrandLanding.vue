@@ -1,5 +1,5 @@
 <template>
-  <div class="brand-landing pb-24 text-slate-900 font-sans">
+  <div class="brand-landing pb-24 text-slate-900 font-sans w-full max-w-full overflow-x-hidden">
     
     <!-- ══════════════════════════════════════════════════════════
          1. TOP BAR: Search Bar & Cart (Single Row at the Very Top)

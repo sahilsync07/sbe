@@ -80,7 +80,16 @@ const handleError = () => {
   }
 };
 
-watch(() => props.src, loadImage);
+watch(() => props.src, (newSrc) => {
+  if (objectUrl.value) {
+    try {
+      URL.revokeObjectURL(objectUrl.value);
+    } catch (e) {}
+    objectUrl.value = null;
+  }
+  displaySrc.value = newSrc;
+  loadImage();
+});
 
 onMounted(loadImage);
 
