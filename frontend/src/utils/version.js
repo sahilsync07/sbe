@@ -1,14 +1,20 @@
 export const APP_VERSION = {
-  code: 'sbe_027',
-  version: '1.5.4',
-  updatedAt: '03 Sep 2026, 10:37 PM',
-  commitTitle: 'SBE Update #027: Consolidated Multi-Branch Paragon Creditor (Unified Aging, Statement & Branch Breakdown)',
+  code: 'sbe_028',
+  version: '1.5.5',
+  updatedAt: '03 Sep 2026, 10:46 PM',
+  commitTitle: 'SBE Update #028: Aesthetic 2-Row Rounded Aging Grid Table for Maximum Clarity',
   changes: [
+    {
+      tag: 'sbe_028',
+      date: '03 Sep 2026',
+      title: 'Aesthetic 2-Row Rounded Aging Table',
+      details: 'Replaced multi-colored progress bar with a high-contrast, rounded 2-row table (Headers + Tinted Value Cells) with subtle background fills and muted dashes for zero-balance buckets for instant executive scanability.'
+    },
     {
       tag: 'sbe_027',
       date: '03 Sep 2026',
       title: 'Consolidated Multi-Branch Paragon Creditor',
-      details: 'Clubbed all 9 Paragon state branch accounts (Bangalore, Kerala, Central, Medak, Tamil Nadu, Haryana, Delhi, WB, Hyderabad) into 1 Master Consolidated Creditor (Rs. 87.85L net payable). Added branch tags to bills, expandable branch-wise breakdown, and unified WhatsApp & PDF statement sharing.'
+      details: 'Clubbed all 9 Paragon state branch accounts (Bangalore, Kerala, Central, Medak, Tamil Nadu, Haryana, Delhi, WB, Hyderabad) into 1 Master Consolidated Creditor (Rs. 87.85L net payable).'
     },
     {
       tag: 'sbe_026',

@@ -282,34 +282,63 @@
             </div>
           </div>
 
-          <!-- 5-Bucket Visual Bar -->
-          <div class="space-y-1.5">
-            <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-              <div v-if="party.b0_30 > 0" :style="{ width: (party.b0_30 / party.totalPayable * 100) + '%' }" class="bg-emerald-500 h-full" title="0-30 Days"></div>
-              <div v-if="party.b31_60 > 0" :style="{ width: (party.b31_60 / party.totalPayable * 100) + '%' }" class="bg-amber-500 h-full" title="31-60 Days"></div>
-              <div v-if="party.b61_90 > 0" :style="{ width: (party.b61_90 / party.totalPayable * 100) + '%' }" class="bg-orange-500 h-full" title="61-90 Days"></div>
-              <div v-if="party.b90_180 > 0" :style="{ width: (party.b90_180 / party.totalPayable * 100) + '%' }" class="bg-rose-500 h-full" title="90-180 Days"></div>
-              <div v-if="party.b180_plus > 0" :style="{ width: (party.b180_plus / party.totalPayable * 100) + '%' }" class="bg-purple-500 h-full" title="180+ Days"></div>
-            </div>
-
-            <!-- Bucket Breakdown Numbers -->
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px] sm:text-[11px] font-bold pt-1">
-              <span v-if="party.b0_30 > 0" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60 whitespace-nowrap">
-                0–30d: {{ formatINR(party.b0_30) }}
-              </span>
-              <span v-if="party.b31_60 > 0" class="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/60 whitespace-nowrap">
-                31–60d: {{ formatINR(party.b31_60) }}
-              </span>
-              <span v-if="party.b61_90 > 0" class="px-2 py-0.5 rounded-lg bg-orange-50 text-orange-800 border border-orange-200/60 whitespace-nowrap">
-                61–90d: {{ formatINR(party.b61_90) }}
-              </span>
-              <span v-if="party.b90_180 > 0" class="px-2 py-0.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200/60 whitespace-nowrap">
-                90–180d: {{ formatINR(party.b90_180) }}
-              </span>
-              <span v-if="party.b180_plus > 0" class="px-2 py-0.5 rounded-lg bg-purple-50 text-purple-800 border border-purple-200/60 whitespace-nowrap">
-                180+d: {{ formatINR(party.b180_plus) }}
-              </span>
-            </div>
+          <!-- ═══ 2-ROW AESTHETIC ROUNDED AGING TABLE ═══ -->
+          <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-50/50 shadow-2xs">
+            <table class="w-full text-center text-xs min-w-[360px] border-collapse">
+              <thead>
+                <tr class="text-[10px] font-black uppercase tracking-wider divide-x divide-slate-200/70 border-b border-slate-200/70">
+                  <th class="py-1.5 px-2 bg-emerald-50/80 text-emerald-800">
+                    <span class="inline-flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      0–30d
+                    </span>
+                  </th>
+                  <th class="py-1.5 px-2 bg-amber-50/80 text-amber-800">
+                    <span class="inline-flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      31–60d
+                    </span>
+                  </th>
+                  <th class="py-1.5 px-2 bg-orange-50/80 text-orange-800">
+                    <span class="inline-flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                      61–90d
+                    </span>
+                  </th>
+                  <th class="py-1.5 px-2 bg-rose-50/80 text-rose-800">
+                    <span class="inline-flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                      90–180d
+                    </span>
+                  </th>
+                  <th class="py-1.5 px-2 bg-purple-50/80 text-purple-800">
+                    <span class="inline-flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                      180+d
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="divide-x divide-slate-200/70 text-xs sm:text-sm font-black">
+                  <td class="py-2 px-1.5 transition-colors" :class="party.b0_30 > 0 ? 'bg-emerald-50/60 text-emerald-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ party.b0_30 > 0 ? formatINR(party.b0_30) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5 transition-colors" :class="party.b31_60 > 0 ? 'bg-amber-50/60 text-amber-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ party.b31_60 > 0 ? formatINR(party.b31_60) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5 transition-colors" :class="party.b61_90 > 0 ? 'bg-orange-50/60 text-orange-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ party.b61_90 > 0 ? formatINR(party.b61_90) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5 transition-colors" :class="party.b90_180 > 0 ? 'bg-rose-50/60 text-rose-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ party.b90_180 > 0 ? formatINR(party.b90_180) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5 transition-colors" :class="party.b180_plus > 0 ? 'bg-purple-50/60 text-purple-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ party.b180_plus > 0 ? formatINR(party.b180_plus) : '—' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <!-- Bottom Actions: Branch Breakdown + Bill-Wise Collapsible + WhatsApp + PDF -->
@@ -456,13 +485,38 @@
             </div>
           </div>
 
-          <!-- Group Visual Bar -->
-          <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-            <div v-if="group.b0_30 > 0" :style="{ width: (group.b0_30 / group.totalPayable * 100) + '%' }" class="bg-emerald-500 h-full"></div>
-            <div v-if="group.b31_60 > 0" :style="{ width: (group.b31_60 / group.totalPayable * 100) + '%' }" class="bg-amber-500 h-full"></div>
-            <div v-if="group.b61_90 > 0" :style="{ width: (group.b61_90 / group.totalPayable * 100) + '%' }" class="bg-orange-500 h-full"></div>
-            <div v-if="group.b90_180 > 0" :style="{ width: (group.b90_180 / group.totalPayable * 100) + '%' }" class="bg-rose-500 h-full"></div>
-            <div v-if="group.b180_plus > 0" :style="{ width: (group.b180_plus / group.totalPayable * 100) + '%' }" class="bg-purple-500 h-full"></div>
+          <!-- 2-Row Aesthetic Group Aging Table -->
+          <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-50/50 shadow-2xs">
+            <table class="w-full text-center text-xs min-w-[360px] border-collapse">
+              <thead>
+                <tr class="text-[10px] font-black uppercase tracking-wider divide-x divide-slate-200/70 border-b border-slate-200/70">
+                  <th class="py-1.5 px-2 bg-emerald-50/80 text-emerald-800">0–30d</th>
+                  <th class="py-1.5 px-2 bg-amber-50/80 text-amber-800">31–60d</th>
+                  <th class="py-1.5 px-2 bg-orange-50/80 text-orange-800">61–90d</th>
+                  <th class="py-1.5 px-2 bg-rose-50/80 text-rose-800">90–180d</th>
+                  <th class="py-1.5 px-2 bg-purple-50/80 text-purple-800">180+d</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="divide-x divide-slate-200/70 text-xs sm:text-sm font-black">
+                  <td class="py-2 px-1.5" :class="group.b0_30 > 0 ? 'bg-emerald-50/60 text-emerald-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ group.b0_30 > 0 ? formatINR(group.b0_30) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5" :class="group.b31_60 > 0 ? 'bg-amber-50/60 text-amber-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ group.b31_60 > 0 ? formatINR(group.b31_60) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5" :class="group.b61_90 > 0 ? 'bg-orange-50/60 text-orange-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ group.b61_90 > 0 ? formatINR(group.b61_90) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5" :class="group.b90_180 > 0 ? 'bg-rose-50/60 text-rose-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ group.b90_180 > 0 ? formatINR(group.b90_180) : '—' }}
+                  </td>
+                  <td class="py-2 px-1.5" :class="group.b180_plus > 0 ? 'bg-purple-50/60 text-purple-950 font-black' : 'text-slate-300 bg-white font-normal'">
+                    {{ group.b180_plus > 0 ? formatINR(group.b180_plus) : '—' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <!-- List of Suppliers in this group -->
