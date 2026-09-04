@@ -10,6 +10,7 @@ import LineListView from "@/views/LineListView.vue";
 import QuotationView from "@/views/QuotationView.vue";
 import AnalyzerView from "@/views/AnalyzerView.vue";
 import OrderMakerView from "@/views/OrderMakerView.vue";
+import WorkzoneView from "@/views/WorkzoneView.vue";
 import { useAdmin } from "@/composables/useAdmin";
 
 const PdfGenerator = () => import('@/components/PdfGenerator.vue');
@@ -27,6 +28,7 @@ const routes = [
   { path: "/old-stock", component: OldStockView },
   { path: "/analyzer", component: AnalyzerView },
   { path: "/order-maker", component: OrderMakerView },
+  { path: "/workzone/:zone", component: WorkzoneView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];

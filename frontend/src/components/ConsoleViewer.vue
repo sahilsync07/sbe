@@ -1,21 +1,27 @@
 <template>
-  <div class="flex flex-col h-full bg-slate-950 border-l border-slate-800 shadow-2xl font-mono text-[11px] overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 shadow-sm shrink-0">
+  <div class="flex flex-col h-full bg-slate-950 border-t lg:border-l lg:border-t-0 border-slate-800 shadow-2xl font-mono text-[11px] overflow-hidden select-text">
+    <div class="flex items-center justify-between px-3.5 py-2 bg-slate-900 border-b border-slate-800 shadow-sm shrink-0">
       <div class="flex items-center gap-2">
-        <i class="fa-solid fa-terminal text-slate-400 text-xs"></i>
+        <i class="fa-solid fa-terminal text-emerald-400 text-xs"></i>
         <h2 class="text-xs font-bold text-slate-200 tracking-wider">SYSTEM LOGS</h2>
+        <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-semibold">{{ logs.length }}</span>
       </div>
-      <button @click="clearLogs" class="text-slate-500 hover:text-red-400 transition-colors" title="Clear Logs">
-        <i class="fa-solid fa-trash-can text-xs"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button @click="clearLogs" class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors cursor-pointer" title="Clear Logs">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+        </button>
+        <button @click="$emit('close')" class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer" title="Close Logs">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
     </div>
     
-    <div class="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar" ref="logsContainer">
+    <div class="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar select-text" ref="logsContainer">
       <div v-for="(log, idx) in logs" :key="idx" class="break-words font-medium leading-relaxed" :class="getLogColor(log.type)">
         <span class="opacity-50 mr-2 text-[9px] select-none">[{{ log.time }}]</span>
         <span class="whitespace-pre-wrap">{{ log.message }}</span>
       </div>
-      <div v-if="logs.length === 0" class="text-slate-600 italic text-center mt-10">
+      <div v-if="logs.length === 0" class="text-slate-600 italic text-center mt-6">
         Waiting for logs...
       </div>
     </div>
@@ -24,6 +30,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+
+defineEmits(['close']);
 
 const logs = ref([]);
 const logsContainer = ref(null);

@@ -31,7 +31,7 @@
             <button
               v-if="isAdmin || isSuperAdmin"
               @click="toggleConsole"
-              class="hub-icon-btn hub-icon-btn--console hidden lg:flex"
+              class="hub-icon-btn hub-icon-btn--console"
               :class="{ 'hub-icon-btn--active': showConsole }"
               title="Toggle Console"
             >
@@ -99,10 +99,20 @@
       </div>
     </main>
 
+    <!-- Admin Console Responsive Bottom Sheet (Mobile 1/4 Screen Height) -->
+    <Transition name="console-sheet">
+      <div
+        v-if="(isAdmin || isSuperAdmin) && showConsole"
+        class="fixed inset-x-0 bottom-0 z-50 h-[28vh] min-h-[190px] max-h-[35vh] lg:hidden bg-slate-950 border-t border-slate-800 shadow-2xl rounded-t-2xl overflow-hidden"
+      >
+        <ConsoleViewer @close="showConsole = false" />
+      </div>
+    </Transition>
+
     <!-- Admin Console Sidebar (Desktop only, collapsible) -->
     <Transition name="console-slide">
       <aside v-if="(isAdmin || isSuperAdmin) && showConsole" class="hub-console hidden lg:flex">
-        <ConsoleViewer />
+        <ConsoleViewer @close="showConsole = false" />
       </aside>
     </Transition>
   </div>
@@ -620,6 +630,16 @@ onMounted(async () => {
 .console-slide-enter-from,
 .console-slide-leave-to {
   width: 0 !important;
+  opacity: 0;
+}
+
+.console-sheet-enter-active,
+.console-sheet-leave-active {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+.console-sheet-enter-from,
+.console-sheet-leave-to {
+  transform: translateY(100%);
   opacity: 0;
 }
 </style>

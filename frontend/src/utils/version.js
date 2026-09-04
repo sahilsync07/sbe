@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_031',
-  version: '1.5.8',
-  updatedAt: '04 Sep 2026, 09:16 AM',
-  commitTitle: 'SBE Update #031: Deploy SBE Hub to All Non-Production Tracks (Internal, Alpha, Beta)',
+  code: 'sbe_032',
+  version: '1.5.9',
+  updatedAt: '04 Sep 2026, 09:59 AM',
+  commitTitle: 'SBE Update #032: Mobile Workzone Route Support & 1/4-Screen Bottom Sheet Console',
   changes: [
+    {
+      tag: 'sbe_032',
+      date: '04 Sep 2026',
+      title: 'Phone Workzone & Mobile Console Sheet',
+      details: 'Registered WorkzoneView in sbe-hub router fixing phone card navigation. Added mobile terminal console button and sleek 1/4-screen bottom drawer sheet with live logs and clear/close controls.'
+    },
     {
       tag: 'sbe_031',
       date: '04 Sep 2026',
