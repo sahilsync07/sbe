@@ -1,9 +1,15 @@
 export const APP_VERSION = {
-  code: 'sbe_030',
-  version: '1.5.7',
-  updatedAt: '03 Sep 2026, 11:03 PM',
-  commitTitle: 'SBE Update #030: Restored WhatsApp Followup Link helper in useAnalyzerData & useCreditorData',
+  code: 'sbe_031',
+  version: '1.5.8',
+  updatedAt: '04 Sep 2026, 09:16 AM',
+  commitTitle: 'SBE Update #031: Deploy SBE Hub to All Non-Production Tracks (Internal, Alpha, Beta)',
   changes: [
+    {
+      tag: 'sbe_031',
+      date: '04 Sep 2026',
+      title: 'Multi-Track Android Deployment for SBE Hub',
+      details: 'Configured automated Google Play deployment across all testing tracks (Internal Testing, Closed Alpha, Open Beta) excluding production, ensuring instant in-app update delivery.'
+    },
     {
       tag: 'sbe_030',
       date: '03 Sep 2026',
