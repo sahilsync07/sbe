@@ -107,6 +107,7 @@ jobs:
 
       - name: Re-attempt Upload to Google Play (Internal)
         if: steps.upload_internal.outcome == 'failure'
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
@@ -114,6 +115,9 @@ jobs:
           releaseFiles: sbe-hub/android/app/build/outputs/bundle/release/app-release.aab
           track: internal
           status: completed
+
+      - name: Pause to Finalize Google Play Edit Session
+        run: sleep 10
 
       # ─── 2. UPLOAD TO CLOSED TESTING (Alpha) ───
       - name: Upload to Google Play (Closed Testing - Alpha)
@@ -133,6 +137,7 @@ jobs:
 
       - name: Re-attempt Upload to Google Play (Alpha)
         if: steps.upload_alpha.outcome == 'failure'
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
@@ -140,6 +145,9 @@ jobs:
           releaseFiles: sbe-hub/android/app/build/outputs/bundle/release/app-release.aab
           track: alpha
           status: completed
+
+      - name: Pause to Finalize Google Play Edit Session
+        run: sleep 10
 
       # ─── 3. UPLOAD TO OPEN TESTING (Beta) ───
       - name: Upload to Google Play (Open Testing - Beta)
@@ -159,6 +167,7 @@ jobs:
 
       - name: Re-attempt Upload to Google Play (Beta)
         if: steps.upload_beta.outcome == 'failure'
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
