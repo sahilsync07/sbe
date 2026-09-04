@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: google-play-deploy-sbe
+  group: google-play-deploy-queue
   cancel-in-progress: false
 
 jobs:
@@ -62,12 +62,28 @@ jobs:
 
 
       - name: Upload to Play Store
+        id: upload_internal
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.sbe.stock.app
           releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
           track: internal # Changed to internal for closed testing/instant deployment
+          status: completed
+
+      - name: Retry Upload to Play Store (Internal)
+        if: steps.upload_internal.outcome == 'failure'
+        run: sleep 30
+
+      - name: Re-attempt Upload to Play Store (Internal)
+        if: steps.upload_internal.outcome == 'failure'
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.sbe.stock.app
+          releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
+          track: internal
           status: completed
           # inAppUpdatePriority: 2
           # userFraction: 0.33

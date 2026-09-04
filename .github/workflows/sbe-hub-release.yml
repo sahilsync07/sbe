@@ -31,7 +31,7 @@ on:
           - halted
 
 concurrency:
-  group: google-play-deploy-sbe-hub
+  group: google-play-deploy-queue
   cancel-in-progress: false
 
 jobs:
@@ -89,6 +89,22 @@ jobs:
           ./gradlew bundleRelease
 
       - name: Upload to Google Play Console
+        id: upload_hub
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.sbe.hub
+          releaseFiles: sbe-hub/android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event_name == 'push' && 'alpha' || github.event.inputs.track }}
+          status: ${{ github.event_name == 'push' && 'completed' || github.event.inputs.status }}
+
+      - name: Wait before retry if failed
+        if: steps.upload_hub.outcome == 'failure'
+        run: sleep 30
+
+      - name: Re-attempt Upload to Google Play Console
+        if: steps.upload_hub.outcome == 'failure'
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}

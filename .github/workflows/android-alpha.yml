@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: google-play-deploy-sbe
+  group: google-play-deploy-queue
   cancel-in-progress: false
 
 jobs:
@@ -63,6 +63,22 @@ jobs:
 
 
       - name: Upload to Play Store (Alpha)
+        id: upload_alpha
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.sbe.stock.app
+          releaseFiles: frontend/android/app/build/outputs/bundle/release/app-release.aab
+          track: alpha
+          status: completed
+
+      - name: Retry Upload to Play Store (Alpha)
+        if: steps.upload_alpha.outcome == 'failure'
+        run: sleep 30
+
+      - name: Re-attempt Upload to Play Store (Alpha)
+        if: steps.upload_alpha.outcome == 'failure'
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
