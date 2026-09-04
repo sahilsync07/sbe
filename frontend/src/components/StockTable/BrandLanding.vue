@@ -4,12 +4,12 @@
     <!-- ══════════════════════════════════════════════════════════
          1. TOP BAR: Search Bar & Cart (Single Row at the Very Top)
          ══════════════════════════════════════════════════════════ -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-3 sm:px-6 pb-2 transition-all" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-2.5 sm:px-6 pb-2 transition-all w-full max-w-full overflow-hidden" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
       <!-- Search Bar + Cart Button Row -->
-      <div class="flex items-center gap-2.5">
-        <div class="flex-1 relative" ref="searchContainerRef">
-          <div class="flex items-center gap-2 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 shadow-sm p-1 pl-3.5 focus-within:border-[#c59b27] focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm shrink-0"></i>
+      <div class="flex items-center gap-1.5 sm:gap-2.5 w-full">
+        <div class="flex-1 min-w-0 relative" ref="searchContainerRef">
+          <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 shadow-sm p-1 pl-2.5 sm:pl-3.5 focus-within:border-[#c59b27] focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs sm:text-sm shrink-0"></i>
             
             <input
               v-model="localQuery"
@@ -17,40 +17,40 @@
               @keydown.enter="handleSearchSubmit(localQuery)"
               type="text"
               placeholder="Search products..."
-              class="flex-1 min-w-0 bg-transparent text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none py-1.5"
+              class="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none py-1.5"
             />
 
             <button
               v-if="localQuery"
               @click="localQuery = ''; showDropdown = false"
-              class="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
+              class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
             >
               <i class="fa-solid fa-xmark text-xs"></i>
             </button>
 
             <!-- Vertical Divider -->
-            <div class="h-6 w-px bg-slate-200 shrink-0 mx-0.5"></div>
+            <div class="h-5 sm:h-6 w-px bg-slate-200 shrink-0 mx-0.5"></div>
 
             <!-- Clean View Switch (Zomato VEG MODE Style) -->
             <button
               @click="cleanView = !cleanView"
               type="button"
-              class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all select-none shrink-0"
+              class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-xl transition-all select-none shrink-0"
               :class="cleanView ? 'bg-amber-50 border border-amber-300/80 text-amber-900' : 'bg-white border border-slate-200/70 text-slate-500'"
               title="Toggle Images Only & In Stock"
             >
               <div class="flex flex-col text-right leading-none">
-                <span class="text-[9px] font-black uppercase tracking-wider" :class="cleanView ? 'text-amber-800' : 'text-slate-600'">CLEAN</span>
-                <span class="text-[8px] font-bold" :class="cleanView ? 'text-amber-600' : 'text-slate-400'">VIEW</span>
+                <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider" :class="cleanView ? 'text-amber-800' : 'text-slate-600'">CLEAN</span>
+                <span class="hidden sm:inline text-[8px] font-bold" :class="cleanView ? 'text-amber-600' : 'text-slate-400'">VIEW</span>
               </div>
               <!-- Custom Toggle Pill -->
               <div
-                class="w-7 h-4 rounded-full p-0.5 transition-colors relative"
+                class="w-6 sm:w-7 h-3.5 sm:h-4 rounded-full p-0.5 transition-colors relative"
                 :class="cleanView ? 'bg-[#c59b27]' : 'bg-slate-300'"
               >
                 <div
-                  class="w-3 h-3 rounded-full bg-white shadow-sm transition-transform"
-                  :class="cleanView ? 'translate-x-3' : 'translate-x-0'"
+                  class="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-white shadow-sm transition-transform"
+                  :class="cleanView ? 'translate-x-2.5 sm:translate-x-3' : 'translate-x-0'"
                 ></div>
               </div>
             </button>
@@ -133,47 +133,47 @@
         <button
           v-if="isAdmin || isSuperAdmin"
           @click="handleSync"
-          class="w-11 h-11 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0"
           title="Sync Stock from Tally"
         >
-          <i class="fa-solid fa-rotate text-sm" :class="{ 'animate-spin text-amber-500': isSyncing }"></i>
+          <i class="fa-solid fa-rotate text-xs sm:text-sm" :class="{ 'animate-spin text-amber-500': isSyncing }"></i>
         </button>
 
         <!-- Admin Login / Hub Button -->
         <button
           v-if="!isAdmin && !isSuperAdmin"
-          @click="emit('promptAdminLogin')"
-          class="w-11 h-11 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all hover:bg-slate-50 active:scale-95 shadow-sm shrink-0"
+          @click="appStore.toggleAdminModal(true)"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all hover:bg-slate-50 active:scale-95 shadow-sm shrink-0"
           title="Admin Login"
         >
-          <i class="fa-solid fa-lock text-sm"></i>
+          <i class="fa-solid fa-lock text-xs sm:text-sm"></i>
         </button>
         <button
           v-else
           @click="$router.push('/home')"
-          class="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-300/80 text-amber-700 hover:bg-amber-100 flex items-center justify-center transition-all active:scale-95 shadow-sm shrink-0"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-50 border border-amber-300/80 text-amber-700 hover:bg-amber-100 flex items-center justify-center transition-all active:scale-95 shadow-sm shrink-0"
           title="SBE Hub"
         >
-          <i class="fa-solid fa-shield-halved text-sm"></i>
+          <i class="fa-solid fa-shield-halved text-xs sm:text-sm"></i>
         </button>
 
         <!-- Right: Shopping Bag Cart Button -->
         <button
           @click="appStore.toggleCart(true)"
-          class="relative w-11 h-11 rounded-2xl bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10 shrink-0"
+          class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10 shrink-0"
           title="View Cart"
         >
           <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-white animate-pulse">
             {{ cartTotalItems }}
           </div>
-          <i class="fa-solid fa-bag-shopping text-sm text-amber-400"></i>
+          <i class="fa-solid fa-bag-shopping text-xs sm:text-sm text-amber-400"></i>
         </button>
       </div>
 
       <!-- ══════════════════════════════════════════════════════════
            2. BRAND TABS: Circular Brand Icons (Zomato Category Bar)
            ══════════════════════════════════════════════════════════ -->
-      <div class="mt-2.5 -mx-3 sm:-mx-6 px-3 sm:px-6 overflow-x-auto no-scrollbar border-t border-slate-100/60 pt-2">
+      <div class="mt-2.5 w-full overflow-x-auto no-scrollbar border-t border-slate-100/60 pt-2">
         <div class="flex items-center gap-3 sm:gap-4.5 min-w-max pb-1">
           <button
             v-for="tab in brandTabs"

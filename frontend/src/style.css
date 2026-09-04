@@ -13,10 +13,14 @@
   --dark-elevated: #1a1a1e;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html,
 body {
   overflow-x: hidden;
-  max-width: 100vw;
+  max-width: 100%;
   width: 100%;
   overscroll-behavior-x: none;
   -webkit-overflow-scrolling: touch;
@@ -27,7 +31,7 @@ body {
 #app {
   min-height: 100vh;
   min-height: 100dvh;
-  max-width: 100vw;
+  max-width: 100%;
   width: 100%;
   overflow-x: hidden;
 }

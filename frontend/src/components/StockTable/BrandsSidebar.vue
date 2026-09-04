@@ -318,7 +318,7 @@ const getOptimizedUrl = (imageUrl) => {
      try {
         const parts = imageUrl.split("/upload/");
         if (parts.length !== 2) return imageUrl;
-        const transformation = "w_400,q_70,f_auto"; 
+        const transformation = "w_120,q_auto:eco,f_auto"; 
         return `${parts[0]}/upload/${transformation}/${parts[1]}`;
       } catch (e) {
         return imageUrl;

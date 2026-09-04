@@ -66,7 +66,7 @@ const route = useRoute();
 const router = useRouter();
 
 const appStore = useAppStore();
-const { stockData, config, searchQuery } = storeToRefs(appStore);
+const { stockData, config, searchQuery, showSidePanel, showCart, showAdminModal } = storeToRefs(appStore);
 
 watch(() => route.query.login, (newVal) => {
   if (newVal === 'admin') {
@@ -84,9 +84,6 @@ const hideMobileBottomBar = computed(() => {
 });
 
 // UI State
-const showSidePanel = ref(false);
-const showCart = ref(false);
-const showAdminModal = ref(false);
 const activeScrollGroup = ref('');
 const companyName = ref('SBE');
 

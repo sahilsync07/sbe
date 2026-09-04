@@ -162,7 +162,7 @@ const getOptimizedUrl = (imageUrl) => {
     try {
         const parts = imageUrl.split("/upload/");
         if (parts.length !== 2) return imageUrl;
-        const transformation = "w_200,q_70,f_auto"; // Thumbnails in cart
+        const transformation = "w_120,q_auto:eco,f_auto"; // Thumbnails in cart
         return `${parts[0]}/upload/${transformation}/${parts[1]}`;
     } catch (e) {
         return imageUrl;

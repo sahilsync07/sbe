@@ -13,6 +13,7 @@ export const useAppStore = defineStore('app', {
     showCart: false,
     showSidePanel: false,
     showLanding: true,
+    showAdminModal: false,
   }),
   actions: {
     setShowLanding(status) {
@@ -50,6 +51,9 @@ export const useAppStore = defineStore('app', {
       if (this.showSidePanel) {
         this.searchQuery = '';
       }
+    },
+    toggleAdminModal(forceVal) {
+      this.showAdminModal = forceVal !== undefined ? forceVal : !this.showAdminModal;
     }
   }
 });

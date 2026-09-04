@@ -28,14 +28,17 @@ export function normalizeId(name) {
 /**
  * Get optimized Cloudinary URL with transformations
  * @param {string} imageUrl - Original image URL
+ * @param {string} [customTransformation] - Custom Cloudinary transformation string
  * @returns {string|null} Optimized URL or null
  */
-export function getOptimizedImageUrl(imageUrl) {
+export function getOptimizedImageUrl(imageUrl, customTransformation = 'w_300,q_auto:eco,f_auto') {
     if (!imageUrl) return null;
     try {
         const parts = imageUrl.split('/upload/');
         if (parts.length !== 2) return imageUrl;
-        const transformation = 'w_400,q_70,f_auto';
+        let transformation = customTransformation || 'w_300,q_auto:eco,f_auto';
+        if (!transformation.includes('f_auto')) transformation += ',f_auto';
+        if (!transformation.includes('q_auto') && !transformation.includes('q_')) transformation += ',q_auto:eco';
         return `${parts[0]}/upload/${transformation}/${parts[1]}`;
     } catch (e) {
         return imageUrl;
