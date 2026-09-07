@@ -375,32 +375,153 @@ export function useStockData(isLocal) {
         }
     };
 
-    const uploadImage = async (product, file, groupName) => {
-        const key = product.productName;
-        uploading.value[key] = true;
-        uploadErrors.value[key] = null;
+    const handleFileChange = (event, productName) => {
+        const file = event?.target?.files?.[0];
+        if (file) {
+            imageFiles.value[productName] = file;
+            uploadErrors.value[productName] = null;
+        }
+    };
 
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('productName', product.productName);
-        formData.append('groupName', groupName);
+    const uploadImage = async (productOrName, fileOverride = null) => {
+        const productName = typeof productOrName === 'object' ? productOrName?.productName : productOrName;
+        if (!productName) return null;
+
+        const file = fileOverride || imageFiles.value[productName];
+        if (!file) {
+            toast.warning('Please select an image file first.', { autoClose: 2500 });
+            return null;
+        }
+
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sbe-stock';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+        uploading.value[productName] = true;
+        uploadErrors.value[productName] = null;
+        const toastId = toast.loading(`Uploading photo for ${productName}...`, { autoClose: false, closeButton: false });
 
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/uploadImage`,
-                formData,
-                { headers: { 'Content-Type': 'multipart/form-data' } }
-            );
+            // 1. Direct upload to Cloudinary using unsigned preset
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
 
-            product.imageUrl = response.data.imageUrl;
-            delete imageFiles.value[key];
-            toast.success('Image uploaded successfully!', { autoClose: 2000 });
+            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadRes.ok) {
+                const errData = await uploadRes.json().catch(() => ({}));
+                throw new Error(errData.error?.message || `Cloudinary upload failed (HTTP ${uploadRes.status})`);
+            }
+
+            const uploadData = await uploadRes.json();
+            const newImageUrl = uploadData.secure_url;
+            if (!newImageUrl) {
+                throw new Error('No image URL returned from upload provider');
+            }
+
+            // 2. Persist to backend stock-data.json (if sync server is running)
+            try {
+                await axios.post(`${backendUrl}/api/updateImage`, {
+                    productName,
+                    imageUrl: newImageUrl
+                }, { timeout: 15000 });
+                console.log(`Backend stock-data.json updated for ${productName}`);
+            } catch (backendErr) {
+                console.warn('Backend updateImage failed (may be offline/remote):', backendErr.message);
+            }
+
+            // 3. Update memory state reactively across stockData
+            const nowIso = new Date().toISOString();
+            if (stockData.value && Array.isArray(stockData.value)) {
+                stockData.value.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        if (p.productName === productName) {
+                            p.imageUrl = newImageUrl;
+                            p.imageUploadedAt = nowIso;
+                        }
+                    });
+                });
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+                } catch (e) {}
+            }
+
+            if (typeof productOrName === 'object' && productOrName) {
+                productOrName.imageUrl = newImageUrl;
+                productOrName.imageUploadedAt = nowIso;
+            }
+
+            delete imageFiles.value[productName];
+            toast.remove(toastId);
+            toast.success(`✓ Photo uploaded for ${productName}!`, { autoClose: 3000 });
+            return newImageUrl;
         } catch (err) {
-            console.error(err);
-            uploadErrors.value[key] = err.response?.data?.error || err.message;
-            toast.error(`Failed to upload image: ${uploadErrors.value[key]}`, { autoClose: 4000 });
+            console.error('Error uploading image:', err);
+            toast.remove(toastId);
+            uploadErrors.value[productName] = err.message;
+            toast.error(`Upload failed: ${err.message}`, { autoClose: 4500 });
+            return null;
         } finally {
-            uploading.value[key] = false;
+            uploading.value[productName] = false;
+        }
+    };
+
+    const deleteImage = async (productOrName) => {
+        const productName = typeof productOrName === 'object' ? productOrName?.productName : productOrName;
+        if (!productName) return false;
+
+        if (!confirm(`Are you sure you want to remove the photo for "${productName}"?`)) {
+            return false;
+        }
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+        uploading.value[productName] = true;
+        const toastId = toast.loading(`Removing photo for ${productName}...`, { autoClose: false, closeButton: false });
+
+        try {
+            // 1. Persist to backend removeImage
+            try {
+                await axios.post(`${backendUrl}/api/removeImage`, {
+                    productName
+                }, { timeout: 15000 });
+                console.log(`Backend removeImage succeeded for ${productName}`);
+            } catch (backendErr) {
+                console.warn('Backend removeImage failed (may be offline/remote):', backendErr.message);
+            }
+
+            // 2. Update memory state reactively across stockData
+            if (stockData.value && Array.isArray(stockData.value)) {
+                stockData.value.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        if (p.productName === productName) {
+                            p.imageUrl = null;
+                        }
+                    });
+                });
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+                } catch (e) {}
+            }
+
+            if (typeof productOrName === 'object' && productOrName) {
+                productOrName.imageUrl = null;
+            }
+
+            delete imageFiles.value[productName];
+            toast.remove(toastId);
+            toast.success(`✓ Photo removed for ${productName}`, { autoClose: 2500 });
+            return true;
+        } catch (err) {
+            console.error('Error removing image:', err);
+            toast.remove(toastId);
+            toast.error(`Failed to remove photo: ${err.message}`, { autoClose: 4000 });
+            return false;
+        } finally {
+            uploading.value[productName] = false;
         }
     };
 
@@ -415,7 +536,9 @@ export function useStockData(isLocal) {
         isRefreshing,
         loadStockData,
         updateStockData,
+        handleFileChange,
         uploadImage,
+        deleteImage,
         fetchStockMetadataLastSync
     };
 }

@@ -42,8 +42,31 @@
           </h2>
         </div>
 
-        <!-- Position Counter / Close -->
+        <!-- Position Counter / Admin Actions / Close -->
         <div class="flex items-center gap-2">
+          <!-- Admin Actions -->
+          <div v-if="isAdmin || isSuperAdmin" class="flex items-center gap-1.5 mr-1" @click.stop>
+            <button
+              @click.stop="triggerModalPhotoUpload"
+              :disabled="uploading[currentProduct?.productName]"
+              class="h-8 px-2.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-90 text-white transition-all shadow-md text-xs font-bold flex items-center gap-1.5"
+              :title="currentProduct?.imageUrl ? 'Replace Photo' : 'Upload Photo'"
+            >
+              <i v-if="uploading[currentProduct?.productName]" class="fa-solid fa-spinner fa-spin text-xs"></i>
+              <i v-else class="fa-solid fa-camera text-xs"></i>
+              <span class="hidden sm:inline">{{ currentProduct?.imageUrl ? 'Replace' : 'Upload' }}</span>
+            </button>
+            <button
+              v-if="currentProduct?.imageUrl"
+              @click.stop="handleModalDeletePhoto"
+              :disabled="uploading[currentProduct?.productName]"
+              class="w-8 h-8 flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 active:scale-90 text-white transition-all shadow-md"
+              title="Delete Photo"
+            >
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </div>
+
           <span
             v-if="totalProducts > 0"
             class="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/10 text-slate-300 border border-white/10"
@@ -77,9 +100,19 @@
             class="max-h-full max-w-full w-auto h-auto object-contain rounded-2xl drop-shadow-2xl transition-all duration-200"
             :key="(currentProduct.productName || '') + '_' + (currentProduct.imageUrl || '')"
           />
-          <div v-else class="flex flex-col items-center gap-3 text-slate-500">
+          <div v-else class="flex flex-col items-center gap-3 text-slate-500 text-center p-4">
             <i class="fa-solid fa-image text-5xl opacity-30"></i>
             <span class="text-xs font-medium tracking-wide">No Image Available</span>
+            <button
+              v-if="isAdmin || isSuperAdmin"
+              @click.stop="triggerModalPhotoUpload"
+              :disabled="uploading[currentProduct?.productName]"
+              class="mt-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold rounded-xl shadow-lg flex items-center gap-2 text-xs transition-all"
+            >
+              <i v-if="uploading[currentProduct?.productName]" class="fa-solid fa-spinner fa-spin text-xs"></i>
+              <i v-else class="fa-solid fa-camera text-xs"></i>
+              <span>Upload Photo Now</span>
+            </button>
           </div>
         </div>
 
@@ -218,7 +251,11 @@
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { extractColor } from '../../utils/colors';
 import { useCart } from '../../composables/useCart';
+import { useAdmin } from '../../composables/useAdmin';
+import { useStockData } from '../../composables/useStockData';
 
+const { isAdmin, isSuperAdmin } = useAdmin();
+const { uploading, uploadImage, deleteImage } = useStockData();
 const { getCartQty, addToCart, updateCart } = useCart();
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
@@ -241,6 +278,32 @@ const cartQty = computed(() => {
   if (!props.currentProduct) return 0;
   return getCartQty(props.currentProduct);
 });
+
+// Admin Photo Management
+const triggerModalPhotoUpload = () => {
+  if (!props.currentProduct) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newUrl = await uploadImage(props.currentProduct, file);
+      if (newUrl && props.currentProduct) {
+        props.currentProduct.imageUrl = newUrl;
+      }
+    }
+  };
+  input.click();
+};
+
+const handleModalDeletePhoto = async () => {
+  if (!props.currentProduct) return;
+  const success = await deleteImage(props.currentProduct);
+  if (success && props.currentProduct) {
+    props.currentProduct.imageUrl = null;
+  }
+};
 
 // Debounced navigation to prevent accidental double clicks / touch ghost clicks
 let navLock = false;

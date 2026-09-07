@@ -836,6 +836,7 @@ app.post("/api/updateImage", async (req, res) => {
     let updated = false;
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
+      if (!group.products || !Array.isArray(group.products)) return;
       group.products.forEach((product) => {
         if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
@@ -853,11 +854,20 @@ app.post("/api/updateImage", async (req, res) => {
     }
 
     try {
-      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      const jsonStr = JSON.stringify(stockData, null, 2);
+      await fs.writeFile(stockDataPath, jsonStr);
+      try {
+        await fs.writeFile(hubStockDataPath, jsonStr);
+      } catch (e) {}
       console.log(`Updated imageUrl for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
     }
+
+    // Git commit & push (fire-and-forget in background)
+    gitCommitAndPush(`Update image for ${productName}`).catch((e) => {
+      console.warn("Git push failed for updateImage (non-fatal):", e.message);
+    });
 
     res.json({ message: `Image URL updated for ${productName}` });
   } catch (error) {
@@ -892,6 +902,7 @@ app.post("/api/removeImage", async (req, res) => {
     let updated = false;
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
+      if (!group.products || !Array.isArray(group.products)) return;
       group.products.forEach((product) => {
         if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
@@ -908,11 +919,20 @@ app.post("/api/removeImage", async (req, res) => {
     }
 
     try {
-      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      const jsonStr = JSON.stringify(stockData, null, 2);
+      await fs.writeFile(stockDataPath, jsonStr);
+      try {
+        await fs.writeFile(hubStockDataPath, jsonStr);
+      } catch (e) {}
       console.log(`Removed image for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
     }
+
+    // Git commit & push (fire-and-forget in background)
+    gitCommitAndPush(`Remove image for ${productName}`).catch((e) => {
+      console.warn("Git push failed for removeImage (non-fatal):", e.message);
+    });
 
     res.json({ message: `Image removed for ${productName}` });
   } catch (error) {

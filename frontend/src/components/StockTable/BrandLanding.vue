@@ -323,14 +323,47 @@
             class="relative w-full sm:w-[170px] aspect-[4/5] sm:aspect-square bg-white rounded-2xl overflow-hidden cursor-pointer shrink-0 border border-amber-200/60 shadow-sm flex items-center justify-center p-2"
             @click="$emit('open-image-popup', selectedItem)"
           >
+            <!-- Admin Actions Overlay -->
+            <div v-if="isAdmin || isSuperAdmin" class="absolute top-2 right-2 z-30 flex items-center gap-1.5" @click.stop>
+              <button
+                @click.stop="triggerCardPhotoUpload(selectedItem)"
+                :disabled="uploading[selectedItem.productName]"
+                class="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg shadow-md border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                :title="selectedItem.imageUrl ? 'Change Photo' : 'Upload Photo'"
+              >
+                <i v-if="uploading[selectedItem.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-xs"></i>
+                <i v-else class="fa-solid fa-camera text-xs text-amber-500"></i>
+                <span>{{ selectedItem.imageUrl ? 'Change' : 'Add Photo' }}</span>
+              </button>
+              <button
+                v-if="selectedItem.imageUrl"
+                @click.stop="handleCardDeletePhoto(selectedItem)"
+                :disabled="uploading[selectedItem.productName]"
+                class="w-7 h-7 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-md transition-all active:scale-95"
+                title="Remove Photo"
+              >
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+
             <CachedImage
               v-if="selectedItem.imageUrl"
               :src="getOptimizedImageUrl(selectedItem.imageUrl, 'w_400,h_500,c_fill')"
               :alt="selectedItem.productName"
               class="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover/sel:scale-105"
             />
-            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300">
-              <i class="fa-solid fa-image text-3xl opacity-20"></i>
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 p-2 text-center">
+              <i class="fa-solid fa-image text-3xl opacity-20 mb-2"></i>
+              <button
+                v-if="isAdmin || isSuperAdmin"
+                @click.stop="triggerCardPhotoUpload(selectedItem)"
+                :disabled="uploading[selectedItem.productName]"
+                class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold rounded-xl shadow-md text-xs flex items-center gap-1.5 transition-all"
+              >
+                <i v-if="uploading[selectedItem.productName]" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                <i v-else class="fa-solid fa-camera text-xs"></i>
+                <span>Add Photo</span>
+              </button>
             </div>
 
             <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-amber-400 text-[10px] font-black tracking-wider uppercase flex items-center gap-1">
@@ -437,14 +470,47 @@
                 <span class="px-2.5 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-bold rounded-full border border-slate-300">Out of Stock</span>
               </div>
 
+              <!-- Admin Controls Overlay -->
+              <div v-if="isAdmin || isSuperAdmin" class="absolute top-1.5 right-1.5 z-30 flex items-center gap-1" @click.stop>
+                <button
+                  @click.stop="triggerCardPhotoUpload(product)"
+                  :disabled="uploading[product.productName]"
+                  class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                  :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                >
+                  <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
+                  <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
+                  <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                </button>
+                <button
+                  v-if="product.imageUrl"
+                  @click.stop="handleCardDeletePhoto(product)"
+                  :disabled="uploading[product.productName]"
+                  class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
+                  title="Remove Photo"
+                >
+                  <i class="fa-solid fa-trash text-[9px]"></i>
+                </button>
+              </div>
+
               <CachedImage
                 v-if="product.imageUrl"
                 :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
                 alt="Product"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
               />
-              <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
-                <i class="fa-solid fa-image text-2xl opacity-20"></i>
+              <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 p-2 text-center">
+                <i class="fa-solid fa-image text-2xl opacity-20 mb-1"></i>
+                <button
+                  v-if="isAdmin || isSuperAdmin"
+                  @click.stop="triggerCardPhotoUpload(product)"
+                  :disabled="uploading[product.productName]"
+                  class="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold rounded-lg shadow text-[10px] flex items-center gap-1 transition-all"
+                >
+                  <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-[9px]"></i>
+                  <i v-else class="fa-solid fa-camera text-[9px]"></i>
+                  <span>Upload</span>
+                </button>
               </div>
 
               <!-- Floating Cart Controls / Add Button on Image -->
@@ -671,14 +737,47 @@
               <span class="px-2.5 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-bold rounded-full border border-slate-300">Out of Stock</span>
             </div>
 
+            <!-- Admin Controls Overlay -->
+            <div v-if="isAdmin || isSuperAdmin" class="absolute top-1.5 right-1.5 z-30 flex items-center gap-1" @click.stop>
+              <button
+                @click.stop="triggerCardPhotoUpload(product)"
+                :disabled="uploading[product.productName]"
+                class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+              >
+                <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
+                <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
+                <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+              </button>
+              <button
+                v-if="product.imageUrl"
+                @click.stop="handleCardDeletePhoto(product)"
+                :disabled="uploading[product.productName]"
+                class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
+                title="Remove Photo"
+              >
+                <i class="fa-solid fa-trash text-[9px]"></i>
+              </button>
+            </div>
+
             <CachedImage
               v-if="product.imageUrl"
               :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
               alt="Product"
               class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
             />
-            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
-              <i class="fa-solid fa-image text-2xl opacity-20"></i>
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 p-2 text-center">
+              <i class="fa-solid fa-image text-2xl opacity-20 mb-1"></i>
+              <button
+                v-if="isAdmin || isSuperAdmin"
+                @click.stop="triggerCardPhotoUpload(product)"
+                :disabled="uploading[product.productName]"
+                class="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold rounded-lg shadow text-[10px] flex items-center gap-1 transition-all"
+              >
+                <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-[9px]"></i>
+                <i v-else class="fa-solid fa-camera text-[9px]"></i>
+                <span>Upload</span>
+              </button>
             </div>
 
             <!-- Floating Cart Controls / Add Button on Image -->
@@ -852,14 +951,47 @@
                   class="relative w-full aspect-[4/5] bg-slate-50 cursor-pointer overflow-hidden"
                   @click="$emit('open-image-popup', product)"
                 >
+                  <!-- Admin Controls Overlay -->
+                  <div v-if="isAdmin || isSuperAdmin" class="absolute top-1.5 right-1.5 z-30 flex items-center gap-1" @click.stop>
+                    <button
+                      @click.stop="triggerCardPhotoUpload(product)"
+                      :disabled="uploading[product.productName]"
+                      class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                      :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                    >
+                      <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
+                      <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
+                      <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                    </button>
+                    <button
+                      v-if="product.imageUrl"
+                      @click.stop="handleCardDeletePhoto(product)"
+                      :disabled="uploading[product.productName]"
+                      class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
+                      title="Remove Photo"
+                    >
+                      <i class="fa-solid fa-trash text-[9px]"></i>
+                    </button>
+                  </div>
+
                   <CachedImage
                     v-if="product.imageUrl"
                     :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                   />
-                  <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
-                    <i class="fa-solid fa-image text-2xl opacity-20"></i>
+                  <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 p-2 text-center">
+                    <i class="fa-solid fa-image text-2xl opacity-20 mb-1"></i>
+                    <button
+                      v-if="isAdmin || isSuperAdmin"
+                      @click.stop="triggerCardPhotoUpload(product)"
+                      :disabled="uploading[product.productName]"
+                      class="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold rounded-lg shadow text-[10px] flex items-center gap-1 transition-all"
+                    >
+                      <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-[9px]"></i>
+                      <i v-else class="fa-solid fa-camera text-[9px]"></i>
+                      <span>Upload</span>
+                    </button>
                   </div>
 
                   <!-- Floating Cart Controls / Add Button on Image -->
@@ -1004,14 +1136,47 @@
                   class="relative w-full aspect-[4/5] bg-white cursor-pointer overflow-hidden"
                   @click="$emit('open-image-popup', product)"
                 >
+                  <!-- Admin Controls Overlay -->
+                  <div v-if="isAdmin || isSuperAdmin" class="absolute top-1.5 right-1.5 z-30 flex items-center gap-1" @click.stop>
+                    <button
+                      @click.stop="triggerCardPhotoUpload(product)"
+                      :disabled="uploading[product.productName]"
+                      class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                      :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                    >
+                      <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
+                      <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
+                      <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                    </button>
+                    <button
+                      v-if="product.imageUrl"
+                      @click.stop="handleCardDeletePhoto(product)"
+                      :disabled="uploading[product.productName]"
+                      class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
+                      title="Remove Photo"
+                    >
+                      <i class="fa-solid fa-trash text-[9px]"></i>
+                    </button>
+                  </div>
+
                   <CachedImage
                     v-if="product.imageUrl"
                     :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/bcard:scale-105"
                   />
-                  <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
-                    <i class="fa-solid fa-image text-xl opacity-20"></i>
+                  <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 p-2 text-center">
+                    <i class="fa-solid fa-image text-xl opacity-20 mb-1"></i>
+                    <button
+                      v-if="isAdmin || isSuperAdmin"
+                      @click.stop="triggerCardPhotoUpload(product)"
+                      :disabled="uploading[product.productName]"
+                      class="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold rounded-lg shadow text-[10px] flex items-center gap-1 transition-all"
+                    >
+                      <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-[9px]"></i>
+                      <i v-else class="fa-solid fa-camera text-[9px]"></i>
+                      <span>Upload</span>
+                    </button>
                   </div>
 
                   <!-- Floating Cart Controls / Add Button on Image -->
@@ -1194,8 +1359,33 @@ const { cleanView, searchQuery, lastSyncTime } = storeToRefs(appStore);
 const { cartTotalItems } = storeToRefs(cartStore);
 
 const { isAdmin, isSuperAdmin } = useAdmin();
-const { stockData, loading: isSyncing, updateStockData } = useStockData();
+const { stockData, loading: isSyncing, updateStockData, uploading, uploadImage, deleteImage } = useStockData();
 const { addToCart, updateCart, getCartQty } = useCart();
+
+const triggerCardPhotoUpload = (product) => {
+  if (!product) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newUrl = await uploadImage(product, file);
+      if (newUrl) {
+        product.imageUrl = newUrl;
+      }
+    }
+  };
+  input.click();
+};
+
+const handleCardDeletePhoto = async (product) => {
+  if (!product) return;
+  const success = await deleteImage(product);
+  if (success) {
+    product.imageUrl = null;
+  }
+};
 
 const emit = defineEmits(['select-category', 'open-image-popup', 'open-catalog-gen', 'open-cart', 'promptAdminLogin']);
 
