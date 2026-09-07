@@ -1,11 +1,28 @@
 export const APP_VERSION = {
-  code: 'sbe_032',
-  version: '1.5.9',
-  updatedAt: '04 Sep 2026, 09:59 AM',
-  commitTitle: 'SBE Update #032: Mobile Workzone Route Support & 1/4-Screen Bottom Sheet Console',
+  hubCode: 'sbe-hub_033',
+  sbeCode: 'sbe_033',
+  code: 'sbe-hub_033', // Backwards-compatible
+  version: '1.6.0',
+  updatedAt: '07 Sep 2026, 02:30 PM',
+  commitTitle: 'fix(sync): extend sync timeout from 15s to 3m and backend Tally timeout to 2m to prevent premature connection timeouts',
+  recentCommit: {
+    message: 'fix(sync): extend sync timeout from 15s to 3m and backend Tally timeout to 2m to prevent premature connection timeouts',
+    sha: '8919400',
+    date: '07 Sep 2026, 01:57 PM',
+    author: 'Sahil kumar',
+    url: 'https://github.com/sahilsync07/sbe/commit/8919400a17a13d1f053d62876e9c75731b3dcd33'
+  },
   changes: [
     {
+      tag: 'sbe_033',
+      hubTag: 'sbe-hub_033',
+      date: '07 Sep 2026',
+      title: 'Stock Metadata Sync Date & Dual SBE / SBE-Hub Version Badges',
+      details: 'Sync date in SBE Hub now dynamically reads exact lastSync timestamp from stock-data.json metadata. Added sbe_xxx pill beside sbe-hub_xxx showing recent commit message and live commit updates. Removed current date header from topbar.'
+    },
+    {
       tag: 'sbe_032',
+      hubTag: 'sbe-hub_032',
       date: '04 Sep 2026',
       title: 'Phone Workzone & Mobile Console Sheet',
       details: 'Registered WorkzoneView in sbe-hub router fixing phone card navigation. Added mobile terminal console button and sleek 1/4-screen bottom drawer sheet with live logs and clear/close controls.'

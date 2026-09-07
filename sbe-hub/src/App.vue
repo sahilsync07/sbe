@@ -23,7 +23,7 @@ import AdminLoginModal from '@/components/StockTable/AdminLoginModal.vue';
 import { useAppStore } from '@/stores/appStore';
 import { useAdmin } from '@/composables/useAdmin';
 import { performDeltaSync } from '@/utils/nativeCache';
-import { useStockData } from '@/composables/useStockData';
+import { useStockData, fetchStockMetadataLastSync } from '@/composables/useStockData';
 
 const route = useRoute();
 const router = useRouter();
@@ -106,6 +106,7 @@ let backListener = null;
 onMounted(async () => {
   await loadConfig();
   await checkAdminState();
+  await fetchStockMetadataLastSync();
   await loadStockData();
   await performDeltaSync();
   

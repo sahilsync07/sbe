@@ -10,10 +10,6 @@
             <button v-if="route.path !== '/home' && route.path !== '/'" type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
               <i class="fa-solid fa-arrow-left"></i>
             </button>
-            <div class="hub-topbar__date">
-              <span class="hub-topbar__day">{{ currentDay }}</span>
-              <span class="hub-topbar__full-date">{{ currentDate }}</span>
-            </div>
           </div>
 
           <div class="hub-topbar__right">
@@ -123,7 +119,7 @@ import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAdmin } from '../composables/useAdmin';
 import { useWorkzoneAuth } from '../composables/useWorkzoneAuth';
-import { useStockData } from '../composables/useStockData';
+import { useStockData, fetchStockMetadataLastSync } from '../composables/useStockData';
 import { useAppStore } from '../stores/appStore';
 import ConsoleViewer from '../components/ConsoleViewer.vue';
 import VersionBadge from '../components/VersionBadge.vue';
@@ -147,11 +143,6 @@ const handleLogout = async () => {
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const { updateStockData, loading: isSyncing, lastRefresh, loadStockData } = useStockData(isLocal);
 
-// Date display
-const now = new Date();
-const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-const currentDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
 const lastSyncText = computed(() => {
   const syncDate = lastRefresh.value || appStore.lastSyncTime;
   if (!syncDate) return 'Catalog up to date';
@@ -159,19 +150,24 @@ const lastSyncText = computed(() => {
   if (isNaN(d.getTime())) return 'Catalog up to date';
 
   const diffMs = Date.now() - d.getTime();
+  const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const isToday = d.toDateString() === new Date().toDateString();
+  const isYesterday = diffDays === 1 || (new Date().getDate() - d.getDate() === 1 && diffDays < 2);
 
   const dateFormatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const timeFormatted = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-  if (diffHours < 1) {
-    const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+  if (diffMins < 2) {
+    return `Last synced: Just now (${timeFormatted})`;
+  } else if (diffHours < 1) {
     return `Last synced: ${diffMins} min${diffMins > 1 ? 's' : ''} ago (${timeFormatted})`;
-  } else if (diffHours < 24) {
-    return `Last synced: ${diffHours} hr${diffHours > 1 ? 's' : ''} ago (${dateFormatted} at ${timeFormatted})`;
-  } else if (diffDays === 1) {
-    return `Last synced: Yesterday (${dateFormatted} at ${timeFormatted})`;
+  } else if (isToday) {
+    return `Last synced: Today, ${timeFormatted} (${diffHours} hr${diffHours > 1 ? 's' : ''} ago)`;
+  } else if (isYesterday) {
+    return `Last synced: Yesterday, ${timeFormatted}`;
   }
   return `Last synced: ${dateFormatted} at ${timeFormatted}`;
 });
@@ -308,9 +304,8 @@ const filteredLinks = computed(() => {
 onMounted(async () => {
   await checkWorkzoneAuth('sahil');
   await checkWorkzoneAuth('slnp');
-  if (!lastRefresh.value) {
-    await loadStockData();
-  }
+  await fetchStockMetadataLastSync();
+  await loadStockData();
 });
 </script>
 
@@ -374,24 +369,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.hub-topbar__date {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.hub-topbar__day {
-  font-family: 'Clash Display', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  color: #1e293b;
-}
-.hub-topbar__full-date {
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 500;
-  letter-spacing: 0.02em;
 }
 
 /* Icon Buttons */

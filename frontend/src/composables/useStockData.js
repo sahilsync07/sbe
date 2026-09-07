@@ -1,8 +1,118 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { toast } from 'vue3-toastify';
+import { Capacitor } from '@capacitor/core';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
+
+const SYNC_KEY = 'sbe_last_sync_timestamp';
+const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
+
+/**
+ * Fast stream reader that extracts lastSync from the _META_DATA_ header of stock-data.json
+ * without downloading the entire 3.8MB catalog.
+ */
+export async function fetchStockMetadataLastSync() {
+    const appStore = useAppStore();
+
+    const applySync = (isoString) => {
+        if (!isoString) return null;
+        const date = new Date(isoString);
+        if (!isNaN(date.getTime())) {
+            appStore.setSyncTime(date);
+            try {
+                localStorage.setItem(SYNC_KEY, isoString);
+            } catch (e) {}
+            return date;
+        }
+        return null;
+    };
+
+    // 1. Try remote GitHub raw (fast stream of first ~8KB)
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const remoteUrl = `${REMOTE_DATA_URL}?t=${Date.now()}`;
+        const res = await fetch(remoteUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (res.ok) {
+            if (res.body && res.body.getReader) {
+                const reader = res.body.getReader();
+                let text = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (value) {
+                        text += new TextDecoder().decode(value);
+                        const match = text.match(/"lastSync"\s*:\s*"([^"]+)"/);
+                        if (match) {
+                            await reader.cancel();
+                            const date = applySync(match[1]);
+                            if (date) return date;
+                        }
+                    }
+                    if (done || text.length > 25000) break;
+                }
+            } else {
+                const headText = await res.text();
+                const match = headText.slice(0, 5000).match(/"lastSync"\s*:\s*"([^"]+)"/);
+                if (match) {
+                    const date = applySync(match[1]);
+                    if (date) return date;
+                }
+            }
+        }
+    } catch (e) {
+        // Fall through to local bundle
+    }
+
+    // 2. Try local bundle assets/stock-data.json
+    try {
+        const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+            ? import.meta.env.BASE_URL
+            : `${import.meta.env.BASE_URL}/`;
+        const localUrl = `${baseUrl}assets/stock-data.json?t=${Date.now()}`;
+        const res = await fetch(localUrl);
+        if (res.ok) {
+            if (res.body && res.body.getReader) {
+                const reader = res.body.getReader();
+                let text = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (value) {
+                        text += new TextDecoder().decode(value);
+                        const match = text.match(/"lastSync"\s*:\s*"([^"]+)"/);
+                        if (match) {
+                            await reader.cancel();
+                            const date = applySync(match[1]);
+                            if (date) return date;
+                        }
+                    }
+                    if (done || text.length > 25000) break;
+                }
+            } else {
+                const headText = await res.text();
+                const match = headText.slice(0, 5000).match(/"lastSync"\s*:\s*"([^"]+)"/);
+                if (match) {
+                    const date = applySync(match[1]);
+                    if (date) return date;
+                }
+            }
+        }
+    } catch (e) {
+        // Fall through to localStorage
+    }
+
+    // 3. Fallback to localStorage
+    try {
+        const saved = localStorage.getItem(SYNC_KEY);
+        if (saved) {
+            const date = applySync(saved);
+            if (date) return date;
+        }
+    } catch (e) {}
+
+    return null;
+}
 
 export function useStockData(isLocal) {
     const appStore = useAppStore();
@@ -14,8 +124,13 @@ export function useStockData(isLocal) {
     const uploadErrors = ref({});
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
-    const SYNC_KEY = 'sbe_last_sync_timestamp';
-    const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
+
+    // Check if truly on a local node dev server (native mobile devices should always fetch live remote)
+    const isLocalMachine = () => {
+        if (Capacitor.isNativePlatform()) return false;
+        if (isLocal && isLocal.value !== undefined) return isLocal.value;
+        return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    };
 
     // Safely extract and apply metadata timestamp from any data array
     const extractAndApplyMetadata = (dataArray) => {
@@ -150,8 +265,8 @@ export function useStockData(isLocal) {
 
             // --- Tier 3: Live Network Fetch (Always Validate) ---
             try {
-                if (isLocal && isLocal.value) {
-                    console.log("Skipping Live Fetch on localhost.");
+                if (isLocalMachine()) {
+                    console.log("Skipping Live Fetch on local machine.");
                     return;
                 }
                 console.log("Starting Background Live Fetch (Tier 3)...");
@@ -300,6 +415,7 @@ export function useStockData(isLocal) {
         isRefreshing,
         loadStockData,
         updateStockData,
-        uploadImage
+        uploadImage,
+        fetchStockMetadataLastSync
     };
 }
