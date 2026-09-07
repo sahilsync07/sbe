@@ -204,12 +204,12 @@ export function useStockData(isLocal) {
     const updateStockData = async () => {
         loading.value = true;
         error.value = null;
-        const toastId = toast.loading("Syncing stock from Tally...", { autoClose: false, closeButton: false });
+        const toastId = toast.loading("Syncing stock & ledger data from Tally... Please wait.", { autoClose: false, closeButton: false });
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`,
                 {},
-                { timeout: 15000 }
+                { timeout: 180000 } // 3 minutes timeout to give Tally ample time to compute stock & voucher summaries
             );
             
             const resData = response.data;
@@ -248,7 +248,7 @@ export function useStockData(isLocal) {
             if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'ECONNREFUSED') {
                 userMsg = 'Sync server is offline or unreachable (Make sure local sync server is running).';
             } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-                userMsg = 'Sync request timed out. Please verify Tally connection.';
+                userMsg = 'Sync request timed out after waiting. Please verify Tally connection and ensure Tally is responsive.';
             } else {
                 userMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to update stock';
             }

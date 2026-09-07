@@ -33,7 +33,7 @@ const hubLedgerDataPath = path.resolve(
   __dirname,
   "../../sbe-hub/public/assets/ledger-data.json"
 );
-const tallyTimeout = 30000;
+const tallyTimeout = 120000; // 2 minutes timeout for Tally queries
 const repoRoot = path.resolve(__dirname, "../../");
 
 // ============================================================
@@ -53,7 +53,7 @@ async function gitCommitAndPush(commitMessage) {
     GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
     GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
   };
-  const execOpts = { cwd: repoRoot, timeout: 30000, env: gitEnv };
+  const execOpts = { cwd: repoRoot, timeout: 60000, env: gitEnv };
 
   const run = (cmd) => new Promise((resolve) => {
     exec(cmd, execOpts, (error, stdout, stderr) => {
@@ -419,7 +419,7 @@ async function fetchLedgerData() {
       console.log("  → Step 2: Fetching voucher summaries (server-side aggregation)...");
       const voucherResponse = await axios.post(tallyUrl, voucherSummaryXML, {
         headers: { "Content-Type": "text/xml" },
-        timeout: tallyTimeout * 2,
+        timeout: 180000, // 3 minutes timeout for large ledger summaries
       });
 
       if (voucherResponse.data && voucherResponse.data.toString().trim()) {
