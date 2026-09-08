@@ -174,7 +174,7 @@ function enqueueSync(taskFn) {
 const getGitHubToken = () => {
     return import.meta.env.VITE_GITHUB_TOKEN || 
            localStorage.getItem('sbe_github_token') || 
-           String.fromCharCode(103,104,112,95,74,106,81,54,117,118,73,73,77,68,70,107,70,56,122,75,87,52,100,55,70,50,116,105,102,120,55,72,78,49,50,97,115,83,112,55);
+           '';
 };
 
 /**
