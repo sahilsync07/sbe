@@ -40,6 +40,20 @@ const repoRoot = path.resolve(__dirname, "../../");
 //  GIT AUTO-COMMIT & PUSH
 // ============================================================
 
+const gitEnv = {
+  ...process.env,
+  GIT_EDITOR: 'true',           // Prevent editor from opening
+  GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
+  GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
+};
+const execOpts = { cwd: repoRoot, timeout: 60000, env: gitEnv };
+
+const runGit = (cmd) => new Promise((resolve) => {
+  exec(cmd, execOpts, (error, stdout, stderr) => {
+    resolve({ error, stdout: stdout || '', stderr: stderr || '' });
+  });
+});
+
 /**
  * Runs git add, commit, and push in the repo root directory.
  * This is fire-and-forget — errors are logged but never block the API response.
@@ -47,20 +61,7 @@ const repoRoot = path.resolve(__dirname, "../../");
  * @returns {Promise<{success: boolean, message: string}>}
  */
 async function gitCommitAndPush(commitMessage) {
-  const gitEnv = {
-    ...process.env,
-    GIT_EDITOR: 'true',           // Prevent editor from opening
-    GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
-    GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
-  };
-  const execOpts = { cwd: repoRoot, timeout: 60000, env: gitEnv };
-
-  const run = (cmd) => new Promise((resolve) => {
-    exec(cmd, execOpts, (error, stdout, stderr) => {
-      resolve({ error, stdout: stdout || '', stderr: stderr || '' });
-    });
-  });
-
+  const run = runGit;
   console.log(`🚀 Git: Running in ${repoRoot}`);
 
   // Step 1: Stage all changes
@@ -610,6 +611,21 @@ app.post("/api/updateLedgerData", async (req, res) => {
 app.post("/api/updateStockData", async (req, res) => {
   try {
     console.log("Starting updateStockData, stockDataPath:", stockDataPath);
+
+    // ---- 0. Pull latest remote changes (preserves photos uploaded from phone) ----
+    try {
+      console.log("📥 Pulling latest remote changes before Tally sync...");
+      const pullRes = await runGit('git pull --rebase origin main');
+      if (pullRes.error) {
+        console.warn("⚠️ Git pull before Tally sync had warning, attempting auto-resolve:", pullRes.stderr);
+        await runGit('git rebase --abort').catch(() => {});
+        await runGit('git pull -X ours origin main').catch(() => {});
+      } else {
+        console.log("✅ Successfully pulled latest remote changes before Tally sync");
+      }
+    } catch (pullErr) {
+      console.warn("⚠️ Could not pull remote before sync (offline/network):", pullErr.message);
+    }
 
     // ---- 1. Verify file access ------------------------------------------------
     try {
