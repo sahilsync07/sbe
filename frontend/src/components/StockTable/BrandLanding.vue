@@ -1317,7 +1317,7 @@
       <!-- 10. EXPLORE ALL CTA -->
       <div class="mt-10 mb-8 px-4 flex justify-center">
         <button 
-          @click="selectTab('All')"
+          @click="selectTab('BrowseAll')"
           class="group relative inline-flex items-center justify-center px-8 py-4 bg-[#18181b] text-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:bg-black active:scale-98 transition-all duration-300 w-full sm:w-auto"
         >
           <div class="relative flex items-center gap-3">
@@ -1688,7 +1688,7 @@ const getNewArrivalProducts = () => {
         if (cleanView.value) {
           if (!p.imageUrl || Number(p.quantity) < 4) continue;
         }
-        if (isNewArrival(p) && p.imageUrl) products.push(p);
+        if (isNewArrival(p)) products.push(p);
       }
     }
   }
@@ -1705,8 +1705,8 @@ const getNewArrivalCount = () => {
 
 const getHeroImage = () => {
   const list = getNewArrivalProducts();
-  if (list.length > 0 && list[0].imageUrl) return list[0].imageUrl;
-  return null;
+  const itemWithImage = list.find(p => p.imageUrl);
+  return itemWithImage ? itemWithImage.imageUrl : null;
 };
 
 const getBrandProducts = (groupNames) => {
@@ -1719,7 +1719,7 @@ const getBrandProducts = (groupNames) => {
         if (cleanView.value) {
           if (!p.imageUrl || Number(p.quantity) < 4) continue;
         }
-        if (p.imageUrl) products.push(p);
+        products.push(p);
       }
     }
   }
@@ -1734,7 +1734,17 @@ const getActiveTabProducts = () => {
   let products = [];
   const tab = activeTab.value;
 
-  if (tab === 'NewArrivals') {
+  if (tab === 'BrowseAll') {
+    for (const group of stockData.value) {
+      if (group.groupName === '_META_DATA_' || !group.products) continue;
+      for (const p of group.products) {
+        if (cleanView.value) {
+          if (!p.imageUrl || Number(p.quantity) < 4) continue;
+        }
+        products.push(p);
+      }
+    }
+  } else if (tab === 'NewArrivals') {
     products = getNewArrivalProducts();
   } else if (tab === 'ParagonDiscount') {
     products = getBrandProducts(['PARAGON GENTS 40%', 'SOLEA DISC 40% OFFER']);
@@ -1888,6 +1898,7 @@ const paragonCoreList = computed(() => {
 });
 
 const getActiveTabLabel = () => {
+  if (activeTab.value === 'BrowseAll') return 'All Products';
   const found = brandTabs.find(t => t.id === activeTab.value);
   return found ? found.label : activeTab.value;
 };
