@@ -22,7 +22,6 @@ import AdminLoginModal from '@/components/StockTable/AdminLoginModal.vue';
 
 import { useAppStore } from '@/stores/appStore';
 import { useAdmin } from '@/composables/useAdmin';
-import { performDeltaSync } from '@/utils/nativeCache';
 import { useStockData, fetchStockMetadataLastSync } from '@/composables/useStockData';
 
 const route = useRoute();
@@ -108,7 +107,6 @@ onMounted(async () => {
   await checkAdminState();
   await fetchStockMetadataLastSync();
   await loadStockData();
-  await performDeltaSync();
   
   // Android App Update Check
   if (Capacitor.isNativePlatform()) {

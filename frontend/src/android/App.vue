@@ -54,7 +54,6 @@ const OrderModal = defineAsyncComponent(() => import('../components/StockTable/O
 
 import { useAppStore } from '../stores/appStore';
 import { useAdmin } from '../composables/useAdmin';
-import { performDeltaSync } from '../utils/nativeCache';
 import { setupDailySyncNotification } from '../utils/notifications';
 import { useStockData } from '../composables/useStockData';
 import { useCart } from '../composables/useCart';
@@ -223,7 +222,6 @@ onMounted(async () => {
   await checkAdminState();
   await loadStockData();
   await setupDailySyncNotification();
-  await performDeltaSync();
   
   // Android App Update Check
   if (Capacitor.isNativePlatform()) {
