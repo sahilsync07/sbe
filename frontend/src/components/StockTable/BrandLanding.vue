@@ -94,7 +94,7 @@
                   class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
                 >
                   <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
-                    <img v-if="product.imageUrl" :src="getOptimizedImageUrl(product.imageUrl, 'w_100,h_100,c_fill')" class="w-full h-full object-cover" />
+                    <img v-if="product.imageUrl" :src="getOptimizedImageUrl(product.imageUrl)" class="w-full h-full object-cover" />
                     <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
                       <i class="fa-solid fa-box text-sm"></i>
                     </div>
@@ -348,7 +348,7 @@
 
             <CachedImage
               v-if="selectedItem.imageUrl"
-              :src="getOptimizedImageUrl(selectedItem.imageUrl, 'w_400,h_500,c_fill')"
+              :src="getOptimizedImageUrl(selectedItem.imageUrl)"
               :alt="selectedItem.productName"
               class="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover/sel:scale-105"
             />
@@ -454,8 +454,8 @@
           <span>More Results Matching "{{ searchQuery }}" ({{ displayedSearchResults.length }})</span>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
-          <template v-for="product in displayedSearchResults" :key="product.isCore ? product.id : product.productName">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-6">
+          <template v-for="product in visibleSearchResults" :key="product.isCore ? product.id : product.productName">
             <ParagonCoreCard
               v-if="product.isCore"
               :core="product.core"
@@ -500,7 +500,7 @@
 
               <CachedImage
                 v-if="product.imageUrl"
-                :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
+                :src="getOptimizedImageUrl(product.imageUrl)"
                 alt="Product"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
               />
@@ -580,6 +580,17 @@
           </div>
         </template>
         </div>
+        
+        <!-- Infinite Scroll Sentinel & Load More -->
+        <div v-if="hasMoreSearchResults" ref="searchLoadMoreRef" class="py-6 flex flex-col items-center justify-center gap-2 pb-12">
+          <button
+            @click="loadMore"
+            class="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-amber-600 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2 active:scale-95"
+          >
+            <span>Load More Results ({{ visibleSearchResults.length }} of {{ displayedSearchResults.length }})</span>
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Empty State if no other results and no selected item -->
@@ -616,8 +627,9 @@
       </div>
 
       <!-- Consolidated Product Grid: Core models unified into single size-selector cards; others as individual cards -->
-      <div v-if="displayedTabProducts.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
-        <template v-for="product in displayedTabProducts" :key="product.isCore ? product.id : product.productName">
+      <div v-if="displayedTabProducts.length > 0">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-6">
+          <template v-for="product in visibleTabProducts" :key="product.isCore ? product.id : product.productName">
           <ParagonCoreCard
             v-if="product.isCore"
             :core="product.core"
@@ -662,7 +674,7 @@
 
             <CachedImage
               v-if="product.imageUrl"
-              :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
+              :src="getOptimizedImageUrl(product.imageUrl)"
               alt="Product"
               class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
             />
@@ -742,6 +754,18 @@
         </div>
       </template>
     </div>
+        
+    <!-- Infinite Scroll Sentinel & Load More -->
+        <div v-if="hasMoreTabProducts" ref="tabLoadMoreRef" class="py-6 flex flex-col items-center justify-center gap-2 pb-12">
+          <button
+            @click="loadMore"
+            class="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-amber-600 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2 active:scale-95"
+          >
+            <span>Load More Products ({{ visibleTabProducts.length }} of {{ displayedTabProducts.length }})</span>
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+        </div>
+      </div>
 
       <!-- Empty State -->
       <div v-else class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
@@ -822,7 +846,7 @@
               >
                 <CachedImage
                   v-if="getHeroImage()"
-                  :src="getOptimizedImageUrl(getHeroImage(), 'w_500,h_600,c_fill')"
+                  :src="getOptimizedImageUrl(getHeroImage())"
                   alt="New Arrivals"
                   class="w-full h-full object-cover rounded-2xl transition-transform duration-1000 group-hover/hero:scale-110 opacity-80"
                 />
@@ -877,7 +901,7 @@
 
                   <CachedImage
                     v-if="product.imageUrl"
-                    :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
+                    :src="getOptimizedImageUrl(product.imageUrl)"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                   />
@@ -1062,7 +1086,7 @@
 
                   <CachedImage
                     v-if="product.imageUrl"
-                    :src="getOptimizedImageUrl(product.imageUrl, 'w_350,h_450,c_fill')"
+                    :src="getOptimizedImageUrl(product.imageUrl)"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/bcard:scale-105"
                   />
@@ -1242,6 +1266,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
+import { useIntersectionObserver } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import SlideshowCard from './SlideshowCard.vue';
 import { isNewArrival, getOptimizedImageUrl, formatProductName } from '../../utils/formatters';
@@ -1917,6 +1942,38 @@ const displayedTabProducts = computed(() => {
 
 const displayedSearchResults = computed(() => {
   return consolidateProducts(otherSearchResults.value);
+});
+
+// Progressive Rendering / Virtual Pagination (prevents mounting thousands of DOM nodes at once)
+const displayLimit = ref(40);
+const tabLoadMoreRef = ref(null);
+const searchLoadMoreRef = ref(null);
+
+const visibleTabProducts = computed(() => displayedTabProducts.value.slice(0, displayLimit.value));
+const visibleSearchResults = computed(() => displayedSearchResults.value.slice(0, displayLimit.value));
+
+const hasMoreTabProducts = computed(() => visibleTabProducts.value.length < displayedTabProducts.value.length);
+const hasMoreSearchResults = computed(() => visibleSearchResults.value.length < displayedSearchResults.value.length);
+
+const loadMore = () => {
+  displayLimit.value += 40;
+};
+
+useIntersectionObserver(tabLoadMoreRef, ([{ isIntersecting }]) => {
+  if (isIntersecting && hasMoreTabProducts.value) {
+    displayLimit.value += 40;
+  }
+}, { threshold: 0.1 });
+
+useIntersectionObserver(searchLoadMoreRef, ([{ isIntersecting }]) => {
+  if (isIntersecting && hasMoreSearchResults.value) {
+    displayLimit.value += 40;
+  }
+}, { threshold: 0.1 });
+
+// Reset display limit when switching tabs, searching, or toggling filters
+watch([activeTab, searchQuery, inStockOnly, maxPriceFilter, cleanView], () => {
+  displayLimit.value = 40;
 });
 
 const getActiveTabLabel = () => {

@@ -61,17 +61,8 @@ const loadImage = async () => {
     }
   }
 
-  // 3. Fallback to network (and cache in background for next view)
+  // 3. Fallback to network (Service Worker handles caching on-demand when visible)
   displaySrc.value = props.src;
-
-  if (typeof window !== 'undefined' && 'caches' in window && props.src.startsWith('http')) {
-    fetch(props.src, { mode: 'cors' }).then(async (res) => {
-      if (res.ok) {
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put(props.src, res);
-      }
-    }).catch(() => {});
-  }
 };
 
 const handleError = () => {

@@ -31,15 +31,19 @@ export function normalizeId(name) {
  * @param {string} [customTransformation] - Custom Cloudinary transformation string
  * @returns {string|null} Optimized URL or null
  */
-export function getOptimizedImageUrl(imageUrl, customTransformation = 'w_300,q_auto:eco,f_auto') {
+export function getOptimizedImageUrl(imageUrl, customTransformation = 'w_400,q_auto:eco,f_auto') {
     if (!imageUrl) return null;
     try {
+        if (!imageUrl.includes('res.cloudinary.com')) return imageUrl;
         const parts = imageUrl.split('/upload/');
         if (parts.length !== 2) return imageUrl;
-        let transformation = customTransformation || 'w_300,q_auto:eco,f_auto';
+        let transformation = customTransformation || 'w_400,q_auto:eco,f_auto';
         if (!transformation.includes('f_auto')) transformation += ',f_auto';
         if (!transformation.includes('q_auto') && !transformation.includes('q_')) transformation += ',q_auto:eco';
-        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
+        
+        // Strip any existing transformation prefix in parts[1] so it never accumulates duplicate or competing parameters
+        const cleanPath = parts[1].replace(/^([a-z]_[^/]+,?)+\//i, '');
+        return `${parts[0]}/upload/${transformation}/${cleanPath}`;
     } catch (e) {
         return imageUrl;
     }

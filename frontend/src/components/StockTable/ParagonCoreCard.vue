@@ -25,7 +25,7 @@
       <!-- Core Model Photo -->
       <CachedImage
         v-if="core.img"
-        :src="getOptimizedImageUrl(core.img, 'w_350,h_450,c_fill')"
+        :src="getOptimizedImageUrl(core.img)"
         :alt="core.name"
         class="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-105"
       />
