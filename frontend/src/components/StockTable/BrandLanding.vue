@@ -609,115 +609,14 @@
         </button>
       </div>
 
-      <!-- Dedicated Paragon Core Unified Cards (16 Core Articles with Size Groups) -->
-      <div v-if="activeTab === 'ParagonCore'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-4 pb-12">
-        <div
+      <!-- Dedicated Paragon Core Unified Cards (Standard product grid dimensions with Size Selector) -->
+      <div v-if="activeTab === 'ParagonCore'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
+        <ParagonCoreCard
           v-for="core in paragonCoreList"
           :key="core.id"
-          class="flex flex-col sm:flex-row bg-white rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition-all gap-3.5 sm:gap-4 group/corecard"
-        >
-          <!-- Core Image Box -->
-          <div 
-            class="relative w-full sm:w-[130px] aspect-[4/5] sm:aspect-square bg-slate-50 rounded-2xl overflow-hidden cursor-pointer shrink-0 border border-slate-100 flex items-center justify-center p-2"
-            @click="$emit('open-image-popup', { productName: core.name, imageUrl: core.img })"
-          >
-            <CachedImage
-              :src="getOptimizedImageUrl(core.img, 'w_350,h_450,c_fill')"
-              :alt="core.name"
-              class="w-full h-full object-contain transition-transform duration-500 group-hover/corecard:scale-105"
-            />
-            <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-amber-400 text-[9px] font-black tracking-wider uppercase">
-              CORE
-            </div>
-          </div>
-
-          <!-- Core Details & Size Groups Table -->
-          <div class="flex-1 flex flex-col justify-between min-w-0">
-            <div>
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0">
-                  <h3 class="font-['Clash_Display'] font-black text-slate-900 text-sm sm:text-base tracking-wide truncate">
-                    {{ core.name }}
-                  </h3>
-                  <p class="text-[11px] font-medium text-slate-500 truncate">{{ core.category }}</p>
-                </div>
-                <span 
-                  class="px-2 py-0.5 rounded-full text-[10px] font-black shrink-0"
-                  :class="core.totalStock > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-400'"
-                >
-                  {{ core.totalStock > 0 ? core.totalStock + ' prs' : '0 in stock' }}
-                </span>
-              </div>
-
-              <!-- Size Groups List -->
-              <div class="mt-2.5 space-y-1.5">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-wider">
-                  Available Size Groups
-                </div>
-                <div class="space-y-1.5">
-                  <div
-                    v-for="s in core.sizes.filter(x => x.size !== 'Standard' || x.totalQty > 0 || core.sizes.length === 1)"
-                    :key="s.size"
-                    class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 hover:bg-slate-100/70 transition-colors"
-                  >
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="px-1.5 py-0.5 rounded-md bg-white font-black text-[11px] text-slate-800 border border-slate-200 shadow-xs">
-                        {{ s.size === 'Standard' ? 'Regular' : s.size }}
-                      </span>
-                      <span v-if="s.price > 0" class="text-xs font-black text-slate-900">
-                        ₹{{ s.price }}
-                      </span>
-                    </div>
-
-                    <div class="flex items-center gap-2.5 shrink-0">
-                      <span 
-                        class="text-[10px] font-bold"
-                        :class="s.totalQty > 0 ? 'text-slate-600' : 'text-slate-400'"
-                      >
-                        {{ s.totalQty > 0 ? s.totalQty + ' prs' : 'Out of stock' }}
-                      </span>
-
-                      <!-- Cart Pill for Size Group -->
-                      <div v-if="s.primaryProduct && s.totalQty > 0" class="flex items-center">
-                        <div 
-                          v-if="getCartQty(s.primaryProduct) > 0" 
-                          class="flex items-center gap-1 p-0.5 bg-white rounded-full shadow-sm border border-amber-300"
-                          @click.stop
-                        >
-                          <button 
-                            @click.stop="updateCart(s.primaryProduct, -1)" 
-                            class="w-5 h-5 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 active:scale-90 transition-all"
-                            title="Decrease"
-                          >
-                            <i class="fa-solid fa-minus text-[8px]"></i>
-                          </button>
-                          <span class="min-w-[14px] text-center text-[11px] font-black text-slate-900 px-0.5">
-                            {{ getCartQty(s.primaryProduct) }}
-                          </span>
-                          <button 
-                            @click.stop="updateCart(s.primaryProduct, 1)" 
-                            class="w-5 h-5 flex items-center justify-center rounded-full bg-[#18181b] text-amber-400 hover:bg-black active:scale-90 transition-all"
-                            title="Increase"
-                          >
-                            <i class="fa-solid fa-plus text-[8px]"></i>
-                          </button>
-                        </div>
-                        <button
-                          v-else
-                          @click.stop="addToCart(s.primaryProduct)"
-                          class="w-6 h-6 rounded-full bg-white text-slate-800 shadow-xs border border-slate-200 flex items-center justify-center hover:bg-[#18181b] hover:text-amber-400 active:scale-90 transition-all"
-                          title="Add to cart"
-                        >
-                          <i class="fa-solid fa-plus text-[9px]"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          :core="core"
+          @open-image-popup="$emit('open-image-popup', $event)"
+        />
       </div>
 
       <!-- Standard Product Cards Grid (For Other Tabs) -->
@@ -1356,6 +1255,7 @@ import { storeToRefs } from 'pinia';
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 const GitHubSyncModal = defineAsyncComponent(() => import('./GitHubSyncModal.vue'));
+const ParagonCoreCard = defineAsyncComponent(() => import('./ParagonCoreCard.vue'));
 const showGitHubSyncModal = ref(false);
 
 const route = useRoute();
@@ -1808,23 +1708,44 @@ const getActiveTabProducts = () => {
 
 const filteredTabProducts = computed(() => getActiveTabProducts());
 
+const PARAGON_GROUPS = new Set([
+  'Hawai Chappal',
+  'PARAGON',
+  'Paragon Blot',
+  'PARAGON COMFY',
+  'PARAGON GENTS',
+  'PARAGON GENTS 40%',
+  'PARAGON LADIES',
+  'PARALITE',
+  'PARALITE OLD',
+  'P-TOES',
+  'SOLEA DISC 40% OFFER'
+]);
+
+function isCopyDuplicate(groupName, productName) {
+  if (!PARAGON_GROUPS.has(groupName)) return true;
+  if (/loose|polland|maruti|aagum|aagam|balaji|florex|eeken|action|cubix|swastik/i.test(productName)) return true;
+  if (/loose|polland|maruti|aagum|aagam|balaji|florex|eeken|action|cubix|swastik/i.test(groupName)) return true;
+  return false;
+}
+
 const paragonCoreDefinitions = [
-  { id: '1136', name: 'Paragon 1136 Gents', category: 'PU Daily Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p) => p.productName.includes('1136') },
-  { id: '1170', name: 'Paragon 1170 Ladies', category: 'Ladies PU Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png', match: (p) => p.productName.includes('1170') },
-  { id: '1180', name: 'P-Toes 1180 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png', match: (p) => p.productName.includes('1180') },
-  { id: '1181', name: 'P-Toes 1181 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-1181_kaddpn.png', match: (p) => p.productName.includes('1181') },
-  { id: '1190', name: 'Paralite 1190 Gents', category: 'Lightweight Daily Slipper', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png', match: (p) => p.productName.includes('1190') },
-  { id: '1210', name: 'Paragon 1210 Gents', category: 'Everyday Comfort PU', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png', match: (p) => p.productName.includes('1210') },
-  { id: '1215', name: 'Paragon 1215 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1215_n934pm.png', match: (p) => p.productName.includes('1215') },
-  { id: '1220', name: 'Paragon 1220 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png', match: (p) => p.productName.includes('1220') },
-  { id: '1250_bkr', name: 'Paragon 1250 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png', match: (p) => p.productName.includes('1250') && (p.productName.toUpperCase().includes('BKR') || !p.productName.toUpperCase().includes('TQN')) },
-  { id: '1250_tqn', name: 'Paragon 1250 TQN', category: 'Men Turquoise-Navy', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1250-TQN_foqv2b.png', match: (p) => p.productName.includes('1250') && p.productName.toUpperCase().includes('TQN') },
-  { id: '1251_bkr', name: 'Paragon 1251 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-1251-BKR_ey6ugu.png', match: (p) => p.productName.includes('1251') },
-  { id: '16048_blk', name: 'Paralite 16048 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p) => p.productName.includes('16048') && (p.productName.toUpperCase().includes('BLK') || !p.productName.toUpperCase().includes('MIG')) },
-  { id: '16048_mig', name: 'Paralite 16048 MIG', category: 'Men Light PU Mint-Grey', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16048-MIG_tu7lm5.png', match: (p) => p.productName.includes('16048') && p.productName.toUpperCase().includes('MIG') },
-  { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-16049-BLK_m9hwdx.png', match: (p) => p.productName.includes('16049') && (p.productName.toUpperCase().includes('BLK') || !p.productName.toUpperCase().includes('RYB')) },
-  { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16049-RYB_gw7p37.png', match: (p) => p.productName.includes('16049') && p.productName.toUpperCase().includes('RYB') },
-  { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-cushion_impiqy.png', match: (p) => p.productName.toUpperCase().includes('CUSHION') && !p.productName.includes('1136') && !p.productName.includes('1210') }
+  { id: '1136', name: 'Paragon 1136 Gents', category: 'PU Daily Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p) => /\b1136\b/.test(p.productName) },
+  { id: '1170', name: 'Paragon 1170 Ladies', category: 'Ladies PU Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png', match: (p) => /\b1170\b/.test(p.productName) },
+  { id: '1180', name: 'P-Toes 1180 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png', match: (p) => /\b1180\b/.test(p.productName) },
+  { id: '1181', name: 'P-Toes 1181 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-1181_kaddpn.png', match: (p) => /\b1181\b/.test(p.productName) },
+  { id: '1190', name: 'Paralite 1190 Gents', category: 'Lightweight Daily Slipper', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png', match: (p) => /\b1190\b/.test(p.productName) },
+  { id: '1210', name: 'Paragon 1210 Gents', category: 'Everyday Comfort PU', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png', match: (p) => /\b1210\b/.test(p.productName) },
+  { id: '1215', name: 'Paragon 1215 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1215_n934pm.png', match: (p) => /\b1215\b/.test(p.productName) },
+  { id: '1220', name: 'Paragon 1220 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png', match: (p) => /\b1220\b/.test(p.productName) },
+  { id: '1250_bkr', name: 'Paragon 1250 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png', match: (p) => /\b1250\b/.test(p.productName) && (!p.productName.toUpperCase().includes('TQN')) },
+  { id: '1250_tqn', name: 'Paragon 1250 TQN', category: 'Men Turquoise-Navy', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1250-TQN_foqv2b.png', match: (p) => /\b1250\b/.test(p.productName) && p.productName.toUpperCase().includes('TQN') },
+  { id: '1251_bkr', name: 'Paragon 1251 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-1251-BKR_ey6ugu.png', match: (p) => /\b1251\b/.test(p.productName) },
+  { id: '16048_blk', name: 'Paralite 16048 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p) => /\b16048\b/.test(p.productName) && (!p.productName.toUpperCase().includes('MIG')) },
+  { id: '16048_mig', name: 'Paralite 16048 MIG', category: 'Men Light PU Mint-Grey', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16048-MIG_tu7lm5.png', match: (p) => /\b16048\b/.test(p.productName) && p.productName.toUpperCase().includes('MIG') },
+  { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-16049-BLK_m9hwdx.png', match: (p) => /\b16049\b/.test(p.productName) && (!p.productName.toUpperCase().includes('RYB')) },
+  { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16049-RYB_gw7p37.png', match: (p) => /\b16049\b/.test(p.productName) && p.productName.toUpperCase().includes('RYB') },
+  { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-cushion_impiqy.png', match: (p) => /cushion/i.test(p.productName) && !/1136|1210/.test(p.productName) }
 ];
 
 function standardizeCoreSize(name) {
@@ -1832,8 +1753,9 @@ function standardizeCoreSize(name) {
             name.match(/\b(\d+\s*[\*xX\-]\s*\d+)\b/i) ||
             name.match(/\b(\d+)\s*no\b/i);
   if (m) {
-    let s = m[1].replace(/\s+/g, '').replace(/[\*X]/g, 'x');
+    let s = m[1].replace(/\s+/g, '').replace(/[\*\-X]/g, 'x');
     if (s.startsWith('0')) s = s.substring(1);
+    if (s === '6x09') s = '6x9';
     return s;
   }
   return 'Standard';
@@ -1852,8 +1774,10 @@ const paragonCoreList = computed(() => {
   return paragonCoreDefinitions.map(def => {
     const matched = [];
     stockData.value.forEach(g => {
+      if (isCopyDuplicate(g.groupName, '')) return;
       if (g.products) {
         g.products.forEach(p => {
+          if (isCopyDuplicate(g.groupName, p.productName)) return;
           if (def.match(p)) {
             matched.push(p);
           }
