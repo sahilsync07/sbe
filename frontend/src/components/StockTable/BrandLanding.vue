@@ -448,18 +448,23 @@
       </div>
 
       <!-- 2. ALL OTHER / MATCHING RESULTS GRID -->
-      <div v-if="otherSearchResults.length > 0">
+      <div v-if="displayedSearchResults.length > 0">
         <div v-if="selectedItem" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
           <i class="fa-solid fa-layer-group text-slate-400"></i>
-          <span>More Results Matching "{{ searchQuery }}" ({{ otherSearchResults.length }})</span>
+          <span>More Results Matching "{{ searchQuery }}" ({{ displayedSearchResults.length }})</span>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
-          <div
-            v-for="product in otherSearchResults"
-            :key="product.productName"
-            class="flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 overflow-hidden relative group/card"
-          >
+          <template v-for="product in displayedSearchResults" :key="product.isCore ? product.id : product.productName">
+            <ParagonCoreCard
+              v-if="product.isCore"
+              :core="product.core"
+              @open-image-popup="$emit('open-image-popup', $event)"
+            />
+            <div
+              v-else
+              class="flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 overflow-hidden relative group/card"
+            >
             <!-- Image Area -->
             <div 
               class="relative w-full aspect-[4/5] bg-slate-50 cursor-pointer overflow-hidden"
@@ -573,6 +578,7 @@
               </div>
             </div>
           </div>
+        </template>
         </div>
       </div>
 
@@ -597,7 +603,7 @@
             {{ getActiveTabLabel() }}
           </span>
           <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black shrink-0">
-            {{ activeTab === 'ParagonCore' ? paragonCoreList.length + ' Core Models' : filteredTabProducts.length + ' products' }}
+            {{ activeTab === 'ParagonCore' ? paragonCoreList.length + ' Core Models' : displayedTabProducts.length + ' items' }}
           </span>
         </div>
         <button
@@ -609,23 +615,18 @@
         </button>
       </div>
 
-      <!-- Dedicated Paragon Core Unified Cards (Standard product grid dimensions with Size Selector) -->
-      <div v-if="activeTab === 'ParagonCore'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
-        <ParagonCoreCard
-          v-for="core in paragonCoreList"
-          :key="core.id"
-          :core="core"
-          @open-image-popup="$emit('open-image-popup', $event)"
-        />
-      </div>
-
-      <!-- Standard Product Cards Grid (For Other Tabs) -->
-      <div v-else-if="filteredTabProducts.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
-        <div
-          v-for="product in filteredTabProducts"
-          :key="product.productName"
-          class="flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 overflow-hidden relative group/card"
-        >
+      <!-- Consolidated Product Grid: Core models unified into single size-selector cards; others as individual cards -->
+      <div v-if="displayedTabProducts.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-12">
+        <template v-for="product in displayedTabProducts" :key="product.isCore ? product.id : product.productName">
+          <ParagonCoreCard
+            v-if="product.isCore"
+            :core="product.core"
+            @open-image-popup="$emit('open-image-popup', $event)"
+          />
+          <div
+            v-else
+            class="flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 overflow-hidden relative group/card"
+          >
           <!-- Image Area -->
           <div 
             class="relative w-full aspect-[4/5] bg-slate-50 cursor-pointer overflow-hidden"
@@ -739,7 +740,8 @@
             </div>
           </div>
         </div>
-      </div>
+      </template>
+    </div>
 
       <!-- Empty State -->
       <div v-else class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
@@ -1722,30 +1724,61 @@ const PARAGON_GROUPS = new Set([
   'SOLEA DISC 40% OFFER'
 ]);
 
+const productToGroupMap = computed(() => {
+  const map = new Map();
+  if (!stockData.value) return map;
+  for (const group of stockData.value) {
+    if (group.products) {
+      for (const p of group.products) {
+        if (p.productName) {
+          map.set(p.productName, group.groupName);
+        }
+      }
+    }
+  }
+  return map;
+});
+
 function isCopyDuplicate(groupName, productName) {
+  if (!groupName) return false;
   if (!PARAGON_GROUPS.has(groupName)) return true;
   if (/loose|polland|maruti|aagum|aagam|balaji|florex|eeken|action|cubix|swastik/i.test(productName)) return true;
   if (/loose|polland|maruti|aagum|aagam|balaji|florex|eeken|action|cubix|swastik/i.test(groupName)) return true;
   return false;
 }
 
+function isBoys(p, g) {
+  const name = (p.productName || '').toLowerCase();
+  const group = (g || '').toLowerCase();
+  if (group.includes('p-toes')) return true;
+  if (/p-?toes|boys?|kiddies|children/i.test(name)) return true;
+  if (/\b(1[\*x\-]3|4[\*x\-]5|9[\*x\-]13|2[\*x\-]5)\b/i.test(name)) return true;
+  return false;
+}
+
 const paragonCoreDefinitions = [
-  { id: '1136', name: 'Paragon 1136 Gents', category: 'PU Daily Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p) => /\b1136\b/.test(p.productName) },
-  { id: '1170', name: 'Paragon 1170 Ladies', category: 'Ladies PU Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png', match: (p) => /\b1170\b/.test(p.productName) },
-  { id: '1180', name: 'P-Toes 1180 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png', match: (p) => /\b1180\b/.test(p.productName) },
-  { id: '1181', name: 'P-Toes 1181 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-1181_kaddpn.png', match: (p) => /\b1181\b/.test(p.productName) },
-  { id: '1190', name: 'Paralite 1190 Gents', category: 'Lightweight Daily Slipper', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png', match: (p) => /\b1190\b/.test(p.productName) },
-  { id: '1210', name: 'Paragon 1210 Gents', category: 'Everyday Comfort PU', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png', match: (p) => /\b1210\b/.test(p.productName) },
-  { id: '1215', name: 'Paragon 1215 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1215_n934pm.png', match: (p) => /\b1215\b/.test(p.productName) },
-  { id: '1220', name: 'Paragon 1220 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png', match: (p) => /\b1220\b/.test(p.productName) },
-  { id: '1250_bkr', name: 'Paragon 1250 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png', match: (p) => /\b1250\b/.test(p.productName) && (!p.productName.toUpperCase().includes('TQN')) },
-  { id: '1250_tqn', name: 'Paragon 1250 TQN', category: 'Men Turquoise-Navy', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1250-TQN_foqv2b.png', match: (p) => /\b1250\b/.test(p.productName) && p.productName.toUpperCase().includes('TQN') },
-  { id: '1251_bkr', name: 'Paragon 1251 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-1251-BKR_ey6ugu.png', match: (p) => /\b1251\b/.test(p.productName) },
-  { id: '16048_blk', name: 'Paralite 16048 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p) => /\b16048\b/.test(p.productName) && (!p.productName.toUpperCase().includes('MIG')) },
-  { id: '16048_mig', name: 'Paralite 16048 MIG', category: 'Men Light PU Mint-Grey', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16048-MIG_tu7lm5.png', match: (p) => /\b16048\b/.test(p.productName) && p.productName.toUpperCase().includes('MIG') },
-  { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-16049-BLK_m9hwdx.png', match: (p) => /\b16049\b/.test(p.productName) && (!p.productName.toUpperCase().includes('RYB')) },
-  { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16049-RYB_gw7p37.png', match: (p) => /\b16049\b/.test(p.productName) && p.productName.toUpperCase().includes('RYB') },
-  { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-cushion_impiqy.png', match: (p) => /cushion/i.test(p.productName) && !/1136|1210/.test(p.productName) }
+  { id: '1136_gents', name: 'Paragon 1136 Gents', category: 'PU Daily Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p, g) => /\b1136\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1136_boys', name: 'P-Toes 1136 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p, g) => /\b1136\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1170', name: 'Paragon 1170 Ladies', category: 'Ladies PU Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png', match: (p, g) => /\b1170\b/.test(p.productName) },
+  { id: '1180_gents', name: 'Paralite 1180 Gents', category: 'Men PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png', match: (p, g) => /\b1180\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1180_boys', name: 'P-Toes 1180 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770910312/1180_Black.jpg', match: (p, g) => /\b1180\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1181', name: 'Paralite 1181 Gents', category: 'Men PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-1181_kaddpn.png', match: (p, g) => /\b1181\b/.test(p.productName) },
+  { id: '1190_gents', name: 'Paralite 1190 Gents', category: 'Lightweight Daily Slipper', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png', match: (p, g) => /\b1190\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1190_boys', name: 'P-Toes 1190 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770548635/1190_Black_Kids.jpg', match: (p, g) => /\b1190\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1210_gents', name: 'Paragon 1210 Gents', category: 'Everyday Comfort PU', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png', match: (p, g) => /\b1210\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1210_boys', name: 'P-Toes 1210 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770909707/1210_2x5.jpg', match: (p, g) => /\b1210\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1215', name: 'Paragon 1215 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1215_n934pm.png', match: (p, g) => /\b1215\b/.test(p.productName) },
+  { id: '1220', name: 'Paragon 1220 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png', match: (p, g) => /\b1220\b/.test(p.productName) },
+  { id: '1250_bkr', name: 'Paragon 1250 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png', match: (p, g) => /\b1250\b/.test(p.productName) && (!p.productName.toUpperCase().includes('TQN')) },
+  { id: '1250_tqn', name: 'Paragon 1250 TQN', category: 'Men Turquoise-Navy', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1250-TQN_foqv2b.png', match: (p, g) => /\b1250\b/.test(p.productName) && p.productName.toUpperCase().includes('TQN') },
+  { id: '1251_bkr', name: 'Paragon 1251 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-1251-BKR_ey6ugu.png', match: (p, g) => /\b1251\b/.test(p.productName) },
+  { id: '16048_blk', name: 'Paralite 16048 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p, g) => /\b16048\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('MIG')) },
+  { id: '16048_mig', name: 'Paralite 16048 MIG', category: 'Men Light PU Mint-Grey', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16048-MIG_tu7lm5.png', match: (p, g) => /\b16048\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('MIG') },
+  { id: '16048_boys', name: 'P-Toes 16048 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p, g) => /\b16048\b/.test(p.productName) && isBoys(p, g) },
+  { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-16049-BLK_m9hwdx.png', match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('RYB')) },
+  { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16049-RYB_gw7p37.png', match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('RYB') },
+  { id: '16049_boys', name: 'P-Toes 16049 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770547881/16049_Blk_kids.jpg', match: (p, g) => /\b16049\b/.test(p.productName) && isBoys(p, g) },
+  { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-cushion_impiqy.png', match: (p, g) => /cushion/i.test(p.productName) && !/1136|1210/.test(p.productName) }
 ];
 
 function standardizeCoreSize(name) {
@@ -1768,6 +1801,47 @@ function parseCorePrice(name) {
   return m ? parseFloat(m[1]) : 0;
 }
 
+function buildCoreObject(def, matchedProducts) {
+  const sizeGroups = {};
+  matchedProducts.forEach(p => {
+    const size = standardizeCoreSize(p.productName);
+    const price = parseCorePrice(p.productName);
+    if (!sizeGroups[size]) {
+      sizeGroups[size] = {
+        size,
+        totalQty: 0,
+        price: price || 0,
+        primaryProduct: p,
+        products: []
+      };
+    }
+    sizeGroups[size].totalQty += (Number(p.quantity) || 0);
+    sizeGroups[size].products.push(p);
+    if (Number(p.quantity) > 0 && (!sizeGroups[size].primaryProduct || Number(sizeGroups[size].primaryProduct.quantity) <= 0)) {
+      sizeGroups[size].primaryProduct = p;
+      if (price > 0) sizeGroups[size].price = price;
+    }
+  });
+
+  let sizes = Object.values(sizeGroups).sort((a,b) => b.totalQty - a.totalQty);
+  if (inStockOnly.value) {
+    sizes = sizes.filter(s => s.totalQty > 0);
+  }
+  if (maxPriceFilter.value) {
+    sizes = sizes.filter(s => s.price === 0 || s.price <= maxPriceFilter.value);
+  }
+
+  const totalStock = sizes.reduce((sum, s) => sum + s.totalQty, 0);
+  const img = def.img || matchedProducts.find(p => p.imageUrl)?.imageUrl || null;
+
+  return {
+    ...def,
+    img,
+    totalStock,
+    sizes
+  };
+}
+
 const paragonCoreList = computed(() => {
   if (!stockData.value) return [];
 
@@ -1778,55 +1852,71 @@ const paragonCoreList = computed(() => {
       if (g.products) {
         g.products.forEach(p => {
           if (isCopyDuplicate(g.groupName, p.productName)) return;
-          if (def.match(p)) {
+          if (def.match(p, g.groupName)) {
             matched.push(p);
           }
         });
       }
     });
 
-    const sizeGroups = {};
-    matched.forEach(p => {
-      const size = standardizeCoreSize(p.productName);
-      const price = parseCorePrice(p.productName);
-      if (!sizeGroups[size]) {
-        sizeGroups[size] = {
-          size,
-          totalQty: 0,
-          price: price || 0,
-          primaryProduct: p,
-          products: []
-        };
-      }
-      sizeGroups[size].totalQty += (Number(p.quantity) || 0);
-      sizeGroups[size].products.push(p);
-      if (Number(p.quantity) > 0 && (!sizeGroups[size].primaryProduct || Number(sizeGroups[size].primaryProduct.quantity) <= 0)) {
-        sizeGroups[size].primaryProduct = p;
-        if (price > 0) sizeGroups[size].price = price;
-      }
-    });
-
-    let sizes = Object.values(sizeGroups).sort((a,b) => b.totalQty - a.totalQty);
-    
-    if (inStockOnly.value) {
-      sizes = sizes.filter(s => s.totalQty > 0);
-    }
-    if (maxPriceFilter.value) {
-      sizes = sizes.filter(s => s.price === 0 || s.price <= maxPriceFilter.value);
-    }
-
-    const totalStock = sizes.reduce((sum, s) => sum + s.totalQty, 0);
-
-    return {
-      ...def,
-      totalStock,
-      sizes
-    };
+    return buildCoreObject(def, matched);
   }).filter(core => {
     if (cleanView.value && core.totalStock <= 0) return false;
     if (inStockOnly.value && core.totalStock <= 0) return false;
     return true;
   });
+});
+
+function consolidateProducts(products) {
+  if (!products || products.length === 0) return [];
+  const coreMap = new Map();
+  const items = [];
+
+  for (const p of products) {
+    const groupName = productToGroupMap.value.get(p.productName) || p.groupName || '';
+    if (isCopyDuplicate(groupName, p.productName)) {
+      items.push({ isCore: false, ...p });
+      continue;
+    }
+
+    const matchedDef = paragonCoreDefinitions.find(def => def.match(p, groupName));
+    if (matchedDef) {
+      if (!coreMap.has(matchedDef.id)) {
+        const placeholder = { isCore: true, id: 'core_' + matchedDef.id, def: matchedDef, matched: [p] };
+        coreMap.set(matchedDef.id, placeholder);
+        items.push(placeholder);
+      } else {
+        coreMap.get(matchedDef.id).matched.push(p);
+      }
+    } else {
+      items.push({ isCore: false, ...p });
+    }
+  }
+
+  return items.map(it => {
+    if (it.isCore && it.def) {
+      const coreObj = buildCoreObject(it.def, it.matched);
+      return { isCore: true, id: it.id, core: coreObj };
+    }
+    return it;
+  }).filter(it => {
+    if (it.isCore) {
+      if (cleanView.value && it.core.totalStock <= 0) return false;
+      if (inStockOnly.value && it.core.totalStock <= 0) return false;
+    }
+    return true;
+  });
+}
+
+const displayedTabProducts = computed(() => {
+  if (activeTab.value === 'ParagonCore') {
+    return paragonCoreList.value.map(core => ({ isCore: true, id: 'core_' + core.id, core }));
+  }
+  return consolidateProducts(filteredTabProducts.value);
+});
+
+const displayedSearchResults = computed(() => {
+  return consolidateProducts(otherSearchResults.value);
 });
 
 const getActiveTabLabel = () => {
@@ -1898,8 +1988,9 @@ const localCarousals = {
     'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-ladies-2.jpg'
   ],
   'P-TOES PARALITE': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1770548635/1190_Black_Kids.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1770909707/1210_2x5.jpg',
+    'https://res.cloudinary.com/dg365ewal/image/upload/v1770547881/16049_Blk_kids.jpg',
     'https://res.cloudinary.com/dg365ewal/image/upload/P-toes.png'
   ],
   'Safety': ['https://res.cloudinary.com/dg365ewal/image/upload/Boot-1.jpg'],
