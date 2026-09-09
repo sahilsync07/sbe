@@ -24,6 +24,11 @@
        @login="handleAdminLogin"
     />
 
+    <GitHubSyncModal
+       :show="showGitHubSyncModal"
+       @close="showGitHubSyncModal = false"
+    />
+
     <!-- Order Details Modal -->
     <OrderModal
        :show="showOrderDetailsModal"
@@ -49,8 +54,9 @@ import AdminLoginModal from './components/StockTable/AdminLoginModal.vue';
 import BrandsSidebar from './components/StockTable/BrandsSidebar.vue';
 import CartSidebar from './components/StockTable/CartSidebar.vue';
 
-// Use same async import for OrderModal
+// Use same async import for Modals
 const OrderModal = defineAsyncComponent(() => import('./components/StockTable/OrderModal.vue'));
+const GitHubSyncModal = defineAsyncComponent(() => import('./components/StockTable/GitHubSyncModal.vue'));
 
 import { useAppStore } from './stores/appStore';
 import { useAdmin } from './composables/useAdmin';
@@ -65,7 +71,7 @@ const route = useRoute();
 const router = useRouter();
 
 const appStore = useAppStore();
-const { stockData, config, searchQuery, showSidePanel, showCart, showLanding, showAdminModal } = storeToRefs(appStore);
+const { stockData, config, searchQuery, showSidePanel, showCart, showLanding, showAdminModal, showGitHubSyncModal } = storeToRefs(appStore);
 
 watch(() => route.query, async (query) => {
   if (query.pwd) {

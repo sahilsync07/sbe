@@ -14,6 +14,7 @@ export const useAppStore = defineStore('app', {
     showSidePanel: false,
     showLanding: true,
     showAdminModal: false,
+    showGitHubSyncModal: false,
   }),
   actions: {
     setShowLanding(status) {
@@ -54,6 +55,9 @@ export const useAppStore = defineStore('app', {
     },
     toggleAdminModal(forceVal) {
       this.showAdminModal = forceVal !== undefined ? forceVal : !this.showAdminModal;
+    },
+    toggleGitHubSyncModal(forceVal) {
+      this.showGitHubSyncModal = forceVal !== undefined ? forceVal : !this.showGitHubSyncModal;
     }
   }
 });

@@ -65,6 +65,19 @@
                     </div>
                     <span class="font-bold text-sm">Daybook View</span>
                   </button>
+
+                  <button 
+                    @click="appStore.toggleGitHubSyncModal(true); $emit('update:showSidePanel', false)"
+                    class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all border bg-white border-slate-100 text-slate-600 hover:border-amber-200 hover:bg-amber-50/50 group/nav"
+                  >
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600 group-hover/nav:bg-amber-100 transition-colors">
+                       <i class="fa-brands fa-github text-sm"></i>
+                    </div>
+                    <div class="flex-1 text-left">
+                       <div class="font-bold text-sm leading-tight">Cloud Sync</div>
+                       <div class="text-[10px] text-slate-400">Push & pull GitHub photos</div>
+                    </div>
+                  </button>
                </div>
 
                <div class="h-px bg-slate-100 mx-2 mt-4"></div>
@@ -274,10 +287,12 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAdmin } from '../../composables/useAdmin';
+import { useAppStore } from '../../stores/appStore';
 
 const router = useRouter();
 const route = useRoute();
 const { isAdmin, isSuperAdmin } = useAdmin();
+const appStore = useAppStore();
 
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));

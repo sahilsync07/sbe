@@ -132,9 +132,9 @@
         <!-- Sync Button (Admin Mode) -->
         <button
           v-if="isAdmin || isSuperAdmin"
-          @click="handleSync"
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0"
-          title="Sync Stock from Tally"
+          @click="showGitHubSyncModal = true"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0 relative"
+          title="Cloud & Stock Sync"
         >
           <i class="fa-solid fa-rotate text-xs sm:text-sm" :class="{ 'animate-spin text-amber-500': isSyncing }"></i>
         </button>
@@ -1330,6 +1330,12 @@
       </div>
     </template>
 
+    <!-- GitHub Cloud Sync Modal -->
+    <GitHubSyncModal
+      :show="showGitHubSyncModal"
+      @close="showGitHubSyncModal = false"
+    />
+
   </div>
 </template>
 
@@ -1349,6 +1355,8 @@ import { useCartStore } from '../../stores/cartStore';
 import { storeToRefs } from 'pinia';
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
+const GitHubSyncModal = defineAsyncComponent(() => import('./GitHubSyncModal.vue'));
+const showGitHubSyncModal = ref(false);
 
 const route = useRoute();
 const router = useRouter();

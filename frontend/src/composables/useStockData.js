@@ -521,6 +521,7 @@ export function useStockData(isLocal) {
             if (res.status === 200) {
                 backendSuccess = true;
                 console.log(`[Sync] Updated via local backend for ${productName}`);
+                return { success: true, via: 'backend' };
             }
         } catch (backendErr) {
             console.log(`[Sync] Local backend unavailable (${backendErr.message}), falling back to direct GitHub sync`);
@@ -528,7 +529,13 @@ export function useStockData(isLocal) {
 
         // B. If local backend unavailable (Phone, 4G, remote, or server offline): direct GitHub API commit!
         if (!backendSuccess) {
-            await enqueueSync(async () => {
+            return await enqueueSync(async () => {
+                const token = getGitHubToken();
+                if (!token) {
+                    console.warn('[GitHub Sync] No GitHub token configured; skipping direct GitHub commit');
+                    return { success: false, reason: 'no_token' };
+                }
+
                 let fullCatalog = stockData.value;
                 if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
                     try {
@@ -564,7 +571,10 @@ export function useStockData(isLocal) {
                 const commitMessage = newImageUrl ? `Update image for ${productName}` : `Remove image for ${productName}`;
 
                 // Commit to frontend
-                await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage);
+                const resFrontend = await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage);
+                if (!resFrontend) {
+                    return { success: false, reason: 'commit_failed' };
+                }
 
                 // Mirror commit to sbe-hub
                 try {
@@ -572,6 +582,8 @@ export function useStockData(isLocal) {
                 } catch (hubErr) {
                     console.warn('[Sync] SBE Hub mirror sync non-fatal warning:', hubErr.message);
                 }
+
+                return { success: true, via: 'github' };
             });
         }
     };
@@ -656,10 +668,20 @@ export function useStockData(isLocal) {
             delete imageFiles.value[productName];
 
             // 3. Persist change: Local backend if available, or direct GitHub API
-            await syncImageChange(productName, newImageUrl);
+            const syncResult = await syncImageChange(productName, newImageUrl);
 
             toast.remove(toastId);
-            toast.success(`✓ Photo uploaded & catalog synced!`, { autoClose: 3000 });
+            if (syncResult && syncResult.success) {
+                if (syncResult.via === 'github') {
+                    toast.success(`✓ Photo uploaded & committed to GitHub!`, { autoClose: 3500 });
+                } else {
+                    toast.success(`✓ Photo uploaded & synced to server!`, { autoClose: 3000 });
+                }
+            } else if (syncResult && syncResult.reason === 'no_token') {
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit skipped (no GitHub token). Tap Cloud Sync in Admin to activate.`, { autoClose: 6000 });
+            } else {
+                toast.info(`Photo uploaded to Cloudinary.`, { autoClose: 3000 });
+            }
             return newImageUrl;
         } catch (err) {
             console.error('Error uploading image:', err);
@@ -707,10 +729,20 @@ export function useStockData(isLocal) {
             delete imageFiles.value[productName];
 
             // 2. Persist change: Local backend if available, or direct GitHub API
-            await syncImageChange(productName, null);
+            const syncResult = await syncImageChange(productName, null);
 
             toast.remove(toastId);
-            toast.success(`✓ Photo removed & catalog synced!`, { autoClose: 2500 });
+            if (syncResult && syncResult.success) {
+                if (syncResult.via === 'github') {
+                    toast.success(`✓ Photo removed & committed to GitHub!`, { autoClose: 3000 });
+                } else {
+                    toast.success(`✓ Photo removed & synced to server!`, { autoClose: 2500 });
+                }
+            } else if (syncResult && syncResult.reason === 'no_token') {
+                toast.warning(`Photo removed locally, but GitHub commit skipped (no GitHub token).`, { autoClose: 4000 });
+            } else {
+                toast.success(`✓ Photo removed for ${productName}`, { autoClose: 2500 });
+            }
             return true;
         } catch (err) {
             console.error('Error removing image:', err);
@@ -719,6 +751,93 @@ export function useStockData(isLocal) {
             return false;
         } finally {
             uploading.value[productName] = false;
+        }
+    };
+
+    /**
+     * Push all local image additions/updates to GitHub repository in one batch
+     */
+    const pushPendingPhotosToGitHub = async () => {
+        const token = getGitHubToken();
+        if (!token) {
+            toast.warning('GitHub Sync Token required. Please activate GitHub Cloud Sync in Admin settings.', { autoClose: 4000 });
+            return { success: false, reason: 'no_token' };
+        }
+
+        const toastId = toast.loading('Checking local photos against GitHub...', { autoClose: false, closeButton: false });
+
+        try {
+            // 1. Fetch live remote catalog
+            const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+            if (!res.ok) throw new Error(`Could not fetch remote catalog (HTTP ${res.status})`);
+            const remoteCatalog = await res.json();
+
+            // Map remote products by productName
+            const remoteMap = new Map();
+            remoteCatalog.forEach(g => {
+                (g.products || []).forEach(p => {
+                    remoteMap.set(p.productName, p);
+                });
+            });
+
+            // 2. Scan local catalog for new / updated imageUrls
+            const localCatalog = stockData.value || [];
+            const pendingUpdates = [];
+
+            localCatalog.forEach(g => {
+                (g.products || []).forEach(p => {
+                    if (p.imageUrl) {
+                        const remoteP = remoteMap.get(p.productName);
+                        if (!remoteP || remoteP.imageUrl !== p.imageUrl) {
+                            pendingUpdates.push({
+                                productName: p.productName,
+                                imageUrl: p.imageUrl,
+                                imageUploadedAt: p.imageUploadedAt || new Date().toISOString()
+                            });
+                        }
+                    }
+                });
+            });
+
+            if (pendingUpdates.length === 0) {
+                toast.remove(toastId);
+                toast.info('Catalog is already up to date with GitHub! (0 pending photos)', { autoClose: 3000 });
+                return { success: true, count: 0 };
+            }
+
+            toast.remove(toastId);
+            const commitToastId = toast.loading(`Committing ${pendingUpdates.length} photos to GitHub...`, { autoClose: false, closeButton: false });
+
+            // 3. Apply updates to remote catalog
+            pendingUpdates.forEach(u => {
+                const remoteP = remoteMap.get(u.productName);
+                if (remoteP) {
+                    remoteP.imageUrl = u.imageUrl;
+                    remoteP.imageUploadedAt = u.imageUploadedAt;
+                }
+            });
+
+            const jsonString = JSON.stringify(remoteCatalog, null, 2);
+            const commitMessage = `feat(catalog): sync ${pendingUpdates.length} photos from mobile`;
+
+            // Commit to frontend
+            await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage);
+
+            // Mirror to sbe-hub
+            try {
+                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage);
+            } catch (hubErr) {
+                console.warn('[Sync] SBE Hub mirror warning:', hubErr.message);
+            }
+
+            toast.remove(commitToastId);
+            toast.success(`✓ Successfully committed ${pendingUpdates.length} photos to GitHub!`, { autoClose: 4000 });
+            return { success: true, count: pendingUpdates.length };
+        } catch (err) {
+            toast.remove(toastId);
+            console.error('Failed to push pending changes to GitHub:', err);
+            toast.error(`Push failed: ${err.message}`, { autoClose: 5000 });
+            return { success: false, error: err.message };
         }
     };
 
@@ -736,6 +855,7 @@ export function useStockData(isLocal) {
         handleFileChange,
         uploadImage,
         deleteImage,
-        fetchStockMetadataLastSync
+        fetchStockMetadataLastSync,
+        pushPendingPhotosToGitHub
     };
 }

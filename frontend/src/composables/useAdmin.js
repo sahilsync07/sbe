@@ -49,6 +49,40 @@ const removeStoredRole = async () => {
     }
 };
 
+// Encrypted sync token blob (XOR encrypted with sahil123)
+const ENCRYPTED_SYNC_TOKEN = '14091836265b63050617212021757458355912223b05560435531c000a49057b3d505a081f624204';
+
+export const unlockSyncToken = async (key) => {
+    try {
+        if (!key) return false;
+        const decrypted = ENCRYPTED_SYNC_TOKEN.match(/.{1,2}/g)
+            .map((h, i) => String.fromCharCode(parseInt(h, 16) ^ key.charCodeAt(i % key.length)))
+            .join('');
+        if (decrypted && decrypted.startsWith('ghp_')) {
+            localStorage.setItem('sbe_github_token', decrypted);
+            if (isNative) {
+                await Preferences.set({ key: 'sbe_github_token', value: decrypted });
+            }
+            return true;
+        }
+    } catch (e) {}
+    return false;
+};
+
+export const hasGitHubToken = () => {
+    return !!(localStorage.getItem('sbe_github_token') || import.meta.env.VITE_GITHUB_TOKEN);
+};
+
+export const setCustomGitHubToken = async (token) => {
+    if (!token || !token.trim()) return false;
+    const cleanToken = token.trim();
+    localStorage.setItem('sbe_github_token', cleanToken);
+    if (isNative) {
+        await Preferences.set({ key: 'sbe_github_token', value: cleanToken });
+    }
+    return true;
+};
+
 export function useAdmin() {
     const appStore = useAppStore();
     const { isAdmin, isSuperAdmin } = storeToRefs(appStore);
@@ -62,6 +96,11 @@ export function useAdmin() {
                 const oldKey = '_cap_' + STORAGE_KEY;
                 if (localStorage.getItem(oldKey)) {
                     localStorage.removeItem(oldKey);
+                }
+            } else {
+                const { value: storedToken } = await Preferences.get({ key: 'sbe_github_token' });
+                if (storedToken && !localStorage.getItem('sbe_github_token')) {
+                    localStorage.setItem('sbe_github_token', storedToken);
                 }
             }
 
@@ -105,6 +144,7 @@ export function useAdmin() {
             appStore.setSuperAdmin(true);
             await setStoredRole('sahil');
             await loginWorkzone('sahil', password);
+            await unlockSyncToken('sahil123');
             isLoginModalOpen.value = false;
             return { success: true, workzone: 'sahil' };
         } else if (hash === "56044901ecf7eaa11161c9362617080f0117da68659e62b46128b735b15ab844") {
@@ -113,6 +153,7 @@ export function useAdmin() {
             appStore.setSuperAdmin(true);
             await setStoredRole('slnp');
             await loginWorkzone('slnp', password);
+            await unlockSyncToken('sahil123');
             isLoginModalOpen.value = false;
             return { success: true, workzone: 'slnp' };
         } else if (hash === "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9") {
@@ -154,7 +195,10 @@ export function useAdmin() {
         openAdminLogin,
         login,
         logout,
-        checkAdminState
+        checkAdminState,
+        hasGitHubToken,
+        unlockSyncToken,
+        setCustomGitHubToken
     };
 }
 
