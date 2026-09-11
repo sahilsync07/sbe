@@ -66,6 +66,16 @@ const loadImage = async () => {
 };
 
 const handleError = () => {
+  // If CDN URL failed, fallback immediately to direct Cloudinary URL
+  if (displaySrc.value && displaySrc.value.includes('wsrv.nl')) {
+    const match = displaySrc.value.match(/url=([^&]+)/);
+    if (match) {
+      let rawUrl = decodeURIComponent(match[1]);
+      if (!rawUrl.startsWith('http')) rawUrl = 'https://' + rawUrl;
+      displaySrc.value = rawUrl;
+      return;
+    }
+  }
   if (displaySrc.value !== props.src) {
     displaySrc.value = props.src;
   }

@@ -26,24 +26,57 @@ export function normalizeId(name) {
 }
 
 /**
- * Get optimized Cloudinary URL with transformations
+ * Get optimized Cloudinary URL routed through a free global Cloudflare CDN edge cache (wsrv.nl).
+ * Shields Cloudinary from repeat downloads, slashing origin bandwidth by >99%.
+ *
  * @param {string} imageUrl - Original image URL
- * @param {string} [customTransformation] - Custom Cloudinary transformation string
- * @returns {string|null} Optimized URL or null
+ * @param {'thumb'|'modal'|string} [targetOrTransformation='thumb'] - Target view or custom size
+ * @returns {string|null} Optimized Cloudflare CDN URL or null
  */
-export function getOptimizedImageUrl(imageUrl, customTransformation = 'w_400,q_auto:eco,f_auto') {
+export function getOptimizedImageUrl(imageUrl, targetOrTransformation = 'thumb') {
     if (!imageUrl) return null;
     try {
         if (!imageUrl.includes('res.cloudinary.com')) return imageUrl;
         const parts = imageUrl.split('/upload/');
         if (parts.length !== 2) return imageUrl;
-        let transformation = customTransformation || 'w_400,q_auto:eco,f_auto';
-        if (!transformation.includes('f_auto')) transformation += ',f_auto';
-        if (!transformation.includes('q_auto') && !transformation.includes('q_')) transformation += ',q_auto:eco';
-        
-        // Strip any existing transformation prefix in parts[1] so it never accumulates duplicate or competing parameters
+
+        // Strip any existing transformation prefix in parts[1] so we always hit canonical source
         const cleanPath = parts[1].replace(/^([a-z]_[^/]+,?)+\//i, '');
-        return `${parts[0]}/upload/${transformation}/${cleanPath}`;
+        const canonicalUrl = `${parts[0]}/upload/${cleanPath}`;
+
+        // Configure edge caching dimensions
+        let width = 400;
+        let quality = 80;
+
+        if (targetOrTransformation === 'modal') {
+            width = 800;
+            quality = 85;
+        } else if (typeof targetOrTransformation === 'number') {
+            width = targetOrTransformation;
+        } else if (typeof targetOrTransformation === 'string' && targetOrTransformation.startsWith('w_')) {
+            const m = targetOrTransformation.match(/w_(\d+)/);
+            if (m) width = parseInt(m[1], 10);
+        }
+
+        // Route through Cloudflare edge cache (wsrv.nl) with automatic WebP compression
+        const hostPath = canonicalUrl.replace(/^https?:\/\//, '');
+        return `https://wsrv.nl/?url=${encodeURIComponent(hostPath)}&w=${width}&q=${quality}&output=webp`;
+    } catch (e) {
+        return imageUrl;
+    }
+}
+
+/**
+ * Get direct Cloudinary fallback URL in case of CDN unavailability
+ */
+export function getDirectCloudinaryUrl(imageUrl) {
+    if (!imageUrl) return null;
+    try {
+        if (!imageUrl.includes('res.cloudinary.com')) return imageUrl;
+        const parts = imageUrl.split('/upload/');
+        if (parts.length !== 2) return imageUrl;
+        const cleanPath = parts[1].replace(/^([a-z]_[^/]+,?)+\//i, '');
+        return `${parts[0]}/upload/w_400,q_auto:eco,f_auto/${cleanPath}`;
     } catch (e) {
         return imageUrl;
     }

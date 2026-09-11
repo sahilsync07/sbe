@@ -1,6 +1,6 @@
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
-import { getOptimizedImageUrl } from './formatters';
+import { getOptimizedImageUrl } from './formatters.js';
 
 const CACHE_DIR = 'image_cache';
 const CACHE_NAME = 'sbe-images-v1';
@@ -12,7 +12,12 @@ let isSyncing = false;
 export function getSafeCacheKey(productName, imageUrl) {
   if (!productName && !imageUrl) return 'unknown';
   const namePart = (productName || '').toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 50);
-  const urlPart = (imageUrl || '').split('/').pop().split('?')[0].replace(/[^a-z0-9]/gi, '_').slice(0, 30);
+  let cleanUrl = imageUrl || '';
+  if (cleanUrl.includes('url=')) {
+    const match = cleanUrl.match(/url=([^&]+)/);
+    if (match) cleanUrl = decodeURIComponent(match[1]);
+  }
+  const urlPart = cleanUrl.split('/').pop().split('?')[0].replace(/[^a-z0-9]/gi, '_').slice(0, 30);
   return `${namePart}_${urlPart}`;
 }
 

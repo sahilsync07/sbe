@@ -250,6 +250,7 @@
 <script setup>
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { extractColor } from '../../utils/colors';
+import { getOptimizedImageUrl } from '../../utils/formatters';
 import { useCart } from '../../composables/useCart';
 import { useAdmin } from '../../composables/useAdmin';
 import { useStockData } from '../../composables/useStockData';
@@ -353,27 +354,11 @@ const handleTouchEnd = () => {
 };
 
 const getOptimizedUrl = (imageUrl) => {
-  if (!imageUrl) return null;
-  try {
-    const parts = imageUrl.split("/upload/");
-    if (parts.length !== 2) return imageUrl;
-    const transformation = "w_700,q_auto:eco,f_auto";
-    return `${parts[0]}/upload/${transformation}/${parts[1]}`;
-  } catch (e) {
-    return imageUrl;
-  }
+  return getOptimizedImageUrl(imageUrl, 'modal');
 };
 
 const getCacheKeyUrl = (imageUrl) => {
-  if (!imageUrl) return null;
-  try {
-    const parts = imageUrl.split("/upload/");
-    if (parts.length !== 2) return imageUrl;
-    const transformation = "w_300,q_auto:eco,f_auto";
-    return `${parts[0]}/upload/${transformation}/${parts[1]}`;
-  } catch (e) {
-    return imageUrl;
-  }
+  return getOptimizedImageUrl(imageUrl, 'thumb');
 };
 
 const formatGroupName = (name) => {
