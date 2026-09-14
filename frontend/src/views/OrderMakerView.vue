@@ -99,7 +99,7 @@
           >
             <img
               v-if="cat.sampleImg"
-              :src="cat.sampleImg"
+              :src="getOptimizedImageUrl(cat.sampleImg, 80)"
               :alt="cat.label"
               class="w-full h-full object-cover rounded-full"
               loading="lazy"
@@ -206,7 +206,7 @@
         <div class="relative w-full h-52 sm:h-64 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden p-2 border border-slate-100 shadow-inner">
           <img
             v-if="currentProduct.imageUrl"
-            :src="currentProduct.imageUrl"
+            :src="getOptimizedImageUrl(currentProduct.imageUrl)"
             :alt="currentProduct.productName"
             class="w-full h-full object-contain select-none"
             loading="eager"
@@ -411,7 +411,7 @@
               class="py-2.5 flex items-center justify-between gap-2.5 text-xs"
             >
               <div class="w-10 h-10 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
-                <img v-if="item.product.imageUrl" :src="item.product.imageUrl" class="w-full h-full object-contain" />
+                <img v-if="item.product.imageUrl" :src="getOptimizedImageUrl(item.product.imageUrl, 100)" class="w-full h-full object-contain" />
                 <i v-else class="fa-solid fa-shoe-prints text-slate-300 text-[10px]"></i>
               </div>
 
@@ -479,6 +479,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStockData } from '../composables/useStockData';
 import { BRAND_LISTS } from '../utils/constants';
+import { getOptimizedImageUrl } from '../utils/formatters.js';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 import VersionBadge from '../components/VersionBadge.vue';
 import { Share } from '@capacitor/share';

@@ -12,7 +12,7 @@
     <div class="relative aspect-square bg-secondary">
       <img
         v-if="product.imageUrl"
-        :src="product.imageUrl"
+        :src="getOptimizedImageUrl(product.imageUrl)"
         :alt="product.productName"
         class="w-full h-full object-cover"
         loading="lazy"
@@ -97,6 +97,7 @@
 
 <script setup>
 import { ImageIcon, Camera, Plus } from 'lucide-vue-next';
+import { getOptimizedImageUrl } from '../utils/formatters.js';
 
 const props = defineProps({
   product: {

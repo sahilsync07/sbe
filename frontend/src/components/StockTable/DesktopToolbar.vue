@@ -88,7 +88,7 @@
                       class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/5 transition-colors flex items-center gap-4 border border-transparent"
                     >
                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden shadow-inner">
-                          <img v-if="product.imageUrl" :src="product.imageUrl" class="w-full h-full object-cover" />
+                          <img v-if="product.imageUrl" :src="getOptimizedImageUrl(product.imageUrl)" class="w-full h-full object-cover" />
                           <i v-else class="fa-solid fa-box text-slate-500 text-lg"></i>
                        </div>
                        <div class="flex-1 overflow-hidden">
@@ -234,6 +234,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { extractColor } from '../../utils/colors';
+import { getOptimizedImageUrl } from '../../utils/formatters.js';
 
 // Pinia global stores
 import { useAppStore } from '../../stores/appStore';

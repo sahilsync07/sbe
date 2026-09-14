@@ -19,7 +19,7 @@
               <!-- Logo/Icon Slide -->
               <div v-if="slide.type === 'logo'" class="w-full h-full flex flex-col items-center justify-start pt-12 p-6 bg-slate-50">
                 <!-- If it's a logo image -->
-                <img v-if="slide.src" :src="slide.src" :class="slide.cover ? 'w-full h-full object-cover' : 'w-2/3 h-2/3 object-contain'" />
+                <img v-if="slide.src" :src="getOptimizedImageUrl(slide.src)" :class="slide.cover ? 'w-full h-full object-cover' : 'w-2/3 h-2/3 object-contain'" />
                 
                 <!-- If it's an icon -->
                 <div v-else-if="slide.icon" class="w-20 h-20 rounded-[2rem] bg-white shadow-lg flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-500">
@@ -34,7 +34,7 @@
 
               <!-- Product Image Slide -->
               <div v-else class="w-full h-full border-r border-slate-200/30 last:border-0 relative">
-                <img :src="slide.src" class="w-full h-full object-cover" loading="lazy" />
+                <img :src="getOptimizedImageUrl(slide.src)" class="w-full h-full object-cover" loading="lazy" />
               </div>
               
             </div>
@@ -60,6 +60,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { getOptimizedImageUrl } from '../../utils/formatters.js';
 
 const props = defineProps({
   card: { type: Object, required: true },

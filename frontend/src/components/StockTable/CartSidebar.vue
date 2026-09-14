@@ -145,6 +145,7 @@
 <script setup>
 import { useCartStore } from '../../stores/cartStore';
 import { storeToRefs } from 'pinia';
+import { getOptimizedImageUrl } from '../../utils/formatters.js';
 
 const cartStore = useCartStore();
 const { cart, cartTotalItems, cartItemCount } = storeToRefs(cartStore);
@@ -158,15 +159,7 @@ defineEmits([
 ]);
 
 const getOptimizedUrl = (imageUrl) => {
-    if (!imageUrl) return null;
-    try {
-        const parts = imageUrl.split("/upload/");
-        if (parts.length !== 2) return imageUrl;
-        const transformation = "w_120,q_auto:eco,f_auto"; // Thumbnails in cart
-        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
-    } catch (e) {
-        return imageUrl;
-    }
+    return getOptimizedImageUrl(imageUrl, 120);
 };
 </script>
 
