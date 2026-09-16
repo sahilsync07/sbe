@@ -22,10 +22,10 @@
           <!-- Sync/Ledger (Admin) -->
           <div class="flex items-center gap-2 shrink-0">
             <button
-               v-if="isAdmin && !isSuperAdmin"
+               v-if="isAdmin || isSuperAdmin"
                @click="$emit('updateStockData')"
                class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:bg-white/10 hover:text-amber-400 transition-all border border-white/10"
-               title="Sync Data"
+               title="Sync Stock from Tally"
             >
               <i class="fa-solid fa-rotate" :class="{ 'animate-spin text-amber-400': loading }"></i>
             </button>

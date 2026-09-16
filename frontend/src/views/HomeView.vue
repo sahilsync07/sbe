@@ -17,10 +17,10 @@
             <VersionBadge />
 
             <button
-              v-if="isAdmin && !isSuperAdmin"
+              v-if="isAdmin || isSuperAdmin"
               @click="updateStockData"
               class="hub-icon-btn hub-icon-btn--accent"
-              title="Sync Data"
+              title="Sync Stock from Tally"
             >
               <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
             </button>
