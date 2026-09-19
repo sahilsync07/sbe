@@ -1,173 +1,97 @@
 <template>
-  <div class="brand-landing pb-24 text-slate-900 font-sans w-full max-w-full overflow-x-hidden">
+  <div class="brand-landing pb-28 sm:pb-32 text-slate-900 font-sans w-full max-w-full overflow-x-hidden">
     
     <!-- ══════════════════════════════════════════════════════════
-         1. TOP BAR: Search Bar & Cart (Single Row at the Very Top)
+         1. TOP BAR: Brand Title ("SBE Rayagada") & Action Buttons
          ══════════════════════════════════════════════════════════ -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-2.5 sm:px-6 pb-2 transition-all w-full max-w-full overflow-hidden" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
-      <!-- Search Bar + Cart Button Row -->
-      <div class="flex items-center gap-1.5 sm:gap-2.5 w-full">
-        <div class="flex-1 min-w-0 relative" ref="searchContainerRef">
-          <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 shadow-sm p-1 pl-2.5 sm:pl-3.5 focus-within:border-[#c59b27] focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs sm:text-sm shrink-0"></i>
-            
-            <input
-              v-model="localQuery"
-              @focus="showDropdown = true"
-              @keydown.enter="handleSearchSubmit(localQuery)"
-              type="text"
-              placeholder="Search products..."
-              class="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none py-1.5"
-            />
-
-            <button
-              v-if="localQuery"
-              @click="localQuery = ''; showDropdown = false"
-              class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
-            >
-              <i class="fa-solid fa-xmark text-xs"></i>
-            </button>
-
-            <!-- Vertical Divider -->
-            <div class="h-5 sm:h-6 w-px bg-slate-200 shrink-0 mx-0.5"></div>
-
-            <!-- Clean View Switch (Zomato VEG MODE Style) -->
-            <button
-              @click="cleanView = !cleanView"
-              type="button"
-              class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-xl transition-all select-none shrink-0"
-              :class="cleanView ? 'bg-amber-50 border border-amber-300/80 text-amber-900' : 'bg-white border border-slate-200/70 text-slate-500'"
-              title="Toggle Images Only & In Stock"
-            >
-              <div class="flex flex-col text-right leading-none">
-                <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider" :class="cleanView ? 'text-amber-800' : 'text-slate-600'">CLEAN</span>
-                <span class="hidden sm:inline text-[8px] font-bold" :class="cleanView ? 'text-amber-600' : 'text-slate-400'">VIEW</span>
-              </div>
-              <!-- Custom Toggle Pill -->
-              <div
-                class="w-6 sm:w-7 h-3.5 sm:h-4 rounded-full p-0.5 transition-colors relative"
-                :class="cleanView ? 'bg-[#c59b27]' : 'bg-slate-300'"
-              >
-                <div
-                  class="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-white shadow-sm transition-transform"
-                  :class="cleanView ? 'translate-x-2.5 sm:translate-x-3' : 'translate-x-0'"
-                ></div>
-              </div>
-            </button>
+      <!-- Top Branding & Action Buttons Row -->
+      <div class="flex items-center justify-between gap-2 w-full">
+        <!-- Left: SBE Rayagada -->
+        <div class="flex items-center gap-2 select-none min-w-0">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-slate-900 to-[#18181b] flex items-center justify-center text-amber-400 shadow-sm border border-slate-700/40 shrink-0">
+            <i class="fa-solid fa-shoe-prints text-xs sm:text-sm"></i>
           </div>
-
-          <!-- Search Auto-complete Dropdown -->
-          <transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="opacity-0 translate-y-1"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 translate-y-1"
-          >
-            <div
-              v-if="showDropdown && localQuery.trim().length > 0"
-              class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50 max-h-[60vh] flex flex-col"
-            >
-              <div class="overflow-y-auto overscroll-contain flex-1 p-2 space-y-1 no-scrollbar">
-                <button
-                  @click="handleSearchSubmit(localQuery)"
-                  class="w-full text-left px-4 py-2.5 rounded-xl hover:bg-amber-50/60 transition-colors flex items-center gap-3"
-                >
-                  <div class="w-7 h-7 rounded-full bg-amber-100 text-[#c59b27] flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-bold text-slate-800 truncate">Show all results for "{{ localQuery.trim() }}"</div>
-                    <div class="text-xs text-slate-400">View all matching products</div>
-                  </div>
-                  <i class="fa-solid fa-arrow-right text-xs text-slate-400"></i>
-                </button>
-
-                <div v-if="searchSuggestions.length > 0" class="h-px bg-slate-100 my-1 mx-2"></div>
-
-                <!-- Product Suggestions -->
-                <button
-                  v-for="product in searchSuggestions"
-                  :key="product.productName"
-                  @click="handleProductSelect(product)"
-                  class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
-                >
-                  <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
-                    <img v-if="product.imageUrl" :src="getOptimizedImageUrl(product.imageUrl)" class="w-full h-full object-cover" />
-                    <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
-                      <i class="fa-solid fa-box text-sm"></i>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-xs sm:text-sm font-bold text-slate-800 truncate group-hover/item:text-[#c59b27] transition-colors">
-                      {{ getCleanProductName(product.productName) }}
-                    </div>
-                    <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
-                      <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
-                        <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
-                      </span>
-                      <span v-if="getProductSize(product.productName)" class="font-semibold text-slate-600">
-                        {{ getProductSize(product.productName) }}
-                      </span>
-                      <span class="font-black text-slate-900">
-                        ₹{{ getPriceInfo(product.productName).price }}
-                      </span>
-                      <span :class="product.quantity > 0 ? 'text-emerald-600' : 'text-rose-500'" class="font-bold">
-                        {{ product.quantity > 0 ? `${product.quantity} pairs` : 'Out of Stock' }}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-
-                <div v-if="searchSuggestions.length === 0" class="px-4 py-6 text-center text-slate-400 text-xs">
-                  No specific items matching "{{ localQuery.trim() }}"
-                </div>
-              </div>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-baseline gap-1.5 leading-none">
+              <span class="font-black text-base sm:text-xl tracking-tight text-slate-900 font-serif">
+                SBE
+              </span>
+              <span class="font-black text-xs sm:text-sm text-[#c59b27] uppercase tracking-widest font-sans">
+                Rayagada
+              </span>
             </div>
-          </transition>
+            <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 tracking-wider uppercase leading-none mt-1 truncate">
+              Footwear Wholesale
+            </span>
+          </div>
         </div>
 
-        <!-- Sync Button (Admin Mode - Tally Data Sync) -->
-        <button
-          v-if="isAdmin || isSuperAdmin"
-          @click="handleSync"
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0"
-          title="Sync Stock from Tally"
-        >
-          <i class="fa-solid fa-rotate text-xs sm:text-sm" :class="{ 'animate-spin text-amber-500': isSyncing }"></i>
-        </button>
+        <!-- Right: Action Buttons (Clean View, Sync, Admin, Cart) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <!-- Clean View Switch (Dedicated, Uncramped Button) -->
+          <button
+            @click="cleanView = !cleanView"
+            type="button"
+            class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl transition-all select-none shrink-0 shadow-xs active:scale-95 border"
+            :class="cleanView ? 'bg-amber-50 border-amber-300/80 text-amber-900' : 'bg-slate-50 border-slate-200/80 text-slate-600 hover:bg-slate-100'"
+            title="Toggle Images Only & In Stock"
+          >
+            <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider" :class="cleanView ? 'text-amber-800' : 'text-slate-600'">
+              Clean View
+            </span>
+            <!-- Custom Toggle Pill -->
+            <div
+              class="w-6 sm:w-7 h-3.5 sm:h-4 rounded-full p-0.5 transition-colors relative shrink-0"
+              :class="cleanView ? 'bg-[#c59b27]' : 'bg-slate-300'"
+            >
+              <div
+                class="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-white shadow-sm transition-transform"
+                :class="cleanView ? 'translate-x-2.5 sm:translate-x-3' : 'translate-x-0'"
+              ></div>
+            </div>
+          </button>
 
-        <!-- Admin Login / Hub Button -->
-        <button
-          v-if="!isAdmin && !isSuperAdmin"
-          @click="appStore.toggleAdminModal(true)"
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all hover:bg-slate-50 active:scale-95 shadow-sm shrink-0"
-          title="Admin Login"
-        >
-          <i class="fa-solid fa-lock text-xs sm:text-sm"></i>
-        </button>
-        <button
-          v-else
-          @click="$router.push('/home')"
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-50 border border-amber-300/80 text-amber-700 hover:bg-amber-100 flex items-center justify-center transition-all active:scale-95 shadow-sm shrink-0"
-          title="SBE Hub"
-        >
-          <i class="fa-solid fa-shield-halved text-xs sm:text-sm"></i>
-        </button>
+          <!-- Sync Button (Admin Mode - Tally Data Sync) -->
+          <button
+            v-if="isAdmin || isSuperAdmin"
+            @click="handleSync"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all hover:bg-amber-50/50 active:scale-95 shadow-sm shrink-0"
+            title="Sync Stock from Tally"
+          >
+            <i class="fa-solid fa-rotate text-xs sm:text-sm" :class="{ 'animate-spin text-amber-500': isSyncing }"></i>
+          </button>
 
-        <!-- Right: Shopping Bag Cart Button -->
-        <button
-          @click="appStore.toggleCart(true)"
-          class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10 shrink-0"
-          title="View Cart"
-        >
-          <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-white animate-pulse">
-            {{ cartTotalItems }}
-          </div>
-          <i class="fa-solid fa-bag-shopping text-xs sm:text-sm text-amber-400"></i>
-        </button>
+          <!-- Admin Login / Hub Button -->
+          <button
+            v-if="!isAdmin && !isSuperAdmin"
+            @click="appStore.toggleAdminModal(true)"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all hover:bg-slate-50 active:scale-95 shadow-sm shrink-0"
+            title="Admin Login"
+          >
+            <i class="fa-solid fa-lock text-xs sm:text-sm"></i>
+          </button>
+          <button
+            v-else
+            @click="$router.push('/home')"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50 border border-amber-300/80 text-amber-700 hover:bg-amber-100 flex items-center justify-center transition-all active:scale-95 shadow-sm shrink-0"
+            title="SBE Hub"
+          >
+            <i class="fa-solid fa-shield-halved text-xs sm:text-sm"></i>
+          </button>
+
+          <!-- Shopping Bag Cart Button -->
+          <button
+            @click="appStore.toggleCart(true)"
+            class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10 shrink-0"
+            title="View Cart"
+          >
+            <div v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-white animate-pulse">
+              {{ cartTotalItems }}
+            </div>
+            <i class="fa-solid fa-bag-shopping text-xs sm:text-sm text-amber-400"></i>
+          </button>
+        </div>
       </div>
 
       <!-- ══════════════════════════════════════════════════════════
@@ -1254,6 +1178,117 @@
         </button>
       </div>
     </template>
+
+    <!-- ══════════════════════════════════════════════════════════
+         BOTTOM BAR: Fixed Search Bar & Autocomplete
+         ══════════════════════════════════════════════════════════ -->
+    <div 
+      class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-3 py-2 sm:px-6 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] transition-all"
+      style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));"
+      ref="searchContainerRef"
+    >
+      <div class="max-w-2xl mx-auto relative">
+        <!-- Search Input Bar -->
+        <div class="flex items-center gap-2 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 shadow-sm p-1 pl-3.5 focus-within:border-[#c59b27] focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
+          <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm shrink-0"></i>
+          <input
+            v-model="localQuery"
+            @focus="showDropdown = true"
+            @keydown.enter="handleSearchSubmit(localQuery)"
+            type="text"
+            placeholder="Search 2,900+ products, brands, models..."
+            class="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none py-1.5"
+          />
+          <button
+            v-if="localQuery"
+            @click="clearSearch"
+            class="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
+            title="Clear search"
+          >
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Autocomplete Dropdown (Expands UPWARD) -->
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 translate-y-2"
+        >
+          <div
+            v-if="showDropdown && localQuery.trim().length > 0"
+            class="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50 max-h-[55vh] flex flex-col"
+          >
+            <!-- Dropdown Header: Query submit option -->
+            <div class="p-2 border-b border-slate-100 bg-slate-50/70">
+              <button
+                @click="handleSearchSubmit(localQuery)"
+                class="w-full text-left px-3 py-2 rounded-xl bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-900 transition-colors flex items-center justify-between group border border-slate-200/60 shadow-xs"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                  </div>
+                  <div class="truncate">
+                    <span class="text-xs font-bold">Search for "</span>
+                    <span class="text-xs font-black text-amber-600">{{ localQuery.trim() }}</span>
+                    <span class="text-xs font-bold">"</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 group-hover:text-amber-700 shrink-0">
+                  <span>View results</span>
+                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </div>
+              </button>
+            </div>
+
+            <!-- Product Suggestions List -->
+            <div class="overflow-y-auto p-1.5 divide-y divide-slate-100/80">
+              <button
+                v-for="product in searchSuggestions"
+                :key="product.productName"
+                @click="handleProductSelect(product)"
+                class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
+              >
+                <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
+                  <img v-if="product.imageUrl" :src="getOptimizedImageUrl(product.imageUrl)" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-box text-sm"></i>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-slate-800 truncate group-hover/item:text-[#c59b27] transition-colors">
+                    {{ getCleanProductName(product.productName) }}
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+                    <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
+                      <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                      <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
+                    </span>
+                    <span v-if="getProductSize(product.productName)" class="font-semibold text-slate-600">
+                      {{ getProductSize(product.productName) }}
+                    </span>
+                    <span class="font-black text-slate-900">
+                      ₹{{ getPriceInfo(product.productName).price }}
+                    </span>
+                    <span :class="product.quantity > 0 ? 'text-emerald-600' : 'text-rose-500'" class="font-bold">
+                      {{ product.quantity > 0 ? `${product.quantity} pairs` : 'Out of Stock' }}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              <div v-if="searchSuggestions.length === 0" class="px-4 py-6 text-center text-slate-400 text-xs">
+                No specific items matching "{{ localQuery.trim() }}"
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
+    </div>
 
   </div>
 </template>

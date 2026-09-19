@@ -38,7 +38,7 @@
       <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-24 lg:bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
+        class="fixed bottom-20 right-4 sm:right-6 w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
       >
         <i class="fa-solid fa-arrow-up"></i>
       </button>
