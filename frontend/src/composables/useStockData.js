@@ -588,6 +588,50 @@ export function useStockData(isLocal) {
         }
     };
 
+    /**
+     * Upload helper for a single Cloudinary instance with resilience against preset restrictions
+     */
+    const uploadToCloudinaryInstance = async (file, cloudConfig, publicId) => {
+        const { cloudName, uploadPreset, folder } = cloudConfig;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+        if (publicId) formData.append('public_id', publicId);
+        if (folder) formData.append('folder', folder);
+
+        let res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: formData
+        });
+
+        // Resilient fallback: If preset disallows custom public_id, retry without public_id
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            if (errData.error?.message?.toLowerCase().includes('public_id')) {
+                console.warn(`[Cloudinary ${cloudName}] Preset does not permit public_id override; retrying without public_id...`);
+                const fallbackFormData = new FormData();
+                fallbackFormData.append('file', file);
+                fallbackFormData.append('upload_preset', uploadPreset);
+                if (folder) fallbackFormData.append('folder', folder);
+                res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: fallbackFormData
+                });
+            }
+        }
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (!data.secure_url) {
+            throw new Error('No secure_url returned from Cloudinary');
+        }
+        return data.secure_url;
+    };
+
     const uploadImage = async (productOrName, fileOverride = null) => {
         const productName = typeof productOrName === 'object' ? productOrName?.productName : productOrName;
         if (!productName) return null;
@@ -598,50 +642,49 @@ export function useStockData(isLocal) {
             return null;
         }
 
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sbe-stock';
+        // Dual-Cloud Configuration: Primary and Secondary with automatic failover
+        const clouds = [
+            {
+                name: 'Primary',
+                cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal',
+                uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sbe-stock',
+                folder: import.meta.env.VITE_CLOUDINARY_FOLDER || ''
+            },
+            {
+                name: 'Secondary',
+                cloudName: import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr',
+                uploadPreset: import.meta.env.VITE_CLOUDINARY_SECONDARY_UPLOAD_PRESET || 'e-sbe-pics',
+                folder: import.meta.env.VITE_CLOUDINARY_SECONDARY_FOLDER || 'e-sbe'
+            }
+        ];
 
         uploading.value[productName] = true;
         uploadErrors.value[productName] = null;
         const toastId = toast.loading(`Uploading photo for ${productName}...`, { autoClose: false, closeButton: false });
 
         try {
-            // 1. Direct upload to Cloudinary using unsigned preset + smart public ID
             const publicId = generateProductPublicId(productName);
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', uploadPreset);
-            formData.append('public_id', publicId);
+            let newImageUrl = null;
+            let lastError = null;
+            let usedCloud = null;
 
-            let uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            // Resilient fallback: If preset disallows custom public_id, retry without public_id
-            if (!uploadRes.ok) {
-                const errData = await uploadRes.json().catch(() => ({}));
-                if (errData.error?.message?.toLowerCase().includes('public_id')) {
-                    console.warn('Cloudinary preset does not permit public_id override; retrying with default public_id...');
-                    const fallbackFormData = new FormData();
-                    fallbackFormData.append('file', file);
-                    fallbackFormData.append('upload_preset', uploadPreset);
-                    uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-                        method: 'POST',
-                        body: fallbackFormData
-                    });
+            // Attempt upload with automatic failover
+            for (const cloud of clouds) {
+                if (!cloud.cloudName || !cloud.uploadPreset) continue;
+                try {
+                    console.log(`[Multi-Cloud] Attempting upload via ${cloud.name} Cloud (${cloud.cloudName})...`);
+                    newImageUrl = await uploadToCloudinaryInstance(file, cloud, publicId);
+                    usedCloud = cloud.name;
+                    console.log(`[Multi-Cloud] ✓ Upload succeeded via ${cloud.name} Cloud (${cloud.cloudName})`);
+                    break;
+                } catch (cloudErr) {
+                    console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}. Checking failover...`);
+                    lastError = cloudErr;
                 }
             }
 
-            if (!uploadRes.ok) {
-                const errData = await uploadRes.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `Cloudinary upload failed (HTTP ${uploadRes.status})`);
-            }
-
-            const uploadData = await uploadRes.json();
-            const newImageUrl = uploadData.secure_url;
             if (!newImageUrl) {
-                throw new Error('No image URL returned from upload provider');
+                throw new Error(`Upload failed on all cloud providers. Last error: ${lastError?.message || 'Unknown error'}`);
             }
 
             // 2. Instant Optimistic UI & localStorage update (Zero latency on screen)

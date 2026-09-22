@@ -65,23 +65,50 @@ const loadImage = async () => {
   displaySrc.value = props.src;
 };
 
+const triedUrls = ref(new Set());
+
 const handleError = () => {
-  // If CDN URL failed, fallback immediately to direct Cloudinary URL
-  if (displaySrc.value && displaySrc.value.includes('wsrv.nl')) {
+  if (!displaySrc.value) return;
+  triedUrls.value.add(displaySrc.value);
+
+  const primaryCloud = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
+  const secondaryCloud = import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr';
+
+  // 1. If CDN URL (wsrv.nl) failed, fallback immediately to direct Cloudinary URL
+  if (displaySrc.value.includes('wsrv.nl')) {
     const match = displaySrc.value.match(/url=([^&]+)/);
     if (match) {
       let rawUrl = decodeURIComponent(match[1]);
       if (!rawUrl.startsWith('http')) rawUrl = 'https://' + rawUrl;
-      displaySrc.value = rawUrl;
+      if (!triedUrls.value.has(rawUrl)) {
+        displaySrc.value = rawUrl;
+        return;
+      }
+    }
+  }
+
+  // 2. Dual-Cloud Failover: If current cloud fails (e.g. account suspended/disabled), try the other cloud
+  if (displaySrc.value.includes(`/${primaryCloud}/`)) {
+    const altUrl = displaySrc.value.replace(`/${primaryCloud}/`, `/${secondaryCloud}/`);
+    if (!triedUrls.value.has(altUrl)) {
+      displaySrc.value = altUrl;
+      return;
+    }
+  } else if (displaySrc.value.includes(`/${secondaryCloud}/`)) {
+    const altUrl = displaySrc.value.replace(`/${secondaryCloud}/`, `/${primaryCloud}/`);
+    if (!triedUrls.value.has(altUrl)) {
+      displaySrc.value = altUrl;
       return;
     }
   }
-  if (displaySrc.value !== props.src) {
+
+  if (displaySrc.value !== props.src && !triedUrls.value.has(props.src)) {
     displaySrc.value = props.src;
   }
 };
 
 watch(() => props.src, (newSrc) => {
+  triedUrls.value.clear();
   if (objectUrl.value) {
     try {
       URL.revokeObjectURL(objectUrl.value);
