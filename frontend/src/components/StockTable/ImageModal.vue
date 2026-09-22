@@ -93,12 +93,12 @@
         <!-- Product Image (Aspect ratio preserved, fit-to-canvas, non-squeezed) -->
         <div class="w-full h-full flex items-center justify-center relative">
           <CachedImage
-            v-if="currentProduct && currentProduct.imageUrl"
-            :src="getOptimizedUrl(currentProduct.imageUrl)"
-            :cache-key="getCacheKeyUrl(currentProduct.imageUrl)"
+            v-if="currentProduct && (currentProduct.imageUrl || currentProduct.secondaryImageUrl)"
+            :src="getOptimizedUrl(currentProduct.imageUrl || currentProduct.secondaryImageUrl)"
+            :cache-key="getCacheKeyUrl(currentProduct.imageUrl || currentProduct.secondaryImageUrl)"
             :alt="currentProduct.productName || 'Product Image'"
             class="max-h-full max-w-full w-auto h-auto object-contain rounded-2xl drop-shadow-2xl transition-all duration-200"
-            :key="(currentProduct.productName || '') + '_' + (currentProduct.imageUrl || '')"
+            :key="(currentProduct.productName || '') + '_' + (currentProduct.imageUrl || currentProduct.secondaryImageUrl || '')"
           />
           <div v-else class="flex flex-col items-center gap-3 text-slate-500 text-center p-4">
             <i class="fa-solid fa-image text-5xl opacity-30"></i>

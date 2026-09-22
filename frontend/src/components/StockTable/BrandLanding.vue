@@ -253,14 +253,14 @@
                 @click.stop="triggerCardPhotoUpload(selectedItem)"
                 :disabled="uploading[selectedItem.productName]"
                 class="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg shadow-md border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95"
-                :title="selectedItem.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                :title="getProductImage(selectedItem) ? 'Change Photo' : 'Upload Photo'"
               >
                 <i v-if="uploading[selectedItem.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-xs"></i>
                 <i v-else class="fa-solid fa-camera text-xs text-amber-500"></i>
-                <span>{{ selectedItem.imageUrl ? 'Change' : 'Add Photo' }}</span>
+                <span>{{ getProductImage(selectedItem) ? 'Change' : 'Add Photo' }}</span>
               </button>
               <button
-                v-if="selectedItem.imageUrl"
+                v-if="getProductImage(selectedItem)"
                 @click.stop="handleCardDeletePhoto(selectedItem)"
                 :disabled="uploading[selectedItem.productName]"
                 class="w-7 h-7 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-md transition-all active:scale-95"
@@ -271,8 +271,8 @@
             </div>
 
             <CachedImage
-              v-if="selectedItem.imageUrl"
-              :src="getOptimizedImageUrl(selectedItem.imageUrl)"
+              v-if="getProductImage(selectedItem)"
+              :src="getOptimizedImageUrl(getProductImage(selectedItem))"
               :alt="selectedItem.productName"
               class="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover/sel:scale-105"
             />
@@ -405,14 +405,14 @@
                   @click.stop="triggerCardPhotoUpload(product)"
                   :disabled="uploading[product.productName]"
                   class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
-                  :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                  :title="getProductImage(product) ? 'Change Photo' : 'Upload Photo'"
                 >
                   <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
                   <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
-                  <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                  <span class="hidden sm:inline">{{ getProductImage(product) ? 'Edit' : 'Add' }}</span>
                 </button>
                 <button
-                  v-if="product.imageUrl"
+                  v-if="getProductImage(product)"
                   @click.stop="handleCardDeletePhoto(product)"
                   :disabled="uploading[product.productName]"
                   class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
@@ -423,8 +423,8 @@
               </div>
 
               <CachedImage
-                v-if="product.imageUrl"
-                :src="getOptimizedImageUrl(product.imageUrl)"
+                v-if="getProductImage(product)"
+                :src="getOptimizedImageUrl(getProductImage(product))"
                 alt="Product"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
               />
@@ -579,14 +579,14 @@
                 @click.stop="triggerCardPhotoUpload(product)"
                 :disabled="uploading[product.productName]"
                 class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
-                :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                :title="getProductImage(product) ? 'Change Photo' : 'Upload Photo'"
               >
                 <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
                 <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
-                <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                <span class="hidden sm:inline">{{ getProductImage(product) ? 'Edit' : 'Add' }}</span>
               </button>
               <button
-                v-if="product.imageUrl"
+                v-if="getProductImage(product)"
                 @click.stop="handleCardDeletePhoto(product)"
                 :disabled="uploading[product.productName]"
                 class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
@@ -597,8 +597,8 @@
             </div>
 
             <CachedImage
-              v-if="product.imageUrl"
-              :src="getOptimizedImageUrl(product.imageUrl)"
+              v-if="getProductImage(product)"
+              :src="getOptimizedImageUrl(getProductImage(product))"
               alt="Product"
               class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
             />
@@ -806,14 +806,14 @@
                       @click.stop="triggerCardPhotoUpload(product)"
                       :disabled="uploading[product.productName]"
                       class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
-                      :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                      :title="getProductImage(product) ? 'Change Photo' : 'Upload Photo'"
                     >
                       <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
                       <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
-                      <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                      <span class="hidden sm:inline">{{ getProductImage(product) ? 'Edit' : 'Add' }}</span>
                     </button>
                     <button
-                      v-if="product.imageUrl"
+                      v-if="getProductImage(product)"
                       @click.stop="handleCardDeletePhoto(product)"
                       :disabled="uploading[product.productName]"
                       class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
@@ -824,8 +824,8 @@
                   </div>
 
                   <CachedImage
-                    v-if="product.imageUrl"
-                    :src="getOptimizedImageUrl(product.imageUrl)"
+                    v-if="getProductImage(product)"
+                    :src="getOptimizedImageUrl(getProductImage(product))"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                   />
@@ -991,14 +991,14 @@
                       @click.stop="triggerCardPhotoUpload(product)"
                       :disabled="uploading[product.productName]"
                       class="h-6 px-1.5 bg-white/95 backdrop-blur-md rounded-md shadow border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
-                      :title="product.imageUrl ? 'Change Photo' : 'Upload Photo'"
+                      :title="getProductImage(product) ? 'Change Photo' : 'Upload Photo'"
                     >
                       <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-amber-500 text-[9px]"></i>
                       <i v-else class="fa-solid fa-camera text-[9px] text-amber-500"></i>
-                      <span class="hidden sm:inline">{{ product.imageUrl ? 'Edit' : 'Add' }}</span>
+                      <span class="hidden sm:inline">{{ getProductImage(product) ? 'Edit' : 'Add' }}</span>
                     </button>
                     <button
-                      v-if="product.imageUrl"
+                      v-if="getProductImage(product)"
                       @click.stop="handleCardDeletePhoto(product)"
                       :disabled="uploading[product.productName]"
                       class="w-6 h-6 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-md shadow transition-all active:scale-95"
@@ -1009,8 +1009,8 @@
                   </div>
 
                   <CachedImage
-                    v-if="product.imageUrl"
-                    :src="getOptimizedImageUrl(product.imageUrl)"
+                    v-if="getProductImage(product)"
+                    :src="getOptimizedImageUrl(getProductImage(product))"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/bcard:scale-105"
                   />
@@ -1254,7 +1254,7 @@
                 class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
               >
                 <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
-                  <img v-if="product.imageUrl" :src="getOptimizedImageUrl(product.imageUrl)" class="w-full h-full object-cover" />
+                  <img v-if="getProductImage(product)" :src="getOptimizedImageUrl(getProductImage(product))" class="w-full h-full object-cover" />
                   <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
                     <i class="fa-solid fa-box text-sm"></i>
                   </div>
@@ -1298,7 +1298,7 @@ import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } fr
 import { useIntersectionObserver } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import SlideshowCard from './SlideshowCard.vue';
-import { isNewArrival, getOptimizedImageUrl, formatProductName } from '../../utils/formatters';
+import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 
 import { useAdmin } from '../../composables/useAdmin';
@@ -1648,7 +1648,7 @@ const getNewArrivalProducts = () => {
     if (group.products) {
       for (const p of group.products) {
         if (cleanView.value) {
-          if (!p.imageUrl || Number(p.quantity) < 4) continue;
+          if (!getProductImage(p) || Number(p.quantity) < 4) continue;
         }
         if (isNewArrival(p)) products.push(p);
       }
@@ -1667,8 +1667,8 @@ const getNewArrivalCount = () => {
 
 const getHeroImage = () => {
   const list = getNewArrivalProducts();
-  const itemWithImage = list.find(p => p.imageUrl);
-  return itemWithImage ? itemWithImage.imageUrl : null;
+  const itemWithImage = list.find(p => getProductImage(p));
+  return itemWithImage ? getProductImage(itemWithImage) : null;
 };
 
 const getBrandProducts = (groupNames) => {
@@ -1679,7 +1679,7 @@ const getBrandProducts = (groupNames) => {
     if (lower.includes(group.groupName.toLowerCase()) && group.products) {
       for (const p of group.products) {
         if (cleanView.value) {
-          if (!p.imageUrl || Number(p.quantity) < 4) continue;
+          if (!getProductImage(p) || Number(p.quantity) < 4) continue;
         }
         products.push(p);
       }
@@ -1701,7 +1701,7 @@ const getActiveTabProducts = () => {
       if (group.groupName === '_META_DATA_' || !group.products) continue;
       for (const p of group.products) {
         if (cleanView.value) {
-          if (!p.imageUrl || Number(p.quantity) < 4) continue;
+          if (!getProductImage(p) || Number(p.quantity) < 4) continue;
         }
         products.push(p);
       }
@@ -1749,7 +1749,7 @@ const getActiveTabProducts = () => {
   // Apply In Stock & Price Filters
   return products.filter(p => {
     if (cleanView.value) {
-      if (!p.imageUrl || Number(p.quantity) < 4) return false;
+      if (!getProductImage(p) || Number(p.quantity) < 4) return false;
     }
     if (inStockOnly.value && Number(p.quantity) <= 0) return false;
     if (maxPriceFilter.value) {

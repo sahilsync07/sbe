@@ -13,8 +13,8 @@
         </div>
 
         <CachedImage
-          v-if="product.imageUrl"
-          :src="getOptimizedImageUrl(product.imageUrl)"
+          v-if="product.imageUrl || product.secondaryImageUrl"
+          :src="getOptimizedImageUrl(product.imageUrl || product.secondaryImageUrl)"
           alt="Product"
           class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />

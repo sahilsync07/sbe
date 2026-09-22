@@ -83,6 +83,16 @@ export function getDirectCloudinaryUrl(imageUrl) {
 }
 
 /**
+ * Get active product image URL, supporting primary imageUrl and secondaryImageUrl
+ * @param {Object} product - Product object
+ * @returns {string|null} Image URL or null
+ */
+export function getProductImage(product) {
+    if (!product) return null;
+    return product.imageUrl || product.secondaryImageUrl || null;
+}
+
+/**
  * Check if product is a new arrival (uploaded within last month)
  * @param {Object} product - Product object
  * @returns {boolean} True if new arrival
