@@ -15,6 +15,7 @@
         <CachedImage
           v-if="product.imageUrl || product.secondaryImageUrl"
           :src="getOptimizedImageUrl(product.imageUrl || product.secondaryImageUrl)"
+          :fallback-src="product.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
           alt="Product"
           class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
@@ -40,10 +41,10 @@
         <div
           v-if="isAdmin || isSuperAdmin"
           class="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none p-4 transition-opacity duration-200"
-          :class="product.imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'"
+          :class="(product.imageUrl || product.secondaryImageUrl) ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'"
         >
            <!-- Case 1: No Image - Centered Upload Button -->
-           <div v-if="!product.imageUrl" class="pointer-events-auto w-full transform transition-all hover:scale-105">
+           <div v-if="!product.imageUrl && !product.secondaryImageUrl" class="pointer-events-auto w-full transform transition-all hover:scale-105">
                <!-- State A: No File Selected -->
                <label v-if="!imageFiles[product.productName]" 
                       class="flex w-full items-center justify-center gap-2 py-2.5 bg-white/95 backdrop-blur-sm rounded-xl cursor-pointer shadow-lg hover:shadow-xl hover:bg-white border border-slate-100 text-slate-700"

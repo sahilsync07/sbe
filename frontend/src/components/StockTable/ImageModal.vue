@@ -95,6 +95,7 @@
           <CachedImage
             v-if="currentProduct && (currentProduct.imageUrl || currentProduct.secondaryImageUrl)"
             :src="getOptimizedUrl(currentProduct.imageUrl || currentProduct.secondaryImageUrl)"
+            :fallback-src="currentProduct.secondaryImageUrl ? getOptimizedUrl(currentProduct.secondaryImageUrl) : null"
             :cache-key="getCacheKeyUrl(currentProduct.imageUrl || currentProduct.secondaryImageUrl)"
             :alt="currentProduct.productName || 'Product Image'"
             class="max-h-full max-w-full w-auto h-auto object-contain rounded-2xl drop-shadow-2xl transition-all duration-200"

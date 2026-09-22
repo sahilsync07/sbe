@@ -693,7 +693,11 @@ export function useStockData(isLocal) {
                 stockData.value.forEach(group => {
                     (group.products || []).forEach(p => {
                         if (p.productName === productName) {
-                            p.imageUrl = newImageUrl;
+                            if (usedCloud === 'Secondary') {
+                                p.secondaryImageUrl = newImageUrl;
+                            } else {
+                                p.imageUrl = newImageUrl;
+                            }
                             p.imageUploadedAt = nowIso;
                         }
                     });
@@ -704,7 +708,11 @@ export function useStockData(isLocal) {
             }
 
             if (typeof productOrName === 'object' && productOrName) {
-                productOrName.imageUrl = newImageUrl;
+                if (usedCloud === 'Secondary') {
+                    productOrName.secondaryImageUrl = newImageUrl;
+                } else {
+                    productOrName.imageUrl = newImageUrl;
+                }
                 productOrName.imageUploadedAt = nowIso;
             }
 

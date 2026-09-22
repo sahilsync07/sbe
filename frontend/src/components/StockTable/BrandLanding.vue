@@ -273,6 +273,7 @@
             <CachedImage
               v-if="getProductImage(selectedItem)"
               :src="getOptimizedImageUrl(getProductImage(selectedItem))"
+              :fallback-src="selectedItem?.secondaryImageUrl ? getOptimizedImageUrl(selectedItem.secondaryImageUrl) : null"
               :alt="selectedItem.productName"
               class="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover/sel:scale-105"
             />
@@ -425,6 +426,7 @@
               <CachedImage
                 v-if="getProductImage(product)"
                 :src="getOptimizedImageUrl(getProductImage(product))"
+                :fallback-src="product?.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
                 alt="Product"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
               />
@@ -599,6 +601,7 @@
             <CachedImage
               v-if="getProductImage(product)"
               :src="getOptimizedImageUrl(getProductImage(product))"
+              :fallback-src="product?.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
               alt="Product"
               class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
             />
@@ -826,6 +829,7 @@
                   <CachedImage
                     v-if="getProductImage(product)"
                     :src="getOptimizedImageUrl(getProductImage(product))"
+                    :fallback-src="product?.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                   />
@@ -1011,6 +1015,7 @@
                   <CachedImage
                     v-if="getProductImage(product)"
                     :src="getOptimizedImageUrl(getProductImage(product))"
+                    :fallback-src="product?.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover/bcard:scale-105"
                   />

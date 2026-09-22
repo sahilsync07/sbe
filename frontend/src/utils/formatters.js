@@ -82,14 +82,18 @@ export function getDirectCloudinaryUrl(imageUrl) {
     }
 }
 
+import { getPreferredImageUrl } from './cloudStatus.js';
+
+export { getPreferredImageUrl };
+
 /**
- * Get active product image URL, supporting primary imageUrl and secondaryImageUrl
+ * Get active product image URL, supporting primary imageUrl, secondaryImageUrl, and automatic failover
  * @param {Object} product - Product object
  * @returns {string|null} Image URL or null
  */
 export function getProductImage(product) {
     if (!product) return null;
-    return product.imageUrl || product.secondaryImageUrl || null;
+    return getPreferredImageUrl(product);
 }
 
 /**

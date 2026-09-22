@@ -213,8 +213,9 @@
                   @click.prevent.stop="openLightbox(item.product)"
                 >
                   <CachedImage
-                    v-if="item.product.imageUrl"
-                    :src="getOptimizedImageUrl(item.product.imageUrl)"
+                    v-if="getProductImage(item.product)"
+                    :src="getOptimizedImageUrl(getProductImage(item.product))"
+                    :fallback-src="item.product.secondaryImageUrl ? getOptimizedImageUrl(item.product.secondaryImageUrl) : null"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                   />
@@ -268,8 +269,9 @@
                   @click.prevent.stop="openLightbox(product)"
                 >
                   <CachedImage
-                    v-if="product.imageUrl"
-                    :src="getOptimizedImageUrl(product.imageUrl)"
+                    v-if="getProductImage(product)"
+                    :src="getOptimizedImageUrl(getProductImage(product))"
+                    :fallback-src="product.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                   />
@@ -302,8 +304,9 @@
                 <!-- Image -->
                 <div class="aspect-square w-full bg-slate-50 relative overflow-hidden" @click.prevent.stop="openLightbox(product)">
                   <CachedImage
-                    v-if="product.imageUrl"
-                    :src="getOptimizedImageUrl(product.imageUrl)"
+                    v-if="getProductImage(product)"
+                    :src="getOptimizedImageUrl(getProductImage(product))"
+                    :fallback-src="product.secondaryImageUrl ? getOptimizedImageUrl(product.secondaryImageUrl) : null"
                     alt="Product"
                     class="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-110"
                     :class="checkedMap[product.productName] ? 'opacity-100' : 'opacity-90 grayscale-[20%]'"
@@ -353,7 +356,7 @@ import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 import { useStockData } from '../composables/useStockData';
 import { generateSampleRoomPDF } from '../utils/pdfSampleRoom';
-import { getOptimizedImageUrl } from '../utils/formatters';
+import { getOptimizedImageUrl, getProductImage } from '../utils/formatters';
 import axios from 'axios';
 import { toast } from 'vue3-toastify';
 import CachedImage from '../components/StockTable/CachedImage.vue';
