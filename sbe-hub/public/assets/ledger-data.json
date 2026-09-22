@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-09-21T14:44:22.777Z",
+    "lastSync": "2026-09-22T14:58:44.094Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 11776081.1,
-        "closingBalance": 12347206.68,
+        "closingBalance": 12351891.63,
         "entries": []
       }
     ]
@@ -2891,7 +2891,7 @@
       {
         "ledgerName": "SHREE JAGANNATH TRADIING, JEYPORE",
         "openingBalance": -86322,
-        "closingBalance": -231914,
+        "closingBalance": -294123,
         "entries": [
           {
             "date": "18-May-26",
@@ -3109,6 +3109,13 @@
             "type": "Receipt",
             "amount": 100000,
             "drCr": "Cr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": "1175/26-27",
+            "type": "Tax Invoice",
+            "amount": 62209,
+            "drCr": "Dr"
           }
         ]
       },
@@ -19664,7 +19671,7 @@
       {
         "ledgerName": "CGST@",
         "openingBalance": 2467371.72,
-        "closingBalance": 2799219.06,
+        "closingBalance": 2801308.59,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -27645,6 +27652,20 @@
             "type": "Tax Invoice",
             "amount": 682.25,
             "drCr": "Cr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": "1175/26-27",
+            "type": "Tax Invoice",
+            "amount": 1481.16,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": "1176/26-27",
+            "type": "Tax Invoice",
+            "amount": 608.37,
+            "drCr": "Cr"
           }
         ]
       },
@@ -27657,7 +27678,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -3396495.45,
+        "closingBalance": -3405765.11,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -30206,6 +30227,27 @@
             "type": "Tax Invoice",
             "amount": 588.49,
             "drCr": "Cr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": 345,
+            "type": "Purchase",
+            "amount": 2933.01,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": 346,
+            "type": "Purchase",
+            "amount": 4908.65,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": 347,
+            "type": "Purchase",
+            "amount": 1428,
+            "drCr": "Dr"
           }
         ]
       },
@@ -30218,7 +30260,7 @@
       {
         "ledgerName": "SGST @",
         "openingBalance": 2468372.97,
-        "closingBalance": 2800220.31,
+        "closingBalance": 2802309.84,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -38199,6 +38241,20 @@
             "type": "Tax Invoice",
             "amount": 682.25,
             "drCr": "Cr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": "1175/26-27",
+            "type": "Tax Invoice",
+            "amount": 1481.16,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": "1176/26-27",
+            "type": "Tax Invoice",
+            "amount": 608.37,
+            "drCr": "Cr"
           }
         ]
       }
@@ -38856,7 +38912,7 @@
       {
         "ledgerName": "KANHNU FOOTWEAR, PADAMPUR",
         "openingBalance": -60629,
-        "closingBalance": -30250,
+        "closingBalance": -56001,
         "entries": [
           {
             "date": "4-Apr-26",
@@ -38962,6 +39018,13 @@
             "type": "Receipt",
             "amount": 7000,
             "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": "1176/26-27",
+            "type": "Tax Invoice",
+            "amount": 25751,
+            "drCr": "Dr"
           }
         ]
       },
@@ -42461,7 +42524,7 @@
       {
         "ledgerName": "PACKING & TRANSPORTATING EXPENSES",
         "openingBalance": 0,
-        "closingBalance": 99850,
+        "closingBalance": 100050,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -44492,6 +44555,13 @@
             "type": "Tax Invoice",
             "amount": 300,
             "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": "1176/26-27",
+            "type": "Tax Invoice",
+            "amount": 200,
+            "drCr": "Cr"
           }
         ]
       },
@@ -44612,7 +44682,7 @@
       {
         "ledgerName": "ROUND OFF-SALE",
         "openingBalance": 0,
-        "closingBalance": -2.5,
+        "closingBalance": -1.97,
         "entries": [
           {
             "date": "1-Apr-26",
@@ -53208,6 +53278,20 @@
             "voucherNo": "1174/26-27",
             "type": "Tax Invoice",
             "amount": 0.24,
+            "drCr": "Cr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": "1175/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.04,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": "1176/26-27",
+            "type": "Tax Invoice",
+            "amount": 0.49,
             "drCr": "Cr"
           }
         ]
@@ -63120,7 +63204,7 @@
       {
         "ledgerName": "Paragon Polymer Products Pvt Ltd(Bangalore)",
         "openingBalance": 1558354.09,
-        "closingBalance": 2993775.24,
+        "closingBalance": 3055368.24,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -63513,6 +63597,13 @@
             "type": "Payment",
             "amount": 7588,
             "drCr": "Dr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": 345,
+            "type": "Purchase",
+            "amount": 61593,
+            "drCr": "Cr"
           }
         ]
       },
@@ -71717,13 +71808,13 @@
       {
         "ledgerName": "PURCHASE@GST",
         "openingBalance": 0,
-        "closingBalance": -24466119.28,
+        "closingBalance": -24651512.37,
         "entries": []
       },
       {
         "ledgerName": "ROUND OFF",
         "openingBalance": 0,
-        "closingBalance": 0.97,
+        "closingBalance": 0.72,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -73648,6 +73739,27 @@
             "voucherNo": 329,
             "type": "Purchase",
             "amount": 0.45,
+            "drCr": "Cr"
+          },
+          {
+            "date": "21-Sep-26",
+            "voucherNo": 345,
+            "type": "Purchase",
+            "amount": 0,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": 346,
+            "type": "Purchase",
+            "amount": 0.25,
+            "drCr": "Dr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": 347,
+            "type": "Purchase",
+            "amount": 0,
             "drCr": "Cr"
           }
         ]
@@ -84421,7 +84533,7 @@
       {
         "ledgerName": "SALE@GST",
         "openingBalance": 0,
-        "closingBalance": 28239822.81,
+        "closingBalance": 28323403.22,
         "entries": []
       },
       {
@@ -87669,13 +87781,20 @@
       {
         "ledgerName": "BRIZ FOOTWEAR PRIVATE LIMITED-BHD",
         "openingBalance": 0,
-        "closingBalance": 82200,
+        "closingBalance": 185282,
         "entries": [
           {
             "date": "18-Sep-26",
             "voucherNo": 327,
             "type": "Purchase",
             "amount": 82200,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": 346,
+            "type": "Purchase",
+            "amount": 103082,
             "drCr": "Cr"
           }
         ]
@@ -88145,13 +88264,20 @@
       {
         "ledgerName": "J.K Plastic Industries",
         "openingBalance": 124790,
-        "closingBalance": 232898,
+        "closingBalance": 262886,
         "entries": [
           {
             "date": "30-Apr-26",
             "voucherNo": 59,
             "type": "Purchase",
             "amount": 108108,
+            "drCr": "Cr"
+          },
+          {
+            "date": "22-Sep-26",
+            "voucherNo": 347,
+            "type": "Purchase",
+            "amount": 29988,
             "drCr": "Cr"
           }
         ]
