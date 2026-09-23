@@ -13,7 +13,8 @@ LOOSE_GROUPS = [
     'ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS',
     'AAGAM POLYMER', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS',
     'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY',
-    'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC'
+    'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC',
+    'SALASAR BALAJI', 'Ruban F/w', 'Balaji', 'Hawai Chappal'
 ]
 
 MIRROR_SIZE_CLASSES = [
@@ -51,6 +52,10 @@ def are_sizes_mirror_overlapping(size_a, size_b):
 def extract_size_str(pname):
     m = re.search(r'(?:^|[\s\(])(\d{1,2})\s*[\*\-xX\/]\s*(\d{1,2})(?:[\s\)]|$)', pname)
     return f"{m.group(1)}X{m.group(2)}" if m else ""
+
+def extract_price(pname):
+    m = re.search(r'(?:RS|MRP|@)[\.\s]*(\d+)', pname, flags=re.IGNORECASE)
+    return m.group(1) if m else ""
 
 def upload_bytes_to_cloudinary(img_bytes, filename, folder_path="e-sbe/loose"):
     url = f"https://api.cloudinary.com/v1_1/{CLOUD_NAME}/image/upload"
@@ -103,29 +108,37 @@ def get_model_core_key(pname):
     clean = re.sub(r'[^A-Za-z0-9]+', ' ', clean).strip().upper()
     return clean
 
-def ocr_matches_color(ocr_text, prod_colors):
-    if not prod_colors: return True
-    ot = ocr_text.upper()
-    single_clr_m = re.search(r'\bclr\s+([A-Za-z]+)\b', ot)
-    if single_clr_m:
-        card_col = single_clr_m.group(1).upper()
-        for col_key, aliases in prod_colors:
-            if any(a == card_col for a in aliases): return True
-        return False
-    for col_key, aliases in prod_colors:
-        if any(re.search(r'\b' + re.escape(a) + r'\b', ot) for a in aliases): return True
-    return False
+def parse_model_tokens(brand, pname):
+    clean = re.sub(r'((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)', '', pname, flags=re.IGNORECASE)
+    clean = re.sub(r'(?:^|[\s\(])(\d{1,2})\s*[\*\-xX\/]\s*(\d{1,2})(?:[\s\)]|$)', ' ', clean)
+    clean = re.sub(r'\b' + re.escape(brand) + r'\b', '', clean, flags=re.IGNORECASE)
+    tokens = [t.upper() for t in re.split(r'[^A-Za-z0-9]+', clean) if len(t) >= 1]
+    filler = {
+        'LDS', 'GENTS', 'KIDS', 'MENS', 'BOYS', 'GIRLS', 'RS', 'MRP', 'CHAPPAL', 'CHAPAL',
+        'SANDAL', 'SHOES', 'SLIPPER', 'PU', 'EVA', 'AIR', 'NEW', 'F', 'W', '40', '50',
+        'LOOSE', 'LOSE', 'BOX', 'HAWAI', 'STYLE', 'CHLP', 'CHPL', 'MIX', 'PLASTIC', 'POLYMER',
+        'ENTERPRISES', 'TRADERS'
+    }
+    color_aliases = {a for aliases in COLOR_MAP.values() for a in aliases}
+    meaningful = [t for t in tokens if t not in filler and t not in color_aliases]
+    meaningful = [t for t in meaningful if not re.match(r'^\d{1,2}[X\*\-\/]\d{1,2}$', t)]
+    return meaningful
 
 def is_danger_image_pre_ocr(img):
     w, h = img.size
     ratio = w / h
-    if ratio < 0.58:
+    # Relaxed to 0.52 to allow standard 9:16 smartphone vertical camera shots (0.56) while blocking tall screenshots
+    if ratio < 0.52:
         return True, f"status_aspect_ratio({ratio:.2f})"
     im_rgb = img.convert('RGB')
     top_strip = im_rgb.crop((0, 0, w, max(1, int(h * 0.08))))
     bot_strip = im_rgb.crop((0, int(h * 0.92), w, h))
-    pt = list(top_strip.getdata())
-    pb = list(bot_strip.getdata())
+    try:
+        pt = list(top_strip.get_flattened_data())
+        pb = list(bot_strip.get_flattened_data())
+    except AttributeError:
+        pt = list(top_strip.getdata())
+        pb = list(bot_strip.getdata())
     tb = sum(p[0]+p[1]+p[2] for p in pt) / (len(pt) * 3)
     bb = sum(p[0]+p[1]+p[2] for p in pb) / (len(pb) * 3)
     if tb < 40 and bb < 40:
@@ -140,19 +153,18 @@ def is_danger_image_post_ocr(ocr_text):
     if re.search(r'\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+202', t): return True
     return False
 
-def extract_article_candidates(pname):
-    clean = re.sub(r'((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)', '', pname, flags=re.IGNORECASE)
-    clean = re.sub(r'(?:^|[\s\(])(\d{1,2})\s*[\*\-xX\/]\s*(\d{1,2})(?:[\s\)]|$)', ' ', clean)
-    candidates = re.findall(r'\b([A-Za-z0-9\-]{3,})\b', clean)
-    colors_flat = [a for aliases in COLOR_MAP.values() for a in aliases]
-    brands_flat = [b.upper() for b in LOOSE_GROUPS]
-    final = []
-    for c in candidates:
-        cu = c.upper()
-        if cu in colors_flat or any(b in cu for b in brands_flat): continue
-        if re.match(r'^\d{1,2}[\-X\*\/]\d{1,2}$', cu): continue
-        if re.search(r'\d', cu): final.append(cu)
-    return final
+def ocr_matches_color(ocr_text, prod_colors):
+    if not prod_colors: return True
+    ot = ocr_text.upper()
+    single_clr_m = re.search(r'\bclr\s+([A-Za-z]+)\b', ot)
+    if single_clr_m:
+        card_col = single_clr_m.group(1).upper()
+        for col_key, aliases in prod_colors:
+            if any(a == card_col for a in aliases): return True
+        return False
+    for col_key, aliases in prod_colors:
+        if any(re.search(r'\b' + re.escape(a) + r'\b', ot) for a in aliases): return True
+    return False
 
 async def process_image_bulletproof(z, name, product_index):
     try:
@@ -176,16 +188,41 @@ async def process_image_bulletproof(z, name, product_index):
     # Candidate Matching
     matched_candidates = []
     for entry in product_index:
-        art_match = False
-        for art in entry['articles']:
-            art_clean = art.replace('-', '')
-            if re.search(r'\b' + re.escape(art) + r'\b', ocr_text) or re.search(r'\b' + re.escape(art_clean) + r'\b', ocr_text):
-                art_match = True
+        tokens = entry['model_tokens']
+        if not tokens: continue
+
+        token_match = True
+        for tok in tokens:
+            tok_clean = tok.replace('-', '')
+            if not (re.search(r'\b' + re.escape(tok) + r'\b', ocr_text) or re.search(r'\b' + re.escape(tok_clean) + r'\b', ocr_text)):
+                token_match = False
                 break
-        if art_match and ocr_matches_color(ocr_text, entry['colors']):
+
+        if token_match and ocr_matches_color(ocr_text, entry['colors']):
             matched_candidates.append(entry)
 
     if not matched_candidates: return None
+
+    # Size / Rate disambiguation if multiple candidates matched
+    if len(matched_candidates) > 1:
+        size_filtered = []
+        for c in matched_candidates:
+            if c['size_str']:
+                s = c['size_str'].upper()
+                s_alt = s.replace('X', '*')
+                s_alt2 = s.replace('X', '-')
+                if re.search(r'\b' + re.escape(s) + r'\b', ocr_text) or re.search(r'\b' + re.escape(s_alt) + r'\b', ocr_text) or re.search(r'\b' + re.escape(s_alt2) + r'\b', ocr_text):
+                    size_filtered.append(c)
+        if size_filtered:
+            matched_candidates = size_filtered
+
+    if len(matched_candidates) > 1:
+        price_filtered = []
+        for c in matched_candidates:
+            if c['price'] and re.search(r'\b' + re.escape(c['price']) + r'\b', ocr_text):
+                price_filtered.append(c)
+        if price_filtered:
+            matched_candidates = price_filtered
 
     # Mirror Cluster Verification
     first = matched_candidates[0]
@@ -215,7 +252,7 @@ async def process_image_bulletproof(z, name, product_index):
 
 async def main():
     print("=" * 65, flush=True)
-    print("BULLETPROOF LOOSE ENGINE: ZERO DANGER BARS & STRICT MIRROR SIZES", flush=True)
+    print("LOOSE FOOTWEAR EXPANDED ENGINE: LOOSENED RATIO, AN & WORD TOKENS", flush=True)
     print("=" * 65, flush=True)
 
     with open(FRONTEND_STOCK, 'r', encoding='utf-8') as f:
@@ -229,13 +266,14 @@ async def main():
                 product_index.append({
                     'product': p,
                     'group': gname,
-                    'articles': extract_article_candidates(p['productName']),
+                    'model_tokens': parse_model_tokens(gname, p['productName']),
                     'colors': get_product_colors(p['productName']),
                     'core_key': get_model_core_key(p['productName']),
-                    'size_str': extract_size_str(p['productName'])
+                    'size_str': extract_size_str(p['productName']),
+                    'price': extract_price(p['productName'])
                 })
 
-    print(f"Indexed {len(product_index)} Loose Packing candidates.", flush=True)
+    print(f"Indexed {len(product_index)} Loose Packing candidates across {len(LOOSE_GROUPS)} groups.", flush=True)
 
     zip_files = glob.glob(os.path.join(QUICK_SHARE_DIR, '*LOOSE FOOTWEAR*.zip'))
     if not zip_files:
