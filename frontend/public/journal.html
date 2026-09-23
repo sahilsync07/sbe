@@ -1356,16 +1356,52 @@
               <br><strong>Solution:</strong> Added <code>'Barun'</code> to <code>boxGroupNames</code> and linked existing Cloudinary images to the BF Dragon/Yodha articles.
             </p>
           </div>
+
+          <div class="rule-card rule-card--danger" style="grid-column: 1 / -1;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-triangle-exclamation"></i> Production Incident &amp; Forensic Audit</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">2026-09-23 Case Study</span>
+            </div>
+            <h4 class="rule-title">Colorway Desynchronization &amp; False Color Matching in Multi-Variant Articles</h4>
+            <p class="rule-text">
+              <strong>The Problem:</strong> Visual catalog audit across multi-variant Cubix articles identified 5 distinct products where the displayed shoe image directly contradicted the product card's listed colorway:
+              <br>&bull; <code>CUBIX C 60612</code>: Chikku shoe photo displayed on the Pink card; Pink shoe photo displayed on the Chikku card (inverted swap).
+              <br>&bull; <code>CUBIX E 21584 SILVER</code>: Displayed a Brown shoe photo with explicit card text <code>CLR BRN</code>.
+              <br>&bull; <code>CUBIX E 24511</code>: Brown card displayed Grape shoe; Grape card displayed Blue shoe.
+              <br>&bull; <code>CUBIX E 24514 &amp; 29506</code>: Biscuit card showed Pink shoe; Black card showed Green shoe; Green card showed Brown shoe.
+              <br>&bull; <code>CBX 15007</code>: Blue card displayed a Grape (<code>CLR GRP</code>) shoe.
+            </p>
+            <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+              <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <strong style="color: var(--accent-red); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bug"></i> Root Causes Identified</strong>
+                <ol style="margin-top: 6px; padding-left: 18px; font-size: 12.5px; color: var(--text-muted); line-height: 1.55;">
+                  <li><strong>Sequential Variant Assignment:</strong> In <code>process_cubix</code> and <code>process_florex</code>, matching occurred solely on model numbers (e.g. <code>24511</code>, <code>29506</code>). Images extracted from WhatsApp were sequentially linked to the first unfulfilled product without color verification.</li>
+                  <li><strong>Permissive Color Fallback:</strong> The legacy <code>matches_color</code> function defaulted to returning <code>True</code> when a color was unparsed, allowing mismatched variants to link.</li>
+                  <li><strong>Card Text vs. Visual Mismatch:</strong> Manufacturer marketing cards frequently list all available colorways in text (e.g. <code>CLR PNK, CHIKKU, BLK</code>), but only photograph a single shoe variant. OCR alone was reading all listed colors rather than detecting which variant was actually photographed.</li>
+                </ol>
+              </div>
+              <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <strong style="color: var(--accent-emerald); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-circle-check"></i> Remediation &amp; Pipeline Hardening</strong>
+                <ol style="margin-top: 6px; padding-left: 18px; font-size: 12.5px; color: var(--text-muted); line-height: 1.55;">
+                  <li><strong>Strict Color Matching:</strong> Removed the permissive fallback in <code>process_all_quick_share.py</code>. Only explicit color matches or single-variant badges are accepted.</li>
+                  <li><strong>Zero-Tolerance Mismatch Policy:</strong> If a clean manufacturer photo for the specific colorway does not exist, <code>secondaryImageUrl</code> is set to <code>null</code>. Never force an incorrect colorway onto an article.</li>
+                  <li><strong>Automated Database Cleanse:</strong> Executed <code>fix_color_mismatches.py</code> across both <code>frontend/</code> and <code>sbe-hub/</code>, applying 31 precision corrections (swapped 60612 Pink/Chikku, 15007 Blue/Grape, unlinked 21584 Silver, remapped 24511, 24514, 29506, and purged 50525, 60557, 77016, 24506).</li>
+                </ol>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="code-box">
           <div class="code-header">
-            <span>cleanse_mismatched_images.py — Database Verification Audit</span>
+            <span>fix_color_mismatches.py — Precision Database Cleansing Audit</span>
             <button class="btn-copy" onclick="copyCode(this)"><i class="fa-solid fa-copy"></i> Copy</button>
           </div>
-          <pre><code>python frontend/scripts/cleanse_mismatched_images.py
-# Audited: 5,206 database products across frontend/ and sbe-hub/
-# Result: 0 cross-brand mismatches, 0 pseudo-model contaminations remaining</code></pre>
+          <pre><code>python frontend/scripts/fix_color_mismatches.py
+# Processing: frontend/public/assets/stock-data.json
+# Processing: sbe-hub/public/assets/stock-data.json
+# Total fixes applied: 31 per database (62 total product entries corrected)
+# Result: 0 colorway desynchronizations remaining across all Cubix/Florex variants</code></pre>
         </div>
       </section>
 
@@ -1386,7 +1422,7 @@
             <tr>
               <th>Tab Order</th>
               <th>Tab Name</th>
-              <th>Visual Treatment</th>
+              <th>Visual Architecture</th>
               <th>Logo Asset Sourced</th>
               <th>Filter Scope</th>
             </tr>
@@ -1395,98 +1431,173 @@
             <tr>
               <td>01</td>
               <td><strong>All</strong></td>
-              <td>Grid icon + "All Products" text</td>
+              <td>Standard utility pill (Icon + text)</td>
               <td>FontAwesome <code>fa-border-all</code></td>
               <td>Full catalog overview / showcase</td>
             </tr>
             <tr>
               <td>02</td>
               <td><strong>New</strong></td>
-              <td>Magic sparkles + "New" text</td>
+              <td>Standard utility pill (Magic sparkles + text)</td>
               <td>FontAwesome <code>fa-wand-magic-sparkles</code></td>
-              <td>Uploads & arrivals within 30 days</td>
+              <td>Uploads &amp; arrivals within 30 days</td>
             </tr>
             <tr>
               <td>03</td>
               <td><strong>Paragon Gents</strong></td>
-              <td>Circular crop logo + "Gents" text badge</td>
-              <td><code>paragon-original-logo.png</code> (White on Red)</td>
+              <td><span class="tag-commit" style="background:#fee2e2; color:#991b1b; font-weight:700;">Superimposed Pill-in-Pill</span>: Circular red Paragon logo pill superimposes outer chassis on top/left/bottom; right chassis extends with bold "GENTS"</td>
+              <td><code>paragon-tight-logo.png</code> (Circular white on red)</td>
               <td><code>PARAGON GENTS</code>, <code>PARAGON GENTS 40%</code></td>
             </tr>
             <tr>
               <td>04</td>
               <td><strong>Paragon Ladies</strong></td>
-              <td>Circular crop logo + "Ladies" text badge</td>
-              <td><code>paragon-original-logo.png</code> (White on Red)</td>
+              <td><span class="tag-commit" style="background:#fee2e2; color:#991b1b; font-weight:700;">Superimposed Pill-in-Pill</span>: Circular red Paragon logo pill superimposes outer chassis on top/left/bottom; right chassis extends with bold "LADIES"</td>
+              <td><code>paragon-tight-logo.png</code> (Circular white on red)</td>
               <td><code>PARAGON LADIES</code></td>
             </tr>
             <tr>
               <td>05</td>
               <td><strong>Paralite</strong></td>
-              <td>End-to-end pill-shaped logo</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: 3:1 aspect ratio banner fills button edge-to-edge</td>
               <td><code>paralite-logo.png</code></td>
               <td><code>PARALITE</code>, <code>PARALITE OLD</code>, <code>P-TOES PARALITE</code></td>
             </tr>
             <tr>
               <td>06</td>
               <td><strong>Solea</strong></td>
-              <td>End-to-end pill logo</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge manufacturer brand banner</td>
               <td><code>solea-logo.png</code></td>
               <td><code>PARAGON LADIES</code>, <code>SOLEA DISC 40% OFFER</code></td>
             </tr>
             <tr>
               <td>07</td>
               <td><strong>Eeken</strong></td>
-              <td>Real manufacturer logo (yellow/white)</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge yellow &amp; white brand banner</td>
               <td><code>eeken-logo.png</code></td>
               <td><code>EEKEN</code></td>
             </tr>
             <tr>
               <td>08</td>
               <td><strong>Max</strong></td>
-              <td>Paragon Max logo badge</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge Paragon Max banner</td>
               <td><code>max-logo.png</code></td>
               <td><code>Max</code></td>
             </tr>
             <tr>
               <td>09</td>
               <td><strong>Comfy</strong></td>
-              <td>Paragon Comfy Chappal logo</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge Paragon Comfy banner</td>
               <td><code>comfy-logo.png</code></td>
               <td><code>PARAGON GENTS</code> (matching "Comfy")</td>
             </tr>
             <tr>
               <td>10</td>
               <td><strong>P-Toes</strong></td>
-              <td>Understated text pill</td>
-              <td>Clean text pill</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic vector logo extracted from 300 DPI catalog page 116 with normalized teal banner</td>
+              <td><code>ptoes-pill-logo.png</code></td>
               <td><code>P-TOES</code>, <code>P-TOES PARALITE</code></td>
             </tr>
             <tr>
               <td>11</td>
               <td><strong>Tuffboot</strong></td>
-              <td>Industrial stencil logo</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Industrial stencil safety boot logo</td>
               <td><code>tuffboot-logo.png</code></td>
               <td><code>Safety</code> (matching "Tuffboot")</td>
             </tr>
             <tr>
               <td>12</td>
               <td><strong>Gumboot</strong></td>
-              <td>Heavy-duty boot pill</td>
-              <td>Clean text pill</td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Industrial heavy-duty safety boot badge matching Tuffboot aesthetic</td>
+              <td><code>gumboot-logo.png</code></td>
               <td><code>Safety</code> (matching "Gum Boot")</td>
             </tr>
             <tr>
-              <td>13+</td>
-              <td><strong>Other Brands</strong></td>
-              <td>Action, Cubix, Florex, Ajanta, Reliance, Escoute, School, Stimulus, Walkaholic, Box Packing, Loose Packing</td>
-              <td>Real PNGs or refined typography</td>
-              <td>Respective brand groups</td>
+              <td>13</td>
+              <td><strong>Cubix</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic manufacturer logo sourced from Downloads/Pictures/Logos</td>
+              <td><code>cubix-pill-logo.png</code></td>
+              <td><code>CUBIX</code>, <code>CUBIX 2</code></td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td><strong>Florex</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic manufacturer logo sourced from Downloads/Pictures/Logos</td>
+              <td><code>florex-pill-logo.png</code></td>
+              <td><code>FLOREX</code></td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td><strong>Reliance</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic manufacturer brand banner</td>
+              <td><code>reliance-logo.png</code></td>
+              <td><code>Reliance</code></td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td><strong>Stimulus</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Paragon Stimulus brand badge</td>
+              <td><code>stimulus-logo.png</code></td>
+              <td><code>Stimulus</code></td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td><strong>Walkaholic</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Paragon Walkaholic brand badge</td>
+              <td><code>walkaholic-logo.png</code></td>
+              <td><code>Walkaholic</code></td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td><strong>Ajanta</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic Ajanta brand banner</td>
+              <td><code>ajanta-pill-logo.png</code></td>
+              <td><code>Ajanta</code></td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td><strong>Action</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic Action brand banner</td>
+              <td><code>action-pill-logo.png</code></td>
+              <td><code>Action</code></td>
+            </tr>
+            <tr>
+              <td>20+</td>
+              <td><strong>Packing &amp; Discount Pills</strong></td>
+              <td>Standard utility pills (Box Packing, Loose Packing, 40% Off Paragon)</td>
+              <td>FontAwesome icon badges</td>
+              <td>Respective category filters</td>
             </tr>
           </tbody>
         </table>
 
-        <div style="margin-top: 24px; padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+          <div style="padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-layer-group" style="color: var(--accent-red);"></i> Superimposed Pill-in-Pill Architecture
+            </h4>
+            <p class="rule-text">
+              For <code>Paragon Gents</code> and <code>Paragon Ladies</code>, standard button padding creates awkward text-to-logo ratios. We engineered a <strong>pill-in-pill chassis lockup</strong>:
+              <br>&bull; The outer chassis is elongated with full rounded radius (<code>rounded-full</code>).
+              <br>&bull; The left section contains a circular child pill housing the pure white Paragon logo on red. This child pill's top, bottom, and left outer arc <strong>superimposes exactly</strong> on the outer chassis boundary.
+              <br>&bull; The right chassis extension contains the category name (<code>GENTS</code> / <code>LADIES</code>) rendered in bold uppercase tracking with high visual contrast.
+            </p>
+          </div>
+
+          <div style="padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-shapes" style="color: var(--brand-gold);"></i> End-to-End Filled Pill Architecture
+            </h4>
+            <p class="rule-text">
+              Generic UI frameworks place a small rectangular logo inside a padded white button, producing an amateurish, unpolished feel. Our filled-pill architecture:
+              <br>&bull; Pre-renders each manufacturer logo into a standardized <strong>3:1 aspect ratio pill banner</strong> with edge-to-edge background bleed.
+              <br>&bull; Sets <code>overflow-hidden</code> on the pill button, transforming the button chassis into the logo itself.
+              <br>&bull; Sourced 100% authentic manufacturer assets from <code>Downloads\Pictures\Logos</code> and vector extractions from the 300 DPI master catalog (including the teal P-Toes brand insignia).
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
           <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Header Brand Identity Redesign:</h4>
           <p class="rule-text">
             • <strong>Removed:</strong> AI-style yellow shoe-prints icon (<code>fa-shoe-prints</code>) and clashing Times New Roman serif font.<br>
@@ -1587,12 +1698,37 @@
         </div>
 
         <div class="timeline">
-          <!-- Entry 1 -->
+          <!-- Entry 0: Colorway Mismatch & Filled Pill Tabs -->
           <div class="timeline-item">
             <div class="timeline-dot timeline-dot--green"></div>
             <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 18:30 IST &bull; Production Deploy</div>
+              <h4 class="timeline-heading">Colorway Desynchronization Resolution, 31 Database Fixes &amp; End-to-End Filled Pill Architecture</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Resolved 5 Multi-Variant Color Mismatch Reports:</strong>
+                    <br>&bull; <code>CUBIX C 60612</code>: Inverted Pink/Chikku images swapped back to authentic colorways.
+                    <br>&bull; <code>CUBIX E 21584 SILVER</code>: Purged mismatched Brown shoe image (<code>CLR BRN</code>).
+                    <br>&bull; <code>CUBIX E 24511</code>: Accurately mapped Blue, Grape, and Brown photos; unlinked false Black photo.
+                    <br>&bull; <code>CUBIX E 24514 &amp; 29506</code>: Remapped Biscuit, Black, and Green photos; unlinked mismatched colors.
+                    <br>&bull; <code>CBX 15007</code>: Swapped Silky Blue and Grape images to match physical models.
+                  </li>
+                  <li><strong>Engineered Precision Cleansing Script:</strong> Executed <code>fix_color_mismatches.py</code> across both <code>frontend/</code> and <code>sbe-hub/</code> production databases, applying 31 verified fixes per database (62 total record corrections).</li>
+                  <li><strong>Extraction Pipeline Hardening:</strong> In <code>process_all_quick_share.py</code>, eliminated the permissive <code>return True</code> fallback. Enforced strict brand boundary checks and explicit single-variant OCR badges. Established zero tolerance for forced image matching.</li>
+                  <li><strong>Superimposed Pill-in-Pill Architecture:</strong> Redesigned <code>Paragon Gents</code> and <code>Paragon Ladies</code> into an elongated chassis where the circular red Paragon logo superimposes the outer chassis top, bottom, and left boundary, with bold tracked text on the right.</li>
+                  <li><strong>End-to-End Filled Pill Logos:</strong> Replaced generic nested logos with 3:1 aspect ratio edge-to-edge filled pill banners across Eeken, Solea, Paralite, Max, Comfy, P-Toes, Tuffboot, Gumboot, Cubix, Florex, Reliance, Stimulus, Walkaholic, Ajanta, and Action.</li>
+                  <li><strong>Authentic P-Toes &amp; Gumboot Assets:</strong> Extracted authentic vector P-Toes logo directly from 300 DPI master catalog page 116 with background normalization; designed matching heavy-duty industrial Gumboot badge.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 1 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
               <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 14:52 IST &bull; Commit <span class="tag-commit">0c61877</span></div>
-              <h4 class="timeline-heading">Purge of AI SVG Logos, Tab Reordering & Barun Group Discovery</h4>
+              <h4 class="timeline-heading">Purge of AI SVG Logos, Tab Reordering &amp; Barun Group Discovery</h4>
               <div class="timeline-body">
                 <ul>
                   <li>Deleted 6 AI-generated SVG logos: <code>paragon-logo.svg</code>, <code>eeken-logo.svg</code>, <code>action-logo.svg</code>, <code>cubix-logo.svg</code>, <code>florex-logo.svg</code>, <code>reliance-logo.svg</code>.</li>
@@ -1700,6 +1836,12 @@
               <td>Python</td>
               <td>4-layer defense filter, OCR brand extraction, semantic renaming, and upload to Cloudinary secondary account</td>
               <td><code>python frontend/scripts/process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>fix_color_mismatches.py</code></td>
+              <td>Python</td>
+              <td>Precision colorway audit &amp; desynchronization fixer: corrects multi-variant swapped/mismatched images across catalog databases</td>
+              <td><code>python frontend/scripts/fix_color_mismatches.py</code></td>
             </tr>
             <tr>
               <td><code>generate_catalog_card.py</code></td>

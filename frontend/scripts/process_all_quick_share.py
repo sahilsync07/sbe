@@ -161,11 +161,32 @@ def is_sbe_or_qty_post_ocr(ocr_full_text, top_ocr_text):
 def matches_color(prod_name, ocr_text):
     pn = prod_name.upper()
     ot = ocr_text.upper()
+    
+    # 1. Identify product colors
+    found_prod_colors = []
     for col_key, aliases in COLOR_MAP.items():
         if any(re.search(r'\b' + re.escape(a) + r'\b', pn) for a in aliases):
-            if any(re.search(r'\b' + re.escape(a) + r'\b', ot) for a in aliases):
+            found_prod_colors.append((col_key, aliases))
+            
+    # If product doesn't specify any known color, allow match
+    if not found_prod_colors:
+        return True
+        
+    # 2. Check if card has explicit single color specification (e.g. CLR BRN)
+    single_clr_m = re.search(r'\bclr\s+([A-Za-z]+)\b', ot)
+    if single_clr_m:
+        card_col = single_clr_m.group(1).upper()
+        for col_key, aliases in found_prod_colors:
+            if any(a == card_col for a in aliases):
                 return True
-    return True
+        return False
+        
+    # 3. If general text, product color must be found in OCR text
+    for col_key, aliases in found_prod_colors:
+        if any(re.search(r'\b' + re.escape(a) + r'\b', ot) for a in aliases):
+            return True
+            
+    return False
 
 def should_update_secondary(curr_url):
     if not curr_url:
@@ -453,8 +474,9 @@ async def process_cubix(stock_data):
                 pname = p.get('productName', '').upper()
                 clean_pn = strip_product_meta(pname)
                 if re.search(r'\b' + re.escape(model_num) + r'\b', clean_pn):
-                    matched_prod = p
-                    break
+                    if matches_color(pname, ocr_full):
+                        matched_prod = p
+                        break
 
             if matched_prod:
                 semantic_file = clean_semantic_name("CUBIX", matched_prod['productName'])
@@ -544,11 +566,13 @@ async def process_florex(stock_data):
                 if re.search(r'\b' + re.escape(raw) + r'\b', clean_pn):
                     if sub_num:
                         if re.search(r'\b' + re.escape(sub_num) + r'\b', clean_pn):
+                            if matches_color(pname, ocr_full):
+                                matched_prod = p
+                                break
+                    else:
+                        if matches_color(pname, ocr_full):
                             matched_prod = p
                             break
-                    else:
-                        matched_prod = p
-                        break
 
             if matched_prod:
                 semantic_file = clean_semantic_name("FLOREX", matched_prod['productName'])

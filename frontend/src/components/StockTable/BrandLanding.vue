@@ -99,54 +99,86 @@
            ══════════════════════════════════════════════════════════ -->
       <div class="mt-2.5 w-full overflow-x-auto no-scrollbar border-t border-slate-100/80 pt-2 pb-1">
         <div class="flex items-center gap-2 sm:gap-2.5 min-w-max pb-1 px-0.5">
-          <button
-            v-for="tab in brandTabs"
-            :key="tab.id"
-            @click="selectTab(tab.id)"
-            class="h-9 sm:h-10 px-3.5 sm:px-4.5 rounded-full flex items-center justify-center gap-2 border transition-all duration-200 select-none shrink-0 cursor-pointer shadow-xs active:scale-95 group/pill relative"
-            :class="activeTab === tab.id 
-              ? 'bg-gradient-to-r from-amber-50 to-amber-100/80 border-2 border-[#c59b27] text-amber-950 font-black shadow-sm ring-2 ring-amber-400/25 scale-[1.02]' 
-              : 'bg-white border-slate-200/90 text-slate-700 hover:border-amber-400/80 hover:bg-slate-50/90 hover:shadow-xs'"
-            :title="tab.label"
-          >
-            <!-- Logo Image (End-to-End within rounded pill) -->
-            <template v-if="tab.image && !failedLogos.has(tab.id)">
-              <!-- Circular cropped logo (for Paragon Gents/Ladies) -->
-              <div v-if="tab.roundLogo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden shrink-0 border border-slate-200/50 shadow-sm">
+          <template v-for="tab in brandTabs" :key="tab.id">
+            <!-- 1. Superimposed Pill in Pill (Paragon Gents / Ladies) -->
+            <button
+              v-if="tab.superimposed"
+              @click="selectTab(tab.id)"
+              type="button"
+              class="h-9 sm:h-10 rounded-full flex items-center p-0 overflow-hidden border transition-all duration-200 select-none shrink-0 cursor-pointer shadow-xs active:scale-95 group/pill relative"
+              :class="activeTab === tab.id 
+                ? 'bg-gradient-to-r from-amber-50 to-amber-100/90 border-2 border-[#c59b27] ring-2 ring-amber-400/25 scale-[1.02] shadow-sm' 
+                : 'bg-white border-slate-200/90 hover:border-amber-400/80 hover:bg-slate-50/90 hover:shadow-xs'"
+              :title="tab.label"
+            >
+              <!-- Left: Small pill inside large pill, superimposing top, bottom, and left curve -->
+              <div class="h-full px-2.5 sm:px-3 bg-[#e52421] rounded-full flex items-center justify-center shrink-0 border-r border-red-700/25 shadow-xs">
                 <img
                   :src="tab.image"
                   :alt="tab.label"
-                  class="w-full h-full object-cover transition-transform group-hover/pill:scale-110"
-                  @error="failedLogos.add(tab.id)"
+                  class="h-4 sm:h-5 max-w-[65px] sm:max-w-[75px] object-contain brightness-0 invert"
                 />
               </div>
-              <!-- Standard full-width logo -->
+
+              <!-- Right: Extended part of the bigger pill where 'GENTS' / 'LADIES' is written -->
+              <div class="pl-2 sm:pl-2.5 pr-3.5 sm:pr-4 flex items-center gap-1.5">
+                <span
+                  class="text-[11px] sm:text-xs font-black tracking-wider uppercase whitespace-nowrap"
+                  :class="activeTab === tab.id ? 'text-amber-950 font-black' : 'text-slate-800'"
+                >
+                  {{ tab.subLabel }}
+                </span>
+                <span 
+                  v-if="activeTab === tab.id"
+                  class="w-1.5 h-1.5 rounded-full bg-[#c59b27] shadow-[0_0_6px_rgba(197,155,39,0.8)] shrink-0"
+                ></span>
+              </div>
+            </button>
+
+            <!-- 2. End-to-End Filled Pill (Eeken, Paralite, Solea, Max, Comfy, Ptoes, etc.) -->
+            <button
+              v-else-if="tab.fillLogo && tab.image && !failedLogos.has(tab.id)"
+              @click="selectTab(tab.id)"
+              type="button"
+              class="h-9 sm:h-10 rounded-full overflow-hidden p-0 border transition-all duration-200 select-none shrink-0 cursor-pointer shadow-xs active:scale-95 group/pill relative flex items-center justify-center bg-white"
+              :class="activeTab === tab.id 
+                ? 'border-2 border-[#c59b27] ring-2 ring-amber-400/40 scale-[1.03] shadow-md' 
+                : 'border border-slate-200/90 hover:border-amber-400/80 hover:shadow-xs hover:scale-[1.01]'"
+              :title="tab.label"
+            >
               <img
-                v-else
                 :src="tab.image"
                 :alt="tab.label"
-                class="h-5 sm:h-6 max-w-[85px] sm:max-w-[105px] object-contain transition-transform group-hover/pill:scale-105"
+                class="h-full w-auto max-w-[125px] sm:max-w-[145px] object-cover rounded-full"
                 @error="failedLogos.add(tab.id)"
               />
-              <span v-if="tab.subLabel" class="text-[10px] sm:text-[11px] font-black tracking-tight" :class="activeTab === tab.id ? 'text-amber-950 font-black' : 'text-slate-600'">
-                {{ tab.subLabel }}
-              </span>
-            </template>
+              <span 
+                v-if="activeTab === tab.id"
+                class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#c59b27] ring-2 ring-white shadow-[0_0_6px_rgba(197,155,39,0.9)]"
+              ></span>
+            </button>
 
-            <!-- Icon + Text for non-logo / utility tabs -->
-            <template v-else>
+            <!-- 3. Standard Utility Tab (All, New, Box Packing, Loose Packing, 40% Off) -->
+            <button
+              v-else
+              @click="selectTab(tab.id)"
+              type="button"
+              class="h-9 sm:h-10 px-3.5 sm:px-4.5 rounded-full flex items-center justify-center gap-2 border transition-all duration-200 select-none shrink-0 cursor-pointer shadow-xs active:scale-95 group/pill relative"
+              :class="activeTab === tab.id 
+                ? 'bg-gradient-to-r from-amber-50 to-amber-100/80 border-2 border-[#c59b27] text-amber-950 font-black shadow-sm ring-2 ring-amber-400/25 scale-[1.02]' 
+                : 'bg-white border-slate-200/90 text-slate-700 hover:border-amber-400/80 hover:bg-slate-50/90 hover:shadow-xs'"
+              :title="tab.label"
+            >
               <i v-if="tab.icon" :class="[tab.icon, tab.iconColor || 'text-amber-500']" class="text-xs sm:text-sm"></i>
               <span class="text-xs sm:text-[13px] font-extrabold tracking-tight whitespace-nowrap" :class="activeTab === tab.id ? 'text-amber-950' : 'text-slate-800'">
                 {{ tab.label }}
               </span>
-            </template>
-
-            <!-- Active Pill Indicator Dot -->
-            <span 
-              v-if="activeTab === tab.id"
-              class="w-1.5 h-1.5 rounded-full bg-[#c59b27] shadow-[0_0_6px_rgba(197,155,39,0.8)] shrink-0"
-            ></span>
-          </button>
+              <span 
+                v-if="activeTab === tab.id"
+                class="w-1.5 h-1.5 rounded-full bg-[#c59b27] shadow-[0_0_6px_rgba(197,155,39,0.8)] shrink-0"
+              ></span>
+            </button>
+          </template>
         </div>
       </div>
     </header>
@@ -1532,17 +1564,24 @@ const otherSearchResults = computed(() => {
 // Brand Tabs Data (Full-Rounded Pill Badges) — Real PNG Logos Only
 const failedLogos = ref(new Set());
 const ParagonLogo = `${baseUrl}assets/logos/paragon-original-logo.png`;
-const ActionLogo = `${baseUrl}assets/logos/action-logo.png`;
+const ActionLogo = `${baseUrl}assets/logos/action-pill-logo.png`;
 const EekenLogo = `${baseUrl}assets/logos/eeken-logo.png`;
-const AjantaLogo = `${baseUrl}assets/logos/ajanta-transparent-logo.png`;
+const AjantaLogo = `${baseUrl}assets/logos/ajanta-pill-logo.png`;
 const ParaliteLogo = `${baseUrl}assets/logos/paralite-logo.png`;
 const SoleaLogo = `${baseUrl}assets/logos/solea-logo.png`;
 const VertexLogo = `${baseUrl}assets/logos/vertex-logo.png`;
 const MaxLogo = `${baseUrl}assets/logos/max-logo.png`;
 const ComfyLogo = `${baseUrl}assets/logos/comfy-logo.png`;
+const PtoesLogo = `${baseUrl}assets/logos/ptoes-pill-logo.png`;
+const TuffbootLogo = `${baseUrl}assets/logos/tuffboot-logo.png`;
+const GumbootLogo = `${baseUrl}assets/logos/gumboot-logo.png`;
+const CubixLogo = `${baseUrl}assets/logos/cubix-pill-logo.png`;
+const FlorexLogo = `${baseUrl}assets/logos/florex-pill-logo.png`;
+const RelianceLogo = `${baseUrl}assets/logos/reliance-logo.png`;
 const EscouteLogo = `${baseUrl}assets/logos/escoute-logo.png`;
 const SchoolLogo = `${baseUrl}assets/logos/paragon-school-logo.png`;
-const TuffbootLogo = `${baseUrl}assets/logos/tuffboot-logo.png`;
+const StimulusLogo = `${baseUrl}assets/logos/stimulus-logo.png`;
+const WalkaholicLogo = `${baseUrl}assets/logos/walkaholic-logo.png`;
 const FenderLogo = `${baseUrl}assets/logos/fender-logo.png`;
 const MerivaLogo = `${baseUrl}assets/logos/meriva-logo.png`;
 
@@ -1551,50 +1590,50 @@ const brandTabs = [
   { id: 'All', label: 'All Products', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
   // 2. New
   { id: 'NewArrivals', label: 'New', icon: 'fa-solid fa-wand-magic-sparkles', iconColor: 'text-amber-500' },
-  // 3. Paragon Gents (circular crop logo + "Gents" text)
-  { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo, subLabel: 'Gents', roundLogo: true },
-  // 4. Paragon Ladies (circular crop logo + "Ladies" text)
-  { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: ParagonLogo, subLabel: 'Ladies', roundLogo: true },
-  // 5. Paralite (end-to-end pill logo)
-  { id: 'PARALITE', label: 'Paralite', image: ParaliteLogo },
+  // 3. Paragon Gents (Superimposed pill-in-pill + "Gents" text extender)
+  { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo, subLabel: 'Gents', superimposed: true },
+  // 4. Paragon Ladies (Superimposed pill-in-pill + "Ladies" text extender)
+  { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: ParagonLogo, subLabel: 'Ladies', superimposed: true },
+  // 5. Paralite (End-to-end pill logo)
+  { id: 'PARALITE', label: 'Paralite', image: ParaliteLogo, fillLogo: true },
   // 6. Solea
-  { id: 'Solea', label: 'Solea', image: SoleaLogo },
+  { id: 'Solea', label: 'Solea', image: SoleaLogo, fillLogo: true },
   // 7. Eeken
-  { id: 'EEKEN', label: 'Eeken', image: EekenLogo },
+  { id: 'EEKEN', label: 'Eeken', image: EekenLogo, fillLogo: true },
   // 8. Max
-  { id: 'Max', label: 'Max', image: MaxLogo },
+  { id: 'Max', label: 'Max', image: MaxLogo, fillLogo: true },
   // 9. Comfy
-  { id: 'Comfy', label: 'Comfy', image: ComfyLogo },
+  { id: 'Comfy', label: 'Comfy', image: ComfyLogo, fillLogo: true },
   // 10. P-Toes
-  { id: 'P-TOES', label: 'P-Toes' },
+  { id: 'P-TOES', label: 'P-Toes', image: PtoesLogo, fillLogo: true },
   // 11. Tuffboot
-  { id: 'Tuffboot', label: 'Tuffboot', image: TuffbootLogo },
+  { id: 'Tuffboot', label: 'Tuffboot', image: TuffbootLogo, fillLogo: true },
   // 12. Gumboot
-  { id: 'Gumboot', label: 'Gumboot' },
+  { id: 'Gumboot', label: 'Gumboot', image: GumbootLogo, fillLogo: true },
   // 13. Action
-  { id: 'ACTION', label: 'Action', image: ActionLogo },
+  { id: 'ACTION', label: 'Action', image: ActionLogo, fillLogo: true },
   // 14. Cubix
-  { id: 'Cubix', label: 'Cubix' },
+  { id: 'Cubix', label: 'Cubix', image: CubixLogo, fillLogo: true },
   // 15. Florex
-  { id: 'Florex', label: 'Florex' },
+  { id: 'Florex', label: 'Florex', image: FlorexLogo, fillLogo: true },
   // 16. Ajanta
-  { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo },
+  { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo, fillLogo: true },
   // 17. Reliance
-  { id: 'Reliance', label: 'Reliance' },
+  { id: 'Reliance', label: 'Reliance', image: RelianceLogo, fillLogo: true },
   // 18. Escoute
-  { id: 'Escoute', label: 'Escoute', image: EscouteLogo },
+  { id: 'Escoute', label: 'Escoute', image: EscouteLogo, fillLogo: true },
   // 19. School Shoes
-  { id: 'School', label: 'School', image: SchoolLogo },
+  { id: 'School', label: 'School', image: SchoolLogo, fillLogo: true },
   // 20. Stimulus
-  { id: 'Stimulus', label: 'Stimulus' },
+  { id: 'Stimulus', label: 'Stimulus', image: StimulusLogo, fillLogo: true },
   // 21. Walkaholic
-  { id: 'Walkaholic', label: 'Walkaholic' },
+  { id: 'Walkaholic', label: 'Walkaholic', image: WalkaholicLogo, fillLogo: true },
   // 22. Fender
-  { id: 'Fender', label: 'Fender', image: FenderLogo },
+  { id: 'Fender', label: 'Fender', image: FenderLogo, fillLogo: true },
   // 23. Meriva
-  { id: 'Meriva', label: 'Meriva', image: MerivaLogo },
+  { id: 'Meriva', label: 'Meriva', image: MerivaLogo, fillLogo: true },
   // 24. Vertex
-  { id: 'Vertex', label: 'Vertex', image: VertexLogo },
+  { id: 'Vertex', label: 'Vertex', image: VertexLogo, fillLogo: true },
   // 25. Box Packing
   { id: 'BoxPacking', label: 'Box Packing', icon: 'fa-solid fa-box', iconColor: 'text-blue-500' },
   // 26. Loose Packing
