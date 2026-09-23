@@ -183,7 +183,7 @@ const handleCacheImages = async () => {
     // Collect Extra Assets (Logos)
     const extraUrls = [
        // Hardcoded Logos
-       `${import.meta.env.BASE_URL}assets/logos/paragon-logo.svg`,
+       `${import.meta.env.BASE_URL}assets/logos/paragon-original-logo.png`,
        // Add other static assets if needed
     ];
 

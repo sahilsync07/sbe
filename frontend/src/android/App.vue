@@ -192,7 +192,7 @@ const handleCacheImages = async () => {
     
     const allProducts = stockData.value?.flatMap(group => group.products) || [];
     const productsWithImages = allProducts.filter(p => p.imageUrl);
-    const extraUrls = [ `${import.meta.env.BASE_URL}assets/logos/paragon-logo.svg` ];
+    const extraUrls = [ `${import.meta.env.BASE_URL}assets/logos/paragon-original-logo.png` ];
     
     if (groupedSidebar.value?.topBrands) {
         groupedSidebar.value.topBrands.forEach(item => {

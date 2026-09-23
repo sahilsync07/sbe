@@ -88,23 +88,23 @@ const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL
 export const TOP_BRANDS_CONFIG = [
     {
         name: 'Cubix',
-        logo: `${baseUrl}assets/logos/cubix-logo.svg`,
+        logo: null,
     },
     {
         name: 'CUBIX 2',
-        logo: `${baseUrl}assets/logos/cubix-logo.svg`,
+        logo: null,
     },
     {
         name: 'Florex (Swastik)',
-        logo: `${baseUrl}assets/logos/florex-logo.svg`,
+        logo: null,
     },
     {
         name: 'RELIANCE FOOTWEAR',
-        logo: `${baseUrl}assets/logos/reliance-logo.svg`,
+        logo: null,
     },
     {
         name: 'Action',
-        logo: `${baseUrl}assets/logos/action-logo.svg`,
+        logo: `${baseUrl}assets/logos/action-logo.png`,
     },
     {
         name: 'AJANTA',

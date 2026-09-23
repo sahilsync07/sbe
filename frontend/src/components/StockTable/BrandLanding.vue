@@ -111,7 +111,18 @@
           >
             <!-- Logo Image (End-to-End within rounded pill) -->
             <template v-if="tab.image && !failedLogos.has(tab.id)">
+              <!-- Circular cropped logo (for Paragon Gents/Ladies) -->
+              <div v-if="tab.roundLogo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden shrink-0 border border-slate-200/50 shadow-sm">
+                <img
+                  :src="tab.image"
+                  :alt="tab.label"
+                  class="w-full h-full object-cover transition-transform group-hover/pill:scale-110"
+                  @error="failedLogos.add(tab.id)"
+                />
+              </div>
+              <!-- Standard full-width logo -->
               <img
+                v-else
                 :src="tab.image"
                 :alt="tab.label"
                 class="h-5 sm:h-6 max-w-[85px] sm:max-w-[105px] object-contain transition-transform group-hover/pill:scale-105"
@@ -1518,45 +1529,78 @@ const otherSearchResults = computed(() => {
   return searchResults.value.filter(p => p.productName !== selectedItem.value.productName);
 });
 
-// Brand Tabs Data (Full-Rounded Pill Badges)
+// Brand Tabs Data (Full-Rounded Pill Badges) — Real PNG Logos Only
 const failedLogos = ref(new Set());
-const ParagonLogo = `${baseUrl}assets/logos/paragon-logo.svg`;
-const ActionLogo = `${baseUrl}assets/logos/action-logo.svg`;
-const EekenLogo = `${baseUrl}assets/logos/eeken-logo.svg`;
-const CubixLogo = `${baseUrl}assets/logos/cubix-logo.svg`;
-const FlorexLogo = `${baseUrl}assets/logos/florex-logo.svg`;
-const RelianceLogo = `${baseUrl}assets/logos/reliance-logo.svg`;
+const ParagonLogo = `${baseUrl}assets/logos/paragon-original-logo.png`;
+const ActionLogo = `${baseUrl}assets/logos/action-logo.png`;
+const EekenLogo = `${baseUrl}assets/logos/eeken-logo.png`;
 const AjantaLogo = `${baseUrl}assets/logos/ajanta-transparent-logo.png`;
 const ParaliteLogo = `${baseUrl}assets/logos/paralite-logo.png`;
 const SoleaLogo = `${baseUrl}assets/logos/solea-logo.png`;
 const VertexLogo = `${baseUrl}assets/logos/vertex-logo.png`;
 const MaxLogo = `${baseUrl}assets/logos/max-logo.png`;
+const ComfyLogo = `${baseUrl}assets/logos/comfy-logo.png`;
 const EscouteLogo = `${baseUrl}assets/logos/escoute-logo.png`;
 const SchoolLogo = `${baseUrl}assets/logos/paragon-school-logo.png`;
 const TuffbootLogo = `${baseUrl}assets/logos/tuffboot-logo.png`;
+const FenderLogo = `${baseUrl}assets/logos/fender-logo.png`;
+const MerivaLogo = `${baseUrl}assets/logos/meriva-logo.png`;
 
 const brandTabs = [
+  // 1. All
   { id: 'All', label: 'All Products', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
-  { id: 'NewArrivals', label: 'New Arrivals', icon: 'fa-solid fa-wand-magic-sparkles', iconColor: 'text-amber-500' },
-  { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo, subLabel: 'Gents' },
-  { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: SoleaLogo, subLabel: 'Ladies' },
-  { id: 'ParagonCore', label: 'Paragon Core', image: ParagonLogo, subLabel: 'Core' },
+  // 2. New
+  { id: 'NewArrivals', label: 'New', icon: 'fa-solid fa-wand-magic-sparkles', iconColor: 'text-amber-500' },
+  // 3. Paragon Gents (circular crop logo + "Gents" text)
+  { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo, subLabel: 'Gents', roundLogo: true },
+  // 4. Paragon Ladies (circular crop logo + "Ladies" text)
+  { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: ParagonLogo, subLabel: 'Ladies', roundLogo: true },
+  // 5. Paralite (end-to-end pill logo)
   { id: 'PARALITE', label: 'Paralite', image: ParaliteLogo },
-  { id: 'ACTION', label: 'Action', image: ActionLogo },
+  // 6. Solea
+  { id: 'Solea', label: 'Solea', image: SoleaLogo },
+  // 7. Eeken
   { id: 'EEKEN', label: 'Eeken', image: EekenLogo },
-  { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo },
-  { id: 'P-TOES PARALITE', label: 'P-Toes', image: ParagonLogo, subLabel: 'P-Toes' },
-  { id: 'Cubix', label: 'Cubix', image: CubixLogo },
-  { id: 'Florex', label: 'Florex', image: FlorexLogo },
-  { id: 'Reliance', label: 'Reliance', image: RelianceLogo },
+  // 8. Max
   { id: 'Max', label: 'Max', image: MaxLogo },
+  // 9. Comfy
+  { id: 'Comfy', label: 'Comfy', image: ComfyLogo },
+  // 10. P-Toes
+  { id: 'P-TOES', label: 'P-Toes' },
+  // 11. Tuffboot
+  { id: 'Tuffboot', label: 'Tuffboot', image: TuffbootLogo },
+  // 12. Gumboot
+  { id: 'Gumboot', label: 'Gumboot' },
+  // 13. Action
+  { id: 'ACTION', label: 'Action', image: ActionLogo },
+  // 14. Cubix
+  { id: 'Cubix', label: 'Cubix' },
+  // 15. Florex
+  { id: 'Florex', label: 'Florex' },
+  // 16. Ajanta
+  { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo },
+  // 17. Reliance
+  { id: 'Reliance', label: 'Reliance' },
+  // 18. Escoute
   { id: 'Escoute', label: 'Escoute', image: EscouteLogo },
-  { id: 'School', label: 'School Shoes', image: SchoolLogo },
-  { id: 'Safety', label: 'Safety Boots', image: TuffbootLogo },
+  // 19. School Shoes
+  { id: 'School', label: 'School', image: SchoolLogo },
+  // 20. Stimulus
+  { id: 'Stimulus', label: 'Stimulus' },
+  // 21. Walkaholic
+  { id: 'Walkaholic', label: 'Walkaholic' },
+  // 22. Fender
+  { id: 'Fender', label: 'Fender', image: FenderLogo },
+  // 23. Meriva
+  { id: 'Meriva', label: 'Meriva', image: MerivaLogo },
+  // 24. Vertex
+  { id: 'Vertex', label: 'Vertex', image: VertexLogo },
+  // 25. Box Packing
   { id: 'BoxPacking', label: 'Box Packing', icon: 'fa-solid fa-box', iconColor: 'text-blue-500' },
+  // 26. Loose Packing
   { id: 'LoosePacking', label: 'Loose Packing', icon: 'fa-solid fa-bag-shopping', iconColor: 'text-purple-500' },
+  // 27. 40% Off
   { id: 'ParagonDiscount', label: '40% Off', icon: 'fa-solid fa-tags', iconColor: 'text-red-500' },
-  { id: 'Walkaholic', label: 'Walkaholic', icon: 'fa-solid fa-person-walking', iconColor: 'text-teal-500' },
 ];
 
 const getCatalogSpecs = (product) => {
@@ -1709,8 +1753,35 @@ const getActiveTabProducts = () => {
     products = getBrandProducts(['PARAGON LADIES']);
   } else if (tab === 'PARALITE') {
     products = getBrandProducts(['PARALITE', 'PARALITE OLD', 'P-TOES PARALITE']);
-  } else if (tab === 'P-TOES PARALITE' || tab === 'P-TOES') {
+  } else if (tab === 'Solea') {
+    // Solea products live under PARAGON LADIES group
+    products = getBrandProducts(['PARAGON LADIES', 'SOLEA DISC 40% OFFER']);
+  } else if (tab === 'P-TOES') {
     products = getBrandProducts(['P-TOES', 'P-TOES PARALITE']);
+  } else if (tab === 'Comfy') {
+    // Comfy is a sub-brand within PARAGON GENTS
+    const all = getBrandProducts(['PARAGON GENTS']);
+    products = all.filter(p => /comfy/i.test(p.productName));
+  } else if (tab === 'Tuffboot') {
+    // Tuffboot products within Safety group
+    const all = getBrandProducts(['Safety']);
+    products = all.filter(p => /tuff\s*boot|tuffboot/i.test(p.productName));
+  } else if (tab === 'Gumboot') {
+    // Gumboot products within Safety group
+    const all = getBrandProducts(['Safety']);
+    products = all.filter(p => /gum\s*boot|gumboot|pvc.*boot/i.test(p.productName));
+  } else if (tab === 'Stimulus') {
+    products = getBrandProducts(['Stimulus']);
+  } else if (tab === 'Fender') {
+    products = getBrandProducts(['Fencer']);
+  } else if (tab === 'Meriva') {
+    // Meriva products live under PARAGON LADIES
+    const all = getBrandProducts(['PARAGON LADIES']);
+    products = all.filter(p => /meriva/i.test(p.productName));
+  } else if (tab === 'Vertex') {
+    // Vertex products live under PARAGON GENTS
+    const all = getBrandProducts(['PARAGON GENTS']);
+    products = all.filter(p => /vertex/i.test(p.productName));
   } else if (tab === 'ACTION') {
     products = getBrandProducts(['ACTION']);
   } else if (tab === 'EEKEN') {
@@ -1723,8 +1794,6 @@ const getActiveTabProducts = () => {
     products = getBrandProducts(['Florex (Swastik)']);
   } else if (tab === 'Reliance') {
     products = getBrandProducts(['RELIANCE FOOTWEAR']);
-  } else if (tab === 'Safety') {
-    products = getBrandProducts(['Safety']);
   } else if (tab === 'School') {
     products = getBrandProducts(['School', 'SCHOOL SHOE DUROLITE']);
   } else if (tab === 'Walkaholic') {
@@ -2074,7 +2143,7 @@ const localCarousals = {
 };
 
 const looseGroupNames = ['ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS', 'AAGAM POLYMER', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS', 'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY', 'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC'];
-const boxGroupNames = ['Mini F/w', 'ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC', 'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR', 'Kohinoor', 'UAM FOOTWEAR', 'BROCKKIE'];
+const boxGroupNames = ['Mini F/w', 'ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC', 'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR', 'Kohinoor', 'UAM FOOTWEAR', 'BROCKKIE', 'Barun'];
 
 const paragonCards = [
   { id: 'ParagonCore', label: 'Paragon Core', groupNames: ['PARAGON GENTS', 'PARAGON LADIES', 'PARALITE', 'P-TOES', 'Hawai Chappal'] },
@@ -2093,11 +2162,11 @@ const paragonCards = [
 ];
 
 const bigBrandCards = [
-  { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'], logo: `${baseUrl}assets/logos/cubix-logo.svg` },
-  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'], logo: `${baseUrl}assets/logos/florex-logo.svg` },
-  { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: `${baseUrl}assets/logos/action-logo.svg` },
-  { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'], logo: `${baseUrl}assets/logos/reliance-logo.svg` },
-  { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: `${baseUrl}assets/logos/eeken-logo.svg` },
+  { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'] },
+  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'] },
+  { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: `${baseUrl}assets/logos/action-logo.png` },
+  { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'] },
+  { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: `${baseUrl}assets/logos/eeken-logo.png` },
 ];
 
 const midBrandCards = [
