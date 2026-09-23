@@ -1563,7 +1563,7 @@ const otherSearchResults = computed(() => {
 
 // Brand Tabs Data (Full-Rounded Pill Badges) — Real PNG Logos Only
 const failedLogos = ref(new Set());
-const ParagonLogo = `${baseUrl}assets/logos/paragon-original-logo.png`;
+const ParagonLogo = `${baseUrl}assets/logos/paragon-transparent-logo.png`;
 const ActionLogo = `${baseUrl}assets/logos/action-pill-logo.png`;
 const EekenLogo = `${baseUrl}assets/logos/eeken-logo.png`;
 const AjantaLogo = `${baseUrl}assets/logos/ajanta-pill-logo.png`;
