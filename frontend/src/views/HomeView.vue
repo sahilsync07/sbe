@@ -216,6 +216,14 @@ const links = [
     gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)',
   },
   {
+    path: '/journal',
+    label: 'Engineering Journal',
+    desc: 'Image pipelines, OCR rules, Cloudinary & UI architecture ledger',
+    icon: 'fa-book-bookmark',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #c59b27, #854d0e)',
+  },
+  {
     path: '/',
     label: 'Stock Table',
     desc: 'Browse full product catalog with images & live stock',

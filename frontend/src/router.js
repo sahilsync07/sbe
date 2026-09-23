@@ -20,6 +20,7 @@ const isAndroid = Capacitor.getPlatform() === 'android';
 
 const PdfGenerator = () => import('./components/PdfGenerator.vue');
 const LatestStock = () => import('./android/components/LatestStock.vue');
+const JournalView = () => import('./views/JournalView.vue');
 
 const routes = [
   { path: "/", component: StockTable },
@@ -35,6 +36,7 @@ const routes = [
   { path: "/home", component: HomeView },
   { path: "/sbe-hub", redirect: "/home" },
   { path: "/hub", redirect: "/home" },
+  { path: "/journal", component: JournalView },
   { path: "/old-stock", component: OldStockView },
   { path: "/quotation", component: QuotationView },
   { path: "/analyzer", component: AnalyzerView },
