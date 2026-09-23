@@ -1386,6 +1386,7 @@
                   <li><strong>Strict Color Matching:</strong> Removed the permissive fallback in <code>process_all_quick_share.py</code>. Only explicit color matches or single-variant badges are accepted.</li>
                   <li><strong>Zero-Tolerance Mismatch Policy:</strong> If a clean manufacturer photo for the specific colorway does not exist, <code>secondaryImageUrl</code> is set to <code>null</code>. Never force an incorrect colorway onto an article.</li>
                   <li><strong>Automated Database Cleanse:</strong> Executed <code>fix_color_mismatches.py</code> across both <code>frontend/</code> and <code>sbe-hub/</code>, applying 31 precision corrections (swapped 60612 Pink/Chikku, 15007 Blue/Grape, unlinked 21584 Silver, remapped 24511, 24514, 29506, and purged 50525, 60557, 77016, 24506).</li>
+                  <li><strong>UI Bug Fix:</strong> Converted <code>paragon-original-logo.png</code> to a pristine transparent PNG via pixel matrix masking to fix the solid white block artifact in the superimposed "Paragon Gents" and "Paragon Ladies" UI tabs.</li>
                 </ol>
               </div>
             </div>
