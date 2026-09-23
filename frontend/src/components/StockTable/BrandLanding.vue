@@ -7,24 +7,24 @@
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-2.5 sm:px-6 pb-2 transition-all w-full max-w-full overflow-hidden" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
       <!-- Top Branding & Action Buttons Row -->
       <div class="flex items-center justify-between gap-2 w-full">
-        <!-- Left: SBE Rayagada -->
-        <div class="flex items-center gap-2 select-none min-w-0">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-slate-900 to-[#18181b] flex items-center justify-center text-amber-400 shadow-sm border border-slate-700/40 shrink-0">
-            <i class="fa-solid fa-shoe-prints text-xs sm:text-sm"></i>
-          </div>
-          <div class="flex flex-col min-w-0">
-            <div class="flex items-baseline gap-1.5 leading-none">
-              <span class="font-black text-base sm:text-xl tracking-tight text-slate-900 font-serif">
-                SBE
-              </span>
-              <span class="font-black text-xs sm:text-sm text-[#c59b27] uppercase tracking-widest font-sans">
-                Rayagada
-              </span>
-            </div>
-            <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 tracking-wider uppercase leading-none mt-1 truncate">
-              Footwear Wholesale
+        <!-- Left: SBE Rayagada (Luxury Minimalist Lockup) -->
+        <div 
+          class="flex flex-col select-none min-w-0 cursor-pointer group py-0.5" 
+          @click="selectTab('All')"
+          title="SBE Rayagada • Wholesale Footwear"
+        >
+          <div class="flex items-center gap-2 leading-none">
+            <span class="font-black text-base sm:text-lg tracking-[0.16em] text-slate-950 font-sans uppercase group-hover:text-black transition-colors">
+              SBE
+            </span>
+            <span class="h-3 w-px bg-slate-300/80"></span>
+            <span class="font-bold text-[11px] sm:text-xs text-slate-500 uppercase tracking-[0.2em] font-sans group-hover:text-slate-800 transition-colors">
+              Rayagada
             </span>
           </div>
+          <span class="text-[7.5px] sm:text-[8.5px] font-semibold text-slate-400 uppercase tracking-[0.26em] leading-none mt-1 truncate">
+            Footwear Wholesale
+          </span>
         </div>
 
         <!-- Right: Action Buttons (Clean View, Sync, Admin, Cart) -->
