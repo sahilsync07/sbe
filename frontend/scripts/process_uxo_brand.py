@@ -48,20 +48,20 @@ image_to_product = {
     'IMG-20260912-WA0078.jpg': ('UXO HUNTER-02 AIRFORCE (6X10) RS340/-', 'UXO_HUNTER_02_AIRFORCE.jpg'),
 }
 
-print("Uploading UXO manufacturer images to Cloudinary (e-sbe/box/uxo)...")
-uploaded_urls = {}
-with zipfile.ZipFile(BOX_ZIP, 'r') as z:
-    for zip_img, (prod_name, target_fn) in image_to_product.items():
-        raw_data = z.read(zip_img)
-        url = upload_image(raw_data, target_fn)
-        uploaded_urls[prod_name] = url
-        print(f"Uploaded {zip_img} -> {url} for {prod_name}")
-
-# Also handle shared colorways/variants within same model
-# UXO HUNTER-04 N.BLU WHT can share Hunter 02 image
-uploaded_urls['UXO HUNTER-04 N.BLU WHT (6X10) RS340/-'] = uploaded_urls['UXO HUNTER-02 AIRFORCE (6X10) RS340/-']
-# UXO BOOMER-03 GRY,ORNG can share Boomer 02 image
-uploaded_urls['UXO BOOMER-03 GRY,ORNG (6X10) RS395/-'] = uploaded_urls['UXO BOOMER-02 N.BLU,SKY(6X10)RS.395/-']
+uploaded_urls = {
+    'UXO BOOMER-02 N.BLU,SKY(6X10)RS.395/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185464/e-sbe/box/uxo/UXO_BOOMER_02_NBLU_SKY.jpg',
+    'UXO RIDER-03 L.GRY(6X10)RS.340/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185467/e-sbe/box/uxo/UXO_RIDER_03_LGRY.jpg',
+    'UXO AIR-02 S.GRN,ORNG(6X10) RS.395/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185469/e-sbe/box/uxo/UXO_AIR_02_SGRN_ORNG.jpg',
+    'UXO AIR-02 WHT,BLK(6X10) RS395/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185472/e-sbe/box/uxo/UXO_AIR_02_WHT_BLK.jpg',
+    'STRIKER-03 N.BLU(6X10) RS375/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185474/e-sbe/box/uxo/UXO_STRIKER_03_NBLU.jpg',
+    'UXO BOUNCER-01 WHT,PISTA (6X10) RS365/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185477/e-sbe/box/uxo/UXO_BOUNCER_01_WHT_PISTA.jpg',
+    'UXO STRIKER-06 D.GREY(6X10) RS375/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185479/e-sbe/box/uxo/UXO_STRIKER_06_DGREY.jpg',
+    'UXO RAFTAAR-03N.BLU (6X10) RS365/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185482/e-sbe/box/uxo/UXO_RAFTAAR_03_NBLU.jpg',
+    'UXO RAFTAAR 05 BLK/GOLD (6X10) RS365/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185484/e-sbe/box/uxo/UXO_RAFTAAR_05_BLK_GOLD.jpg',
+    'UXO HUNTER-02 AIRFORCE (6X10) RS340/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185487/e-sbe/box/uxo/UXO_HUNTER_02_AIRFORCE.jpg',
+    'UXO HUNTER-04 N.BLU WHT (6X10) RS340/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185487/e-sbe/box/uxo/UXO_HUNTER_02_AIRFORCE.jpg',
+    'UXO BOOMER-03 GRY,ORNG (6X10) RS395/-': 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790185464/e-sbe/box/uxo/UXO_BOOMER_02_NBLU_SKY.jpg'
+}
 
 print("\nExtracting UXO into its own dedicated Brand Group in stock-data.json...")
 
