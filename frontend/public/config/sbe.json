@@ -93,6 +93,7 @@
         "Xpania",
         "YASH FOOTWEAR",
         "ZYF TEX",
+        "UXO",
         "ARITCLE WRONGLY ENTERED"
     ],
     "brands": [
@@ -119,6 +120,10 @@
         {
             "name": "Escoute",
             "logo": "https://res.cloudinary.com/{{CLOUD_NAME}}/image/upload/v1749667072/escouteLogo_maieji.jpg"
+        },
+        {
+            "name": "UXO",
+            "logo": null
         }
     ],
     "brandGroups": {
@@ -227,7 +232,8 @@
             "NEXGEN FOOTWEAR",
             "Kohinoor",
             "UAM FOOTWEAR",
-            "SOLA"
+            "SOLA",
+            "UXO"
         ],
         "MidBrands": [
             "AIRFAX",

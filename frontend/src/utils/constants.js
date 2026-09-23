@@ -79,7 +79,8 @@ export const BRAND_LISTS = {
         'VENUS',
         'Mini F/w',
         'SOLA',
-        'ORTHO'
+        'ORTHO',
+        'UXO'
     ]
 };
 
