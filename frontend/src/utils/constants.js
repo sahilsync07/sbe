@@ -80,7 +80,10 @@ export const BRAND_LISTS = {
         'Mini F/w',
         'SOLA',
         'ORTHO',
-        'UXO'
+        'UXO',
+        'Brij Footwear',
+        'BRIZ FOOTWEAR',
+        'Durolite'
     ]
 };
 
