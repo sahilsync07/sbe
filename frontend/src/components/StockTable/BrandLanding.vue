@@ -95,49 +95,46 @@
       </div>
 
       <!-- ══════════════════════════════════════════════════════════
-           2. BRAND TABS: Circular Brand Icons (Zomato Category Bar)
+           2. BRAND TABS: Full-Rounded Pill-Shaped End-to-End Badges
            ══════════════════════════════════════════════════════════ -->
-      <div class="mt-2.5 w-full overflow-x-auto no-scrollbar border-t border-slate-100/60 pt-2">
-        <div class="flex items-center gap-3 sm:gap-4.5 min-w-max pb-1">
+      <div class="mt-2.5 w-full overflow-x-auto no-scrollbar border-t border-slate-100/80 pt-2 pb-1">
+        <div class="flex items-center gap-2 sm:gap-2.5 min-w-max pb-1 px-0.5">
           <button
             v-for="tab in brandTabs"
             :key="tab.id"
             @click="selectTab(tab.id)"
-            class="flex flex-col items-center gap-1.5 group select-none transition-all relative pb-2 shrink-0 min-w-[56px] sm:min-w-[64px]"
+            class="h-9 sm:h-10 px-3.5 sm:px-4.5 rounded-full flex items-center justify-center gap-2 border transition-all duration-200 select-none shrink-0 cursor-pointer shadow-xs active:scale-95 group/pill relative"
+            :class="activeTab === tab.id 
+              ? 'bg-gradient-to-r from-amber-50 to-amber-100/80 border-2 border-[#c59b27] text-amber-950 font-black shadow-sm ring-2 ring-amber-400/25 scale-[1.02]' 
+              : 'bg-white border-slate-200/90 text-slate-700 hover:border-amber-400/80 hover:bg-slate-50/90 hover:shadow-xs'"
+            :title="tab.label"
           >
-            <!-- Circle Thumbnail / Badge -->
-            <div
-              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center p-2 transition-all duration-300 relative overflow-hidden shrink-0"
-              :class="activeTab === tab.id ? 'ring-2 ring-[#c59b27] ring-offset-2 bg-amber-50 shadow-md scale-105' : 'bg-slate-50 border border-slate-200/80 hover:bg-slate-100/80 hover:scale-102'"
-            >
+            <!-- Logo Image (End-to-End within rounded pill) -->
+            <template v-if="tab.image && !failedLogos.has(tab.id)">
               <img
-                v-if="tab.image && !failedLogos.has(tab.id)"
                 :src="tab.image"
                 :alt="tab.label"
-                class="w-full h-full object-contain transition-transform group-hover:scale-110"
+                class="h-5 sm:h-6 max-w-[85px] sm:max-w-[105px] object-contain transition-transform group-hover/pill:scale-105"
                 @error="failedLogos.add(tab.id)"
               />
-              <div v-else-if="tab.icon" class="text-base sm:text-lg" :class="tab.iconColor || 'text-slate-700'">
-                <i :class="tab.icon"></i>
-              </div>
-              <div v-else class="w-full h-full flex items-center justify-center font-black text-xs text-slate-600 uppercase tracking-tighter">
-                {{ tab.label.slice(0, 3) }}
-              </div>
-            </div>
+              <span v-if="tab.subLabel" class="text-[10px] sm:text-[11px] font-black tracking-tight" :class="activeTab === tab.id ? 'text-amber-950 font-black' : 'text-slate-600'">
+                {{ tab.subLabel }}
+              </span>
+            </template>
 
-            <!-- Tab Label -->
-            <span
-              class="text-[11px] sm:text-xs font-bold tracking-tight transition-colors whitespace-nowrap"
-              :class="activeTab === tab.id ? 'text-slate-900 font-extrabold' : 'text-slate-600 group-hover:text-slate-900'"
-            >
-              {{ tab.label }}
-            </span>
+            <!-- Icon + Text for non-logo / utility tabs -->
+            <template v-else>
+              <i v-if="tab.icon" :class="[tab.icon, tab.iconColor || 'text-amber-500']" class="text-xs sm:text-sm"></i>
+              <span class="text-xs sm:text-[13px] font-extrabold tracking-tight whitespace-nowrap" :class="activeTab === tab.id ? 'text-amber-950' : 'text-slate-800'">
+                {{ tab.label }}
+              </span>
+            </template>
 
-            <!-- Active Indicator Underline -->
-            <div
+            <!-- Active Pill Indicator Dot -->
+            <span 
               v-if="activeTab === tab.id"
-              class="absolute bottom-0 left-2 right-2 h-0.5 bg-[#c59b27] rounded-full shadow-sm"
-            ></div>
+              class="w-1.5 h-1.5 rounded-full bg-[#c59b27] shadow-[0_0_6px_rgba(197,155,39,0.8)] shrink-0"
+            ></span>
           </button>
         </div>
       </div>
@@ -482,25 +479,36 @@
               </button>
             </div>
 
-            <!-- Content Area -->
-            <div class="p-2.5 flex flex-col flex-1">
-              <h4 class="text-[11px] sm:text-xs font-bold text-slate-800 leading-snug line-clamp-1 group-hover/card:text-[#c59b27] transition-colors" :title="product.productName">
-                {{ getCleanProductName(product.productName) }}
-              </h4>
+            <!-- Content Area (Catalog Format) -->
+            <div class="p-2.5 flex flex-col flex-1 justify-between bg-white">
+              <div>
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h4 class="text-[11px] sm:text-xs font-black font-['Clash_Display'] uppercase text-slate-900 leading-snug line-clamp-1 group-hover/card:text-[#c59b27] transition-colors" :title="product.productName">
+                    {{ getCatalogSpecs(product).article || getCleanProductName(product.productName) }}
+                  </h4>
+                  <span v-if="getCatalogSpecs(product).sole" class="text-[8px] font-black uppercase px-1 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/60 shrink-0">
+                    {{ getCatalogSpecs(product).sole }}
+                  </span>
+                </div>
 
-              <div class="flex items-center justify-between mt-1 text-[10px] text-slate-500">
-                <span v-if="getProductColor(product.productName)" class="flex items-center gap-1 truncate max-w-[60px]">
-                  <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
-                  <span class="capitalize truncate">{{ getProductColor(product.productName).text }}</span>
-                </span>
-                <span v-if="getProductSize(product.productName)" class="font-bold text-slate-600 px-1 rounded bg-slate-100">
-                  {{ getProductSize(product.productName) }}
-                </span>
+                <!-- Color & Size Spec -->
+                <div class="flex items-center justify-between mt-1 text-[10px]">
+                  <div v-if="getCatalogSpecs(product).color" class="flex items-center gap-1 max-w-[85px]">
+                    <span class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: getCatalogSpecs(product).color.hex }"></span>
+                    <span class="font-bold uppercase tracking-wider text-slate-700 text-[9px] truncate">{{ getCatalogSpecs(product).color.text }}</span>
+                  </div>
+                  <span v-else class="text-slate-400 text-[9px]">—</span>
+
+                  <span v-if="getCatalogSpecs(product).size" class="font-bold text-slate-600 px-1 py-0.5 rounded bg-slate-100 text-[9px] font-mono border border-slate-200/50">
+                    {{ getCatalogSpecs(product).size }}
+                  </span>
+                </div>
               </div>
 
-              <div class="mt-2 flex items-baseline justify-between pt-1 border-t border-slate-100">
-                <div class="text-xs sm:text-sm font-black text-slate-900">
-                  <span class="text-[10px] font-medium mr-[1px]">₹</span>{{ getPriceInfo(product.productName).price }}
+              <!-- Footer: Price & Stock -->
+              <div class="mt-2 pt-1 border-t border-slate-100 flex items-baseline justify-between">
+                <div class="text-xs sm:text-sm font-black text-slate-950 font-mono">
+                  <span class="text-[9px] font-bold text-slate-400 mr-0.5">MRP ₹</span>{{ getCatalogSpecs(product).mrp || getPriceInfo(product.productName).price }}
                 </div>
                 <span :class="product.quantity > 0 ? 'text-slate-400' : 'text-rose-500 font-bold'" class="text-[10px]">
                   {{ product.quantity > 0 ? `${product.quantity} prs` : 'Out of Stock' }}
@@ -657,28 +665,39 @@
             </button>
           </div>
 
-          <!-- Product Details -->
-          <div class="p-2.5 flex flex-col flex-1">
-            <h4 class="text-[11px] sm:text-xs font-bold text-slate-800 leading-snug line-clamp-1 group-hover/card:text-[#c59b27] transition-colors" :title="product.productName">
-              {{ getCleanProductName(product.productName) }}
-            </h4>
+          <!-- Product Details (Catalog Format) -->
+          <div class="p-2.5 flex flex-col flex-1 justify-between bg-white">
+            <div>
+              <div class="flex items-start justify-between gap-1 mb-1">
+                <h4 class="text-[11px] sm:text-xs font-black font-['Clash_Display'] uppercase text-slate-900 leading-snug line-clamp-1 group-hover/card:text-[#c59b27] transition-colors" :title="product.productName">
+                  {{ getCatalogSpecs(product).article || getCleanProductName(product.productName) }}
+                </h4>
+                <span v-if="getCatalogSpecs(product).sole" class="text-[8px] font-black uppercase px-1 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/60 shrink-0">
+                  {{ getCatalogSpecs(product).sole }}
+                </span>
+              </div>
 
-            <div class="flex items-center justify-between mt-1 text-[10px] text-slate-500">
-              <span v-if="getProductColor(product.productName)" class="flex items-center gap-1 truncate max-w-[60px]">
-                <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
-                <span class="capitalize truncate">{{ getProductColor(product.productName).text }}</span>
-              </span>
-              <span v-if="getProductSize(product.productName)" class="font-bold text-slate-600 px-1 rounded bg-slate-100">
-                {{ getProductSize(product.productName) }}
-              </span>
+              <!-- Color & Size Spec -->
+              <div class="flex items-center justify-between mt-1 text-[10px]">
+                <div v-if="getCatalogSpecs(product).color" class="flex items-center gap-1 max-w-[85px]">
+                  <span class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: getCatalogSpecs(product).color.hex }"></span>
+                  <span class="font-bold uppercase tracking-wider text-slate-700 text-[9px] truncate">{{ getCatalogSpecs(product).color.text }}</span>
+                </div>
+                <span v-else class="text-slate-400 text-[9px]">—</span>
+
+                <span v-if="getCatalogSpecs(product).size" class="font-bold text-slate-600 px-1 py-0.5 rounded bg-slate-100 text-[9px] font-mono border border-slate-200/50">
+                  {{ getCatalogSpecs(product).size }}
+                </span>
+              </div>
             </div>
 
-            <div class="mt-2 flex items-baseline justify-between pt-1 border-t border-slate-100">
-              <div class="text-xs sm:text-sm font-black text-slate-900">
-                <span class="text-[10px] font-medium mr-[1px]">₹</span>{{ getPriceInfo(product.productName).price }}
+            <!-- Footer: Price & Stock -->
+            <div class="mt-2 pt-1 border-t border-slate-100 flex items-baseline justify-between">
+              <div class="text-xs sm:text-sm font-black text-slate-950 font-mono">
+                <span class="text-[9px] font-bold text-slate-400 mr-0.5">MRP ₹</span>{{ getCatalogSpecs(product).mrp || getPriceInfo(product.productName).price }}
               </div>
-              <span class="text-[10px] font-bold text-slate-400">
-                {{ product.quantity }} prs
+              <span :class="product.quantity > 0 ? 'text-slate-400' : 'text-rose-500 font-bold'" class="text-[10px]">
+                {{ product.quantity > 0 ? `${product.quantity} prs` : 'Out of Stock' }}
               </span>
             </div>
           </div>
@@ -712,8 +731,15 @@
          FULL STOREFRONT SHOWCASE: Shown when activeTab === 'All'
          ══════════════════════════════════════════════════════════ -->
     <template v-else>
+      <!-- ROTATING HERO CAROUSEL: Sub-Brand Catalog Coverpages -->
+      <div class="mt-3 sm:mt-4 px-3 sm:px-6">
+        <CatalogHeroCarousel 
+          @select-tab="selectTab"
+        />
+      </div>
+
       <!-- 4. PARAGON 40% DISCOUNT STRIP: Eye-Catching Marquee -->
-      <div class="mt-5 px-3 sm:px-6">
+      <div class="mt-4 sm:mt-5 px-3 sm:px-6">
         <div 
           class="w-full h-14 sm:h-16 rounded-2xl overflow-hidden relative cursor-pointer bg-gradient-to-r from-red-600 via-red-700 to-red-600 shadow-md flex items-center group transition-transform duration-300 hover:scale-[1.01]"
           @click="selectTab('ParagonDiscount')"
@@ -1307,7 +1333,7 @@ import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } fr
 import { useIntersectionObserver } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import SlideshowCard from './SlideshowCard.vue';
-import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage } from '../../utils/formatters';
+import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage, parseCatalogSpecs } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 
 import { useAdmin } from '../../composables/useAdmin';
@@ -1320,6 +1346,9 @@ import { storeToRefs } from 'pinia';
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 const ParagonCoreCard = defineAsyncComponent(() => import('./ParagonCoreCard.vue'));
+const CatalogHeroCarousel = defineAsyncComponent(() => import('./CatalogHeroCarousel.vue'));
+
+const baseUrl = import.meta.env.BASE_URL || '/';
 
 const route = useRoute();
 const router = useRouter();
@@ -1561,37 +1590,52 @@ const otherSearchResults = computed(() => {
   return searchResults.value.filter(p => p.productName !== selectedItem.value.productName);
 });
 
-// Brand Tabs Data (Zomato-Style Circular Icons)
+// Brand Tabs Data (Full-Rounded Pill Badges)
 const failedLogos = ref(new Set());
-const ParagonLogo = `${import.meta.env.BASE_URL}assets/logos/paragon-logo.svg`;
-const ActionLogo = `${import.meta.env.BASE_URL}assets/logos/action-logo.svg`;
-const EekenLogo = `${import.meta.env.BASE_URL}assets/logos/eeken-logo.svg`;
-const CubixLogo = `${import.meta.env.BASE_URL}assets/logos/cubix-logo.svg`;
-const FlorexLogo = `${import.meta.env.BASE_URL}assets/logos/florex-logo.svg`;
-const RelianceLogo = `${import.meta.env.BASE_URL}assets/logos/reliance-logo.svg`;
-const AjantaLogo = `${import.meta.env.BASE_URL}assets/ajanta-logo.png`;
+const ParagonLogo = `${baseUrl}assets/logos/paragon-logo.svg`;
+const ActionLogo = `${baseUrl}assets/logos/action-logo.svg`;
+const EekenLogo = `${baseUrl}assets/logos/eeken-logo.svg`;
+const CubixLogo = `${baseUrl}assets/logos/cubix-logo.svg`;
+const FlorexLogo = `${baseUrl}assets/logos/florex-logo.svg`;
+const RelianceLogo = `${baseUrl}assets/logos/reliance-logo.svg`;
+const AjantaLogo = `${baseUrl}assets/logos/ajanta-transparent-logo.png`;
+const ParaliteLogo = `${baseUrl}assets/logos/paralite-logo.png`;
+const SoleaLogo = `${baseUrl}assets/logos/solea-logo.png`;
+const VertexLogo = `${baseUrl}assets/logos/vertex-logo.png`;
+const MaxLogo = `${baseUrl}assets/logos/max-logo.png`;
+const EscouteLogo = `${baseUrl}assets/logos/escoute-logo.png`;
+const SchoolLogo = `${baseUrl}assets/logos/paragon-school-logo.png`;
+const TuffbootLogo = `${baseUrl}assets/logos/tuffboot-logo.png`;
 
 const brandTabs = [
-  { id: 'All', label: 'All', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
+  { id: 'All', label: 'All Products', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
   { id: 'NewArrivals', label: 'New Arrivals', icon: 'fa-solid fa-wand-magic-sparkles', iconColor: 'text-amber-500' },
-  { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo },
-  { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: ParagonLogo },
-  { id: 'ParagonCore', label: 'Paragon Core', image: ParagonLogo },
+  { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo, subLabel: 'Gents' },
+  { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: SoleaLogo, subLabel: 'Ladies' },
+  { id: 'ParagonCore', label: 'Paragon Core', image: ParagonLogo, subLabel: 'Core' },
+  { id: 'PARALITE', label: 'Paralite', image: ParaliteLogo },
   { id: 'ACTION', label: 'Action', image: ActionLogo },
   { id: 'EEKEN', label: 'Eeken', image: EekenLogo },
   { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo },
-  { id: 'PARALITE', label: 'Paralite', image: ParagonLogo },
-  { id: 'P-TOES PARALITE', label: 'P-Toes', image: ParagonLogo },
+  { id: 'P-TOES PARALITE', label: 'P-Toes', image: ParagonLogo, subLabel: 'P-Toes' },
   { id: 'Cubix', label: 'Cubix', image: CubixLogo },
   { id: 'Florex', label: 'Florex', image: FlorexLogo },
   { id: 'Reliance', label: 'Reliance', image: RelianceLogo },
+  { id: 'Max', label: 'Max', image: MaxLogo },
+  { id: 'Escoute', label: 'Escoute', image: EscouteLogo },
+  { id: 'School', label: 'School Shoes', image: SchoolLogo },
+  { id: 'Safety', label: 'Safety Boots', image: TuffbootLogo },
   { id: 'BoxPacking', label: 'Box Packing', icon: 'fa-solid fa-box', iconColor: 'text-blue-500' },
   { id: 'LoosePacking', label: 'Loose Packing', icon: 'fa-solid fa-bag-shopping', iconColor: 'text-purple-500' },
   { id: 'ParagonDiscount', label: '40% Off', icon: 'fa-solid fa-tags', iconColor: 'text-red-500' },
-  { id: 'Safety', label: 'Safety', icon: 'fa-solid fa-shield', iconColor: 'text-emerald-500' },
-  { id: 'School', label: 'School', icon: 'fa-solid fa-graduation-cap', iconColor: 'text-indigo-500' },
   { id: 'Walkaholic', label: 'Walkaholic', icon: 'fa-solid fa-person-walking', iconColor: 'text-teal-500' },
 ];
+
+const getCatalogSpecs = (product) => {
+  if (!product) return { article: '', size: '', mrp: '', color: null, sole: '' };
+  const grp = productToGroupMap.value?.get(product.productName) || product.groupName || '';
+  return parseCatalogSpecs(product.productName, grp);
+};
 
 const selectTab = (tabId) => {
   activeTab.value = tabId;
@@ -1824,28 +1868,28 @@ function isBoys(p, g) {
 }
 
 const paragonCoreDefinitions = [
-  { id: '1136_gents', name: 'Paragon 1136 Gents', category: 'PU Daily Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p, g) => /\b1136\b/.test(p.productName) && !isBoys(p, g) },
-  { id: '1136_boys', name: 'P-Toes 1136 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png', match: (p, g) => /\b1136\b/.test(p.productName) && isBoys(p, g) },
-  { id: '1170', name: 'Paragon 1170 Ladies', category: 'Ladies PU Slippers', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png', match: (p, g) => /\b1170\b/.test(p.productName) },
-  { id: '1180_gents', name: 'Paralite 1180 Gents', category: 'Men PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png', match: (p, g) => /\b1180\b/.test(p.productName) && !isBoys(p, g) },
-  { id: '1180_boys', name: 'P-Toes 1180 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770910312/1180_Black.jpg', match: (p, g) => /\b1180\b/.test(p.productName) && isBoys(p, g) },
-  { id: '1181', name: 'Paralite 1181 Gents', category: 'Men PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-1181_kaddpn.png', match: (p, g) => /\b1181\b/.test(p.productName) },
-  { id: '1190_gents', name: 'Paralite 1190 Gents', category: 'Lightweight Daily Slipper', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png', match: (p, g) => /\b1190\b/.test(p.productName) && !isBoys(p, g) },
-  { id: '1190_boys', name: 'P-Toes 1190 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770548635/1190_Black_Kids.jpg', match: (p, g) => /\b1190\b/.test(p.productName) && isBoys(p, g) },
-  { id: '1210_gents', name: 'Paragon 1210 Gents', category: 'Everyday Comfort PU', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png', match: (p, g) => /\b1210\b/.test(p.productName) && !isBoys(p, g) },
-  { id: '1210_boys', name: 'P-Toes 1210 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770909707/1210_2x5.jpg', match: (p, g) => /\b1210\b/.test(p.productName) && isBoys(p, g) },
-  { id: '1215', name: 'Paragon 1215 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1215_n934pm.png', match: (p, g) => /\b1215\b/.test(p.productName) },
-  { id: '1220', name: 'Paragon 1220 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png', match: (p, g) => /\b1220\b/.test(p.productName) },
-  { id: '1250_bkr', name: 'Paragon 1250 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png', match: (p, g) => /\b1250\b/.test(p.productName) && (!p.productName.toUpperCase().includes('TQN')) },
-  { id: '1250_tqn', name: 'Paragon 1250 TQN', category: 'Men Turquoise-Navy', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1250-TQN_foqv2b.png', match: (p, g) => /\b1250\b/.test(p.productName) && p.productName.toUpperCase().includes('TQN') },
-  { id: '1251_bkr', name: 'Paragon 1251 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-1251-BKR_ey6ugu.png', match: (p, g) => /\b1251\b/.test(p.productName) },
-  { id: '16048_blk', name: 'Paralite 16048 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p, g) => /\b16048\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('MIG')) },
-  { id: '16048_mig', name: 'Paralite 16048 MIG', category: 'Men Light PU Mint-Grey', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16048-MIG_tu7lm5.png', match: (p, g) => /\b16048\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('MIG') },
-  { id: '16048_boys', name: 'P-Toes 16048 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png', match: (p, g) => /\b16048\b/.test(p.productName) && isBoys(p, g) },
-  { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-16049-BLK_m9hwdx.png', match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('RYB')) },
-  { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16049-RYB_gw7p37.png', match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('RYB') },
-  { id: '16049_boys', name: 'P-Toes 16049 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1770547881/16049_Blk_kids.jpg', match: (p, g) => /\b16049\b/.test(p.productName) && isBoys(p, g) },
-  { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-cushion_impiqy.png', match: (p, g) => /cushion/i.test(p.productName) && !/1136|1210/.test(p.productName) }
+  { id: '1136_gents', name: 'Paragon 1136 Gents', category: 'PU Daily Slippers', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1136.png', fallbackSrc: `${baseUrl}assets/core/Core-1136.png`, match: (p, g) => /\b1136\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1136_boys', name: 'P-Toes 1136 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1136.png', fallbackSrc: `${baseUrl}assets/core/Core-1136.png`, match: (p, g) => /\b1136\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1170', name: 'Paragon 1170 Ladies', category: 'Ladies PU Slippers', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1170.png', fallbackSrc: `${baseUrl}assets/core/Core-1170.png`, match: (p, g) => /\b1170\b/.test(p.productName) },
+  { id: '1180_gents', name: 'Paralite 1180 Gents', category: 'Men PU Comfort', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1180.png', fallbackSrc: `${baseUrl}assets/core/Core-1180.png`, match: (p, g) => /\b1180\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1180_boys', name: 'P-Toes 1180 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1180.png', fallbackSrc: `${baseUrl}assets/core/Core-1180.png`, match: (p, g) => /\b1180\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1181', name: 'Paralite 1181 Gents', category: 'Men PU Comfort', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143988/e-sbe/Core-1181.png', fallbackSrc: `${baseUrl}assets/core/Core-1181.png`, match: (p, g) => /\b1181\b/.test(p.productName) },
+  { id: '1190_gents', name: 'Paralite 1190 Gents', category: 'Lightweight Daily Slipper', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143988/e-sbe/Core-1190.png', fallbackSrc: `${baseUrl}assets/core/Core-1190.png`, match: (p, g) => /\b1190\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1190_boys', name: 'P-Toes 1190 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143988/e-sbe/Core-1190.png', fallbackSrc: `${baseUrl}assets/core/Core-1190.png`, match: (p, g) => /\b1190\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1210_gents', name: 'Paragon 1210 Gents', category: 'Everyday Comfort PU', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1210.png', fallbackSrc: `${baseUrl}assets/core/Core-1210.png`, match: (p, g) => /\b1210\b/.test(p.productName) && !isBoys(p, g) },
+  { id: '1210_boys', name: 'P-Toes 1210 Boys', category: 'Boys & Junior Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1210.png', fallbackSrc: `${baseUrl}assets/core/Core-1210.png`, match: (p, g) => /\b1210\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1215', name: 'Paragon 1215 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1215.png', fallbackSrc: `${baseUrl}assets/core/Core-1215.png`, match: (p, g) => /\b1215\b/.test(p.productName) },
+  { id: '1220', name: 'Paragon 1220 Ladies', category: 'Women Daily PU Comfort', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143990/e-sbe/Core-1220.png', fallbackSrc: `${baseUrl}assets/core/Core-1220.png`, match: (p, g) => /\b1220\b/.test(p.productName) },
+  { id: '1250_bkr', name: 'Paragon 1250 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1250-BKR.png', fallbackSrc: `${baseUrl}assets/core/Core-1250-BKR.png`, match: (p, g) => /\b1250\b/.test(p.productName) && (!p.productName.toUpperCase().includes('TQN')) },
+  { id: '1250_tqn', name: 'Paragon 1250 TQN', category: 'Men Turquoise-Navy', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143991/e-sbe/Core-1250-TQN.png', fallbackSrc: `${baseUrl}assets/core/Core-1250-TQN.png`, match: (p, g) => /\b1250\b/.test(p.productName) && p.productName.toUpperCase().includes('TQN') },
+  { id: '1251_bkr', name: 'Paragon 1251 BKR', category: 'Men Classic Black-Red', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143991/e-sbe/Core-1251-BKR.png', fallbackSrc: `${baseUrl}assets/core/Core-1251-BKR.png`, match: (p, g) => /\b1251\b/.test(p.productName) },
+  { id: '16048_blk', name: 'Paralite 16048 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-BLK.png', fallbackSrc: `${baseUrl}assets/core/Core-16048-BLK.png`, match: (p, g) => /\b16048\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('MIG')) },
+  { id: '16048_mig', name: 'Paralite 16048 MIG', category: 'Men Light PU Mint-Grey', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-MIG.png', fallbackSrc: `${baseUrl}assets/core/Core-16048-MIG.png`, match: (p, g) => /\b16048\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('MIG') },
+  { id: '16048_boys', name: 'P-Toes 16048 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-BLK.png', fallbackSrc: `${baseUrl}assets/core/Core-16048-BLK.png`, match: (p, g) => /\b16048\b/.test(p.productName) && isBoys(p, g) },
+  { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png', fallbackSrc: `${baseUrl}assets/core/Core-16049-BLK.png`, match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('RYB')) },
+  { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-RYB.png', fallbackSrc: `${baseUrl}assets/core/Core-16049-RYB.png`, match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('RYB') },
+  { id: '16049_boys', name: 'P-Toes 16049 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png', fallbackSrc: `${baseUrl}assets/core/Core-16049-BLK.png`, match: (p, g) => /\b16049\b/.test(p.productName) && isBoys(p, g) },
+  { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143994/e-sbe/Core-cushion.png', fallbackSrc: `${baseUrl}assets/core/Core-cushion.png`, match: (p, g) => /cushion/i.test(p.productName) && !/1136|1210/.test(p.productName) }
 ];
 
 function standardizeCoreSize(name) {
@@ -1900,10 +1944,12 @@ function buildCoreObject(def, matchedProducts) {
 
   const totalStock = sizes.reduce((sum, s) => sum + s.totalQty, 0);
   const img = def.img || matchedProducts.find(p => p.imageUrl)?.imageUrl || null;
+  const fallbackSrc = def.fallbackSrc || matchedProducts.find(p => p.secondaryImageUrl)?.secondaryImageUrl || null;
 
   return {
     ...def,
     img,
+    fallbackSrc,
     totalStock,
     sizes
   };
@@ -2046,66 +2092,57 @@ const getCount = (groupNames) => {
 
 const localCarousals = {
   'ParagonCore': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1180_bving9.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-1181_kaddpn.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-1190_daqseh.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1215_n934pm.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1250-TQN_foqv2b.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-1251-BKR_ey6ugu.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16048-MIG_tu7lm5.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900425/Core-16049-BLK_m9hwdx.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900424/Core-16049-RYB_gw7p37.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-cushion_impiqy.png'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1136.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1170.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1180.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143988/e-sbe/Core-1181.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143988/e-sbe/Core-1190.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1210.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1215.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143990/e-sbe/Core-1220.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1250-BKR.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143991/e-sbe/Core-1250-TQN.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143991/e-sbe/Core-1251-BKR.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-BLK.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-MIG.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-RYB.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143994/e-sbe/Core-cushion.png'
   ],
   'EEKEN': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-2.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Eeken-3.jpg'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143979/e-sbe/eeken-logo.png'
   ],
   'PARALITE': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1250-BKR_y691z2.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900429/Core-16048-BLK_g95bqr.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Paralite.jpg'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143990/e-sbe/Core-1220.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1250-BKR.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-BLK.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143981/e-sbe/paralite-logo.png'
   ],
   'PARAGON GENTS': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900427/Core-1136_rbynmk.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900428/Core-1210_wvvf5q.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-gents-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-gents-2.jpg'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1136.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1210.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143979/e-sbe/paragon-original-logo.png'
   ],
   'PARAGON LADIES': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1170_ez7zfr.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900426/Core-1220_bzdakk.png',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-ladies-1.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Paragon-ladies-2.jpg'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143986/e-sbe/Core-1170.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143990/e-sbe/Core-1220.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1215.png'
   ],
   'P-TOES PARALITE': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1770548635/1190_Black_Kids.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1770909707/1210_2x5.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1770547881/16049_Blk_kids.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/P-toes.png'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143988/e-sbe/Core-1190.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1210.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png'
   ],
-  'Safety': ['https://res.cloudinary.com/dg365ewal/image/upload/Boot-1.jpg'],
-  'School': ['https://res.cloudinary.com/dg365ewal/image/upload/paragon-school.jpg'],
+  'Safety': [],
+  'School': ['https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143982/e-sbe/paragon-school-logo.png'],
   'Walkaholic': [
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900444/3603_Turquoise_xeir3c.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900475/1987_Mehandi_fk1gou.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900444/1975_Maroon_ez1kuc.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900443/16054_Red_tg6zft.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/v1787900443/1933_Orange_oqlrrs.jpg',
-    'https://res.cloudinary.com/dg365ewal/image/upload/Walkaholic.png'
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143989/e-sbe/Core-1250-BKR.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-BLK.png'
   ],
-  'Max': ['https://res.cloudinary.com/dg365ewal/image/upload/Max.jpg'],
-  'Escoute': ['https://res.cloudinary.com/dg365ewal/image/upload/Escoute.jpg'],
-  'LoosePacking': ['https://res.cloudinary.com/dg365ewal/image/upload/loose.png'],
-  'BoxPacking': ['https://res.cloudinary.com/dg365ewal/image/upload/box.png']
+  'Max': ['https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143982/e-sbe/max-logo.png'],
+  'Escoute': ['https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143982/e-sbe/escoute-logo.png'],
+  'LoosePacking': [],
+  'BoxPacking': []
 };
 
 const looseGroupNames = ['ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS', 'AAGAM POLYMER', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS', 'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY', 'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC'];
@@ -2128,11 +2165,11 @@ const paragonCards = [
 ];
 
 const bigBrandCards = [
-  { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png' },
-  { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' },
-  { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png' },
-  { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp' },
+  { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'], logo: `${baseUrl}assets/logos/cubix-logo.svg` },
+  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'], logo: `${baseUrl}assets/logos/florex-logo.svg` },
+  { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: `${baseUrl}assets/logos/action-logo.svg` },
+  { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'], logo: `${baseUrl}assets/logos/reliance-logo.svg` },
+  { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: `${baseUrl}assets/logos/eeken-logo.svg` },
 ];
 
 const midBrandCards = [

@@ -77,44 +77,52 @@
     </div>
 
     <!-- Content -->
-    <div class="p-3 flex flex-col flex-1 pb-3 relative">
-        <!-- Title -->
-        <div class="mb-1.5 pr-8">
-           <h3 class="text-xs sm:text-sm font-bold text-slate-800 leading-snug line-clamp-2 min-h-[2.5em] group-hover:text-blue-600 transition-colors" :title="product.productName">
-              {{ getCleanProductName(product.productName) }}
-           </h3>
-        </div>
-        
-        <!-- Details Row -->
-        <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-1.5 overflow-hidden">
-               <!-- Color Dot -->
-               <span v-if="getProductColor(product.productName)" 
-                     class="w-3 h-3 rounded-full shadow-sm ring-1 ring-slate-100" 
-                     :style="{ backgroundColor: getProductColor(product.productName).hex }"
-                     :title="getProductColor(product.productName).text"
-               ></span>
-               <span v-if="getProductColor(product.productName)" class="text-[10px] sm:text-[11px] font-medium text-slate-500 capitalize truncate max-w-[60px]">
-                  {{ getProductColor(product.productName).text }}
+    <!-- Content (Catalog Format) -->
+    <div class="p-3 flex flex-col flex-1 pb-3 relative justify-between bg-white">
+        <!-- Article Header & Sole -->
+        <div>
+           <div class="flex items-start justify-between gap-1 mb-1 pr-7">
+              <h3 class="text-xs sm:text-sm font-black font-['Clash_Display'] uppercase text-slate-900 leading-snug line-clamp-1 group-hover:text-amber-600 transition-colors" :title="product.productName">
+                 {{ catalogSpecs.article || getCleanProductName(product.productName) }}
+              </h3>
+           </div>
+           
+           <!-- Sole & Color Badges -->
+           <div class="flex items-center justify-between mb-2">
+               <!-- Color Swatch & Label -->
+               <div v-if="catalogSpecs.color" class="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 max-w-[110px]">
+                  <span class="w-2.5 h-2.5 rounded-full shadow-xs ring-1 ring-slate-200 shrink-0" 
+                        :style="{ backgroundColor: catalogSpecs.color.hex }"
+                  ></span>
+                  <span class="text-[10px] font-black uppercase text-slate-700 truncate">
+                     {{ catalogSpecs.color.text }}
+                  </span>
+               </div>
+               <span v-else class="text-[10px] text-slate-400 font-medium">Standard</span>
+
+               <!-- Sole Badge -->
+               <span v-if="catalogSpecs.sole" class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/60 shrink-0">
+                  {{ catalogSpecs.sole }} SOLE
                </span>
-            </div>
-            
-            <span v-if="getProductSize(product.productName)" class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] sm:text-[11px] font-bold border border-slate-200">
-               {{ getProductSize(product.productName) }}
-            </span>
+           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="mt-auto flex items-end justify-between">
+        <!-- Catalog Specification Strip: SIZE | MRP | STOCK -->
+        <div class="mt-auto pt-2 border-t border-slate-100 flex items-end justify-between">
             <div class="flex flex-col">
-               <span class="text-[9px] sm:text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{{ getPriceInfo(product.productName).label }}</span>
-               <div class="text-base sm:text-lg font-black text-slate-900 leading-none">
-                  <span class="text-[10px] sm:text-xs align-top font-medium mr-0.5">₹</span>{{ getPriceInfo(product.productName).price }}
+               <div class="flex items-baseline gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                  <span>SIZE:</span>
+                  <span class="text-slate-700 font-black">{{ catalogSpecs.size || getProductSize(product.productName) || 'STD' }}</span>
+               </div>
+               <div class="text-base sm:text-lg font-black text-slate-950 leading-tight">
+                  <span class="text-[10px] sm:text-xs font-bold text-slate-500 mr-0.5">MRP ₹</span>{{ catalogSpecs.mrp || getPriceInfo(product.productName).price }}
                </div>
             </div>
+
             <div class="text-right flex flex-col items-end">
-               <span class="text-xs sm:text-sm font-bold" :class="product.quantity < 5 ? 'text-amber-500' : 'text-slate-400'">
-                  {{ product.quantity }} {{ product.quantity === 1 ? 'Pair' : 'Pairs' }}
+               <span class="text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full border" 
+                     :class="product.quantity > 0 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-200'">
+                  {{ product.quantity > 0 ? `${product.quantity} prs` : 'Out of Stock' }}
                </span>
             </div>
         </div>
@@ -122,7 +130,7 @@
         <button 
              v-if="product.quantity > 0"
              @click.stop="addToCart(product)"
-             class="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 shadow-sm border border-slate-200 hover:bg-blue-600 hover:text-white transition-all hover:scale-110 active:scale-95"
+             class="absolute top-2.5 right-2.5 z-20 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-slate-900 text-amber-400 hover:bg-black hover:scale-105 shadow-sm transition-all active:scale-90"
              title="Add to Cart"
         >
               <i class="fa-solid fa-plus text-xs"></i>
@@ -133,7 +141,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { getOptimizedImageUrl, getCleanProductName, isNewArrival } from '../../utils/formatters';
+import { getOptimizedImageUrl, getCleanProductName, isNewArrival, parseCatalogSpecs } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 import CachedImage from './CachedImage.vue';
 
@@ -152,6 +160,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['open-image-popup']);
+
+const catalogSpecs = computed(() => parseCatalogSpecs(props.product.productName, props.product.groupName));
 
 const getProductColor = (name) => extractColor(name);
 

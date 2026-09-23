@@ -155,3 +155,58 @@ export function getCleanProductName(name) {
     return formatProductName(cleanedString);
 }
 
+/**
+ * Parse structured catalog specs from product name (Article, Size, MRP, Color, Sole)
+ * Matches the official Paragon / Eeken catalog layout:
+ * - ARTICLE: "PARALITE 1427"
+ * - COLOR: "PISTA"
+ * - SIZE: "04/08" or "06/10"
+ * - MRP: "239.00"
+ * - SOLE: "EVA" or "PU"
+ */
+export function parseCatalogSpecs(name, groupName = '') {
+    if (!name) return { article: '', size: '', mrp: '', color: null, sole: '' };
+    
+    const color = extractColor(name);
+    
+    // Extract Size e.g. (04*08) or 06-10 or 6x9 or (06/10)
+    let size = '';
+    const sizeMatch = name.match(/(?:^|[\s\(])(\d{1,2})\s*[\*\-xX\/]\s*(\d{1,2})(?:[\s\)]|$)/);
+    if (sizeMatch) {
+        const s1 = sizeMatch[1].padStart(2, '0');
+        const s2 = sizeMatch[2].padStart(2, '0');
+        size = `${s1}/${s2}`;
+    }
+
+    // Extract MRP
+    let mrp = '';
+    const mrpMatch = name.match(/mrp[\s\.\:]*(\d+(\.\d+)?)/i) || 
+                     name.match(/rs[\s\.\:]*(\d+(\.\d+)?)/i) ||
+                     name.match(/@\s*(\d+(\.\d+)?)/i);
+    if (mrpMatch) {
+        mrp = mrpMatch[1];
+    }
+
+    // Determine Sole
+    let sole = '';
+    const upper = (name + ' ' + (groupName || '')).toUpperCase();
+    if (upper.includes('EVA') || upper.includes('PARALITE') || upper.includes('HAWAI') || upper.includes('RUBBER')) {
+        sole = 'EVA';
+    } else if (upper.includes('PU') || upper.includes('SOLEA') || upper.includes('VERTEX') || upper.includes('MERIVA') || upper.includes('COMFY')) {
+        sole = 'PU';
+    } else if (upper.includes('PVC') || upper.includes('PLASTIC')) {
+        sole = 'PVC';
+    }
+
+    // Article Name: clean uppercase article name
+    const cleanName = getCleanProductName(name).toUpperCase();
+    
+    return {
+        article: cleanName,
+        size,
+        mrp,
+        color,
+        sole
+    };
+}
+

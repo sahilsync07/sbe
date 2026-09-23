@@ -26,6 +26,7 @@
       <CachedImage
         v-if="core.img"
         :src="getOptimizedImageUrl(core.img)"
+        :fallback-src="core.fallbackSrc"
         :alt="core.name"
         class="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-105"
       />
