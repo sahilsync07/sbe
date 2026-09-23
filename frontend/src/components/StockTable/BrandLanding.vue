@@ -913,27 +913,7 @@
         </div>
       </section>
 
-      <!-- 6. BRAND PARAGONS GRID: Major Categories -->
-      <section class="mt-8 px-3 sm:px-6">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xs font-extrabold uppercase tracking-widest text-slate-400">
-            PARAGON COLLECTIONS
-          </h2>
-          <span class="text-[11px] font-bold text-amber-700">Official Range</span>
-        </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
-          <SlideshowCard
-            v-for="card in paragonCards"
-            :key="card.id"
-            :card="card"
-            :images="getParagonImages(card)"
-            :count="getCount(card.groupNames)"
-            aspectClass="aspect-[3/4]"
-            @click="selectTab(card.id)"
-          />
-        </div>
-      </section>
 
       <!-- 7. CURATED BRAND SHOWCASES WITH PRODUCTS BELOW -->
       <section class="mt-8 px-3 sm:px-6 space-y-6">
