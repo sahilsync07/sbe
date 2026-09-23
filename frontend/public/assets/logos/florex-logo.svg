@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="100%" height="100%">
+  <defs>
+    <linearGradient id="florexGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+  </defs>
+  <!-- Leaf icon -->
+  <path d="M 25 38 C 20 22 35 15 42 16 C 42 28 35 38 25 38 Z" fill="url(#florexGrad)" />
+  <path d="M 28 34 Q 35 25 40 18" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" />
+  <text x="120" y="39" font-family="'Century Gothic', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="#0F172A" text-anchor="middle" letter-spacing="2">FLOREX</text>
+</svg>

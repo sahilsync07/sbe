@@ -88,23 +88,23 @@ const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL
 export const TOP_BRANDS_CONFIG = [
     {
         name: 'Cubix',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg',
+        logo: `${baseUrl}assets/logos/cubix-logo.svg`,
     },
     {
         name: 'CUBIX 2',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg',
+        logo: `${baseUrl}assets/logos/cubix-logo.svg`,
     },
     {
         name: 'Florex (Swastik)',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png',
+        logo: `${baseUrl}assets/logos/florex-logo.svg`,
     },
     {
         name: 'RELIANCE FOOTWEAR',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png',
+        logo: `${baseUrl}assets/logos/reliance-logo.svg`,
     },
     {
         name: 'Action',
-        logo: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png',
+        logo: `${baseUrl}assets/logos/action-logo.svg`,
     },
     {
         name: 'AJANTA',

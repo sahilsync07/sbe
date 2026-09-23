@@ -192,7 +192,7 @@ const handleCacheImages = async () => {
     
     const allProducts = stockData.value?.flatMap(group => group.products) || [];
     const productsWithImages = allProducts.filter(p => p.imageUrl);
-    const extraUrls = [ 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp' ];
+    const extraUrls = [ `${import.meta.env.BASE_URL}assets/logos/paragon-logo.svg` ];
     
     if (groupedSidebar.value?.topBrands) {
         groupedSidebar.value.topBrands.forEach(item => {

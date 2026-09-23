@@ -111,13 +111,17 @@
               :class="activeTab === tab.id ? 'ring-2 ring-[#c59b27] ring-offset-2 bg-amber-50 shadow-md scale-105' : 'bg-slate-50 border border-slate-200/80 hover:bg-slate-100/80 hover:scale-102'"
             >
               <img
-                v-if="tab.image"
+                v-if="tab.image && !failedLogos.has(tab.id)"
                 :src="tab.image"
                 :alt="tab.label"
                 class="w-full h-full object-contain transition-transform group-hover:scale-110"
+                @error="failedLogos.add(tab.id)"
               />
               <div v-else-if="tab.icon" class="text-base sm:text-lg" :class="tab.iconColor || 'text-slate-700'">
                 <i :class="tab.icon"></i>
+              </div>
+              <div v-else class="w-full h-full flex items-center justify-center font-black text-xs text-slate-600 uppercase tracking-tighter">
+                {{ tab.label.slice(0, 3) }}
               </div>
             </div>
 
@@ -1558,7 +1562,13 @@ const otherSearchResults = computed(() => {
 });
 
 // Brand Tabs Data (Zomato-Style Circular Icons)
-const ParagonLogo = 'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp';
+const failedLogos = ref(new Set());
+const ParagonLogo = `${import.meta.env.BASE_URL}assets/logos/paragon-logo.svg`;
+const ActionLogo = `${import.meta.env.BASE_URL}assets/logos/action-logo.svg`;
+const EekenLogo = `${import.meta.env.BASE_URL}assets/logos/eeken-logo.svg`;
+const CubixLogo = `${import.meta.env.BASE_URL}assets/logos/cubix-logo.svg`;
+const FlorexLogo = `${import.meta.env.BASE_URL}assets/logos/florex-logo.svg`;
+const RelianceLogo = `${import.meta.env.BASE_URL}assets/logos/reliance-logo.svg`;
 const AjantaLogo = `${import.meta.env.BASE_URL}assets/ajanta-logo.png`;
 
 const brandTabs = [
@@ -1567,14 +1577,14 @@ const brandTabs = [
   { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo },
   { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: ParagonLogo },
   { id: 'ParagonCore', label: 'Paragon Core', image: ParagonLogo },
-  { id: 'ACTION', label: 'Action', image: 'https://res.cloudinary.com/dg365ewal/image/upload/v1768150265/action-logo_dzd5mq.png' },
-  { id: 'EEKEN', label: 'Eeken', image: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp' },
+  { id: 'ACTION', label: 'Action', image: ActionLogo },
+  { id: 'EEKEN', label: 'Eeken', image: EekenLogo },
   { id: 'AJANTA', label: 'Ajanta', image: AjantaLogo },
   { id: 'PARALITE', label: 'Paralite', image: ParagonLogo },
   { id: 'P-TOES PARALITE', label: 'P-Toes', image: ParagonLogo },
-  { id: 'Cubix', label: 'Cubix', image: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667073/cubixLogo_bwawj3.jpg' },
-  { id: 'Florex', label: 'Florex', image: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png' },
-  { id: 'Reliance', label: 'Reliance', image: 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/relianceLogo_bvgwwz.png' },
+  { id: 'Cubix', label: 'Cubix', image: CubixLogo },
+  { id: 'Florex', label: 'Florex', image: FlorexLogo },
+  { id: 'Reliance', label: 'Reliance', image: RelianceLogo },
   { id: 'BoxPacking', label: 'Box Packing', icon: 'fa-solid fa-box', iconColor: 'text-blue-500' },
   { id: 'LoosePacking', label: 'Loose Packing', icon: 'fa-solid fa-bag-shopping', iconColor: 'text-purple-500' },
   { id: 'ParagonDiscount', label: '40% Off', icon: 'fa-solid fa-tags', iconColor: 'text-red-500' },

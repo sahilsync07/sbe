@@ -183,7 +183,7 @@ const handleCacheImages = async () => {
     // Collect Extra Assets (Logos)
     const extraUrls = [
        // Hardcoded Logos
-       'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp',
+       `${import.meta.env.BASE_URL}assets/logos/paragon-logo.svg`,
        // Add other static assets if needed
     ];
 
