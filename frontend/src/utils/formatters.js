@@ -105,13 +105,12 @@ export function isNewArrival(product) {
     if (!product) return false;
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - 1);
-    const minDate = new Date('2025-11-01');
+    
+    // STRICTLY based on when data was synced/entered from accountant PC
+    if (!product.firstSeenAt) return false;
 
-    const imageDate = product.imageUploadedAt ? new Date(product.imageUploadedAt) : minDate;
-    const itemDate = product.firstSeenAt ? new Date(product.firstSeenAt) : minDate;
-
-    const latestDate = itemDate > imageDate ? itemDate : imageDate;
-    return latestDate > cutoff;
+    const itemDate = new Date(product.firstSeenAt);
+    return itemDate > cutoff;
 }
 
 /**

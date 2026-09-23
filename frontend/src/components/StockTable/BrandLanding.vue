@@ -1712,7 +1712,7 @@ const getNewArrivalProducts = () => {
 };
 
 const getNewArrivalCount = () => {
-  return getNewArrivalProducts().length;
+  return consolidateProducts(getNewArrivalProducts()).length;
 };
 
 const getHeroImage = () => {
