@@ -1,3 +1,4 @@
+import os
 import json
 
 CHIKKU_IMG = "https://res.cloudinary.com/dieqsg5tr/image/upload/v1790151843/e-sbe/cubix/CUBIX_C_60612_PNK.jpg" # Actually Chikku
@@ -129,5 +130,9 @@ def fix_database(file_path):
     print(f"Total fixes applied to {file_path}: {changed}")
 
 if __name__ == '__main__':
-    fix_database(r"c:\Projects\sbe\frontend\public\assets\stock-data.json")
-    fix_database(r"c:\Projects\sbe\sbe-hub\public\assets\stock-data.json")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+    frontend_p = os.path.join(repo_root, "frontend", "public", "assets", "stock-data.json")
+    hub_p = os.path.join(repo_root, "sbe-hub", "public", "assets", "stock-data.json")
+    fix_database(frontend_p)
+    fix_database(hub_p)

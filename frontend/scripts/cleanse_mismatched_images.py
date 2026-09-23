@@ -9,9 +9,11 @@ if sys.stdout.encoding != 'utf-8':
     except Exception:
         pass
 
-FRONTEND_STOCK = r"c:\Projects\sbe\frontend\public\assets\stock-data.json"
-HUB_STOCK = r"c:\Projects\sbe\sbe-hub\public\assets\stock-data.json"
-REPORT_PATH = r"c:\Projects\sbe\frontend\scripts\cleansing_report.json"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..'))
+FRONTEND_STOCK = os.path.join(REPO_ROOT, "frontend", "public", "assets", "stock-data.json")
+HUB_STOCK = os.path.join(REPO_ROOT, "sbe-hub", "public", "assets", "stock-data.json")
+REPORT_PATH = os.path.join(SCRIPT_DIR, "cleansing_report.json")
 
 BRAND_MAP = {
     'PARAGON': ['PARAGON', 'SOLEA', 'PARALITE', 'VERTEX', 'BLOT', 'PTOES', 'P-TOES', 'MERIVA', 'ESCOUTE', 'MAX', 'TUFFBOOT', 'WALKAHOLIC', 'STIMULUS', 'SCHOOL'],
