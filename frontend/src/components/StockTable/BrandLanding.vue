@@ -1324,6 +1324,8 @@ const triggerCardPhotoUpload = (product) => {
       const newUrl = await uploadImage(product, file);
       if (newUrl) {
         product.imageUrl = newUrl;
+        product.secondaryImageUrl = newUrl;
+        product.imageUploadedAt = new Date().toISOString();
       }
     }
   };
@@ -1335,6 +1337,8 @@ const handleCardDeletePhoto = async (product) => {
   const success = await deleteImage(product);
   if (success) {
     product.imageUrl = null;
+    product.secondaryImageUrl = null;
+    delete product.imageUploadedAt;
   }
 };
 

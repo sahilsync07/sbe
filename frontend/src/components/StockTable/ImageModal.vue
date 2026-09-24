@@ -293,6 +293,8 @@ const triggerModalPhotoUpload = () => {
       const newUrl = await uploadImage(props.currentProduct, file);
       if (newUrl && props.currentProduct) {
         props.currentProduct.imageUrl = newUrl;
+        props.currentProduct.secondaryImageUrl = newUrl;
+        props.currentProduct.imageUploadedAt = new Date().toISOString();
       }
     }
   };
@@ -304,6 +306,8 @@ const handleModalDeletePhoto = async () => {
   const success = await deleteImage(props.currentProduct);
   if (success && props.currentProduct) {
     props.currentProduct.imageUrl = null;
+    props.currentProduct.secondaryImageUrl = null;
+    delete props.currentProduct.imageUploadedAt;
   }
 };
 

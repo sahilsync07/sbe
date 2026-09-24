@@ -68,7 +68,7 @@
 
            <!-- Case 2: Has Image - Remove Button -->
            <div v-else class="pointer-events-auto absolute top-2 right-2">
-             <button @click.stop="deleteImage(product.productName)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-sm" title="Remove Image">
+             <button @click.stop="deleteImage(product)" class="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full shadow-md hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-sm" title="Remove Image">
                <i class="fa-solid fa-trash text-xs"></i>
              </button>
            </div>
