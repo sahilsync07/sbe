@@ -10,8 +10,8 @@
         class="toast-card group pointer-events-auto relative flex flex-col w-full max-w-[320px] sm:w-[320px] rounded-xl bg-neutral-900/95 text-white backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 overflow-hidden select-none transition-all duration-200"
         @mouseenter="pauseToast(item.id)"
         @mouseleave="resumeToast(item.id)"
-        @touchstart.passive="pauseToast(item.id)"
-        @touchend.passive="resumeToast(item.id)"
+        @touchstart.passive="handleTouchStart($event, item.id)"
+        @touchend.passive="handleTouchEnd($event, item.id)"
       >
         <!-- Card Body -->
         <div class="flex items-start gap-2.5 py-2.5 px-3.5 w-full">
@@ -80,7 +80,7 @@
           <button
             v-if="item.closeButton"
             type="button"
-            class="flex-shrink-0 text-neutral-400 hover:text-white p-0.5 rounded transition-colors hover:bg-white/10"
+            class="flex-shrink-0 text-neutral-400 hover:text-white p-0.5 rounded transition-colors hover:bg-white/10 active:scale-95"
             aria-label="Close"
             @click.stop="removeToast(item.id)"
           >
@@ -121,10 +121,39 @@
 import { computed } from 'vue';
 import { toasts, removeToast, pauseToast, resumeToast } from '@/composables/useToast.js';
 
-const portalStyle = computed(() => ({
-  top: 'max(env(safe-area-inset-top, 16px), 16px)',
-  right: 'max(env(safe-area-inset-right, 16px), 16px)'
-}));
+const portalStyle = computed(() => {
+  const isAndroid = typeof document !== 'undefined' && document.body.classList.contains('platform-android');
+  return {
+    top: isAndroid 
+      ? 'max(calc(env(safe-area-inset-top, 28px) + 8px), 32px)' 
+      : 'max(env(safe-area-inset-top, 16px), 16px)',
+    right: 'max(env(safe-area-inset-right, 16px), 16px)'
+  };
+});
+
+// Mobile touch gestures: swipe-right to dismiss
+let touchStartX = 0;
+let touchStartY = 0;
+
+function handleTouchStart(e, id) {
+  pauseToast(id);
+  if (e.touches && e.touches[0]) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }
+}
+
+function handleTouchEnd(e, id) {
+  resumeToast(id);
+  if (e.changedTouches && e.changedTouches[0]) {
+    const diffX = e.changedTouches[0].clientX - touchStartX;
+    const diffY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    // Swiped right by > 40px with minimal vertical movement
+    if (diffX > 40 && diffY < 45) {
+      removeToast(id);
+    }
+  }
+}
 
 function getProgressBarColor(type) {
   switch (type) {
