@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 import { extractColor } from '../utils/colors.js';
+import { useGitHubTokenModal } from './useGitHubTokenModal';
 
 const SYNC_KEY = 'sbe_last_sync_timestamp';
 const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
@@ -180,15 +181,17 @@ const getGitHubToken = () => {
 /**
  * Direct commit to GitHub repository via GitHub REST API with auto-retry on 409 SHA conflict
  */
-async function commitFileToGitHub(filePath, updatedContentString, commitMessage) {
-    const token = getGitHubToken();
+async function commitFileToGitHub(filePath, updatedContentString, commitMessage, tokenOverride = null) {
+    const token = tokenOverride || getGitHubToken();
     const owner = import.meta.env.VITE_GITHUB_OWNER || 'sahilsync07';
     const repo = import.meta.env.VITE_GITHUB_REPO || 'sbe';
     const branch = import.meta.env.VITE_GITHUB_BRANCH || 'main';
 
     if (!token) {
         console.warn('[GitHub Sync] No GitHub token configured; skipping direct GitHub commit');
-        return null;
+        const err = new Error('No GitHub token configured');
+        err.status = 401;
+        throw err;
     }
 
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
@@ -202,6 +205,11 @@ async function commitFileToGitHub(filePath, updatedContentString, commitMessage)
     while (retries > 0) {
         // 1. Fetch current file SHA
         const metaRes = await fetch(`${apiUrl}?ref=${branch}&_t=${Date.now()}`, { headers });
+        if (metaRes.status === 401 || metaRes.status === 403) {
+            const err = new Error(`GitHub authentication failed (${metaRes.status}): Bad credentials or token expired`);
+            err.status = metaRes.status;
+            throw err;
+        }
         if (!metaRes.ok) {
             throw new Error(`Failed to fetch file SHA for ${filePath} (${metaRes.status})`);
         }
@@ -220,6 +228,12 @@ async function commitFileToGitHub(filePath, updatedContentString, commitMessage)
                 branch
             })
         });
+
+        if (putRes.status === 401 || putRes.status === 403) {
+            const err = new Error(`GitHub commit authentication failed (${putRes.status}): Bad credentials or token expired`);
+            err.status = putRes.status;
+            throw err;
+        }
 
         if (putRes.status === 409) {
             console.warn(`[GitHub Sync] SHA conflict on ${filePath}, retrying with fresh SHA...`);
@@ -243,6 +257,7 @@ async function commitFileToGitHub(filePath, updatedContentString, commitMessage)
 export function useStockData(isLocal) {
     const appStore = useAppStore();
     const { stockData, isRefreshing, lastSyncTime: lastRefresh } = storeToRefs(appStore);
+    const { promptForToken } = useGitHubTokenModal();
     
     const loading = ref(false);
     const error = ref(null);
@@ -513,79 +528,104 @@ export function useStockData(isLocal) {
         const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
         let backendSuccess = false;
 
-        // A. Attempt local backend first (with 2500ms timeout)
+        // Step 1: Attempt local backend first (PC with server running, 2000ms timeout)
         try {
             const endpoint = newImageUrl ? `${backendUrl}/api/updateImage` : `${backendUrl}/api/removeImage`;
             const payload = newImageUrl ? { productName, imageUrl: newImageUrl } : { productName };
-            const res = await axios.post(endpoint, payload, { timeout: 2500 });
+            const res = await axios.post(endpoint, payload, { timeout: 2000 });
             if (res.status === 200) {
                 backendSuccess = true;
-                console.log(`[Sync] Updated via local backend for ${productName}`);
+                console.log(`[Sync] Step 1 passed: Updated via local backend for ${productName}`);
                 return { success: true, via: 'backend' };
             }
         } catch (backendErr) {
-            console.log(`[Sync] Local backend unavailable (${backendErr.message}), falling back to direct GitHub sync`);
+            console.log(`[Sync] Step 1: Local backend offline (${backendErr.message}), falling back to direct GitHub sync`);
         }
 
-        // B. If local backend unavailable (Phone, 4G, remote, or server offline): direct GitHub API commit!
-        if (!backendSuccess) {
-            return await enqueueSync(async () => {
-                const token = getGitHubToken();
+        // Step 2 & 3: GitHub direct sync
+        return await enqueueSync(async () => {
+            // Step 2: Check if GitHub token is already present
+            let token = getGitHubToken();
+
+            // Step 3: If token not present, prompt user with modal
+            if (!token) {
+                console.log('[Sync] Step 3: GitHub token missing, prompting user via modal...');
+                token = await promptForToken('missing');
                 if (!token) {
-                    console.warn('[GitHub Sync] No GitHub token configured; skipping direct GitHub commit');
-                    return { success: false, reason: 'no_token' };
+                    console.warn('[Sync] User canceled GitHub token modal');
+                    return { success: false, reason: 'canceled' };
                 }
+            }
 
-                let fullCatalog = stockData.value;
-                if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
-                    try {
-                        const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
-                        if (res.ok) {
-                            fullCatalog = await res.json();
-                        }
-                    } catch (e) {
-                        console.warn('[Sync] Could not fetch remote catalog:', e.message);
-                    }
-                }
-
-                if (!fullCatalog || !Array.isArray(fullCatalog)) {
-                    throw new Error('Catalog data not available for GitHub sync');
-                }
-
-                // Update catalog image reference
-                fullCatalog.forEach(group => {
-                    if (!group.products || !Array.isArray(group.products)) return;
-                    group.products.forEach(p => {
-                        if (p.productName === productName) {
-                            p.imageUrl = newImageUrl || null;
-                            if (newImageUrl) {
-                                p.imageUploadedAt = new Date().toISOString();
-                            } else {
-                                delete p.imageUploadedAt;
-                            }
-                        }
-                    });
-                });
-
-                const jsonString = JSON.stringify(fullCatalog, null, 2);
-                const commitMessage = newImageUrl ? `Update image for ${productName}` : `Remove image for ${productName}`;
-
-                // Commit to frontend
-                const resFrontend = await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage);
-                if (!resFrontend) {
-                    return { success: false, reason: 'commit_failed' };
-                }
-
-                // Mirror commit to sbe-hub
+            let fullCatalog = stockData.value;
+            if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
                 try {
-                    await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage);
-                } catch (hubErr) {
-                    console.warn('[Sync] SBE Hub mirror sync non-fatal warning:', hubErr.message);
+                    const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+                    if (res.ok) {
+                        fullCatalog = await res.json();
+                    }
+                } catch (e) {
+                    console.warn('[Sync] Could not fetch remote catalog:', e.message);
                 }
+            }
 
-                return { success: true, via: 'github' };
+            if (!fullCatalog || !Array.isArray(fullCatalog)) {
+                throw new Error('Catalog data not available for GitHub sync');
+            }
+
+            // Update catalog image reference
+            fullCatalog.forEach(group => {
+                if (!group.products || !Array.isArray(group.products)) return;
+                group.products.forEach(p => {
+                    if (p.productName === productName) {
+                        p.imageUrl = newImageUrl || null;
+                        if (newImageUrl) {
+                            p.imageUploadedAt = new Date().toISOString();
+                        } else {
+                            delete p.imageUploadedAt;
+                        }
+                    }
+                });
             });
-        }
+
+            const jsonString = JSON.stringify(fullCatalog, null, 2);
+            const commitMessage = newImageUrl ? `Update image for ${productName}` : `Remove image for ${productName}`;
+
+            // Helper to execute commits with automatic expired-token handling (Step 3 popup if 401)
+            const executeCommit = async (currentToken) => {
+                try {
+                    const resFrontend = await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    if (!resFrontend) {
+                        return { success: false, reason: 'commit_failed' };
+                    }
+
+                    // Mirror commit to sbe-hub
+                    try {
+                        await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    } catch (hubErr) {
+                        console.warn('[Sync] SBE Hub mirror sync non-fatal warning:', hubErr.message);
+                    }
+
+                    return { success: true, via: 'github' };
+                } catch (commitErr) {
+                    if (commitErr.status === 401 || commitErr.status === 403 || commitErr.message?.includes('401') || commitErr.message?.includes('Bad credentials')) {
+                        console.warn('[Sync] GitHub token expired or unauthorized (401), prompting user...');
+                        const freshToken = await promptForToken('expired');
+                        if (freshToken) {
+                            const resRetry = await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            try {
+                                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            } catch (hubErr) {}
+                            return { success: true, via: 'github' };
+                        }
+                        return { success: false, reason: 'expired' };
+                    }
+                    throw commitErr;
+                }
+            };
+
+            return await executeCommit(token);
+        });
     };
 
     /**
@@ -728,8 +768,12 @@ export function useStockData(isLocal) {
                 } else {
                     toast.success(`✓ Photo uploaded & synced to server!`, { autoClose: 3000 });
                 }
+            } else if (syncResult && syncResult.reason === 'canceled') {
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit canceled (no token entered).`, { autoClose: 5000 });
+            } else if (syncResult && syncResult.reason === 'expired') {
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub token expired.`, { autoClose: 5000 });
             } else if (syncResult && syncResult.reason === 'no_token') {
-                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit skipped (no GitHub token). Tap Cloud Sync in Admin to activate.`, { autoClose: 6000 });
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit skipped (no GitHub token).`, { autoClose: 5000 });
             } else {
                 toast.info(`Photo uploaded to Cloudinary.`, { autoClose: 3000 });
             }
@@ -789,8 +833,10 @@ export function useStockData(isLocal) {
                 } else {
                     toast.success(`✓ Photo removed & synced to server!`, { autoClose: 2500 });
                 }
-            } else if (syncResult && syncResult.reason === 'no_token') {
-                toast.warning(`Photo removed locally, but GitHub commit skipped (no GitHub token).`, { autoClose: 4000 });
+            } else if (syncResult && (syncResult.reason === 'no_token' || syncResult.reason === 'canceled')) {
+                toast.warning(`Photo removed locally, but GitHub commit canceled (no token).`, { autoClose: 4000 });
+            } else if (syncResult && syncResult.reason === 'expired') {
+                toast.warning(`Photo removed locally, but GitHub token expired.`, { autoClose: 4000 });
             } else {
                 toast.success(`✓ Photo removed for ${productName}`, { autoClose: 2500 });
             }
@@ -809,10 +855,13 @@ export function useStockData(isLocal) {
      * Push all local image additions/updates to GitHub repository in one batch
      */
     const pushPendingPhotosToGitHub = async () => {
-        const token = getGitHubToken();
+        let token = getGitHubToken();
         if (!token) {
-            toast.warning('GitHub Sync Token required. Please activate GitHub Cloud Sync in Admin settings.', { autoClose: 4000 });
-            return { success: false, reason: 'no_token' };
+            token = await promptForToken('missing');
+            if (!token) {
+                toast.warning('GitHub Sync Token required to commit pending photos.', { autoClose: 4000 });
+                return { success: false, reason: 'no_token' };
+            }
         }
 
         const toastId = toast.loading('Checking local photos against GitHub...', { autoClose: false, closeButton: false });
@@ -871,15 +920,31 @@ export function useStockData(isLocal) {
             const jsonString = JSON.stringify(remoteCatalog, null, 2);
             const commitMessage = `feat(catalog): sync ${pendingUpdates.length} photos from mobile`;
 
-            // Commit to frontend
-            await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage);
+            // Helper to execute commit with expired-token retry
+            const doCommit = async (currentToken) => {
+                try {
+                    await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    try {
+                        await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    } catch (hubErr) {
+                        console.warn('[Sync] SBE Hub mirror warning:', hubErr.message);
+                    }
+                } catch (commitErr) {
+                    if (commitErr.status === 401 || commitErr.status === 403 || commitErr.message?.includes('401') || commitErr.message?.includes('Bad credentials')) {
+                        const freshToken = await promptForToken('expired');
+                        if (freshToken) {
+                            await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            try {
+                                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            } catch (e) {}
+                            return;
+                        }
+                    }
+                    throw commitErr;
+                }
+            };
 
-            // Mirror to sbe-hub
-            try {
-                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage);
-            } catch (hubErr) {
-                console.warn('[Sync] SBE Hub mirror warning:', hubErr.message);
-            }
+            await doCommit(token);
 
             toast.remove(commitToastId);
             toast.success(`✓ Successfully committed ${pendingUpdates.length} photos to GitHub!`, { autoClose: 4000 });

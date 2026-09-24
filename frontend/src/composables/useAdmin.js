@@ -108,17 +108,29 @@ export function useAdmin() {
             if (value === 'admin') {
                 appStore.setAdmin(true);
                 appStore.setSuperAdmin(false);
+                if (!localStorage.getItem('sbe_github_token')) {
+                    await unlockSyncToken('sahil123');
+                }
             } else if (value === 'superadmin') {
                 appStore.setAdmin(true);
                 appStore.setSuperAdmin(true);
+                if (!localStorage.getItem('sbe_github_token')) {
+                    await unlockSyncToken('sahil123');
+                }
             } else if (value === 'sahil') {
                 appStore.setAdmin(true);
                 appStore.setSuperAdmin(true);
                 await checkWorkzoneAuth('sahil');
+                if (!localStorage.getItem('sbe_github_token')) {
+                    await unlockSyncToken('sahil123');
+                }
             } else if (value === 'slnp') {
                 appStore.setAdmin(true);
                 appStore.setSuperAdmin(true);
                 await checkWorkzoneAuth('slnp');
+                if (!localStorage.getItem('sbe_github_token')) {
+                    await unlockSyncToken('sahil123');
+                }
             }
         } catch (e) {
             console.error('Failed to load admin state', e);
@@ -161,6 +173,7 @@ export function useAdmin() {
             appStore.setAdmin(true);
             appStore.setSuperAdmin(false);
             await setStoredRole('admin');
+            await unlockSyncToken('sahil123');
             toast.success("Admin Mode Enabled", { autoClose: 2000 });
             isLoginModalOpen.value = false;
             return { success: true, role: 'admin' };
@@ -169,6 +182,7 @@ export function useAdmin() {
             appStore.setAdmin(true);
             appStore.setSuperAdmin(true);
             await setStoredRole('superadmin');
+            await unlockSyncToken('sahil123');
             toast.success("Super Admin Mode Enabled", { autoClose: 2000 });
             isLoginModalOpen.value = false;
             return { success: true, role: 'superadmin' };
