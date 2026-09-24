@@ -853,11 +853,13 @@ app.post("/api/updateImage", async (req, res) => {
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
       if (!group.products || !Array.isArray(group.products)) return;
+      const targetNorm = (productName || '').trim().toLowerCase();
       group.products.forEach((product) => {
         if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
 
-        if (product.productName === productName) {
+        const prodNorm = (product.productName || '').trim().toLowerCase();
+        if (product.productName === productName || (prodNorm && prodNorm === targetNorm)) {
           product.imageUrl = imageUrl;
           if (imageUrl && imageUrl.includes('dieqsg5tr')) {
             product.secondaryImageUrl = imageUrl;
@@ -869,7 +871,8 @@ app.post("/api/updateImage", async (req, res) => {
     });
 
     if (!updated) {
-      throw new Error(`Product ${productName} not found`);
+      console.warn(`[API] Product "${productName}" not found in stock-data.json`);
+      return res.status(404).json({ error: `Product "${productName}" not found in catalog` });
     }
 
     try {
@@ -922,19 +925,23 @@ app.post("/api/removeImage", async (req, res) => {
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
       if (!group.products || !Array.isArray(group.products)) return;
+      const targetNorm = (productName || '').trim().toLowerCase();
       group.products.forEach((product) => {
         if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
 
-        if (product.productName === productName && product.imageUrl) {
+        const prodNorm = (product.productName || '').trim().toLowerCase();
+        if ((product.productName === productName || (prodNorm && prodNorm === targetNorm)) && product.imageUrl) {
           product.imageUrl = null;
+          if (product.secondaryImageUrl) product.secondaryImageUrl = null;
           updated = true;
         }
       });
     });
 
     if (!updated) {
-      throw new Error(`Product ${productName} not found or has no image`);
+      console.warn(`[API] Product "${productName}" not found or has no image`);
+      return res.status(404).json({ error: `Product "${productName}" not found or has no image` });
     }
 
     try {

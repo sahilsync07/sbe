@@ -6,6 +6,7 @@ import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 import { extractColor } from '../utils/colors.js';
 import { useGitHubTokenModal } from './useGitHubTokenModal';
+import { isPrimaryCloudDown, markCloudFailed } from '../utils/cloudStatus.js';
 
 const SYNC_KEY = 'sbe_last_sync_timestamp';
 const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
@@ -557,16 +558,18 @@ export function useStockData(isLocal) {
                 }
             }
 
-            let fullCatalog = stockData.value;
-            if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
-                try {
-                    const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
-                    if (res.ok) {
-                        fullCatalog = await res.json();
-                    }
-                } catch (e) {
-                    console.warn('[Sync] Could not fetch remote catalog:', e.message);
+            // Always fetch the freshest remote stock-data to prevent overwriting parallel updates
+            let fullCatalog = null;
+            try {
+                const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+                if (res.ok) {
+                    fullCatalog = await res.json();
                 }
+            } catch (e) {
+                console.warn('[Sync] Could not fetch remote catalog, falling back to local memory:', e.message);
+            }
+            if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
+                fullCatalog = stockData.value;
             }
 
             if (!fullCatalog || !Array.isArray(fullCatalog)) {
@@ -714,6 +717,11 @@ export function useStockData(isLocal) {
             // Attempt upload with automatic failover
             for (const cloud of clouds) {
                 if (!cloud.cloudName || !cloud.uploadPreset) continue;
+                // If primary cloud is known to be down / expired, skip straight to secondary cloud!
+                if (cloud.name === 'Primary' && isPrimaryCloudDown.value) {
+                    console.log(`[Multi-Cloud] Primary Cloud (${cloud.cloudName}) is down or over quota. Skipping straight to Secondary Cloud.`);
+                    continue;
+                }
                 try {
                     console.log(`[Multi-Cloud] Attempting upload via ${cloud.name} Cloud (${cloud.cloudName})...`);
                     newImageUrl = await uploadToCloudinaryInstance(file, cloud, publicId);
@@ -722,6 +730,7 @@ export function useStockData(isLocal) {
                     break;
                 } catch (cloudErr) {
                     console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}. Checking failover...`);
+                    markCloudFailed(cloud.cloudName);
                     lastError = cloudErr;
                 }
             }

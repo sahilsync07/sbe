@@ -3,8 +3,8 @@ import { ref } from 'vue';
 export const primaryCloud = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
 export const secondaryCloud = import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr';
 
-// Global reactive health status of Cloudinary accounts
-export const isPrimaryCloudDown = ref(false);
+// Global reactive health status of Cloudinary accounts (Primary dg365ewal is over quota, default to true)
+export const isPrimaryCloudDown = ref(true);
 export const isSecondaryCloudDown = ref(false);
 
 let loggedPrimaryWarning = false;
