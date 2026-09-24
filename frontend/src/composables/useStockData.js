@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 import { extractColor } from '../utils/colors.js';
-import { useGitHubTokenModal } from './useGitHubTokenModal';
+import { useGitHubTokenModal, DEFAULT_GITHUB_TOKEN } from './useGitHubTokenModal';
 import { isPrimaryCloudDown, markCloudFailed } from '../utils/cloudStatus.js';
 
 const SYNC_KEY = 'sbe_last_sync_timestamp';
@@ -174,8 +174,9 @@ function enqueueSync(taskFn) {
 }
 
 const getGitHubToken = () => {
-    return import.meta.env.VITE_GITHUB_TOKEN || 
-           localStorage.getItem('sbe_github_token') || 
+    return localStorage.getItem('sbe_github_token') || 
+           import.meta.env.VITE_GITHUB_TOKEN || 
+           DEFAULT_GITHUB_TOKEN || 
            '';
 };
 
@@ -582,12 +583,11 @@ export function useStockData(isLocal) {
                 group.products.forEach(p => {
                     if (p.productName === productName) {
                         p.imageUrl = newImageUrl || null;
-                        if (newImageUrl && newImageUrl.includes('dieqsg5tr')) {
-                            p.secondaryImageUrl = newImageUrl;
-                        }
                         if (newImageUrl) {
+                            p.secondaryImageUrl = newImageUrl;
                             p.imageUploadedAt = new Date().toISOString();
                         } else {
+                            p.secondaryImageUrl = null;
                             delete p.imageUploadedAt;
                         }
                     }
@@ -632,6 +632,112 @@ export function useStockData(isLocal) {
 
             return await executeCommit(token);
         });
+    };
+
+    /**
+     * Compress image before upload using native Canvas API (reduces 4-8MB camera photo to ~120KB)
+     */
+    const compressImageFile = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.82) => {
+        if (!file || !file.type || !file.type.startsWith('image/')) return file;
+        return new Promise((resolve) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                let { width, height } = img;
+                if (width > maxWidth || height > maxHeight) {
+                    if (width > height) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    } else {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob && blob.size < file.size) {
+                            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+                        } else {
+                            resolve(file);
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+            img.src = url;
+        });
+    };
+
+    /**
+     * Upload image directly to permanent free GitHub Photos CDN repository (sahilsync07/sbe-photos)
+     * Images served via fast global jsDelivr CDN: https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@main/photos/{publicId}.jpg
+     */
+    const uploadToGitHubPhotosRepo = async (file, publicId, token) => {
+        if (!token) throw new Error('No GitHub token available for CDN upload');
+
+        // Convert file to Base64
+        const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const res = String(reader.result || '');
+                const base64String = res.split(',')[1];
+                resolve(base64String);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const fileName = `${publicId}.jpg`;
+        const path = `photos/${fileName}`;
+        const url = `https://api.github.com/repos/sahilsync07/sbe-photos/contents/${path}`;
+
+        // Check if file already exists to get SHA for in-place update
+        let sha = null;
+        try {
+            const checkRes = await fetch(`${url}?ref=main`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (checkRes.ok) {
+                const checkData = await checkRes.json();
+                sha = checkData.sha;
+            }
+        } catch (e) {}
+
+        const body = {
+            message: `Upload photo for ${publicId}`,
+            content: base64Data,
+            branch: 'main'
+        };
+        if (sha) body.sha = sha;
+
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.message || `GitHub CDN upload failed: HTTP ${res.status}`);
+        }
+
+        // Return high-speed global jsDelivr CDN URL
+        return `https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@main/${path}`;
     };
 
     /**
@@ -712,44 +818,62 @@ export function useStockData(isLocal) {
             const publicId = generateProductPublicId(productName);
             let newImageUrl = null;
             let lastError = null;
-            let usedCloud = null;
+            let usedProvider = null;
 
-            // Attempt upload with automatic failover
-            for (const cloud of clouds) {
-                if (!cloud.cloudName || !cloud.uploadPreset) continue;
-                // If primary cloud is known to be down / expired, skip straight to secondary cloud!
-                if (cloud.name === 'Primary' && isPrimaryCloudDown.value) {
-                    console.log(`[Multi-Cloud] Primary Cloud (${cloud.cloudName}) is down or over quota. Skipping straight to Secondary Cloud.`);
-                    continue;
-                }
+            // 1. Compress image client-side to ~120KB for fast, lightweight upload
+            let uploadFile = file;
+            try {
+                uploadFile = await compressImageFile(file);
+                console.log(`[Upload] Image compressed: ${(file.size / 1024).toFixed(0)}KB -> ${(uploadFile.size / 1024).toFixed(0)}KB`);
+            } catch (compErr) {
+                console.warn('[Upload] Image compression skipped:', compErr.message);
+            }
+
+            // 2. Priority 1: Free GitHub Photos CDN (sahilsync07/sbe-photos via jsDelivr) - 100% Free, zero billing, zero card
+            const token = getGitHubToken();
+            if (token) {
                 try {
-                    console.log(`[Multi-Cloud] Attempting upload via ${cloud.name} Cloud (${cloud.cloudName})...`);
-                    newImageUrl = await uploadToCloudinaryInstance(file, cloud, publicId);
-                    usedCloud = cloud.name;
-                    console.log(`[Multi-Cloud] ✓ Upload succeeded via ${cloud.name} Cloud (${cloud.cloudName})`);
-                    break;
-                } catch (cloudErr) {
-                    console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}. Checking failover...`);
-                    markCloudFailed(cloud.cloudName);
-                    lastError = cloudErr;
+                    console.log(`[Multi-Cloud] Attempting upload via Free GitHub CDN (sahilsync07/sbe-photos)...`);
+                    newImageUrl = await uploadToGitHubPhotosRepo(uploadFile, publicId, token);
+                    usedProvider = 'GitHub-CDN';
+                    console.log(`[Multi-Cloud] ✓ Upload succeeded via Free GitHub CDN: ${newImageUrl}`);
+                } catch (ghErr) {
+                    console.warn(`[Multi-Cloud] ⚠️ GitHub CDN upload failed: ${ghErr.message}. Failing over to Cloudinary...`);
+                    lastError = ghErr;
+                }
+            }
+
+            // 3. Priority 2: Failover to Cloudinary Secondary if GitHub CDN was not used or failed
+            if (!newImageUrl) {
+                for (const cloud of clouds) {
+                    if (!cloud.cloudName || !cloud.uploadPreset) continue;
+                    if (cloud.name === 'Primary' && isPrimaryCloudDown.value) continue;
+                    try {
+                        console.log(`[Multi-Cloud] Attempting upload via ${cloud.name} Cloud (${cloud.cloudName})...`);
+                        newImageUrl = await uploadToCloudinaryInstance(uploadFile, cloud, publicId);
+                        usedProvider = cloud.name;
+                        console.log(`[Multi-Cloud] ✓ Upload succeeded via ${cloud.name} Cloud (${cloud.cloudName})`);
+                        break;
+                    } catch (cloudErr) {
+                        console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}`);
+                        markCloudFailed(cloud.cloudName);
+                        lastError = cloudErr;
+                    }
                 }
             }
 
             if (!newImageUrl) {
-                throw new Error(`Upload failed on all cloud providers. Last error: ${lastError?.message || 'Unknown error'}`);
+                throw new Error(`Upload failed on all image providers. Last error: ${lastError?.message || 'Unknown error'}`);
             }
 
-            // 2. Instant Optimistic UI & localStorage update (Zero latency on screen)
+            // 4. Instant Optimistic UI & localStorage update (Zero latency on screen)
             const nowIso = new Date().toISOString();
             if (stockData.value && Array.isArray(stockData.value)) {
                 stockData.value.forEach(group => {
                     (group.products || []).forEach(p => {
                         if (p.productName === productName) {
-                            if (usedCloud === 'Secondary') {
-                                p.secondaryImageUrl = newImageUrl;
-                            } else {
-                                p.imageUrl = newImageUrl;
-                            }
+                            p.imageUrl = newImageUrl;
+                            p.secondaryImageUrl = newImageUrl;
                             p.imageUploadedAt = nowIso;
                         }
                     });
@@ -760,11 +884,8 @@ export function useStockData(isLocal) {
             }
 
             if (typeof productOrName === 'object' && productOrName) {
-                if (usedCloud === 'Secondary') {
-                    productOrName.secondaryImageUrl = newImageUrl;
-                } else {
-                    productOrName.imageUrl = newImageUrl;
-                }
+                productOrName.imageUrl = newImageUrl;
+                productOrName.secondaryImageUrl = newImageUrl;
                 productOrName.imageUploadedAt = nowIso;
             }
 
