@@ -158,6 +158,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { jsPDF } from 'jspdf';
 import axios from 'axios';
+import { generateBrandSummaryImage } from '../../utils/generateBrandSummaryImage.js';
 
 const STORAGE_KEY = 'sbe_latest_stock';
 
@@ -530,8 +531,11 @@ export default {
             this.globalDone++;
           });
 
-          // Prepend 'Old stock ends here' separator as first image
-          const separatorUri = await this.saveSeparatorImage(safeFolder);
+          // Prepend Dynamic Brand Summary Cover as first image
+          const groupProducts = (this.stockData || [])
+            .filter((g) => config.brands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase()))
+            .flatMap((g) => g.products || []);
+          const separatorUri = await this.saveSeparatorImage(config.folder, groupProducts);
           if (separatorUri) {
             fileUris.unshift(separatorUri);
           }
@@ -599,36 +603,21 @@ export default {
       setTimeout(() => this.showToast = false, 4000);
     },
 
-    async saveSeparatorImage(folderPrefix) {
+    async saveSeparatorImage(folderPrefix, products = []) {
       try {
-        const imgData = await this.fetchImageAsBase64(OLD_STOCK_SEPARATOR_URL);
-        // Draw on canvas to convert to JPEG
-        const dims = await this.getImageDimensions(imgData);
-        const canvas = document.createElement('canvas');
-        canvas.width = dims.width;
-        canvas.height = dims.height;
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-          img.src = imgData;
+        const summaryImg = await generateBrandSummaryImage({
+          groupLabel: folderPrefix,
+          products: products,
         });
-        ctx.drawImage(img, 0, 0);
-        const b64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
-        const fileName = `ls_${folderPrefix}_separator.jpg`;
+        const fileName = `ls_${folderPrefix.replace(/[^a-zA-Z0-9]/g, '_')}_000_summary.jpg`;
         const saved = await Filesystem.writeFile({
           path: fileName,
-          data: b64,
+          data: summaryImg.base64,
           directory: Directory.Data,
         });
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.width = 0;
-        canvas.height = 0;
-        canvas.remove();
         return saved.uri;
       } catch (e) {
-        console.error('Failed to save separator image:', e);
+        console.error('Failed to generate dynamic summary image in LatestStock:', e);
         return null;
       }
     }

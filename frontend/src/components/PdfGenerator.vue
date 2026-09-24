@@ -1433,6 +1433,7 @@ import { useAdmin } from '../composables/useAdmin';
 import { BRAND_LISTS } from '../utils/constants';
 import { fetchCachedImageAsBase64 } from '../utils/nativeCache';
 import { getOptimizedImageUrl } from '../utils/formatters';
+import { generateBrandSummaryImage } from '../utils/generateBrandSummaryImage.js';
 
 const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
 
@@ -1943,21 +1944,34 @@ const downloadAsImages = async () => {
   const pdfjsLib = await import('pdfjs-dist');
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-  // Fetch separator image once
-  const separatorBlob = await fetchSeparatorBlob();
-
   for (const brand of selectedBrands.value) {
     currentBrand.value = `Processing: ${brand}`;
     try {
-      // Download separator as first image for this brand
-      if (separatorBlob) {
-        const sepUrl = URL.createObjectURL(separatorBlob);
-        const sepA = document.createElement('a');
-        sepA.href = sepUrl;
-        sepA.download = `${brand.replace(/[^a-zA-Z0-9]/g, '_')}_Image_000_separator.png`;
-        sepA.click();
-        URL.revokeObjectURL(sepUrl);
-        totalImages++;
+      // Generate and download dynamic brand summary cover as the first image
+      try {
+        const brandGroup = stockData.value?.find((g) => g.groupName.toLowerCase() === brand.toLowerCase());
+        const brandProducts = (brandGroup?.products || []).filter((p) => {
+          if (onlyWithPhotos.value && !p.imageUrl && !p.secondaryImageUrl) return false;
+          if (minQtyEnabled.value && p.quantity < minQty.value) return false;
+          return true;
+        });
+
+        const summaryImg = await generateBrandSummaryImage({
+          groupLabel: brand,
+          products: brandProducts.length > 0 ? brandProducts : (brandGroup?.products || []),
+        });
+
+        if (summaryImg && summaryImg.blob) {
+          const sepUrl = URL.createObjectURL(summaryImg.blob);
+          const sepA = document.createElement('a');
+          sepA.href = sepUrl;
+          sepA.download = `${brand.replace(/[^a-zA-Z0-9]/g, '_')}_000_Brand_Summary.jpg`;
+          sepA.click();
+          URL.revokeObjectURL(sepUrl);
+          totalImages++;
+        }
+      } catch (sepErr) {
+        console.error('Failed to generate summary cover for download:', sepErr);
       }
 
       const pdfBlob = await generatePdfBlob([brand]);
@@ -2020,9 +2034,6 @@ const downloadAsZip = async () => {
   const isCombined = zipMode.value === 'combined';
   let globalPageCounter = 0;
 
-  // Fetch separator image once
-  const separatorBlob = await fetchSeparatorBlob();
-
   for (const brand of selectedBrands.value) {
     currentBrand.value = `Zipping: ${brand}`;
 
@@ -2035,22 +2046,38 @@ const downloadAsZip = async () => {
 
       const target = isCombined ? zip : zip.folder(brand);
 
-        // Add separator as first image for this brand
-        if (separatorBlob) {
+      // Add dynamic brand summary cover as first image for this brand
+      try {
+        const brandGroup = stockData.value?.find((g) => g.groupName.toLowerCase() === brand.toLowerCase());
+        const brandProducts = (brandGroup?.products || []).filter((p) => {
+          if (onlyWithPhotos.value && !p.imageUrl && !p.secondaryImageUrl) return false;
+          if (minQtyEnabled.value && p.quantity < minQty.value) return false;
+          return true;
+        });
+
+        const summaryImg = await generateBrandSummaryImage({
+          groupLabel: brand,
+          products: brandProducts.length > 0 ? brandProducts : (brandGroup?.products || []),
+        });
+
+        if (summaryImg && summaryImg.blob) {
           if (isCombined) {
             globalPageCounter++;
             if (zipBatchMode.value) {
               const batchNum = Math.ceil(globalPageCounter / 99);
               const batchFolder = zip.folder(`Batch ${batchNum}`);
-              batchFolder.file(`000_Old_Stock_Separator.jpg`, separatorBlob);
+              batchFolder.file('000_Brand_Summary.jpg', summaryImg.blob);
             } else {
-              target.file(`000_Old_Stock_Separator_${String(globalPageCounter).padStart(4, '0')}.jpg`, separatorBlob);
+              target.file(`000_Brand_Summary_${String(globalPageCounter).padStart(4, '0')}.jpg`, summaryImg.blob);
             }
           } else {
-            target.file(`000_Old_Stock_Separator.jpg`, separatorBlob);
+            target.file('000_Brand_Summary.jpg', summaryImg.blob);
           }
           totalPages++;
         }
+      } catch (zipErr) {
+        console.error('Failed to add dynamic summary cover to zip:', zipErr);
+      }
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         // Yield to main thread every 10 pages to allow GC
@@ -2178,25 +2205,33 @@ const shareViaNativeApp = async () => {
       completedCount.value++;
     }
 
-    // Prepend 'Old stock ends here' separator as first image
+    // Prepend Dynamic Brand Summary Cover as first image
     try {
-      const sepBlob = await fetchSeparatorBlob();
-      if (sepBlob) {
-        const reader = new FileReader();
-        const base64 = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(sepBlob);
+      const shareProducts = (stockData.value || [])
+        .filter((g) => selectedBrands.value.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase()))
+        .flatMap((g) => g.products || [])
+        .filter((p) => {
+          if (onlyWithPhotos.value && !p.imageUrl && !p.secondaryImageUrl) return false;
+          if (minQtyEnabled.value && p.quantity < minQty.value) return false;
+          return true;
         });
+
+      const summaryImg = await generateBrandSummaryImage({
+        groupLabel: selectedBrands.value.length === 1 ? selectedBrands.value[0] : 'Footwear Catalog',
+        subBrands: selectedBrands.value,
+        products: shareProducts,
+      });
+
+      if (summaryImg && summaryImg.base64) {
         const saved = await Filesystem.writeFile({
-          path: 'share_separator.jpg',
-          data: base64,
+          path: 'share_000_summary.jpg',
+          data: summaryImg.base64,
           directory: Directory.Cache,
         });
         fileUris.unshift(saved.uri);
       }
     } catch (e) {
-      console.error('Failed to prepend separator:', e);
+      console.error('Failed to prepend dynamic summary cover:', e);
     }
 
     // 2. Chunking Logic (Max 99 per batch to stay under WhatsApp 100 limit)
@@ -2296,7 +2331,8 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
 
   for (const group of filteredGroups) {
     for (const product of group.products) {
-      if (onlyWithPhotosFlag && !product.imageUrl) continue;
+      const activeImg = product.imageUrl || product.secondaryImageUrl;
+      if (onlyWithPhotosFlag && !activeImg) continue;
       if (product.quantity < minQtyValue) continue;
       if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
 
@@ -2309,9 +2345,9 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
       doc.setFillColor('#000000');
       doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
 
-      if (product.imageUrl) {
+      if (activeImg) {
         try {
-          const imgData = await fetchImageAsBase64(product.imageUrl, product.productName);
+          const imgData = await fetchImageAsBase64(activeImg, product.productName);
           const dims = await getImageDimensions(imgData);
 
           const finalWidth = PAGE_W;
@@ -2405,7 +2441,8 @@ const prepareOneTouch = async () => {
       });
       for (const fg of filteredGroups) {
         for (const product of fg.products) {
-          if (oneTouchOnlyWithPhotos.value && !product.imageUrl) continue;
+          const hasImg = product.imageUrl || product.secondaryImageUrl;
+          if (oneTouchOnlyWithPhotos.value && !hasImg) continue;
           if (product.quantity < effectiveMinQty) continue;
           if (product.quantity > effectiveMaxQty) continue;
           productCount++;
@@ -2417,7 +2454,8 @@ const prepareOneTouch = async () => {
         continue;
       }
 
-      const totalBatches = Math.ceil(productCount / 99);
+      // Add 1 to account for the dynamic summary cover image in Batch 0
+      const totalBatches = Math.ceil((productCount + 1) / 99);
       for (let i = 0; i < totalBatches; i++) {
         group.batches.push({ id: i, status: 'pending', fileUris: [] });
       }
@@ -2429,7 +2467,7 @@ const prepareOneTouch = async () => {
         fileUris = oneTouchCache.value[cacheKey];
         await new Promise((r) => setTimeout(r, 300));
 
-        // Distribute to batches
+        // Distribute to batches (Max 99 per batch)
         const chunkSize = 99;
         let bIdx = 0;
         for (let i = 0; i < fileUris.length; i += chunkSize) {
@@ -2443,6 +2481,41 @@ const prepareOneTouch = async () => {
       } else {
         if (group.batches.length > 0) {
           group.batches[0].status = 'preparing';
+        }
+
+        // 1. Generate the Dynamic Summary Cover for this One Touch group (Prepend to Batch 0)
+        let summaryFileUri = null;
+        try {
+          const groupProducts = data
+            .filter((g) => group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase()))
+            .flatMap((g) => g.products || [])
+            .filter((p) => {
+              const hasImg = p.imageUrl || p.secondaryImageUrl;
+              if (oneTouchOnlyWithPhotos.value && !hasImg) return false;
+              if (p.quantity < effectiveMinQty) return false;
+              if (effectiveMaxQty > 0 && p.quantity > effectiveMaxQty) return false;
+              return true;
+            });
+
+          const summaryImg = await generateBrandSummaryImage({
+            groupLabel: group.label,
+            subBrands: group.activeBrands,
+            products: groupProducts,
+          });
+
+          const summaryFileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_000_summary.jpg`;
+          if (isNativeApp.value) {
+            const savedSummary = await Filesystem.writeFile({
+              path: summaryFileName,
+              data: summaryImg.base64,
+              directory: Directory.Cache,
+            });
+            summaryFileUri = savedSummary.uri;
+          } else {
+            summaryFileUri = `data:image/jpeg;base64,${summaryImg.base64}`;
+          }
+        } catch (sumErr) {
+          console.error(`Dynamic summary cover failed for ${group.label}:`, sumErr);
         }
 
         const { blob, pageCount } = await generatePdfBlobForOneTouch(
@@ -2462,6 +2535,12 @@ const prepareOneTouch = async () => {
 
         let currentBatchIndex = 0;
         let currentBatchUris = [];
+
+        // Prepend dynamic summary cover to the very first batch (item 0 of Batch 0)
+        if (summaryFileUri) {
+          currentBatchUris.push(summaryFileUri);
+          fileUris.push(summaryFileUri);
+        }
 
         for (let p = 1; p <= pdf.numPages; p++) {
           if (cancelOneTouch.value) break;
