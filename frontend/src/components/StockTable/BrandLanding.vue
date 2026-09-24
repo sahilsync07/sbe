@@ -1564,6 +1564,11 @@ const StimulusLogo = `${baseUrl}assets/logos/stimulus-logo.png`;
 const WalkaholicLogo = `${baseUrl}assets/logos/walkaholic-logo.png`;
 const FenderLogo = `${baseUrl}assets/logos/fender-logo.png`;
 const MerivaLogo = `${baseUrl}assets/logos/meriva-logo.png`;
+const TeuzLogo = `${baseUrl}assets/logos/teuz-logo.png`;
+const ParisLogo = `${baseUrl}assets/logos/paris-logo.jpg`;
+const TaraLogo = `${baseUrl}assets/logos/tara-logo.png`;
+const BrockkieLogo = `${baseUrl}assets/logos/brockkie-logo.png`;
+const XpaniaLogo = `${baseUrl}assets/logos/xpania-logo.png`;
 
 const brandTabs = [
   // 1. All
@@ -1614,11 +1619,21 @@ const brandTabs = [
   { id: 'Meriva', label: 'Meriva', image: MerivaLogo, fillLogo: true },
   // 24. Vertex
   { id: 'Vertex', label: 'Vertex', image: VertexLogo, fillLogo: true },
-  // 25. Box Packing
+  // 25. Teuz
+  { id: 'TEUZ', label: 'Teuz', image: TeuzLogo, fillLogo: true },
+  // 26. Paris
+  { id: 'PARIS', label: 'Paris', image: ParisLogo, fillLogo: true },
+  // 27. Brockkie
+  { id: 'BROCKKIE', label: 'Brockkie', image: BrockkieLogo, fillLogo: true },
+  // 28. Xpania
+  { id: 'XPANIA', label: 'Xpania', image: XpaniaLogo, fillLogo: true },
+  // 29. Tara
+  { id: 'TARA', label: 'Tara', image: TaraLogo, fillLogo: true },
+  // 30. Box Packing
   { id: 'BoxPacking', label: 'Box Packing', icon: 'fa-solid fa-box', iconColor: 'text-blue-500' },
-  // 26. Loose Packing
+  // 31. Loose Packing
   { id: 'LoosePacking', label: 'Loose Packing', icon: 'fa-solid fa-bag-shopping', iconColor: 'text-purple-500' },
-  // 27. 40% Off
+  // 32. 40% Off
   { id: 'ParagonDiscount', label: '40% Off', icon: 'fa-solid fa-tags', iconColor: 'text-red-500' },
 ];
 
@@ -1817,6 +1832,8 @@ const getActiveTabProducts = () => {
     products = getBrandProducts(['School', 'SCHOOL SHOE DUROLITE']);
   } else if (tab === 'Walkaholic') {
     products = getBrandProducts(['Walkaholic']);
+  } else if (tab === 'XPANIA' || tab === 'Xpania') {
+    products = getBrandProducts(['Xpania']);
   } else {
     products = getBrandProducts([tab]);
   }
@@ -2181,21 +2198,23 @@ const paragonCards = [
 ];
 
 const bigBrandCards = [
-  { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'] },
-  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'] },
-  { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: `${baseUrl}assets/logos/action-logo.png` },
-  { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'] },
-  { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: `${baseUrl}assets/logos/eeken-logo.png` },
+  { id: 'Cubix', label: 'Cubix', groupNames: ['CUBIX', 'CUBIX 2'], logo: CubixLogo },
+  { id: 'Florex', label: 'Florex', groupNames: ['Florex (Swastik)'], logo: FlorexLogo },
+  { id: 'ACTION', label: 'Action', groupNames: ['ACTION'], logo: ActionLogo },
+  { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'], logo: RelianceLogo },
+  { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: EekenLogo },
 ];
 
 const midBrandCards = [
+  { id: 'TEUZ', label: 'Teuz', groupNames: ['TEUZ'], logo: TeuzLogo },
+  { id: 'PARIS', label: 'Paris', groupNames: ['PARIS'], logo: ParisLogo },
+  { id: 'BROCKKIE', label: 'Brockkie', groupNames: ['BROCKKIE'], logo: BrockkieLogo },
+  { id: 'XPANIA', label: 'Xpania', groupNames: ['Xpania'], logo: XpaniaLogo },
+  { id: 'TARA', label: 'Tara', groupNames: ['TARA'], logo: TaraLogo },
   { id: 'AIRFAX', label: 'Airfax', groupNames: ['AIRFAX'], icon: 'fa-solid fa-wind' },
-  { id: 'TEUZ', label: 'Teuz', groupNames: ['TEUZ'], icon: 'fa-solid fa-bolt' },
-  { id: 'PARIS', label: 'Paris', groupNames: ['PARIS'], icon: 'fa-solid fa-star' },
   { id: 'HITWAY', label: 'Hitway', groupNames: ['HITWAY'], icon: 'fa-solid fa-rocket' },
   { id: 'PANKAJ PLASTIC', label: 'Pankaj', groupNames: ['PANKAJ PLASTIC'], icon: 'fa-solid fa-shoe-prints' },
   { id: 'VAISHNO PLASTIC', label: 'Vaishno', groupNames: ['VAISHNO PLASTIC'], icon: 'fa-solid fa-gem' },
-  { id: 'TARA', label: 'Tara', groupNames: ['TARA'], icon: 'fa-solid fa-moon' },
   { id: 'ADDA', label: 'Adda', groupNames: ['ADDA'], icon: 'fa-solid fa-sun' },
   { id: 'ASHU', label: 'Ashu', groupNames: ['ASHU'], icon: 'fa-solid fa-leaf' },
   { id: 'ADDOXY', label: 'Addoxy', groupNames: ['ADDOXY'], icon: 'fa-solid fa-shield' },

@@ -44,7 +44,7 @@
           <div class="flex items-center justify-between px-2 mb-3">
             <div class="flex items-center gap-2">
               <img
-                src="https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp"
+                :src="`${baseUrl}assets/logos/paragon-transparent-logo.png`"
                 alt="Paragon"
                 class="h-6 object-contain"
               />
@@ -1434,6 +1434,8 @@ import { BRAND_LISTS } from '../utils/constants';
 import { fetchCachedImageAsBase64 } from '../utils/nativeCache';
 import { getOptimizedImageUrl } from '../utils/formatters';
 
+const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
+
 // Separator image: 'Old stock ends here / New stocks start'
 const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/Old_stock_ends_here_oc3rh7.png';
 
@@ -1662,17 +1664,21 @@ const formatProductName = (name) => {
 };
 
 const getBrandLogo = (brandName) => {
+  const bUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
   const logos = {
-    Paragon:
-      'https://res.cloudinary.com/dg365ewal/image/upload/paragonLogo_rqk3hu.webp',
-    Reliance:
-      'https://res.cloudinary.com/dg365ewal/image/upload/relianceLogo_bvgwwz.png',
-    Cubix: 'https://res.cloudinary.com/dg365ewal/image/upload/cubixLogo_bwawj3.jpg',
-    Florex: 'https://res.cloudinary.com/dg365ewal/image/upload/florexLogo_sqgjln.png',
-    ACTION: 'https://res.cloudinary.com/dg365ewal/image/upload/action-logo_dzd5mq.png',
-    Eeken: 'https://res.cloudinary.com/dg365ewal/image/upload/eekenLogo_rg5xwa.webp',
-    Escoute: 'https://res.cloudinary.com/dg365ewal/image/upload/escouteLogo_maieji.jpg',
-    AJANTA: `${import.meta.env.BASE_URL}assets/ajanta-logo.png`,
+    Paragon: `${bUrl}assets/logos/paragon-transparent-logo.png`,
+    Reliance: `${bUrl}assets/logos/reliance-logo.png`,
+    Cubix: `${bUrl}assets/logos/cubix-logo.png`,
+    Florex: `${bUrl}assets/logos/florex-logo.png`,
+    ACTION: `${bUrl}assets/logos/action-logo.png`,
+    Eeken: `${bUrl}assets/logos/eeken-logo.png`,
+    Escoute: `${bUrl}assets/logos/escoute-logo.png`,
+    AJANTA: `${bUrl}assets/logos/ajanta-transparent-logo.png`,
+    Teuz: `${bUrl}assets/logos/teuz-logo.png`,
+    Paris: `${bUrl}assets/logos/paris-logo.jpg`,
+    Tara: `${bUrl}assets/logos/tara-logo.png`,
+    Brockkie: `${bUrl}assets/logos/brockkie-logo.png`,
+    Xpania: `${bUrl}assets/logos/xpania-logo.png`,
   };
   // Fuzzy match logic
   const lowerName = brandName.toLowerCase();
