@@ -530,18 +530,21 @@ export function useStockData(isLocal) {
         const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
         let backendSuccess = false;
 
-        // Step 1: Attempt local backend first (PC with server running, 2000ms timeout)
+        // Step 1: Attempt local backend first (PC with server running, 2500ms timeout)
         try {
             const endpoint = newImageUrl ? `${backendUrl}/api/updateImage` : `${backendUrl}/api/removeImage`;
             const payload = newImageUrl ? { productName, imageUrl: newImageUrl } : { productName };
-            const res = await axios.post(endpoint, payload, { timeout: 2000 });
-            if (res.status === 200) {
+            const res = await axios.post(endpoint, payload, { 
+                timeout: 2500,
+                validateStatus: (status) => status < 500 // Don't throw Axios error on 404 or non-200 responses
+            });
+            if (res.status === 200 && res.data?.success !== false) {
                 backendSuccess = true;
                 console.log(`[Sync] Step 1 passed: Updated via local backend for ${productName}`);
                 return { success: true, via: 'backend' };
             }
         } catch (backendErr) {
-            console.log(`[Sync] Step 1: Local backend offline (${backendErr.message}), falling back to direct GitHub sync`);
+            console.log(`[Sync] Step 1: Local backend offline or bypassed (${backendErr.message}), falling back to direct GitHub sync`);
         }
 
         // Step 2 & 3: GitHub direct sync
@@ -577,11 +580,13 @@ export function useStockData(isLocal) {
                 throw new Error('Catalog data not available for GitHub sync');
             }
 
-            // Update catalog image reference
+            // Update catalog image reference with case-insensitive & trimmed matching
+            const targetNorm = (productName || '').trim().toLowerCase();
             fullCatalog.forEach(group => {
                 if (!group.products || !Array.isArray(group.products)) return;
                 group.products.forEach(p => {
-                    if (p.productName === productName) {
+                    const prodNorm = (p.productName || '').trim().toLowerCase();
+                    if (p.productName === productName || (prodNorm && prodNorm === targetNorm)) {
                         p.imageUrl = newImageUrl || null;
                         if (newImageUrl) {
                             p.secondaryImageUrl = newImageUrl;
@@ -830,7 +835,11 @@ export function useStockData(isLocal) {
             }
 
             // 2. Priority 1: Free GitHub Photos CDN (sahilsync07/sbe-photos via jsDelivr) - 100% Free, zero billing, zero card
-            const token = getGitHubToken();
+            let token = getGitHubToken();
+            if (!token) {
+                console.log('[Upload] GitHub token missing for CDN upload, prompting user...');
+                token = await promptForToken('missing');
+            }
             if (token) {
                 try {
                     console.log(`[Multi-Cloud] Attempting upload via Free GitHub CDN (sahilsync07/sbe-photos)...`);
@@ -868,10 +877,12 @@ export function useStockData(isLocal) {
 
             // 4. Instant Optimistic UI & localStorage update (Zero latency on screen)
             const nowIso = new Date().toISOString();
+            const targetNorm = (productName || '').trim().toLowerCase();
             if (stockData.value && Array.isArray(stockData.value)) {
                 stockData.value.forEach(group => {
                     (group.products || []).forEach(p => {
-                        if (p.productName === productName) {
+                        const prodNorm = (p.productName || '').trim().toLowerCase();
+                        if (p.productName === productName || (prodNorm && prodNorm === targetNorm)) {
                             p.imageUrl = newImageUrl;
                             p.secondaryImageUrl = newImageUrl;
                             p.imageUploadedAt = nowIso;
@@ -891,24 +902,25 @@ export function useStockData(isLocal) {
 
             delete imageFiles.value[productName];
 
-            // 3. Persist change: Local backend if available, or direct GitHub API
+            // 5. Persist change: Local backend if available, or direct GitHub API
             const syncResult = await syncImageChange(productName, newImageUrl);
 
             toast.remove(toastId);
+            const provMsg = usedProvider === 'GitHub-CDN' ? ' (GitHub CDN)' : '';
             if (syncResult && syncResult.success) {
                 if (syncResult.via === 'github') {
-                    toast.success(`✓ Photo uploaded & committed to GitHub!`, { autoClose: 3500 });
+                    toast.success(`✓ Photo uploaded${provMsg} & committed to GitHub!`, { autoClose: 3500 });
                 } else {
-                    toast.success(`✓ Photo uploaded & synced to server!`, { autoClose: 3000 });
+                    toast.success(`✓ Photo uploaded${provMsg} & synced to server!`, { autoClose: 3000 });
                 }
             } else if (syncResult && syncResult.reason === 'canceled') {
-                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit canceled (no token entered).`, { autoClose: 5000 });
+                toast.warning(`Photo uploaded${provMsg}, but GitHub commit canceled (no token entered).`, { autoClose: 5000 });
             } else if (syncResult && syncResult.reason === 'expired') {
-                toast.warning(`Photo uploaded to Cloudinary, but GitHub token expired.`, { autoClose: 5000 });
+                toast.warning(`Photo uploaded${provMsg}, but GitHub token expired.`, { autoClose: 5000 });
             } else if (syncResult && syncResult.reason === 'no_token') {
-                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit skipped (no GitHub token).`, { autoClose: 5000 });
+                toast.warning(`Photo uploaded${provMsg}, but GitHub commit skipped (no GitHub token).`, { autoClose: 5000 });
             } else {
-                toast.info(`Photo uploaded to Cloudinary.`, { autoClose: 3000 });
+                toast.info(`Photo uploaded${provMsg}.`, { autoClose: 3000 });
             }
             return newImageUrl;
         } catch (err) {
@@ -918,6 +930,7 @@ export function useStockData(isLocal) {
             toast.error(`Upload failed: ${err.message}`, { autoClose: 4500 });
             return null;
         } finally {
+            toast.remove(toastId);
             uploading.value[productName] = false;
         }
     };
@@ -934,12 +947,15 @@ export function useStockData(isLocal) {
         const toastId = toast.loading(`Removing photo for ${productName}...`, { autoClose: false, closeButton: false });
 
         try {
-            // 1. Instant Optimistic UI & localStorage update
+            // 1. Instant Optimistic UI & localStorage update (clears both imageUrl and secondaryImageUrl)
+            const targetNorm = (productName || '').trim().toLowerCase();
             if (stockData.value && Array.isArray(stockData.value)) {
                 stockData.value.forEach(group => {
                     (group.products || []).forEach(p => {
-                        if (p.productName === productName) {
+                        const prodNorm = (p.productName || '').trim().toLowerCase();
+                        if (p.productName === productName || (prodNorm && prodNorm === targetNorm)) {
                             p.imageUrl = null;
+                            p.secondaryImageUrl = null;
                             delete p.imageUploadedAt;
                         }
                     });
@@ -951,6 +967,7 @@ export function useStockData(isLocal) {
 
             if (typeof productOrName === 'object' && productOrName) {
                 productOrName.imageUrl = null;
+                productOrName.secondaryImageUrl = null;
                 delete productOrName.imageUploadedAt;
             }
 
@@ -980,6 +997,7 @@ export function useStockData(isLocal) {
             toast.error(`Failed to remove photo: ${err.message}`, { autoClose: 4000 });
             return false;
         } finally {
+            toast.remove(toastId);
             uploading.value[productName] = false;
         }
     };

@@ -871,8 +871,8 @@ app.post("/api/updateImage", async (req, res) => {
     });
 
     if (!updated) {
-      console.warn(`[API] Product "${productName}" not found in stock-data.json`);
-      return res.status(404).json({ error: `Product "${productName}" not found in catalog` });
+      console.warn(`[API] Product "${productName}" not found in stock-data.json disk file (will sync via GitHub)`);
+      return res.json({ success: false, notFound: true, message: `Product "${productName}" not found in local disk catalog` });
     }
 
     try {
@@ -922,6 +922,7 @@ app.post("/api/removeImage", async (req, res) => {
     }
 
     let updated = false;
+    let productFound = false;
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
       if (!group.products || !Array.isArray(group.products)) return;
@@ -931,36 +932,44 @@ app.post("/api/removeImage", async (req, res) => {
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
 
         const prodNorm = (product.productName || '').trim().toLowerCase();
-        if ((product.productName === productName || (prodNorm && prodNorm === targetNorm)) && product.imageUrl) {
-          product.imageUrl = null;
-          if (product.secondaryImageUrl) product.secondaryImageUrl = null;
-          updated = true;
+        if (product.productName === productName || (prodNorm && prodNorm === targetNorm)) {
+          productFound = true;
+          if (product.imageUrl || product.secondaryImageUrl) {
+            product.imageUrl = null;
+            product.secondaryImageUrl = null;
+            delete product.imageUploadedAt;
+            updated = true;
+          }
         }
       });
     });
 
-    if (!updated) {
-      console.warn(`[API] Product "${productName}" not found or has no image`);
-      return res.status(404).json({ error: `Product "${productName}" not found or has no image` });
-    }
-
-    try {
-      const jsonStr = JSON.stringify(stockData, null, 2);
-      await fs.writeFile(stockDataPath, jsonStr);
+    if (updated) {
       try {
-        await fs.writeFile(hubStockDataPath, jsonStr);
-      } catch (e) {}
-      console.log(`Removed image for ${productName} in stock-data.json`);
-    } catch (err) {
-      throw new Error(`Cannot write to stock-data.json: ${err.message}`);
+        const jsonStr = JSON.stringify(stockData, null, 2);
+        await fs.writeFile(stockDataPath, jsonStr);
+        try {
+          await fs.writeFile(hubStockDataPath, jsonStr);
+        } catch (e) {}
+        console.log(`Removed image for ${productName} in stock-data.json`);
+      } catch (err) {
+        throw new Error(`Cannot write to stock-data.json: ${err.message}`);
+      }
+
+      // Git commit & push (fire-and-forget in background)
+      gitCommitAndPush(`Remove image for ${productName}`).catch((e) => {
+        console.warn("Git push failed for removeImage (non-fatal):", e.message);
+      });
+    } else {
+      console.log(`[API] Product "${productName}" ${productFound ? 'already had no image' : 'not found in disk catalog'}`);
     }
 
-    // Git commit & push (fire-and-forget in background)
-    gitCommitAndPush(`Remove image for ${productName}`).catch((e) => {
-      console.warn("Git push failed for removeImage (non-fatal):", e.message);
+    res.json({ 
+      success: true, 
+      message: updated ? `Image removed for ${productName}` : `Photo already removed for ${productName}`,
+      updated,
+      productFound
     });
-
-    res.json({ message: `Image removed for ${productName}` });
   } catch (error) {
     console.error("Error in removeImage:", error.message, error.stack);
     res.status(500).json({ error: `Failed to remove image: ${error.message}` });
