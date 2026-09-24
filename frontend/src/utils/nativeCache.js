@@ -1,162 +1,167 @@
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
-import { useAdmin } from '../composables/useAdmin';
-import { store } from '../store';
-import { toast } from 'vue3-toastify';
+import { getOptimizedImageUrl } from './formatters.js';
+
+const CACHE_DIR = 'image_cache';
+const CACHE_NAME = 'sbe-images-v1';
+let isSyncing = false;
 
 /**
- * Downloads a single image to the device's Data directory.
+ * Generate a safe unique filename key for an image URL and product name
+ */
+export function getSafeCacheKey(productName, imageUrl) {
+  if (!productName && !imageUrl) return 'unknown';
+  const namePart = (productName || '').toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 50);
+  let cleanUrl = imageUrl || '';
+  if (cleanUrl.includes('url=')) {
+    const match = cleanUrl.match(/url=([^&]+)/);
+    if (match) cleanUrl = decodeURIComponent(match[1]);
+  }
+  const urlPart = cleanUrl.split('/').pop().split('?')[0].replace(/[^a-z0-9]/gi, '_').slice(0, 30);
+  return `${namePart}_${urlPart}`;
+}
+
+/**
+ * Downloads and saves a single optimized image to device filesystem / web cache
  */
 async function downloadAndCacheImage(url, cacheKey) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Network error');
-        const blob = await response.blob();
+  if (!url) return false;
+  const optimizedUrl = getOptimizedImageUrl(url) || url;
 
-        // Convert Blob to Base64 to save via capacitor filesystem
-        const base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
+  try {
+    const response = await fetch(optimizedUrl);
+    if (!response.ok) return false;
+    const blob = await response.blob();
 
-        await Filesystem.writeFile({
-            path: `image_cache/${cacheKey}.jpg`,
-            data: base64Data,
-            directory: Directory.Data
-        });
-        return true;
-    } catch (e) {
-        console.error(`Failed to cache ${cacheKey}:`, e);
-        return false;
+    if (Capacitor.isNativePlatform()) {
+      // Convert Blob to Base64
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const res = reader.result;
+          if (typeof res === 'string') {
+            resolve(res.includes(',') ? res.split(',')[1] : res);
+          } else {
+            resolve('');
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      if (!base64Data) return false;
+
+      await Filesystem.writeFile({
+        path: `${CACHE_DIR}/${cacheKey}.jpg`,
+        data: base64Data,
+        directory: Directory.Data,
+        recursive: true
+      });
+      return true;
+    } else if (typeof window !== 'undefined' && 'caches' in window) {
+      // Store in Web CacheStorage API
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(url, new Response(blob, {
+        headers: { 'Content-Type': blob.type || 'image/jpeg' }
+      }));
+      return true;
     }
+  } catch (e) {
+    // Non-fatal per-image error
+  }
+  return false;
 }
 
 /**
- * Perform a Delta Sync:
- * 1. Checks which images are already on the device.
- * 2. Compares with current stock-data.json.
- * 3. Downloads missing images and deletes old/orphaned images.
+ * Returns a local URI (file:// / blob:) for immediate 0ms rendering
  */
-export async function performDeltaSync() {
-    if (!Capacitor.isNativePlatform()) return; // Only runs on Android/iOS natively
+export async function getLocalImageUri(cacheKey, originalUrl) {
+  if (!cacheKey && !originalUrl) return null;
 
-    const { isAdmin, isSuperAdmin } = useAdmin();
-    if (!isAdmin.value && !isSuperAdmin.value) return;
-
-    if (store.isSyncing) return;
-    store.isSyncing = true;
-
+  if (Capacitor.isNativePlatform()) {
     try {
-        // 1. Fetch latest stock-data
-        const response = await fetch('/assets/stock-data.json');
-        const stockData = await response.json();
+      const path = `${CACHE_DIR}/${cacheKey}.jpg`;
+      const stat = await Filesystem.stat({
+        path,
+        directory: Directory.Data
+      });
 
-        // Flatten all required image URLs and gen their cacheKeys
-        const requiredImages = new Map();
-        for (const group of stockData) {
-            if (group.groupName === '_META_DATA_') continue;
-            for (const prod of group.products) {
-                if (prod.imageUrl) {
-                    // Keep it simple: hash or sanitize the URL. The app uses getCacheKeyUrl in utils
-                    // Assuming product name is basically unique enough for the cache key
-                    const safeName = prod.productName.replace(/[^a-zA-Z0-9]/g, '_');
-                    requiredImages.set(safeName, prod.imageUrl);
-                }
-            }
-        }
-
-        // 2. Scan existing Directory.Data/image_cache/
-        let existingFiles = [];
-        try {
-            const result = await Filesystem.readdir({
-                path: 'image_cache',
-                directory: Directory.Data
-            });
-            existingFiles = result.files.map(f => f.name.replace('.jpg', ''));
-        } catch (e) {
-            // Directory probably doesn't exist yet, create it!
-            await Filesystem.mkdir({
-                path: 'image_cache',
-                directory: Directory.Data,
-                recursive: true
-            });
-        }
-
-        // 3. Delta Delete (Orphaned images)
-        let deletedCount = 0;
-        for (const fileKey of existingFiles) {
-            if (!requiredImages.has(fileKey)) {
-                await Filesystem.deleteFile({
-                    path: `image_cache/${fileKey}.jpg`,
-                    directory: Directory.Data
-                });
-                deletedCount++;
-            }
-        }
-
-        // 4. Delta Download (Missing images)
-        let downloadedCount = 0;
-        const requiredKeys = Array.from(requiredImages.keys());
-
-        // Batch processing to avoid overwhelming memory
-        const BATCH_SIZE = 5;
-        let batch = [];
-
-        for (const key of requiredKeys) {
-            if (!existingFiles.includes(key)) {
-                batch.push(key);
-            }
-
-            if (batch.length >= BATCH_SIZE) {
-                await Promise.all(batch.map(k => downloadAndCacheImage(requiredImages.get(k), k)));
-                downloadedCount += batch.length;
-                batch = [];
-            }
-        }
-        if (batch.length > 0) {
-            await Promise.all(batch.map(k => downloadAndCacheImage(requiredImages.get(k), k)));
-            downloadedCount += batch.length;
-        }
-
-        if (downloadedCount > 0 || deletedCount > 0) {
-            console.log(`Delta Sync Complete: Downloaded ${downloadedCount}, Deleted ${deletedCount}`);
-            toast.info(`Offline Cache Synced (+${downloadedCount}, -${deletedCount})`, { autoClose: 3000, position: 'bottom-center' });
-        }
-
-        store.setSyncTime(new Date().toISOString());
-
-    } catch (err) {
-        console.error("Delta Sync Failed", err);
-    } finally {
-        store.isSyncing = false;
+      if (stat) {
+        const uriResult = await Filesystem.getUri({
+          path,
+          directory: Directory.Data
+        });
+        return Capacitor.convertFileSrc(uriResult.uri);
+      }
+    } catch (e) {
+      // Not yet on native disk
     }
+  } else if (typeof window !== 'undefined' && 'caches' in window && originalUrl) {
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(originalUrl);
+      if (cached) {
+        const blob = await cached.blob();
+        return URL.createObjectURL(blob);
+      }
+    } catch (e) {}
+  }
+
+  return null;
 }
 
 /**
- * Function to resolve an image immediately from local storage if checking existence
+ * Reads local cached image directly as Base64 (for fast & offline PDF/WhatsApp generation)
  */
-export async function getLocalImageUri(cacheKey) {
-    if (!Capacitor.isNativePlatform()) return null;
+export async function fetchCachedImageAsBase64(url, productName) {
+  if (!url) return null;
+  const cacheKey = getSafeCacheKey(productName, url);
 
+  if (Capacitor.isNativePlatform()) {
     try {
-        const safeName = cacheKey.replace(/[^a-zA-Z0-9]/g, '_');
-        const path = `image_cache/${safeName}.jpg`;
+      const path = `${CACHE_DIR}/${cacheKey}.jpg`;
+      const fileData = await Filesystem.readFile({
+        path,
+        directory: Directory.Data
+      });
 
-        const stat = await Filesystem.stat({
-            path,
-            directory: Directory.Data
-        });
-
-        if (stat) {
-            const uriResult = await Filesystem.getUri({
-                path,
-                directory: Directory.Data
-            });
-            return Capacitor.convertFileSrc(uriResult.uri);
-        }
+      if (fileData && fileData.data) {
+        const dataStr = typeof fileData.data === 'string' ? fileData.data : '';
+        return dataStr.startsWith('data:') ? dataStr : `data:image/jpeg;base64,${dataStr}`;
+      }
     } catch (e) {
-        return null; // Not found locally
+      // Fallback to fetch and cache
     }
+  }
+
+  // If not cached locally or on web, fetch optimized URL and cache it
+  const optimizedUrl = getOptimizedImageUrl(url) || url;
+  try {
+    const response = await fetch(optimizedUrl);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+
+    // Cache in background for next time
+    downloadAndCacheImage(url, cacheKey).catch(() => {});
+
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Perform Delta Sync:
+ * Bulk pre-downloading of all 2,965 catalog images has been disabled to preserve Cloudinary credits.
+ * All images are loaded and cached lazily on-demand by <CachedImage> as users scroll.
+ */
+export async function performDeltaSync(stockDataList = null) {
+  // Intentionally a no-op to prevent burning Cloudinary bandwidth credits.
+  console.log('[SBE Cache] On-demand lazy caching active (bulk prefetch disabled to conserve Cloudinary credits).');
+  return;
 }

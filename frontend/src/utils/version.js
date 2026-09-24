@@ -1,0 +1,85 @@
+export const APP_VERSION = {
+  hubCode: 'sbe-hub_033',
+  sbeCode: 'sbe_033',
+  code: 'sbe-hub_033', // Backwards-compatible
+  version: '1.6.0',
+  updatedAt: '07 Sep 2026, 02:30 PM',
+  commitTitle: 'fix(sync): extend sync timeout from 15s to 3m and backend Tally timeout to 2m to prevent premature connection timeouts',
+  recentCommit: {
+    message: 'fix(sync): extend sync timeout from 15s to 3m and backend Tally timeout to 2m to prevent premature connection timeouts',
+    sha: '8919400',
+    date: '07 Sep 2026, 01:57 PM',
+    author: 'Sahil kumar',
+    url: 'https://github.com/sahilsync07/sbe/commit/8919400a17a13d1f053d62876e9c75731b3dcd33'
+  },
+  changes: [
+    {
+      tag: 'sbe_033',
+      hubTag: 'sbe-hub_033',
+      date: '07 Sep 2026',
+      title: 'Stock Metadata Sync Date & Dual SBE / SBE-Hub Version Badges',
+      details: 'Sync date in SBE Hub now dynamically reads exact lastSync timestamp from stock-data.json metadata. Added sbe_xxx pill beside sbe-hub_xxx showing recent commit message and live commit updates. Removed current date header from topbar.'
+    },
+    {
+      tag: 'sbe_032',
+      hubTag: 'sbe-hub_032',
+      date: '04 Sep 2026',
+      title: 'Phone Workzone & Mobile Console Sheet',
+      details: 'Registered WorkzoneView in sbe-hub router fixing phone card navigation. Added mobile terminal console button and sleek 1/4-screen bottom drawer sheet with live logs and clear/close controls.'
+    },
+    {
+      tag: 'sbe_031',
+      date: '04 Sep 2026',
+      title: 'Multi-Track Android Deployment for SBE Hub',
+      details: 'Configured automated Google Play deployment across all testing tracks (Internal Testing, Closed Alpha, Open Beta) excluding production, ensuring instant in-app update delivery.'
+    },
+    {
+      tag: 'sbe_030',
+      date: '03 Sep 2026',
+      title: 'WhatsApp Followup Helper Fix',
+      details: 'Restored getWhatsAppFollowupLink definition in both Debtors and Creditors composables, resolving runtime ReferenceError.'
+    },
+    {
+      tag: 'sbe_029',
+      date: '03 Sep 2026',
+      title: 'Dynamic Month-Based Aging in Debtors & Creditors',
+      details: 'Upgraded aging tenure to Month brackets (<1M, 2M, 3M, 3-6M, 6-9M, 1Y+). Applied dynamic 2-row rounded table to BOTH Debtors and Creditors that ONLY shows active columns with balance > 0, eliminating empty columns completely.'
+    },
+    {
+      tag: 'sbe_028',
+      date: '03 Sep 2026',
+      title: 'Aesthetic 2-Row Rounded Aging Table',
+      details: 'Replaced multi-colored progress bar with a high-contrast, rounded 2-row table (Headers + Tinted Value Cells).'
+    },
+    {
+      tag: 'sbe_027',
+      date: '03 Sep 2026',
+      title: 'Consolidated Multi-Branch Paragon Creditor',
+      details: 'Clubbed all 9 Paragon state branch accounts (Bangalore, Kerala, Central, Medak, Tamil Nadu, Haryana, Delhi, WB, Hyderabad) into 1 Master Consolidated Creditor (Rs. 87.85L net payable).'
+    },
+    {
+      tag: 'sbe_026',
+      date: '03 Sep 2026',
+      title: 'Mobile-Optimized Executive Creditor Dashboard',
+      details: 'Built an executive landing spotlight featuring 90+ Days Overdue (Urgent) and 31-90 Days Due cards with live sums and counts. Default sorted by Overdue & Priority first. Tailored for phone view with smooth horizontal scrolling and touch-friendly actions.'
+    },
+    {
+      tag: 'sbe_025',
+      date: '03 Sep 2026',
+      title: 'Hidden Workzones Password Gate & Crash Fixes',
+      details: 'Workzone cards remain hidden until unlocked with sahil123 or slnp123. Fixed formatINR undefined error in Creditor Analytics, fixed nested PWA icon path, unified login flow to route directly with zero double-asking.'
+    },
+    {
+      tag: 'sbe_024',
+      date: '02 Sep 2026',
+      title: 'Sahil & SLNP Workzones with Creditor Analytics',
+      details: 'Built dedicated password-protected executive workspaces for Sahil (sahil123) and SLNP (slnp123) on SBE Hub. Features full Creditor Analytics (5-bucket supplier payables aging: 0-30d, 31-60d, 61-90d, 90-180d, 180+d, Party View, Group View, bill-wise pending purchases, search, sorting, and WhatsApp statement sharing).'
+    },
+    {
+      tag: 'sbe_023',
+      date: '28 Aug 2026',
+      title: 'Verified 22 Cloudinary URLs (16 Paragon Core + 6 Hawai)',
+      details: 'Fetched exact Cloudinary resource URLs with security hashes via Admin API for all 16 Paragon Core articles and 6 Hawai/Walkaholic articles.'
+    }
+  ]
+};

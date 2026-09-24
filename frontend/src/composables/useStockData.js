@@ -1,13 +1,263 @@
-
 import { ref } from 'vue';
 import axios from 'axios';
 import { toast } from 'vue3-toastify';
+import { Capacitor } from '@capacitor/core';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
+import { extractColor } from '../utils/colors.js';
+import { useGitHubTokenModal } from './useGitHubTokenModal';
+
+const SYNC_KEY = 'sbe_last_sync_timestamp';
+const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
+
+/**
+ * Fast stream reader that extracts lastSync from the _META_DATA_ header of stock-data.json
+ * without downloading the entire 3.8MB catalog.
+ */
+export async function fetchStockMetadataLastSync() {
+    const appStore = useAppStore();
+
+    const applySync = (isoString) => {
+        if (!isoString) return null;
+        const date = new Date(isoString);
+        if (!isNaN(date.getTime())) {
+            appStore.setSyncTime(date);
+            try {
+                localStorage.setItem(SYNC_KEY, isoString);
+            } catch (e) {}
+            return date;
+        }
+        return null;
+    };
+
+    // 1. Try remote GitHub raw (fast stream of first ~8KB)
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const remoteUrl = `${REMOTE_DATA_URL}?t=${Date.now()}`;
+        const res = await fetch(remoteUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (res.ok) {
+            if (res.body && res.body.getReader) {
+                const reader = res.body.getReader();
+                let text = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (value) {
+                        text += new TextDecoder().decode(value);
+                        const match = text.match(/"lastSync"\s*:\s*"([^"]+)"/);
+                        if (match) {
+                            await reader.cancel();
+                            const date = applySync(match[1]);
+                            if (date) return date;
+                        }
+                    }
+                    if (done || text.length > 25000) break;
+                }
+            } else {
+                const headText = await res.text();
+                const match = headText.slice(0, 5000).match(/"lastSync"\s*:\s*"([^"]+)"/);
+                if (match) {
+                    const date = applySync(match[1]);
+                    if (date) return date;
+                }
+            }
+        }
+    } catch (e) {
+        // Fall through to local bundle
+    }
+
+    // 2. Try local bundle assets/stock-data.json
+    try {
+        const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+            ? import.meta.env.BASE_URL
+            : `${import.meta.env.BASE_URL}/`;
+        const localUrl = `${baseUrl}assets/stock-data.json?t=${Date.now()}`;
+        const res = await fetch(localUrl);
+        if (res.ok) {
+            if (res.body && res.body.getReader) {
+                const reader = res.body.getReader();
+                let text = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (value) {
+                        text += new TextDecoder().decode(value);
+                        const match = text.match(/"lastSync"\s*:\s*"([^"]+)"/);
+                        if (match) {
+                            await reader.cancel();
+                            const date = applySync(match[1]);
+                            if (date) return date;
+                        }
+                    }
+                    if (done || text.length > 25000) break;
+                }
+            } else {
+                const headText = await res.text();
+                const match = headText.slice(0, 5000).match(/"lastSync"\s*:\s*"([^"]+)"/);
+                if (match) {
+                    const date = applySync(match[1]);
+                    if (date) return date;
+                }
+            }
+        }
+    } catch (e) {
+        // Fall through to localStorage
+    }
+
+    // 3. Fallback to localStorage
+    try {
+        const saved = localStorage.getItem(SYNC_KEY);
+        if (saved) {
+            const date = applySync(saved);
+            if (date) return date;
+        }
+    } catch (e) {}
+
+    return null;
+}
+
+/**
+ * Generate clean, standardized Cloudinary public_id from product name
+ * Example: 'PARAGON VERTEX BLK/RED 7*10 @399' -> 'PARAGON_VERTEX_BLK_RED'
+ */
+export function generateProductPublicId(productName) {
+    if (!productName) return `PRODUCT_${Date.now()}`;
+    const colorInfo = extractColor(productName);
+    let colorSlug = '';
+    if (colorInfo && colorInfo.originalTokens && colorInfo.originalTokens.length > 0) {
+        colorSlug = colorInfo.originalTokens.join('_').toUpperCase();
+    } else if (colorInfo && colorInfo.text) {
+        colorSlug = colorInfo.text.replace(/[^A-Za-z0-9]/g, '_').toUpperCase();
+    }
+
+    let clean = productName;
+    if (colorInfo && colorInfo.originalTokens) {
+        colorInfo.originalTokens.forEach(t => { 
+            clean = clean.replace(new RegExp('(?:\\b|[\\/\\-_])' + t + '(?:\\b|[\\/\\-_])', 'gi'), ' '); 
+        });
+    }
+    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
+    clean = clean.replace(/\(\s*\)/g, '');
+    clean = clean.replace(/[\/\-\_\.\,\:\&]+/g, ' ');
+
+    const articleSlug = clean.trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_]/g, '').toUpperCase();
+    const parts = [articleSlug];
+    if (colorSlug) parts.push(colorSlug.replace(/[^A-Za-z0-9_]/g, ''));
+    const slug = parts.filter(Boolean).join('_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    return slug || `PRODUCT_${Date.now()}`;
+}
+
+/**
+ * Robust UTF-8 to Base64 encoder that handles arbitrary size without call stack overflow
+ */
+function utf8ToBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    const len = bytes.byteLength;
+    const chunkSize = 8192;
+    for (let i = 0; i < len; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)));
+    }
+    return btoa(binary);
+}
+
+/**
+ * Sequential async queue ensuring GitHub file commits never stomp each other with SHA race conditions
+ */
+let syncQueuePromise = Promise.resolve();
+function enqueueSync(taskFn) {
+    const next = syncQueuePromise.then(taskFn, taskFn);
+    syncQueuePromise = next.catch(() => {});
+    return next;
+}
+
+const getGitHubToken = () => {
+    return import.meta.env.VITE_GITHUB_TOKEN || 
+           localStorage.getItem('sbe_github_token') || 
+           '';
+};
+
+/**
+ * Direct commit to GitHub repository via GitHub REST API with auto-retry on 409 SHA conflict
+ */
+async function commitFileToGitHub(filePath, updatedContentString, commitMessage, tokenOverride = null) {
+    const token = tokenOverride || getGitHubToken();
+    const owner = import.meta.env.VITE_GITHUB_OWNER || 'sahilsync07';
+    const repo = import.meta.env.VITE_GITHUB_REPO || 'sbe';
+    const branch = import.meta.env.VITE_GITHUB_BRANCH || 'main';
+
+    if (!token) {
+        console.warn('[GitHub Sync] No GitHub token configured; skipping direct GitHub commit');
+        const err = new Error('No GitHub token configured');
+        err.status = 401;
+        throw err;
+    }
+
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+    };
+
+    let retries = 3;
+    while (retries > 0) {
+        // 1. Fetch current file SHA
+        const metaRes = await fetch(`${apiUrl}?ref=${branch}&_t=${Date.now()}`, { headers });
+        if (metaRes.status === 401 || metaRes.status === 403) {
+            const err = new Error(`GitHub authentication failed (${metaRes.status}): Bad credentials or token expired`);
+            err.status = metaRes.status;
+            throw err;
+        }
+        if (!metaRes.ok) {
+            throw new Error(`Failed to fetch file SHA for ${filePath} (${metaRes.status})`);
+        }
+        const metaData = await metaRes.json();
+        const currentSha = metaData.sha;
+
+        // 2. Commit update
+        const b64Content = utf8ToBase64(updatedContentString);
+        const putRes = await fetch(apiUrl, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+                message: commitMessage,
+                content: b64Content,
+                sha: currentSha,
+                branch
+            })
+        });
+
+        if (putRes.status === 401 || putRes.status === 403) {
+            const err = new Error(`GitHub commit authentication failed (${putRes.status}): Bad credentials or token expired`);
+            err.status = putRes.status;
+            throw err;
+        }
+
+        if (putRes.status === 409) {
+            console.warn(`[GitHub Sync] SHA conflict on ${filePath}, retrying with fresh SHA...`);
+            retries--;
+            await new Promise(r => setTimeout(r, 800));
+            continue;
+        }
+
+        if (!putRes.ok) {
+            const errBody = await putRes.json().catch(() => ({}));
+            throw new Error(errBody.message || `GitHub commit failed (${putRes.status})`);
+        }
+
+        const putData = await putRes.json();
+        console.log(`[GitHub Sync] Successfully committed ${filePath}: ${putData.commit?.sha?.slice(0, 7)}`);
+        return putData;
+    }
+    throw new Error(`Failed to commit ${filePath} to GitHub after retry attempts due to SHA conflict`);
+}
 
 export function useStockData(isLocal) {
     const appStore = useAppStore();
     const { stockData, isRefreshing, lastSyncTime: lastRefresh } = storeToRefs(appStore);
+    const { promptForToken } = useGitHubTokenModal();
     
     const loading = ref(false);
     const error = ref(null);
@@ -15,23 +265,41 @@ export function useStockData(isLocal) {
     const uploadErrors = ref({});
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
-    const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
 
-    // Check if network is fast enough for background fetch
-    const isNetworkFast = () => {
-        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        if (!connection) return true; // Assume fast if API unavailable
-
-        // Check connection type
-        const type = connection.effectiveType || connection.type;
-        if (type === '2g' || type === 'slow-2g') return false;
-
-        // Check downlink speed (Mbps)
-        const downlink = connection.downlink;
-        if (downlink && downlink < 0.5) return false;
-
-        return true;
+    // Check if truly on a local node dev server (native mobile devices should always fetch live remote)
+    const isLocalMachine = () => {
+        if (Capacitor.isNativePlatform()) return false;
+        if (isLocal && isLocal.value !== undefined) return isLocal.value;
+        return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     };
+
+    // Safely extract and apply metadata timestamp from any data array
+    const extractAndApplyMetadata = (dataArray) => {
+        if (!dataArray || !Array.isArray(dataArray)) return;
+        const metaItem = dataArray.find(g => g.groupName === '_META_DATA_' || g.group === '_META_DATA_');
+        if (metaItem && metaItem.lastSync) {
+            const syncDate = new Date(metaItem.lastSync);
+            if (!isNaN(syncDate.getTime())) {
+                lastRefresh.value = syncDate;
+                appStore.setSyncTime(syncDate);
+                try {
+                    localStorage.setItem(SYNC_KEY, metaItem.lastSync);
+                } catch (e) {}
+            }
+        }
+    };
+
+    // Initialize persisted sync time immediately
+    try {
+        const savedSync = localStorage.getItem(SYNC_KEY);
+        if (savedSync && !lastRefresh.value) {
+            const parsed = new Date(savedSync);
+            if (!isNaN(parsed.getTime())) {
+                lastRefresh.value = parsed;
+                appStore.setSyncTime(parsed);
+            }
+        }
+    } catch (e) {}
 
     // Helper: Custom Grouping Interceptor
     const processCustomGroups = (data) => {
@@ -40,32 +308,44 @@ export function useStockData(isLocal) {
         // Custom Rule: P-TOES PARALITE
         const targetName = "P-TOES PARALITE";
         let foundProduct = null;
-        let originalGroupIndex = -1;
 
-        // 1. Find the product
         for (let i = 0; i < data.length; i++) {
             const group = data[i];
-            const pIndex = group.products.findIndex(p => p.productName.toUpperCase() === targetName);
+            if (!group.products || group.groupName === '_META_DATA_') continue;
+            const pIndex = group.products.findIndex(p => p.productName && p.productName.toUpperCase() === targetName);
 
             if (pIndex !== -1) {
                 foundProduct = group.products[pIndex];
-                // Remove from original group
                 group.products.splice(pIndex, 1);
-                // If group is empty, mark for cleanup (optional, skipping for safety)
                 break;
             }
         }
 
-        // 2. Create new group if found
         if (foundProduct) {
-            // Check if group already exists (avoid dupes on re-runs)
             const existingGroup = data.find(g => g.groupName === targetName);
             if (!existingGroup) {
                 data.push({
                     groupName: targetName,
                     products: [foundProduct],
-                    isSpecial: true // Optional flag for styling
+                    isSpecial: true
                 });
+            }
+        }
+
+        // Extract Ajanta from Airson into its own group
+        const airsonGroup = data.find(g => g.groupName === 'Airson' || g.group === 'Airson');
+        if (airsonGroup && airsonGroup.brands) {
+            const ajantaBrands = airsonGroup.brands.filter(b => b.brand === 'AJANTA');
+            if (ajantaBrands.length > 0) {
+                airsonGroup.brands = airsonGroup.brands.filter(b => b.brand !== 'AJANTA');
+                if (!data.some(g => g.groupName === 'AJANTA')) {
+                    data.push({
+                        groupName: 'AJANTA',
+                        group: 'AJANTA',
+                        brands: ajantaBrands,
+                        products: ajantaBrands.flatMap(b => b.products || [])
+                    });
+                }
             }
         }
 
@@ -77,119 +357,102 @@ export function useStockData(isLocal) {
         loading.value = true;
         let hasData = false;
 
-        // --- Tier 1: LocalStorage Cache (Instant) ---
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-                if (parsed && Array.isArray(parsed)) {
-                    stockData.value = processCustomGroups(parsed);
-                    hasData = true;
-                    loading.value = false; // Show cached data immediately
-                    console.log("Loaded stock data from LocalStorage Cache (Tier 1)");
-                }
-            } catch (e) {
-                console.error("Cache parse error", e);
-                localStorage.removeItem(CACHE_KEY);
-            }
-        }
-
-        // --- Tier 2: Local Bundle (Fast Fallback for First Time) ---
-        // If no cache, try fetching the local file bundled with the app
-        if (!hasData) {
-            try {
-                const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-                    ? import.meta.env.BASE_URL
-                    : `${import.meta.env.BASE_URL}/`;
-
-                const localUrl = `${baseUrl}assets/stock-data.json`;
-                console.log("Attempting Local Bundle fetch:", localUrl);
-
-                const response = await fetch(localUrl);
-                if (response.ok) {
-                    const localData = await response.json();
-                    stockData.value = processCustomGroups(localData);
-                    hasData = true;
-                    loading.value = false; // Show local data
-                    console.log("Loaded stock data from Local Bundle (Tier 2)");
-
-                    // Seed the cache so next time is Tier 1
-                    try {
-                        localStorage.setItem(CACHE_KEY, JSON.stringify(localData));
-                    } catch (e) { }
-                }
-            } catch (localErr) {
-                console.warn("Local Bundle fetch failed:", localErr);
-            }
-        }
-
-        // --- Tier 3: Live Network Fetch (Always Validate) ---
         try {
-            if (isLocal && isLocal.value) {
-                console.log("Skipping Live Fetch (Tier 3) on localhost to preserve local edits.");
-                return;
-            }
-            console.log("Starting Background Live Fetch (Tier 3)...");
-
-            // 5 second max wait time for live data
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-            const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-                ? import.meta.env.BASE_URL
-                : `${import.meta.env.BASE_URL}/`;
-            const liveUrl = `${baseUrl}assets/stock-data.json`;
-            const response = await fetch(`${liveUrl}?t=${new Date().getTime()}`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-                const liveData = await response.json();
-
-                // Update UI with fresh data
-                stockData.value = processCustomGroups(liveData);
-
-                // Update Cache
-                localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
-
-                console.log("Updated stock data from Live URL (Tier 3)");
-
-                if (!hasData) {
-                    loading.value = false; // Stop loading if we were still waiting
+            // --- Tier 1: LocalStorage Cache (Instant) ---
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && Array.isArray(parsed)) {
+                        extractAndApplyMetadata(parsed);
+                        stockData.value = processCustomGroups(parsed);
+                        hasData = true;
+                        loading.value = false;
+                        console.log("Loaded stock data from LocalStorage Cache (Tier 1), sync:", lastRefresh.value);
+                    }
+                } catch (e) {
+                    console.error("Cache parse error", e);
+                    localStorage.removeItem(CACHE_KEY);
                 }
-            } else {
-                throw new Error("Live fetch failed");
             }
-        } catch (liveErr) {
-            console.warn("Background live fetch failed or timed out:", liveErr);
+
+            // --- Tier 2: Local Bundle (Fast Fallback for First Time) ---
             if (!hasData) {
-                // Only show error if we strictly have NO data (Tier 1, 2, and 3 all failed)
-                error.value = "Failed to load stock data. Please check connection.";
-                toast.error(error.value, { autoClose: 3000 });
-                loading.value = false;
-            }
-        }
+                try {
+                    const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+                        ? import.meta.env.BASE_URL
+                        : `${import.meta.env.BASE_URL}/`;
 
-        // Process Metadata (run on whatever data we have)
-        if (stockData.value.length > 0) {
-            const data = stockData.value;
-            const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
-            if (metaIndex !== -1) {
-                const meta = data[metaIndex];
-                if (meta.lastSync) {
-                    lastRefresh.value = new Date(meta.lastSync);
+                    const localUrl = `${baseUrl}assets/stock-data.json`;
+                    console.log("Attempting Local Bundle fetch:", localUrl);
+
+                    const response = await fetch(`${localUrl}?t=${Date.now()}`);
+                    if (response.ok) {
+                        const localData = await response.json();
+                        extractAndApplyMetadata(localData);
+                        stockData.value = processCustomGroups(localData);
+                        hasData = true;
+                        loading.value = false;
+                        console.log("Loaded stock data from Local Bundle (Tier 2), sync:", lastRefresh.value);
+
+                        try {
+                            localStorage.setItem(CACHE_KEY, JSON.stringify(localData));
+                        } catch (e) { }
+                    }
+                } catch (localErr) {
+                    console.warn("Local Bundle fetch failed:", localErr);
                 }
-                // Don't splice metadata out of the reactive array to avoid issues with cache consistency or re-runs
-                // Ideally, we filter it out in the view, but the current app likely splices it. 
-                // Since we might be saving to cache, splicing it removes it from cache for next time.
-                // Let's splice it for the VIEW, but note:
-                // If we splice, stockData is modified.
-                data.splice(metaIndex, 1);
-            } else {
-                lastRefresh.value = null;
             }
-            error.value = null;
+
+            // --- Tier 3: Live Network Fetch (Always Validate) ---
+            try {
+                if (isLocalMachine()) {
+                    console.log("Skipping Live Fetch on local machine.");
+                    return;
+                }
+                console.log("Starting Background Live Fetch (Tier 3)...");
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+                const liveUrl = REMOTE_DATA_URL;
+
+                // Simple GET request without custom headers avoids CORS OPTIONS preflight check
+                const response = await fetch(`${liveUrl}?t=${Date.now()}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const liveData = await response.json();
+                    extractAndApplyMetadata(liveData);
+                    stockData.value = processCustomGroups(liveData);
+
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(liveData));
+                    } catch (e) {}
+
+                    console.log("Updated stock data from Live URL (Tier 3), sync:", lastRefresh.value);
+                }
+            } catch (liveErr) {
+                console.warn("Background live fetch failed or timed out:", liveErr);
+                if (!hasData) {
+                    error.value = "Failed to load stock data. Please check connection.";
+                }
+            }
+
+            // Final Metadata Clean-up for views
+            if (stockData.value && Array.isArray(stockData.value) && stockData.value.length > 0) {
+                extractAndApplyMetadata(stockData.value);
+                const data = stockData.value;
+                const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
+                if (metaIndex !== -1) {
+                    data.splice(metaIndex, 1);
+                }
+                error.value = null;
+            }
+        } finally {
+            loading.value = false;
         }
     };
 
@@ -197,198 +460,521 @@ export function useStockData(isLocal) {
     const updateStockData = async () => {
         loading.value = true;
         error.value = null;
+        const toastId = toast.loading("Syncing stock & ledger data from Tally... Please wait.", { autoClose: false, closeButton: false });
         try {
             const response = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`
+                `${import.meta.env.VITE_BACKEND_URL}/api/updateStockData`,
+                {},
+                { timeout: 180000 } // 3 minutes timeout to give Tally ample time to compute stock & voucher summaries
             );
             
             const resData = response.data;
             let data = resData.data;
 
-            // Check if backend returned a Tally-down fallback
+            toast.remove(toastId);
+
             if (resData.tallyError || resData.message?.includes('existing data') || resData.message?.includes('Tally unavailable')) {
                 toast.warning('Tally is offline — showing cached data', { autoClose: 4000 });
-                loading.value = false;
                 return;
             }
 
             if (!data || !Array.isArray(data)) {
-                toast.error('Unexpected response from server', { autoClose: 3000 });
-                loading.value = false;
+                toast.error('Unexpected response: ' + (resData.message || 'No data returned'), { autoClose: 4000 });
                 return;
             }
 
+            extractAndApplyMetadata(data);
+            stockData.value = processCustomGroups(data);
+            
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            } catch (e) {}
+
             const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
             if (metaIndex !== -1) {
-                const meta = data[metaIndex];
-                if (meta.lastSync) {
-                    lastRefresh.value = new Date(meta.lastSync);
-                }
                 data.splice(metaIndex, 1);
-            } else {
-                lastRefresh.value = new Date();
             }
 
-            stockData.value = processCustomGroups(data);
-            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-
-            // Show appropriate toast for ledger sync status
-            const ledgerOk = resData.ledgerSync?.success;
-            if (ledgerOk) {
-                toast.success('Stock & Ledger synced from Tally!', { autoClose: 2500 });
-            } else {
-                toast.success('Stock synced from Tally!', { autoClose: 2500 });
-                if (resData.ledgerSync?.error) {
-                    toast.warning('Ledger sync failed: ' + resData.ledgerSync.error, { autoClose: 4000 });
-                }
-            }
+            toast.success(`✓ Stock synced (${data.length} brands updated)!`, { autoClose: 3000 });
         } catch (err) {
-            // Network error or 5xx from backend
-            const serverMsg = err.response?.data?.error;
-            if (serverMsg?.includes('Tally') || serverMsg?.includes('connection refused')) {
-                toast.error('Tally is not running. Start Tally and try again.', { autoClose: 5000 });
+            console.error(err);
+            toast.remove(toastId);
+
+            let userMsg = '';
+            if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'ECONNREFUSED') {
+                userMsg = 'Sync server is offline or unreachable (Make sure local sync server is running).';
+            } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+                userMsg = 'Sync request timed out after waiting. Please verify Tally connection and ensure Tally is responsive.';
             } else {
-                toast.error(serverMsg || 'Sync failed. Check backend server.', { autoClose: 4000 });
+                userMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to update stock';
             }
-            error.value = serverMsg || 'Sync failed';
+
+            error.value = userMsg;
+            toast.error(userMsg, { autoClose: 4500 });
         } finally {
             loading.value = false;
         }
     };
 
-
-    // Image Upload
     const handleFileChange = (event, productName) => {
-        imageFiles.value[productName] = event.target.files[0];
-        uploadErrors.value[productName] = null;
+        const file = event?.target?.files?.[0];
+        if (file) {
+            imageFiles.value[productName] = file;
+            uploadErrors.value[productName] = null;
+        }
     };
 
-    const uploadImage = async (productName) => {
-        if (!imageFiles.value[productName]) return;
+    const syncImageChange = async (productName, newImageUrl) => {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+        let backendSuccess = false;
+
+        // Step 1: Attempt local backend first (PC with server running, 2000ms timeout)
+        try {
+            const endpoint = newImageUrl ? `${backendUrl}/api/updateImage` : `${backendUrl}/api/removeImage`;
+            const payload = newImageUrl ? { productName, imageUrl: newImageUrl } : { productName };
+            const res = await axios.post(endpoint, payload, { timeout: 2000 });
+            if (res.status === 200) {
+                backendSuccess = true;
+                console.log(`[Sync] Step 1 passed: Updated via local backend for ${productName}`);
+                return { success: true, via: 'backend' };
+            }
+        } catch (backendErr) {
+            console.log(`[Sync] Step 1: Local backend offline (${backendErr.message}), falling back to direct GitHub sync`);
+        }
+
+        // Step 2 & 3: GitHub direct sync
+        return await enqueueSync(async () => {
+            // Step 2: Check if GitHub token is already present
+            let token = getGitHubToken();
+
+            // Step 3: If token not present, prompt user with modal
+            if (!token) {
+                console.log('[Sync] Step 3: GitHub token missing, prompting user via modal...');
+                token = await promptForToken('missing');
+                if (!token) {
+                    console.warn('[Sync] User canceled GitHub token modal');
+                    return { success: false, reason: 'canceled' };
+                }
+            }
+
+            let fullCatalog = stockData.value;
+            if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
+                try {
+                    const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+                    if (res.ok) {
+                        fullCatalog = await res.json();
+                    }
+                } catch (e) {
+                    console.warn('[Sync] Could not fetch remote catalog:', e.message);
+                }
+            }
+
+            if (!fullCatalog || !Array.isArray(fullCatalog)) {
+                throw new Error('Catalog data not available for GitHub sync');
+            }
+
+            // Update catalog image reference
+            fullCatalog.forEach(group => {
+                if (!group.products || !Array.isArray(group.products)) return;
+                group.products.forEach(p => {
+                    if (p.productName === productName) {
+                        p.imageUrl = newImageUrl || null;
+                        if (newImageUrl && newImageUrl.includes('dieqsg5tr')) {
+                            p.secondaryImageUrl = newImageUrl;
+                        }
+                        if (newImageUrl) {
+                            p.imageUploadedAt = new Date().toISOString();
+                        } else {
+                            delete p.imageUploadedAt;
+                        }
+                    }
+                });
+            });
+
+            const jsonString = JSON.stringify(fullCatalog, null, 2);
+            const commitMessage = newImageUrl ? `Update image for ${productName}` : `Remove image for ${productName}`;
+
+            // Helper to execute commits with automatic expired-token handling (Step 3 popup if 401)
+            const executeCommit = async (currentToken) => {
+                try {
+                    const resFrontend = await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    if (!resFrontend) {
+                        return { success: false, reason: 'commit_failed' };
+                    }
+
+                    // Mirror commit to sbe-hub
+                    try {
+                        await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    } catch (hubErr) {
+                        console.warn('[Sync] SBE Hub mirror sync non-fatal warning:', hubErr.message);
+                    }
+
+                    return { success: true, via: 'github' };
+                } catch (commitErr) {
+                    if (commitErr.status === 401 || commitErr.status === 403 || commitErr.message?.includes('401') || commitErr.message?.includes('Bad credentials')) {
+                        console.warn('[Sync] GitHub token expired or unauthorized (401), prompting user...');
+                        const freshToken = await promptForToken('expired');
+                        if (freshToken) {
+                            const resRetry = await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            try {
+                                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            } catch (hubErr) {}
+                            return { success: true, via: 'github' };
+                        }
+                        return { success: false, reason: 'expired' };
+                    }
+                    throw commitErr;
+                }
+            };
+
+            return await executeCommit(token);
+        });
+    };
+
+    /**
+     * Upload helper for a single Cloudinary instance with resilience against preset restrictions
+     */
+    const uploadToCloudinaryInstance = async (file, cloudConfig, publicId) => {
+        const { cloudName, uploadPreset, folder } = cloudConfig;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+        if (publicId) formData.append('public_id', publicId);
+        if (folder) formData.append('folder', folder);
+
+        let res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: formData
+        });
+
+        // Resilient fallback: If preset disallows custom public_id, retry without public_id
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            if (errData.error?.message?.toLowerCase().includes('public_id')) {
+                console.warn(`[Cloudinary ${cloudName}] Preset does not permit public_id override; retrying without public_id...`);
+                const fallbackFormData = new FormData();
+                fallbackFormData.append('file', file);
+                fallbackFormData.append('upload_preset', uploadPreset);
+                if (folder) fallbackFormData.append('folder', folder);
+                res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: fallbackFormData
+                });
+            }
+        }
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (!data.secure_url) {
+            throw new Error('No secure_url returned from Cloudinary');
+        }
+        return data.secure_url;
+    };
+
+    const uploadImage = async (productOrName, fileOverride = null) => {
+        const productName = typeof productOrName === 'object' ? productOrName?.productName : productOrName;
+        if (!productName) return null;
+
+        const file = fileOverride || imageFiles.value[productName];
+        if (!file) {
+            toast.warning('Please select an image file first.', { autoClose: 2500 });
+            return null;
+        }
+
+        // Dual-Cloud Configuration: Primary and Secondary with automatic failover
+        const clouds = [
+            {
+                name: 'Primary',
+                cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal',
+                uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sbe-stock',
+                folder: import.meta.env.VITE_CLOUDINARY_FOLDER || ''
+            },
+            {
+                name: 'Secondary',
+                cloudName: import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr',
+                uploadPreset: import.meta.env.VITE_CLOUDINARY_SECONDARY_UPLOAD_PRESET || 'e-sbe-pics',
+                folder: import.meta.env.VITE_CLOUDINARY_SECONDARY_FOLDER || 'e-sbe'
+            }
+        ];
+
         uploading.value[productName] = true;
         uploadErrors.value[productName] = null;
+        const toastId = toast.loading(`Uploading photo for ${productName}...`, { autoClose: false, closeButton: false });
+
         try {
-            const formData = new FormData();
-            formData.append("file", imageFiles.value[productName]);
-            formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+            const publicId = generateProductPublicId(productName);
+            let newImageUrl = null;
+            let lastError = null;
+            let usedCloud = null;
 
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                { method: "POST", body: formData }
-            );
-            const data = await response.json();
-
-            if (!data.secure_url) {
-                throw new Error("Upload failed");
+            // Attempt upload with automatic failover
+            for (const cloud of clouds) {
+                if (!cloud.cloudName || !cloud.uploadPreset) continue;
+                try {
+                    console.log(`[Multi-Cloud] Attempting upload via ${cloud.name} Cloud (${cloud.cloudName})...`);
+                    newImageUrl = await uploadToCloudinaryInstance(file, cloud, publicId);
+                    usedCloud = cloud.name;
+                    console.log(`[Multi-Cloud] ✓ Upload succeeded via ${cloud.name} Cloud (${cloud.cloudName})`);
+                    break;
+                } catch (cloudErr) {
+                    console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}. Checking failover...`);
+                    lastError = cloudErr;
+                }
             }
 
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/updateImage`, {
-                productName,
-                imageUrl: data.secure_url,
-            });
+            if (!newImageUrl) {
+                throw new Error(`Upload failed on all cloud providers. Last error: ${lastError?.message || 'Unknown error'}`);
+            }
 
-            // Optimistic Update
-            stockData.value = stockData.value.map((group) => ({
-                ...group,
-                products: group.products.map((product) =>
-                    product.productName === productName
-                        ? { ...product, imageUrl: data.secure_url, imageUploadedAt: new Date().toISOString() }
-                        : product
-                ),
-            }));
+            // 2. Instant Optimistic UI & localStorage update (Zero latency on screen)
+            const nowIso = new Date().toISOString();
+            if (stockData.value && Array.isArray(stockData.value)) {
+                stockData.value.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        if (p.productName === productName) {
+                            if (usedCloud === 'Secondary') {
+                                p.secondaryImageUrl = newImageUrl;
+                            } else {
+                                p.imageUrl = newImageUrl;
+                            }
+                            p.imageUploadedAt = nowIso;
+                        }
+                    });
+                });
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+                } catch (e) {}
+            }
 
-            // Update Cache
-            localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+            if (typeof productOrName === 'object' && productOrName) {
+                if (usedCloud === 'Secondary') {
+                    productOrName.secondaryImageUrl = newImageUrl;
+                } else {
+                    productOrName.imageUrl = newImageUrl;
+                }
+                productOrName.imageUploadedAt = nowIso;
+            }
 
-            toast.success("Image uploaded updated!", { autoClose: 2500 });
+            delete imageFiles.value[productName];
+
+            // 3. Persist change: Local backend if available, or direct GitHub API
+            const syncResult = await syncImageChange(productName, newImageUrl);
+
+            toast.remove(toastId);
+            if (syncResult && syncResult.success) {
+                if (syncResult.via === 'github') {
+                    toast.success(`✓ Photo uploaded & committed to GitHub!`, { autoClose: 3500 });
+                } else {
+                    toast.success(`✓ Photo uploaded & synced to server!`, { autoClose: 3000 });
+                }
+            } else if (syncResult && syncResult.reason === 'canceled') {
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit canceled (no token entered).`, { autoClose: 5000 });
+            } else if (syncResult && syncResult.reason === 'expired') {
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub token expired.`, { autoClose: 5000 });
+            } else if (syncResult && syncResult.reason === 'no_token') {
+                toast.warning(`Photo uploaded to Cloudinary, but GitHub commit skipped (no GitHub token).`, { autoClose: 5000 });
+            } else {
+                toast.info(`Photo uploaded to Cloudinary.`, { autoClose: 3000 });
+            }
+            return newImageUrl;
         } catch (err) {
-            uploadErrors.value[productName] = "Failed to load image";
-            toast.error(uploadErrors.value[productName], { autoClose: 3000 });
+            console.error('Error uploading image:', err);
+            toast.remove(toastId);
+            uploadErrors.value[productName] = err.message;
+            toast.error(`Upload failed: ${err.message}`, { autoClose: 4500 });
+            return null;
         } finally {
             uploading.value[productName] = false;
-            imageFiles.value[productName] = null;
         }
     };
 
-    const deleteImage = async (productName) => {
-        try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/removeImage`, {
-                productName,
-            });
+    const deleteImage = async (productOrName) => {
+        const productName = typeof productOrName === 'object' ? productOrName?.productName : productOrName;
+        if (!productName) return false;
 
-            stockData.value = stockData.value.map((group) => ({
-                ...group,
-                products: group.products.map((product) =>
-                    product.productName === productName
-                        ? { ...product, imageUrl: null }
-                        : product
-                ),
-            }));
-
-            // Update Cache
-            localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
-
-            toast.success(`Image removed for ${productName}.`, { autoClose: 2500 });
-        } catch (err) {
-            toast.error("Failed to remove image", { autoClose: 3000 });
+        if (!confirm(`Are you sure you want to remove the photo for "${productName}"?`)) {
+            return false;
         }
-    };
 
-    // Manual refresh for Android - force fetch fresh data
-    const refreshStockData = async () => {
-        isRefreshing.value = true;
+        uploading.value[productName] = true;
+        const toastId = toast.loading(`Removing photo for ${productName}...`, { autoClose: false, closeButton: false });
+
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for manual refresh
-
-            const response = await fetch(`${REMOTE_DATA_URL}?t=${Date.now()}`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-                let data = await response.json();
-
-                // Process metadata
-                const metaIndex = data.findIndex((g) => g.groupName === "_META_DATA_");
-                if (metaIndex !== -1) {
-                    const meta = data[metaIndex];
-                    if (meta.lastSync) {
-                        lastRefresh.value = new Date(meta.lastSync);
-                    }
-                    data.splice(metaIndex, 1);
-                }
-
-                stockData.value = processCustomGroups(data);
-                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-                toast.success('Data updated!', { autoClose: 2000 });
-            } else {
-                throw new Error('Fetch failed');
+            // 1. Instant Optimistic UI & localStorage update
+            if (stockData.value && Array.isArray(stockData.value)) {
+                stockData.value.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        if (p.productName === productName) {
+                            p.imageUrl = null;
+                            delete p.imageUploadedAt;
+                        }
+                    });
+                });
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+                } catch (e) {}
             }
+
+            if (typeof productOrName === 'object' && productOrName) {
+                productOrName.imageUrl = null;
+                delete productOrName.imageUploadedAt;
+            }
+
+            delete imageFiles.value[productName];
+
+            // 2. Persist change: Local backend if available, or direct GitHub API
+            const syncResult = await syncImageChange(productName, null);
+
+            toast.remove(toastId);
+            if (syncResult && syncResult.success) {
+                if (syncResult.via === 'github') {
+                    toast.success(`✓ Photo removed & committed to GitHub!`, { autoClose: 3000 });
+                } else {
+                    toast.success(`✓ Photo removed & synced to server!`, { autoClose: 2500 });
+                }
+            } else if (syncResult && (syncResult.reason === 'no_token' || syncResult.reason === 'canceled')) {
+                toast.warning(`Photo removed locally, but GitHub commit canceled (no token).`, { autoClose: 4000 });
+            } else if (syncResult && syncResult.reason === 'expired') {
+                toast.warning(`Photo removed locally, but GitHub token expired.`, { autoClose: 4000 });
+            } else {
+                toast.success(`✓ Photo removed for ${productName}`, { autoClose: 2500 });
+            }
+            return true;
         } catch (err) {
-            console.warn('Refresh failed:', err);
-            toast.error('Update failed. Try again.', { autoClose: 2000 });
+            console.error('Error removing image:', err);
+            toast.remove(toastId);
+            toast.error(`Failed to remove photo: ${err.message}`, { autoClose: 4000 });
+            return false;
         } finally {
-            isRefreshing.value = false;
+            uploading.value[productName] = false;
+        }
+    };
+
+    /**
+     * Push all local image additions/updates to GitHub repository in one batch
+     */
+    const pushPendingPhotosToGitHub = async () => {
+        let token = getGitHubToken();
+        if (!token) {
+            token = await promptForToken('missing');
+            if (!token) {
+                toast.warning('GitHub Sync Token required to commit pending photos.', { autoClose: 4000 });
+                return { success: false, reason: 'no_token' };
+            }
+        }
+
+        const toastId = toast.loading('Checking local photos against GitHub...', { autoClose: false, closeButton: false });
+
+        try {
+            // 1. Fetch live remote catalog
+            const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+            if (!res.ok) throw new Error(`Could not fetch remote catalog (HTTP ${res.status})`);
+            const remoteCatalog = await res.json();
+
+            // Map remote products by productName
+            const remoteMap = new Map();
+            remoteCatalog.forEach(g => {
+                (g.products || []).forEach(p => {
+                    remoteMap.set(p.productName, p);
+                });
+            });
+
+            // 2. Scan local catalog for new / updated imageUrls
+            const localCatalog = stockData.value || [];
+            const pendingUpdates = [];
+
+            localCatalog.forEach(g => {
+                (g.products || []).forEach(p => {
+                    if (p.imageUrl) {
+                        const remoteP = remoteMap.get(p.productName);
+                        if (!remoteP || remoteP.imageUrl !== p.imageUrl) {
+                            pendingUpdates.push({
+                                productName: p.productName,
+                                imageUrl: p.imageUrl,
+                                imageUploadedAt: p.imageUploadedAt || new Date().toISOString()
+                            });
+                        }
+                    }
+                });
+            });
+
+            if (pendingUpdates.length === 0) {
+                toast.remove(toastId);
+                toast.info('Catalog is already up to date with GitHub! (0 pending photos)', { autoClose: 3000 });
+                return { success: true, count: 0 };
+            }
+
+            toast.remove(toastId);
+            const commitToastId = toast.loading(`Committing ${pendingUpdates.length} photos to GitHub...`, { autoClose: false, closeButton: false });
+
+            // 3. Apply updates to remote catalog
+            pendingUpdates.forEach(u => {
+                const remoteP = remoteMap.get(u.productName);
+                if (remoteP) {
+                    remoteP.imageUrl = u.imageUrl;
+                    remoteP.imageUploadedAt = u.imageUploadedAt;
+                }
+            });
+
+            const jsonString = JSON.stringify(remoteCatalog, null, 2);
+            const commitMessage = `feat(catalog): sync ${pendingUpdates.length} photos from mobile`;
+
+            // Helper to execute commit with expired-token retry
+            const doCommit = async (currentToken) => {
+                try {
+                    await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    try {
+                        await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    } catch (hubErr) {
+                        console.warn('[Sync] SBE Hub mirror warning:', hubErr.message);
+                    }
+                } catch (commitErr) {
+                    if (commitErr.status === 401 || commitErr.status === 403 || commitErr.message?.includes('401') || commitErr.message?.includes('Bad credentials')) {
+                        const freshToken = await promptForToken('expired');
+                        if (freshToken) {
+                            await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            try {
+                                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            } catch (e) {}
+                            return;
+                        }
+                    }
+                    throw commitErr;
+                }
+            };
+
+            await doCommit(token);
+
+            toast.remove(commitToastId);
+            toast.success(`✓ Successfully committed ${pendingUpdates.length} photos to GitHub!`, { autoClose: 4000 });
+            return { success: true, count: pendingUpdates.length };
+        } catch (err) {
+            toast.remove(toastId);
+            console.error('Failed to push pending changes to GitHub:', err);
+            toast.error(`Push failed: ${err.message}`, { autoClose: 5000 });
+            return { success: false, error: err.message };
         }
     };
 
     return {
         stockData,
         loading,
-        isRefreshing,
         error,
-        lastRefresh,
         uploading,
         uploadErrors,
         imageFiles,
+        lastRefresh,
+        isRefreshing,
         loadStockData,
         updateStockData,
-        refreshStockData,
         handleFileChange,
         uploadImage,
         deleteImage,
-        isNetworkFast
+        fetchStockMetadataLastSync,
+        pushPendingPhotosToGitHub
     };
 }

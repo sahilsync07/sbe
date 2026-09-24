@@ -2,110 +2,135 @@
   <div class="hub-shell">
     <!-- Main Content Area -->
     <main class="hub-main">
-      <!-- Ambient Glow Orbs -->
-      <div class="hub-orb hub-orb--warm"></div>
-      <div class="hub-orb hub-orb--accent"></div>
-
-      <!-- Top Bar -->
-      <header class="hub-topbar">
-        <div class="hub-topbar__left">
-          <button type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
-            <i class="fa-solid fa-arrow-left"></i>
-          </button>
-          <div class="hub-topbar__date">
-            <span class="hub-topbar__day">{{ currentDay }}</span>
-            <span class="hub-topbar__full-date">{{ currentDate }}</span>
+      <!-- Fixed Header Zone (Top Bar + SBE Hub Title) -->
+      <div class="hub-header-wrap">
+        <!-- Top Bar -->
+        <header class="hub-topbar">
+          <div class="hub-topbar__left">
+            <button v-if="route.path !== '/home' && route.path !== '/'" type="button" @click="router.push('/')" class="hub-icon-btn" title="Back to Stock">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
           </div>
-        </div>
 
-        <div class="hub-topbar__right" v-if="isAdmin || isSuperAdmin">
-          <button
-            v-if="isAdmin && !isSuperAdmin"
-            @click="updateStockData"
-            class="hub-icon-btn hub-icon-btn--accent"
-            title="Sync Data"
-          >
-            <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
-          </button>
-          <button
-            v-if="isAdmin || isSuperAdmin"
-            @click="toggleConsole"
-            class="hub-icon-btn hub-icon-btn--console hidden lg:flex"
-            :class="{ 'hub-icon-btn--active': showConsole }"
-            title="Toggle Console"
-          >
-            <i class="fa-solid fa-terminal"></i>
-          </button>
-          <button
-            @click="handleLogout"
-            class="hub-icon-btn hub-icon-btn--danger"
-            title="Logout"
-          >
-            <i class="fa-solid fa-right-from-bracket"></i>
-          </button>
-        </div>
-      </header>
+          <div class="hub-topbar__right">
+            <!-- Build Version Tag with Info Popover -->
+            <VersionBadge />
 
-      <!-- Hero Section -->
-      <section class="hub-hero">
-        <h1 class="hub-hero__title">
-          <span class="hub-hero__label">SBE</span>
-          <span class="hub-hero__gradient">Hub</span>
-        </h1>
-        <p class="hub-hero__sub">Your command center — every tool, one tap away.</p>
-      </section>
+            <button
+              v-if="isAdmin || isSuperAdmin"
+              @click="updateStockData"
+              class="hub-icon-btn hub-icon-btn--accent"
+              title="Sync Stock from Tally"
+            >
+              <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
+            </button>
+            <button
+              v-if="isAdmin || isSuperAdmin"
+              @click="toggleConsole"
+              class="hub-icon-btn hub-icon-btn--console"
+              :class="{ 'hub-icon-btn--active': showConsole }"
+              title="Toggle Console"
+            >
+              <i class="fa-solid fa-terminal"></i>
+            </button>
+            <button
+              v-if="!isAdmin && !isSuperAdmin"
+              @click="$router.push({ query: { login: 'admin' } })"
+              class="hub-icon-btn hub-icon-btn--accent"
+              title="Admin Login"
+            >
+              <i class="fa-solid fa-lock"></i>
+            </button>
+            <button
+              v-if="isAdmin || isSuperAdmin"
+              @click="handleLogout"
+              class="hub-icon-btn hub-icon-btn--danger"
+              title="Logout"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        </header>
 
-      <!-- Bento Grid -->
-      <section class="hub-grid">
-        <router-link
-          v-for="(item, index) in filteredLinks"
-          :key="item.path"
-          :to="item.path"
-          class="hub-card"
-          :class="[`hub-card--${item.colorKey}`, item.featured ? 'hub-card--featured' : '']"
-          :style="{ '--card-delay': `${index * 0.04}s` }"
-        >
-          <div class="hub-card__icon-wrap">
-            <div class="hub-card__icon" :style="{ background: item.gradient }">
-              <i :class="['fa-solid', item.icon]"></i>
+        <!-- Hero Section -->
+        <section class="hub-hero">
+          <h1 class="hub-hero__title">
+            <span class="hub-hero__label">SBE</span>
+            <span class="hub-hero__gradient">Hub</span>
+          </h1>
+          <p class="hub-hero__sub">{{ lastSyncText }}</p>
+        </section>
+      </div>
+
+      <!-- Scrollable Cards Body with Imaginary Line Fade Mask -->
+      <div class="hub-scroll-body">
+        <!-- Bento Grid -->
+        <section class="hub-grid">
+          <router-link
+            v-for="(item, index) in filteredLinks"
+            :key="item.path"
+            :to="item.path"
+            class="hub-card"
+            :class="[`hub-card--${item.colorKey}`, item.featured ? 'hub-card--featured' : '']"
+            :style="{ '--card-delay': `${index * 0.04}s` }"
+          >
+            <div class="hub-card__icon-wrap">
+              <div class="hub-card__icon" :style="{ background: item.gradient }">
+                <i :class="['fa-solid', item.icon]"></i>
+              </div>
             </div>
-          </div>
-          <div class="hub-card__body">
-            <h3 class="hub-card__title">{{ item.label }}</h3>
-            <p class="hub-card__desc">{{ item.desc }}</p>
-          </div>
-          <div class="hub-card__arrow">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </router-link>
-      </section>
+            <div class="hub-card__body">
+              <h3 class="hub-card__title">{{ item.label }}</h3>
+              <p class="hub-card__desc">{{ item.desc }}</p>
+            </div>
+            <div class="hub-card__arrow">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </router-link>
+        </section>
 
-      <div class="hub-footer">
-        <span>Built with precision for SBE Rayagada</span>
+        <div class="hub-footer">
+          <span>Sri Brundabana Enterprises • Rayagada</span>
+        </div>
       </div>
     </main>
+
+    <!-- Admin Console Responsive Bottom Sheet (Mobile 1/4 Screen Height) -->
+    <Transition name="console-sheet">
+      <div
+        v-if="(isAdmin || isSuperAdmin) && showConsole"
+        class="fixed inset-x-0 bottom-0 z-50 h-[28vh] min-h-[190px] max-h-[35vh] lg:hidden bg-slate-950 border-t border-slate-800 shadow-2xl rounded-t-2xl overflow-hidden"
+      >
+        <ConsoleViewer @close="showConsole = false" />
+      </div>
+    </Transition>
 
     <!-- Admin Console Sidebar (Desktop only, collapsible) -->
     <Transition name="console-slide">
       <aside v-if="(isAdmin || isSuperAdmin) && showConsole" class="hub-console hidden lg:flex">
-        <ConsoleViewer />
+        <ConsoleViewer @close="showConsole = false" />
       </aside>
     </Transition>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAdmin } from '../composables/useAdmin';
-import { useStockData } from '../composables/useStockData';
+import { useWorkzoneAuth } from '../composables/useWorkzoneAuth';
+import { useStockData, fetchStockMetadataLastSync } from '../composables/useStockData';
+import { useAppStore } from '../stores/appStore';
 import ConsoleViewer from '../components/ConsoleViewer.vue';
+import VersionBadge from '../components/VersionBadge.vue';
 
+const route = useRoute();
 const router = useRouter();
+const appStore = useAppStore();
 const { isAdmin, isSuperAdmin, logout } = useAdmin();
+const { isWorkzoneAuthenticated, checkWorkzoneAuth } = useWorkzoneAuth();
 
-const showConsole = ref(false); // collapsed by default
-
+const showConsole = ref(false);
 const toggleConsole = () => {
   showConsole.value = !showConsole.value;
 };
@@ -116,14 +141,88 @@ const handleLogout = async () => {
 };
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const { updateStockData, loading: isSyncing } = useStockData(isLocal);
+const { updateStockData, loading: isSyncing, lastRefresh, loadStockData } = useStockData(isLocal);
 
-// Date display
-const now = new Date();
-const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-const currentDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const lastSyncText = computed(() => {
+  const syncDate = lastRefresh.value || appStore.lastSyncTime;
+  if (!syncDate) return 'Catalog up to date';
+  const d = new Date(syncDate);
+  if (isNaN(d.getTime())) return 'Catalog up to date';
+
+  const diffMs = Date.now() - d.getTime();
+  const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const isToday = d.toDateString() === new Date().toDateString();
+  const isYesterday = diffDays === 1 || (new Date().getDate() - d.getDate() === 1 && diffDays < 2);
+
+  const dateFormatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const timeFormatted = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  if (diffMins < 2) {
+    return `Last synced: Just now (${timeFormatted})`;
+  } else if (diffHours < 1) {
+    return `Last synced: ${diffMins} min${diffMins > 1 ? 's' : ''} ago (${timeFormatted})`;
+  } else if (isToday) {
+    return `Last synced: Today, ${timeFormatted} (${diffHours} hr${diffHours > 1 ? 's' : ''} ago)`;
+  } else if (isYesterday) {
+    return `Last synced: Yesterday, ${timeFormatted}`;
+  }
+  return `Last synced: ${dateFormatted} at ${timeFormatted}`;
+});
 
 const links = [
+  {
+    path: '/workzone/sahil',
+    label: 'Sahil Workzone',
+    desc: 'Creditor analytics & executive workspace',
+    icon: 'fa-user-tie',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #f59e0b, #b45309)',
+    workzone: 'sahil'
+  },
+  {
+    path: '/workzone/slnp',
+    label: 'SLNP Workzone',
+    desc: 'Creditor analytics & management workspace',
+    icon: 'fa-building-shield',
+    colorKey: 'teal',
+    gradient: 'linear-gradient(135deg, #0d9488, #047857)',
+    workzone: 'slnp'
+  },
+  {
+    path: '/pdf-gen?onetouch=true',
+    label: 'One Touch Share',
+    desc: 'Auto-share all brands in 1 tap',
+    icon: 'fa-bolt',
+    colorKey: 'violet',
+    gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+  },
+  {
+    path: '/analyzer',
+    label: 'Line Debtors Analyzer',
+    desc: 'Debtor aging & payment recovery',
+    icon: 'fa-chart-pie',
+    colorKey: 'teal',
+    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+  },
+  {
+    path: '/order-maker',
+    label: 'Order Maker',
+    desc: 'Rapid 1-screen photo ordering',
+    icon: 'fa-wand-magic-sparkles',
+    colorKey: 'purple',
+    gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+  },
+  {
+    path: '/journal',
+    label: 'Engineering Journal',
+    desc: 'Image pipelines, OCR rules, Cloudinary & UI architecture ledger',
+    icon: 'fa-book-bookmark',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #c59b27, #854d0e)',
+  },
   {
     path: '/',
     label: 'Stock Table',
@@ -138,22 +237,6 @@ const links = [
     label: 'Ledger',
     desc: 'Account balances & entries',
     icon: 'fa-book-open',
-    colorKey: 'indigo',
-    gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-  },
-  {
-    path: '/sample-room',
-    label: 'Sample Room',
-    desc: 'Track present samples',
-    icon: 'fa-box-open',
-    colorKey: 'cyan',
-    gradient: 'linear-gradient(135deg, #06b6d4, #0891b2)',
-  },
-  {
-    path: '/stock-trend',
-    label: 'Stock Trends',
-    desc: 'Movement & reorder insights',
-    icon: 'fa-chart-line',
     colorKey: 'amber',
     gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
   },
@@ -205,85 +288,88 @@ const links = [
     colorKey: 'stone',
     gradient: 'linear-gradient(135deg, #a8a29e, #78716c)',
   },
-  {
-    path: '/analyzer',
-    label: 'Analyzer',
-    desc: 'Debtor & creditor monthly analysis',
-    icon: 'fa-chart-pie',
-    colorKey: 'teal',
-    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
-  },
 ];
 
 const filteredLinks = computed(() => {
   return links.filter(item => {
+    if (item.path === '/' && route.path === '/') {
+      return false;
+    }
+    // Workzones: ONLY visible if authenticated for that zone
+    if (item.workzone === 'sahil' && !isWorkzoneAuthenticated('sahil')) {
+      return false;
+    }
+    if (item.workzone === 'slnp' && !isWorkzoneAuthenticated('slnp')) {
+      return false;
+    }
     if ((item.path === '/ledger' || item.path === '/daybook' || item.path === '/line-list' || item.path === '/quotation' || item.path === '/analyzer') && !isAdmin.value && !isSuperAdmin.value) {
       return false;
     }
     return true;
   });
 });
+
+onMounted(async () => {
+  await checkWorkzoneAuth('sahil');
+  await checkWorkzoneAuth('slnp');
+  await fetchStockMetadataLastSync();
+  await loadStockData();
+});
 </script>
 
 <style scoped>
 /* ══════════════════════════════════════
-   SHELL & LAYOUT
+   SHELL & RESPONSIVE SEAMLESS GRADIENT
    ══════════════════════════════════════ */
 .hub-shell {
   display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: #f8f6f1;
+  height: 100vh;
+  height: 100dvh;
+  /* Seamless responsive radial gradients directly on background — eliminates all bounding-box artifacts */
+  background-color: #f8f6f1;
+  background-image: 
+    radial-gradient(circle at 85% 15%, rgba(253, 230, 138, 0.45) 0%, rgba(251, 191, 36, 0.15) 35%, transparent 70%),
+    radial-gradient(circle at 15% 85%, rgba(196, 181, 253, 0.35) 0%, rgba(139, 92, 246, 0.12) 35%, transparent 65%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .hub-main {
   flex: 1;
   min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   position: relative;
   padding: 0 clamp(16px, 4vw, 48px);
-  padding-bottom: 48px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════
-   AMBIENT ORBS (Background Glow)
+   HEADER ZONE (Fixed at top)
    ══════════════════════════════════════ */
-.hub-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.45;
-}
-.hub-orb--warm {
-  width: 700px; height: 700px;
-  top: -180px; right: -100px;
-  background: radial-gradient(circle, #fde68a 0%, #fbbf24 40%, transparent 70%);
-}
-.hub-orb--accent {
-  width: 500px; height: 500px;
-  bottom: -120px; left: -80px;
-  background: radial-gradient(circle, #c4b5fd 0%, #8b5cf6 40%, transparent 70%);
-  opacity: 0.25;
+.hub-header-wrap {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+  padding-bottom: 6px;
 }
 
 /* ══════════════════════════════════════
    TOP BAR
    ══════════════════════════════════════ */
 .hub-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  padding-top: max(env(safe-area-inset-top, 24px), 16px);
+  padding-bottom: 6px;
 }
 
 .hub-topbar__left,
@@ -291,24 +377,6 @@ const filteredLinks = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.hub-topbar__date {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.hub-topbar__day {
-  font-family: 'Clash Display', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  color: #1e293b;
-}
-.hub-topbar__full-date {
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 500;
-  letter-spacing: 0.02em;
 }
 
 /* Icon Buttons */
@@ -319,7 +387,7 @@ const filteredLinks = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.85);
   border: 1px solid rgba(0,0,0,0.06);
   color: #475569;
   font-size: 14px;
@@ -355,19 +423,20 @@ const filteredLinks = computed(() => {
    ══════════════════════════════════════ */
 .hub-hero {
   position: relative;
-  z-index: 1;
-  padding: 32px 0 10px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background: transparent;
 }
 
 .hub-hero__title {
   font-family: 'Clash Display', sans-serif;
   font-weight: 700;
-  font-size: clamp(40px, 7vw, 72px);
-  line-height: 1;
+  font-size: clamp(32px, 5.5vw, 64px);
+  line-height: 1.05;
   letter-spacing: -0.03em;
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: 12px;
 }
 
 .hub-hero__label {
@@ -382,11 +451,27 @@ const filteredLinks = computed(() => {
 }
 
 .hub-hero__sub {
-  margin-top: 10px;
-  font-size: clamp(13px, 1.4vw, 16px);
+  margin-top: 4px;
+  font-size: clamp(12px, 1.2vw, 15px);
   color: #94a3b8;
-  font-weight: 450;
+  font-weight: 500;
   letter-spacing: 0.01em;
+}
+
+/* ══════════════════════════════════════
+   SCROLLABLE BODY & IMAGINARY LINE MASK
+   ══════════════════════════════════════ */
+.hub-scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 10px;
+  padding-bottom: 48px;
+  /* Imaginary Line Mask: Cards dissolve smoothly before reaching the top header */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 22px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0px, black 22px, black 100%);
 }
 
 /* ══════════════════════════════════════
@@ -398,7 +483,7 @@ const filteredLinks = computed(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
-  padding: 28px 0 0;
+  padding: 4px 0 0;
 }
 
 /* ══════════════════════════════════════
@@ -411,70 +496,41 @@ const filteredLinks = computed(() => {
   gap: 16px;
   padding: 20px 22px;
   border-radius: 20px;
-  background: rgba(255,255,255,0.65);
-  backdrop-filter: blur(14px) saturate(1.3);
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
-  border: 1px solid rgba(255,255,255,0.8);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.9) inset,
-    0 8px 32px -8px rgba(15,23,42,0.06);
-  cursor: pointer;
+  background: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.04), 0 8px 24px -4px rgba(0,0,0,0.04);
   text-decoration: none;
-  transition: all 0.35s cubic-bezier(.4,0,.2,1);
-  animation: card-rise 0.5s cubic-bezier(.16,1,.3,1) var(--card-delay, 0s) both;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: cardAppear 0.5s cubic-bezier(.4,0,.2,1) backwards;
+  animation-delay: var(--card-delay, 0s);
 }
 
-.hub-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent 60%);
+@keyframes cardAppear {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .hub-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,1) inset,
-    0 20px 48px -12px rgba(15,23,42,0.12),
-    0 0 0 1px rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 30px -4px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
 }
-.hub-card:hover::before { opacity: 1; }
-.hub-card:active { transform: scale(0.98) translateY(0); }
+.hub-card:active { transform: scale(0.98); }
 
-/* Featured Card (Stock Table) — spans full width on large screens */
 .hub-card--featured {
   grid-column: 1 / -1;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border-color: rgba(255,255,255,0.05);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.03) inset,
-    0 20px 48px -12px rgba(0,0,0,0.3);
-}
-.hub-card--featured .hub-card__title { color: #f1f5f9; }
-.hub-card--featured .hub-card__desc { color: #94a3b8; }
-.hub-card--featured .hub-card__arrow { color: #64748b; }
-.hub-card--featured:hover {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.05) inset,
-    0 24px 56px -12px rgba(0,0,0,0.4);
-}
-.hub-card--featured .hub-card__icon {
-  box-shadow: 0 8px 24px -4px rgba(100,116,139,0.5);
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.95);
+  box-shadow: 0 4px 20px -2px rgba(0,0,0,0.06);
 }
 
-/* Icon */
 .hub-card__icon-wrap {
   flex-shrink: 0;
-  position: relative;
-  z-index: 1;
 }
-
 .hub-card__icon {
   width: 48px;
   height: 48px;
@@ -483,56 +539,45 @@ const filteredLinks = computed(() => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 18px;
-  box-shadow: 0 6px 20px -4px rgba(0,0,0,0.25);
-  transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease;
+  font-size: 20px;
+  box-shadow: 0 4px 14px -2px rgba(0,0,0,0.15);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
 }
+.hub-card:hover .hub-card__icon { transform: scale(1.08) rotate(-2deg); }
 
-.hub-card:hover .hub-card__icon {
-  transform: scale(1.1) rotate(-2deg);
-  box-shadow: 0 10px 28px -4px rgba(0,0,0,0.35);
-}
-
-/* Body */
 .hub-card__body {
   flex: 1;
   min-width: 0;
-  position: relative;
-  z-index: 1;
 }
-
 .hub-card__title {
   font-family: 'Clash Display', sans-serif;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   color: #1e293b;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
-
 .hub-card__desc {
-  margin-top: 3px;
   font-size: 12px;
   color: #94a3b8;
-  font-weight: 400;
-  line-height: 1.35;
+  margin-top: 2px;
+  line-height: 1.3;
 }
 
-/* Arrow */
 .hub-card__arrow {
   flex-shrink: 0;
-  font-size: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #cbd5e1;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
+  font-size: 12px;
+  transition: all 0.2s ease;
 }
 .hub-card:hover .hub-card__arrow {
-  color: #64748b;
-  transform: translateX(4px);
-}
-.hub-card--featured:hover .hub-card__arrow {
-  color: #e2e8f0;
+  color: #6366f1;
+  transform: translateX(3px);
 }
 
 /* ══════════════════════════════════════
@@ -541,108 +586,45 @@ const filteredLinks = computed(() => {
 .hub-footer {
   position: relative;
   z-index: 1;
+  margin-top: 48px;
   text-align: center;
-  padding: 40px 0 16px;
-  font-size: 11px;
-  color: #cbd5e1;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 /* ══════════════════════════════════════
-   CONSOLE SIDEBAR
+   ADMIN CONSOLE PANEL (Sidebar)
    ══════════════════════════════════════ */
 .hub-console {
-  width: 320px;
+  width: 480px;
   flex-shrink: 0;
   height: 100vh;
-  height: 100dvh;
   position: sticky;
   top: 0;
-  display: flex;
-  flex-direction: column;
-  border-left: 1px solid rgba(30,41,59,0.08);
+  border-left: 1px solid rgba(0,0,0,0.08);
   background: #0f172a;
-  box-shadow: -8px 0 32px rgba(0,0,0,0.1);
-}
-
-/* Console Slide Transition */
-.console-slide-enter-active {
-  transition: all 0.4s cubic-bezier(.16,1,.3,1);
-}
-.console-slide-leave-active {
-  transition: all 0.3s cubic-bezier(.4,0,1,1);
-}
-.console-slide-enter-from,
-.console-slide-leave-to {
-  width: 0;
-  opacity: 0;
-  transform: translateX(40px);
+  z-index: 40;
   overflow: hidden;
 }
 
-/* ══════════════════════════════════════
-   ANIMATIONS
-   ══════════════════════════════════════ */
-@keyframes card-rise {
-  0% {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.console-slide-enter-active,
+.console-slide-leave-active {
+  transition: width 0.3s cubic-bezier(.4,0,.2,1), opacity 0.2s ease;
+}
+.console-slide-enter-from,
+.console-slide-leave-to {
+  width: 0 !important;
+  opacity: 0;
 }
 
-/* ══════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════ */
-@media (max-width: 639px) {
-  .hub-hero { padding: 20px 0 6px; }
-  .hub-hero__title { gap: 10px; }
-  .hub-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 20px 0 0;
-  }
-  .hub-card { padding: 16px 18px; gap: 14px; border-radius: 16px; }
-  .hub-card--featured { grid-column: 1; }
-  .hub-card__icon { width: 42px; height: 42px; border-radius: 12px; font-size: 16px; }
-  .hub-icon-btn { width: 36px; height: 36px; border-radius: 12px; font-size: 13px; }
-  .hub-topbar__date { display: none; }
-  .hub-orb--warm { width: 400px; height: 400px; top: -100px; right: -60px; }
-  .hub-orb--accent { width: 300px; height: 300px; }
+.console-sheet-enter-active,
+.console-sheet-leave-active {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
-
-@media (min-width: 640px) and (max-width: 1023px) {
-  .hub-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .hub-card--featured { grid-column: 1 / -1; }
-}
-
-@media (min-width: 1024px) {
-  .hub-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-  .hub-card--featured { grid-column: 1 / -1; }
-}
-
-@media (min-width: 1280px) {
-  .hub-hero { padding: 40px 0 14px; }
-  .hub-card {
-    padding: 22px 26px;
-    gap: 18px;
-  }
-  .hub-card__icon {
-    width: 52px;
-    height: 52px;
-    font-size: 20px;
-    border-radius: 16px;
-  }
-  .hub-card__title { font-size: 16px; }
-  .hub-card__desc { font-size: 13px; }
+.console-sheet-enter-from,
+.console-sheet-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
 }
 </style>

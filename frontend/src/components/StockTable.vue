@@ -1,18 +1,9 @@
 
 <template>
-  <div class="min-h-screen w-full bg-slate-50 font-sans text-slate-800 pb-20">
+  <div class="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 font-sans text-slate-800 pb-20">
     
 
-    <Transition
-      enter-active-class="transition-opacity duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-300 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <FunLoader v-if="isFiltering" />
-    </Transition>
+
 
     <div class="flex w-full">
       
@@ -21,7 +12,7 @@
       
 
       <main 
-         class="flex-1 w-full px-2 sm:px-4 lg:px-6 space-y-8 min-w-0 transition-all duration-300 main-content-offset"
+         class="flex-1 w-full min-w-0 transition-all duration-300 px-0"
       >
         <!-- Ledger Placeholder -->
         <div v-if="showLedgerView" class="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
@@ -32,102 +23,13 @@
           <p class="text-slate-400 mt-2">Check back soon for accounting features.</p>
         </div>
 
-        <!-- Welcome Splash Removed -->
-
-        <!-- Brand Landing Page -->
+        <!-- Brand Landing Page (Persistent Storefront Component) -->
         <BrandLanding
-          v-else-if="showLanding && !searchQuery"
+          v-else
           @select-category="handleCategorySelect"
           @open-image-popup="openImagePopup"
           @open-catalog-gen="showCatalogGen = true"
         />
-
-        <div v-else class="space-y-8">
-          <!-- Back to Landing REMOVED -->
-          <!-- Error Banner -->
-          <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 border border-red-100">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span class="font-medium text-sm">{{ error }}</span>
-          </div>
-
-          <!-- GROUP LIST -->
-          <div class="flex flex-col gap-1 pb-10">
-            <div
-              v-for="(group, index) in filteredStockData"
-              :key="group.groupName"
-              :id="'group-grid-' + normalizeId(group.groupName)"
-              class="relative scroll-mt-28 transition-all duration-300"
-              :class="expandedGroups[group.groupName] ? 'mb-8' : 'mb-1'"
-            >
-              <!-- Group Header (Sticky Glass) -->
-              <div
-                @click="toggleGroup(group.groupName)"
-                class="flex items-center justify-between cursor-pointer select-none py-3 sticky z-30 transition-all duration-300 group/header sticky-group-header"
-                :class="expandedGroups[group.groupName] ? 'mb-4' : ''"
-              >
-                <!-- Backdrop for sticky readability -->
-                 <div class="absolute inset-x-[-8px] inset-y-0 bg-slate-50/90 backdrop-blur-md -z-10 border-b border-slate-200/50 shadow-sm transition-all rounded-b-2xl" 
-                      :class="expandedGroups[group.groupName] ? 'opacity-100' : 'opacity-0 delay-200'"></div>
-
-                 <div class="flex items-center gap-4 z-10 pl-2">
-                   <!-- Special "New Arrivals" Style -->
-                   <div v-if="group.isSpecial" class="flex items-center gap-3">
-                      <h2 class="text-xl lg:text-3xl font-['Clash_Display'] font-bold tracking-wide holographic-text">
-                         ✨ {{ group.groupName }}
-                      </h2>
-                   </div>
-
-                   <!-- Regular Group Style -->
-                   <div v-else class="flex items-center gap-3">
-                       <h2 class="text-lg lg:text-2xl font-semibold text-slate-900 tracking-tight font-heading group-hover/header:text-blue-600 transition-colors">
-                         {{ formatGroupName(group.groupName) }}
-                       </h2>
-                      <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">
-                        {{ group.products.length }}
-                      </span>
-                   </div>
-                 </div>
-
-                 <!-- Actions -->
-                 <div class="flex items-center gap-2 z-10 pr-2">
-                    <button 
-                         @click.stop="shareBrand(group.groupName)"
-                         class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm border border-slate-100"
-                         title="Share"
-                      >
-                         <i class="fa-solid fa-share-nodes text-xs"></i>
-                    </button>
-                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 shadow-sm border border-slate-100 transition-transform duration-300"
-                         :class="expandedGroups[group.groupName] ? 'rotate-180 bg-slate-100' : ''">
-                       <i class="fa-solid fa-chevron-down text-xs"></i>
-                    </div>
-                 </div>
-              </div>
-
-              <!-- Product Grid -->
-              <transition
-                enter-active-class="transition-all duration-500 ease-out"
-                enter-from-class="opacity-0 translate-y-4"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition-all duration-200 ease-in"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-              >
-                <div v-show="expandedGroups[group.groupName]">
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-2 gap-y-4">
-                      <ProductCard
-                        v-for="(product, pIndex) in group.products"
-                        :key="product.productName"
-                        :product="product"
-                        :index="index"
-                        @open-image-popup="(p, i) => openImagePopup(p, i)"
-                      />
-                    </div>
-                  </div>
-              </transition>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
 
@@ -136,7 +38,7 @@
       <button
         v-if="showGoToTop"
         @click="scrollToTop"
-        class="fixed bottom-24 lg:bottom-6 right-6 w-12 h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
+        class="fixed bottom-20 right-4 sm:right-6 w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-lg hover:shadow-xl hover:bg-black transition-all hover:-translate-y-1 active:scale-90 z-40"
       >
         <i class="fa-solid fa-arrow-up"></i>
       </button>
@@ -148,6 +50,7 @@
       :current-product-index="currentProductIndex"
       :is-last-product="currentProductIndex >= currentGroupProducts.length - 1"
       :current-group-name="currentGroupName"
+      :total-products="currentGroupProducts.length"
       @close="closeImagePopup"
       @navigate="navigateImage"
     />
@@ -180,15 +83,7 @@
       </div>
     </transition>
 
-    <!-- Admin Data Loading Overlay -->
-     <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="loading" class="fixed inset-0 z-[100] bg-white/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-         <div class="bg-white px-6 py-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3">
-             <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-             <span class="text-sm font-bold text-slate-700">Updating...</span>
-         </div>
-      </div>
-    </transition>
+
   </div>
 </template>
 
@@ -221,6 +116,12 @@ const CachedImage = defineAsyncComponent(() => import('./StockTable/CachedImage.
 const BrandLanding = defineAsyncComponent(() => import('./StockTable/BrandLanding.vue'));
 const LatestStock = defineAsyncComponent(() => import('../android/components/LatestStock.vue'));
 
+import { useAppStore } from '../stores/appStore';
+import { storeToRefs } from 'pinia';
+
+const appStore = useAppStore();
+const { showLanding, showCart, showSidePanel } = storeToRefs(appStore);
+
 const route = useRoute();
 const router = useRouter();
 
@@ -228,11 +129,8 @@ const router = useRouter();
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const isAndroid = ref(Capacitor.getPlatform() === 'android');
 const showGoToTop = ref(false);
-const showSidePanel = ref(false);
-const showCart = ref(false);
 const showCatalogGen = ref(false);
 const showLedgerView = ref(false);
-const showLanding = ref(true); // Brand Landing Page State
 const expandedGroups = ref({});
 const activeScrollGroup = ref('');
 const userHasScrolled = ref(false);
@@ -252,7 +150,7 @@ const {
 } = useStockData(isLocal);
 
 // 2. Admin
-const { isAdmin, isSuperAdmin } = useAdmin();
+const { isAdmin, isSuperAdmin, login: performLogin } = useAdmin();
 const showAdminModal = ref(false);
 
 // 7. Image Cache (Offline Support)
@@ -285,7 +183,7 @@ const handleCacheImages = async () => {
     // Collect Extra Assets (Logos)
     const extraUrls = [
        // Hardcoded Logos
-       'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp',
+       `${import.meta.env.BASE_URL}assets/logos/paragon-original-logo.png`,
        // Add other static assets if needed
     ];
 
@@ -323,17 +221,12 @@ const handleCacheImages = async () => {
     });
     
     // Final success/failure toast
+    toast.remove(toastId);
     if (result.success > 0) {
-      toast.update(toastId, {
-        render: `✓ ${result.success} assets cached for offline use!`,
-        type: 'success',
-        isLoading: false,
-        autoClose: 4000
-      });
+      toast.success(`✓ ${result.success} assets cached for offline use!`, { autoClose: 3500 });
     }
-    
     if (result.failed > 0) {
-      toast.warning(`${result.failed} assets failed to download.`, { autoClose: 3000 });
+      toast.warning(`${result.failed} assets failed to download.`, { autoClose: 3500 });
     }
   };
 
@@ -341,19 +234,15 @@ const promptAdminLogin = () => {
   showAdminModal.value = true;
 };
 
-const handleAdminLogin = (password) => {
+const handleAdminLogin = async (payload) => {
   showAdminModal.value = false;
-  if (!password) return;
-  if (password === 'admin123') {
-    isAdmin.value = true;
-    isSuperAdmin.value = false;
-    toast.success('Admin Mode Enabled', { autoClose: 2000 });
-  } else if (password === 'superadmin') {
-    isAdmin.value = false;
-    isSuperAdmin.value = true;
-    toast.success('Super Admin Mode Enabled', { autoClose: 2000 });
-  } else {
-    toast.error('Incorrect password', { autoClose: 3000 });
+  const pwd = typeof payload === 'object' ? payload?.password : payload;
+  const redirectHome = typeof payload === 'object' ? payload?.redirectHome : false;
+  if (!pwd) return;
+  
+  const success = await performLogin(pwd);
+  if (success && redirectHome) {
+    router.push('/home');
   }
 };
 
@@ -410,20 +299,56 @@ const currentProductIndex = ref(0);
 
 const openImagePopup = (product, groupIndex) => {
   currentProduct.value = product;
-  currentGroupIndex.value = groupIndex;
-  const group = filteredStockData.value[groupIndex];
-  if (group) {
-      currentGroupProducts.value = group.products;
-      currentGroupName.value = group.groupName;
-      currentProductIndex.value = group.products.findIndex((p) => p.productName === product.productName);
+  
+  const dataList = (filteredStockData.value && filteredStockData.value.length > 0)
+    ? filteredStockData.value
+    : (stockData.value || []);
+
+  let foundGroupIndex = groupIndex;
+  let foundGroup = null;
+
+  if (typeof foundGroupIndex === 'number' && dataList[foundGroupIndex]) {
+    foundGroup = dataList[foundGroupIndex];
+  } else {
+    // Search across dataList to find the group containing this product
+    for (let i = 0; i < dataList.length; i++) {
+      const g = dataList[i];
+      if (g.products && g.products.some(p => p.productName === product.productName)) {
+        foundGroupIndex = i;
+        foundGroup = g;
+        break;
+      }
+    }
+  }
+
+  if (foundGroup && Array.isArray(foundGroup.products) && foundGroup.products.length > 0) {
+    currentGroupIndex.value = foundGroupIndex;
+    currentGroupProducts.value = foundGroup.products;
+    currentGroupName.value = foundGroup.groupName;
+    const pIdx = foundGroup.products.findIndex(p => p.productName === product.productName);
+    currentProductIndex.value = pIdx >= 0 ? pIdx : 0;
+    currentProduct.value = foundGroup.products[currentProductIndex.value];
+  } else {
+    // Fallback: search all products across all groups
+    const allProducts = [];
+    dataList.forEach(g => {
+      if (g.products) allProducts.push(...g.products);
+    });
+    const pIdx = allProducts.findIndex(p => p.productName === product.productName);
+    currentGroupIndex.value = 0;
+    currentGroupProducts.value = allProducts.length > 0 ? allProducts : [product];
+    currentGroupName.value = foundGroup?.groupName || "Catalog";
+    currentProductIndex.value = pIdx >= 0 ? pIdx : 0;
   }
   
   showImagePopup.value = true;
   
   // URL Update
-  const url = new URL(window.location);
-  url.searchParams.set('product', product.productName);
-  window.history.pushState({}, '', url);
+  try {
+    const url = new URL(window.location);
+    url.searchParams.set('product', product.productName);
+    window.history.pushState({}, '', url);
+  } catch (e) {}
 };
 
 const closeImagePopup = ({ isPop = false } = {}) => {
@@ -435,12 +360,37 @@ const closeImagePopup = ({ isPop = false } = {}) => {
   currentProductIndex.value = 0;
   
   if (!isPop) {
-     selectedGroup.value = 'All'; // Reset group? Original logic did this.
-     window.history.replaceState(null, '', window.location.pathname);
+     selectedGroup.value = 'All';
+     try {
+       window.history.replaceState(null, '', window.location.pathname);
+     } catch (e) {}
   }
 };
 
+let isNavigating = false;
+
+const showToastOnce = (msg, id = 'nav-toast') => {
+  try {
+    toast.remove(id);
+    toast.info(msg, {
+      toastId: id,
+      autoClose: 1800,
+      closeOnClick: true,
+      pauseOnHover: false
+    });
+  } catch (e) {}
+};
+
 const navigateImage = (direction) => {
+  if (isNavigating) return;
+  isNavigating = true;
+  setTimeout(() => { isNavigating = false; }, 250);
+
+  if (!currentGroupProducts.value || currentGroupProducts.value.length === 0) {
+    showToastOnce("No products in current list", "nav-toast");
+    return;
+  }
+
   let newIndex = currentProductIndex.value + direction;
   
   // 1. Within current group
@@ -450,56 +400,56 @@ const navigateImage = (direction) => {
   } 
   // 2. Next Group
   else if (newIndex >= currentGroupProducts.value.length) {
-      // Find next group index
-      const nextGroupIndex = currentGroupIndex.value + 1;
-      if (nextGroupIndex < filteredStockData.value.length) {
-          // Switch to next group
-          currentGroupIndex.value = nextGroupIndex;
-          const nextGroup = filteredStockData.value[nextGroupIndex];
-          currentGroupProducts.value = nextGroup.products;
-          currentGroupName.value = nextGroup.groupName;
-          
-          // Start at 0
-          currentProductIndex.value = 0;
-          currentProduct.value = nextGroup.products[0];
-          
-          // Ensure group is expanded (optional interaction)
-          if (!expandedGroups.value[nextGroup.groupName]) {
-             expandedGroups.value[nextGroup.groupName] = true;
-          }
-      } else {
-          toast.info("You've reached the end of the list!");
-          return;
+    const dataList = (filteredStockData.value && filteredStockData.value.length > 0)
+      ? filteredStockData.value
+      : (stockData.value || []);
+      
+    const nextGroupIndex = (typeof currentGroupIndex.value === 'number' ? currentGroupIndex.value : 0) + 1;
+    if (nextGroupIndex < dataList.length) {
+      currentGroupIndex.value = nextGroupIndex;
+      const nextGroup = dataList[nextGroupIndex];
+      currentGroupProducts.value = nextGroup.products || [];
+      currentGroupName.value = nextGroup.groupName || "";
+      currentProductIndex.value = 0;
+      if (nextGroup.products && nextGroup.products[0]) {
+        currentProduct.value = nextGroup.products[0];
       }
+    } else {
+      showToastOnce("You've reached the end of the catalog!", "nav-toast");
+      return;
+    }
   }
   // 3. Previous Group
   else if (newIndex < 0) {
-      const prevGroupIndex = currentGroupIndex.value - 1;
-      if (prevGroupIndex >= 0) {
-          // Switch to prev group
-          currentGroupIndex.value = prevGroupIndex;
-          const prevGroup = filteredStockData.value[prevGroupIndex];
-          currentGroupProducts.value = prevGroup.products;
-          currentGroupName.value = prevGroup.groupName;
-          
-          // Start at last item
-          currentProductIndex.value = prevGroup.products.length - 1;
-          currentProduct.value = prevGroup.products[prevGroup.products.length - 1];
-          
-             // Ensure group is expanded
-          if (!expandedGroups.value[prevGroup.groupName]) {
-             expandedGroups.value[prevGroup.groupName] = true;
-          }
-      } else {
-          toast.info("This is the first item!");
-          return;
+    const dataList = (filteredStockData.value && filteredStockData.value.length > 0)
+      ? filteredStockData.value
+      : (stockData.value || []);
+      
+    const prevGroupIndex = (typeof currentGroupIndex.value === 'number' ? currentGroupIndex.value : 0) - 1;
+    if (prevGroupIndex >= 0) {
+      currentGroupIndex.value = prevGroupIndex;
+      const prevGroup = dataList[prevGroupIndex];
+      currentGroupProducts.value = prevGroup.products || [];
+      currentGroupName.value = prevGroup.groupName || "";
+      const lastIdx = (prevGroup.products && prevGroup.products.length > 0) ? prevGroup.products.length - 1 : 0;
+      currentProductIndex.value = lastIdx;
+      if (prevGroup.products && prevGroup.products[lastIdx]) {
+        currentProduct.value = prevGroup.products[lastIdx];
       }
+    } else {
+      showToastOnce("This is the first product in the catalog!", "nav-toast");
+      return;
+    }
   }
 
   // Update URL
-  const url = new URL(window.location);
-  url.searchParams.set('product', currentProduct.value.productName);
-  window.history.replaceState({}, '', url);
+  if (currentProduct.value && currentProduct.value.productName) {
+    try {
+      const url = new URL(window.location);
+      url.searchParams.set('product', currentProduct.value.productName);
+      window.history.replaceState({}, '', url);
+    } catch (e) {}
+  }
 };
 
 const toggleGroup = (groupName) => {
@@ -631,15 +581,31 @@ const handlePopState = () => {
     }
 };
 
-// Config Loading
+// Config Loading with robust Offline Caching & Fallback
 const loadConfig = async () => {
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
-        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         config.value = await response.json();
         companyName.value = config.value.companyName || 'SBE';
+        try {
+            localStorage.setItem('sbe_config_cache', JSON.stringify(config.value));
+        } catch (e) {}
     } catch (err) {
-        toast.error("Failed to load app configuration");
+        // Offline Fallback 1: LocalStorage Cache
+        try {
+            const cached = localStorage.getItem('sbe_config_cache');
+            if (cached) {
+                config.value = JSON.parse(cached);
+                companyName.value = config.value.companyName || 'SBE';
+                return;
+            }
+        } catch (e) {}
+        
+        // Offline Fallback 2: Built-in default config
+        config.value = { companyName: 'SBE Rayagada', theme: 'blue' };
+        companyName.value = config.value.companyName;
     }
 };
 

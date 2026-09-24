@@ -1,12 +1,5 @@
 <template>
-  <div class="min-h-screen relative bg-slate-50">
-    <!-- Global Safe Area Mask for Android (prevents scroll-through) -->
-    <div v-if="isNativeApp" class="fixed top-0 w-full z-[100]" :class="headerMaskColor" style="height: env(safe-area-inset-top, 32px);"></div>
-    
-    <!-- Global Ambient Glow Orbs -->
-    <div class="hub-orb hub-orb--warm fixed top-0 left-0 w-96 h-96 bg-gradient-to-tr from-amber-200/20 to-orange-400/20 rounded-full blur-[80px] -z-10 pointer-events-none mix-blend-multiply opacity-70"></div>
-    <div class="hub-orb hub-orb--accent fixed top-40 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-blue-300/20 to-violet-500/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-multiply opacity-60"></div>
-
+  <div class="min-h-screen relative" style="background-color: #f8f6f1; background-image: radial-gradient(circle at 85% 15%, rgba(253, 230, 138, 0.4) 0%, rgba(251, 191, 36, 0.12) 35%, transparent 70%), radial-gradient(circle at 15% 85%, rgba(196, 181, 253, 0.3) 0%, rgba(139, 92, 246, 0.1) 35%, transparent 65%); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">
     <router-view></router-view>
     
     <AdminLoginModal 
@@ -18,7 +11,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -29,22 +22,11 @@ import AdminLoginModal from '@/components/StockTable/AdminLoginModal.vue';
 
 import { useAppStore } from '@/stores/appStore';
 import { useAdmin } from '@/composables/useAdmin';
-import { performDeltaSync } from '@/utils/nativeCache';
-import { setupDailySyncNotification } from '@/utils/notifications';
-import { useStockData } from '@/composables/useStockData';
+import { useStockData, fetchStockMetadataLastSync } from '@/composables/useStockData';
 
 const route = useRoute();
 const router = useRouter();
-
 const appStore = useAppStore();
-
-const isNativeApp = ref(Capacitor.isNativePlatform());
-
-// Determine the safe area mask color based on route
-const headerMaskColor = computed(() => {
-  if (route.path === '/analyzer') return 'bg-[#f8f6f1]';
-  return 'bg-slate-50';
-});
 
 // Extract metadata instantly on cache load
 watch(() => appStore.stockData, (newData) => {
@@ -52,12 +34,6 @@ watch(() => appStore.stockData, (newData) => {
     const meta = newData.find(g => g.groupName === '_META_DATA_' || g.group === '_META_DATA_');
     if (meta && meta.lastSync) {
       appStore.setSyncTime(new Date(meta.lastSync));
-    }
-    
-    // Patch Goal 13: Remove Ajanta from Airson
-    const airsonGroup = newData.find(g => g.group === 'Airson');
-    if (airsonGroup && airsonGroup.brands) {
-      airsonGroup.brands = airsonGroup.brands.filter(b => b.brand !== 'AJANTA');
     }
   }
 }, { deep: true, immediate: true });
@@ -83,7 +59,6 @@ const showAdminModal = ref(false);
 // Load Config (Offline-First)
 const loadConfig = async () => {
     const CACHE_KEY = 'sbe-config-cache';
-    // 1. Immediately hydrate from cache in 0ms
     try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -91,7 +66,6 @@ const loadConfig = async () => {
         }
     } catch (e) {}
 
-    // 2. Fetch fresh config in background, silently falling back when offline
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
         const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
@@ -103,7 +77,6 @@ const loadConfig = async () => {
             } catch (e) {}
         }
     } catch (err) {
-        // Offline / network failure: silently continue with cached config
         console.log('[SBE Hub] Using cached configuration (offline mode).');
     }
 };
@@ -132,9 +105,8 @@ let backListener = null;
 onMounted(async () => {
   await loadConfig();
   await checkAdminState();
+  await fetchStockMetadataLastSync();
   await loadStockData();
-  // await setupDailySyncNotification();
-  await performDeltaSync();
   
   // Android App Update Check
   if (Capacitor.isNativePlatform()) {
@@ -165,9 +137,9 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    if (backListener) {
-        backListener.remove();
-    }
+  if (backListener) {
+    backListener.remove();
+  }
 });
 </script>
 
@@ -193,28 +165,24 @@ onUnmounted(() => {
   --toastify-icon-color-success: #22c55e !important; 
 }
 
-.Vue3Toastify__toast-container {
+.Toastify__toast-container {
   padding: 0 !important;
   pointer-events: none !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
-}
-
-.Vue3Toastify__toast-container {
   bottom: max(env(safe-area-inset-bottom, 32px), 32px) !important;
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
   align-items: center !important;
+  top: auto !important;
   transform: none !important;
 }
-.Vue3Toastify__toast {
+
+.Toastify__toast {
   margin: 0 auto !important;
   border-radius: 99px !important; 
-}
-
-.Vue3Toastify__toast {
   pointer-events: auto !important;
   padding: 10px 24px !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
@@ -224,16 +192,10 @@ onUnmounted(() => {
   border: none !important;
   margin-bottom: 8px !important;
   display: inline-flex !important;
-  animation: toast-spring-up 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
-.Vue3Toastify__progress-bar,
-.Vue3Toastify__close-button {
+.Toastify__progress-bar,
+.Toastify__close-button {
   display: none !important;
-}
-
-@keyframes toast-spring-up {
-  0% { transform: translateY(100px) scale(0.85); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 </style>

@@ -1,4 +1,4 @@
-import { getCleanProductName } from "./formatters";
+import { getCleanProductName, getOptimizedImageUrl } from "./formatters";
 import { extractColor } from "./colors";
 
 /**
@@ -33,8 +33,7 @@ const getBase64Image = (url) => {
             resolve(null);
         };
         
-        // Add cache-breaker to bypass strict CORS cache issues (especially for older photos)
-        img.src = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+        img.src = url;
     });
 };
 
@@ -152,8 +151,8 @@ export const generateRateChartPDF = async (brandName, products) => {
         
         let base64Img = null;
         if (p.imageUrl) {
-            // Add Cloudinary transformation for small thumbnail to save bandwidth and force JPG for jsPDF
-            const optimizedUrl = p.imageUrl.replace('/upload/', '/upload/w_100,q_70,f_jpg/');
+            // Route through Cloudflare edge shield thumbnail to preserve Cloudinary credits
+            const optimizedUrl = getOptimizedImageUrl(p.imageUrl, 100);
             base64Img = await getBase64Image(optimizedUrl);
         }
 

@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBE Engineering & Operations Journal | Sri Brundabana Enterprises</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #ffffff;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --brand-obsidian: #090d16;
+      --brand-gold: #c59b27;
+      --brand-gold-subtle: #fef9c3;
+      --brand-gold-dark: #854d0e;
+      --accent-red: #ef4444;
+      --accent-emerald: #10b981;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --code-bg: #090d16;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-gold: 0 4px 20px -2px rgba(197, 155, 39, 0.25);
+    }
+
+    [data-theme="dark"] {
+      --bg-canvas: #090d16;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --border-subtle: #1e293b;
+      --border-strong: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --brand-obsidian: #ffffff;
+      --code-bg: #030712;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      line-height: 1.65;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Top Sticky Header */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    [data-theme="dark"] .top-nav {
+      background: rgba(17, 24, 39, 0.85);
+    }
+
+    .nav-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-badge {
+      font-weight: 900;
+      font-size: 17px;
+      letter-spacing: 0.16em;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 16px;
+      background-color: var(--border-strong);
+    }
+
+    .brand-loc {
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .journal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background-color: rgba(197, 155, 39, 0.12);
+      border: 1px solid rgba(197, 155, 39, 0.3);
+      color: var(--brand-gold-dark);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    [data-theme="dark"] .journal-pill {
+      color: #fbbf24;
+      background-color: rgba(251, 191, 36, 0.15);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+
+    .btn-nav:hover {
+      background: var(--bg-canvas);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .btn-nav-primary {
+      background: var(--brand-obsidian);
+      color: #ffffff;
+      border-color: transparent;
+    }
+    [data-theme="dark"] .btn-nav-primary {
+      background: #f8fafc;
+      color: #090d16;
+    }
+    .btn-nav-primary:hover {
+      background: #1e293b;
+      color: #ffffff;
+    }
+
+    /* Page Layout */
+    .page-layout {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 32px 24px 80px 24px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .page-layout {
+        grid-template-columns: 1fr;
+      }
+      .toc-sidebar {
+        display: none;
+      }
+    }
+
+    /* TOC Sidebar */
+    .toc-sidebar {
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      padding: 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toc-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      font-weight: 500;
+    }
+
+    .toc-link:hover, .toc-link.active {
+      color: var(--text-main);
+      background: var(--bg-canvas);
+      font-weight: 700;
+    }
+
+    .toc-link.active {
+      border-left: 2px solid var(--brand-gold);
+      padding-left: 8px;
+    }
+
+    .toc-sublist {
+      list-style: none;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
+
+    .toc-sublist .toc-link {
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+
+    /* Hero Banner */
+    .journal-hero {
+      background: linear-gradient(135deg, #090d16 0%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 44px 40px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .journal-hero::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(197, 155, 39, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hero-tag {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 38px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+
+    .hero-desc {
+      color: #cbd5e1;
+      font-size: 16px;
+      max-width: 820px;
+      line-height: 1.6;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-num {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fef08a;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* Content Cards */
+    .journal-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 36px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: rgba(197, 155, 39, 0.1);
+      color: var(--brand-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      shrink: 0;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Golden Rules Grid */
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .rule-card {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      position: relative;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .rule-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .rule-card--danger {
+      border-left: 4px solid var(--accent-red);
+    }
+
+    .rule-card--gold {
+      border-left: 4px solid var(--brand-gold);
+    }
+
+    .rule-card--blue {
+      border-left: 4px solid var(--accent-blue);
+    }
+
+    .rule-card--emerald {
+      border-left: 4px solid var(--accent-emerald);
+    }
+
+    .rule-card--purple {
+      border-left: 4px solid var(--accent-purple);
+    }
+
+    .rule-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .rule-badge--danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    [data-theme="dark"] .rule-badge--danger {
+      background: #450a0a;
+      color: #fca5a5;
+    }
+
+    .rule-badge--gold {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    [data-theme="dark"] .rule-badge--gold {
+      background: #451a03;
+      color: #fde68a;
+    }
+
+    .rule-badge--blue {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    [data-theme="dark"] .rule-badge--blue {
+      background: #172554;
+      color: #93c5fd;
+    }
+
+    .rule-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .rule-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* 4-Layer Defense Pipeline */
+    .layers-pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .layer-card {
+      display: grid;
+      grid-template-columns: 80px 1fr 220px;
+      gap: 20px;
+      align-items: center;
+      padding: 20px 24px;
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: all 0.15s ease;
+    }
+
+    @media (max-width: 768px) {
+      .layer-card {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+
+    .layer-num {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      background: var(--brand-obsidian);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 18px;
+    }
+    [data-theme="dark"] .layer-num {
+      background: #f8fafc;
+      color: #090d16;
+    }
+
+    .layer-num span {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .layer-body h4 {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .layer-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .layer-metric {
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--text-main);
+    }
+
+    .layer-metric strong {
+      color: var(--accent-red);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Comparison Table */
+    .styled-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 18px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      font-size: 13.5px;
+    }
+
+    .styled-table th {
+      background: var(--bg-canvas);
+      padding: 12px 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+      font-size: 11.5px;
+      letter-spacing: 0.06em;
+    }
+
+    .styled-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    .styled-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .styled-table tr:hover td {
+      background: rgba(197, 155, 39, 0.03);
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-status--success {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    [data-theme="dark"] .badge-status--success {
+      background: #052e16;
+      color: #86efac;
+    }
+
+    .badge-status--danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    [data-theme="dark"] .badge-status--danger {
+      background: #450a0a;
+      color: #fca5a5;
+    }
+
+    /* Code Blocks */
+    .code-box {
+      background: var(--code-bg);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 16px 0;
+      position: relative;
+      overflow-x: auto;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .code-box pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    /* Timeline Ledger */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin-top: 24px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      left: 11px;
+      width: 2px;
+      background: var(--border-strong);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 32px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -32px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--brand-gold);
+      border: 4px solid var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 2px var(--brand-gold);
+    }
+
+    .timeline-dot--green {
+      background: var(--accent-emerald);
+      box-shadow: 0 0 0 2px var(--accent-emerald);
+    }
+
+    .timeline-dot--purple {
+      background: var(--accent-purple);
+      box-shadow: 0 0 0 2px var(--accent-purple);
+    }
+
+    .timeline-content {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+    }
+
+    .timeline-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    [data-theme="dark"] .timeline-date {
+      color: #fbbf24;
+    }
+
+    .timeline-heading {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .timeline-body {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .timeline-body ul {
+      margin-top: 8px;
+      padding-left: 20px;
+    }
+
+    .timeline-body li {
+      margin-bottom: 4px;
+    }
+
+    .tag-commit {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.08);
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    [data-theme="dark"] .tag-commit {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Synthesis Carousel Stage */
+    .stages-flex {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .stage-box {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      text-align: center;
+      position: relative;
+    }
+
+    .stage-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(197, 155, 39, 0.12);
+      color: var(--brand-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px auto;
+      font-size: 18px;
+    }
+
+    .stage-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .stage-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--brand-gold);
+      box-shadow: 0 0 0 3px rgba(197, 155, 39, 0.15);
+    }
+
+    /* Footer */
+    .journal-footer {
+      max-width: 1360px;
+      margin: 40px auto 0 auto;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Print styles */
+    @media print {
+      .top-nav, .toc-sidebar, .filter-bar, .btn-nav {
+        display: none !important;
+      }
+      .page-layout {
+        display: block !important;
+        padding: 0 !important;
+      }
+      .journal-section {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Top Bar -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <a href="../" class="brand-mark">
+        <span class="brand-badge">SBE</span>
+        <span class="brand-divider"></span>
+        <span class="brand-loc">Rayagada</span>
+        <span class="journal-pill">Engineering Journal</span>
+      </a>
+
+      <div class="nav-actions">
+        <button class="btn-nav" id="themeToggle" title="Toggle Dark/Light Mode">
+          <i class="fa-solid fa-moon"></i>
+          <span>Theme</span>
+        </button>
+        <button class="btn-nav" onclick="window.print()" title="Print / Export as PDF">
+          <i class="fa-solid fa-print"></i>
+          <span>Export PDF</span>
+        </button>
+        <a href="../" class="btn-nav btn-nav-primary">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Back to App</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <div class="page-layout">
+
+    <!-- Sticky Table of Contents -->
+    <aside class="toc-sidebar">
+      <div class="toc-title">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Index & Navigation</span>
+      </div>
+      <ul class="toc-list">
+        <li><a href="#overview" class="toc-link active"><i class="fa-solid fa-compass"></i> Overview & Architecture</a></li>
+        <li><a href="#golden-rules" class="toc-link"><i class="fa-solid fa-shield-halved"></i> The Golden Rules (The Pact)</a></li>
+        <li><a href="#four-layer-defense" class="toc-link"><i class="fa-solid fa-layer-group"></i> 4-Layer Defense Engine</a></li>
+        <li><a href="#synthesis-engine" class="toc-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Catalog Card Synthesis</a></li>
+        <li><a href="#dual-cloudinary" class="toc-link"><i class="fa-solid fa-cloud"></i> Dual Cloudinary & Edge Failover</a></li>
+        <li><a href="#matching-cleansing" class="toc-link"><i class="fa-solid fa-filter"></i> Matching & Database Disinfection</a></li>
+        <li><a href="#brand-tabs-ui" class="toc-link"><i class="fa-solid fa-table-cells-large"></i> Brand Tabs & Luxury UI Redesign</a></li>
+        <li><a href="#source-archives" class="toc-link"><i class="fa-solid fa-folder-tree"></i> Source Archives & Zip Repos</a></li>
+        <li><a href="#operations-ledger" class="toc-link"><i class="fa-solid fa-clock-rotate-left"></i> Chronological Operations Ledger</a></li>
+        <li><a href="#code-reference" class="toc-link"><i class="fa-solid fa-code"></i> Scripts & Execution Library</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Journal Content -->
+    <main>
+
+      <!-- Hero Header -->
+      <section class="journal-hero" id="overview">
+        <div class="hero-meta">
+          <span class="hero-tag"><i class="fa-solid fa-building"></i> Sri Brundabana Enterprises</span>
+          <span class="hero-tag"><i class="fa-solid fa-map-pin"></i> Rayagada, Odisha</span>
+          <span class="hero-tag"><i class="fa-solid fa-calendar"></i> September 2026</span>
+          <span class="hero-tag"><i class="fa-solid fa-certificate"></i> Production Ledger</span>
+        </div>
+        <h1 class="hero-title">Engineering, Image Intelligence & Brand Systems Journal</h1>
+        <p class="hero-desc">
+          A definitive, chronological record of all architectural systems, extraction pipelines, optical character recognition models, negative filtering rules, dual-cloud failovers, database cleansing algorithms, and luxury minimalist UI transformations implemented for SBE Footwear Wholesale.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">5,206</span>
+            <span class="stat-label">Catalog Products Audited</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">1,000+</span>
+            <span class="stat-label">Verified Secondary Cards</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">0</span>
+            <span class="stat-label">Status Card Violators</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">100%</span>
+            <span class="stat-label">AI-Generated SVGs Purged</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search & Filter Bar -->
+      <div class="filter-bar">
+        <i class="fa-solid fa-magnifying-glass" style="color: var(--text-subtle);"></i>
+        <input type="text" id="journalSearch" class="search-input" placeholder="Search rules, scripts, Cloudinary IDs, OCR patterns, or log entries...">
+      </div>
+
+      <!-- Section 1: The Golden Rules (The Pact) -->
+      <section class="journal-section" id="golden-rules">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            <div>
+              <h2 class="section-title">The Golden Rules & Architectural Commandments</h2>
+              <p class="section-subtitle">Strict commitments and operational guidelines governing image selection, processing, and display</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-grid">
+          <!-- Rule 1 -->
+          <div class="rule-card rule-card--danger">
+            <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-ban"></i> Zero Tolerance</span>
+            <h3 class="rule-title">Rule 1: Strict Negative Content Filter</h3>
+            <p class="rule-text">
+              Under <strong>NO circumstance</strong> may any marketing card include:
+              <br>• <strong>Top Banner Text:</strong> <code>"Sri Brundabana Enterprises"</code>, <code>"SBE Rayagada"</code>, or daily stock dates.
+              <br>• <strong>Bottom Footer Text:</strong> <code>"Qty"</code>, <code>"Qty:"</code>, or isolated carton piece counts.
+              <br><em>Rationale:</em> Wholesale buyers must see manufacturer-authentic promotional assets. Internal warehouse stock story cards reveal confidential counts and look unpolished.
+            </p>
+          </div>
+
+          <!-- Rule 2 -->
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-palette"></i> 4-Stage Pact</span>
+            <h3 class="rule-title">Rule 2: Catalog Card Synthesis</h3>
+            <p class="rule-text">
+              When using raw catalog PDF cutouts, follow the exact 4-stage compositor pipeline:
+              <br>1. Crop out footwear product tightly.
+              <br>2. Remove solid or messy background cleanly.
+              <br>3. Upscale & HD enhance contrast and clarity.
+              <br>4. Composite onto branded wave background with top-right logo, drop shadow, and bottom specs strip (matching <code>Core-1136.png</code>).
+            </p>
+          </div>
+
+          <!-- Rule 3 -->
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-tag"></i> Cloud Standard</span>
+            <h3 class="rule-title">Rule 3: Semantic Asset Naming</h3>
+            <p class="rule-text">
+              Never upload cryptic WhatsApp filenames (e.g. <code>IMG-20240807-WA0013.jpg</code>).
+              <br>All Cloudinary assets must be normalized to:
+              <br><code>[BRAND]_[MODEL]_[COLOR].jpg</code>
+              <br>Examples: <code>RELIANCE_XM_9021_NVY.jpg</code>, <code>ACTION_AXEL_BLK_WHT.jpg</code>, <code>CUBIX_50251_GRAP.jpg</code>, <code>EEKEN_2141_BRT.jpg</code>.
+            </p>
+          </div>
+
+          <!-- Rule 4 -->
+          <div class="rule-card rule-card--emerald">
+            <span class="rule-badge rule-badge--emerald"><i class="fa-solid fa-arrow-down-short-wide"></i> Priority Hierarchy</span>
+            <h3 class="rule-title">Rule 4: Manufacturer Precedence</h3>
+            <p class="rule-text">
+              Whenever clean manufacturer promotional cards are available in Quick Share / WhatsApp archives (and pass all negative filter checks), they must be <strong>strictly preferred over catalog cropped cutouts</strong>. Real factory cards contain authentic color grading and typography.
+            </p>
+          </div>
+
+          <!-- Rule 5 -->
+          <div class="rule-card rule-card--purple">
+            <span class="rule-badge rule-badge--purple"><i class="fa-solid fa-gem"></i> Visual Integrity</span>
+            <h3 class="rule-title">Rule 5: Zero AI-Generated Brand Assets</h3>
+            <p class="rule-text">
+              Absolute purge of AI-designed clip art (shoe-prints, cartoon icons, gradient SVG mockups). Use <strong>only authentic manufacturer brand logos</strong> extracted directly from official physical catalogs or high-res vector scans (Paragon, Eeken, Action, Solea, Paralite, Comfy).
+            </p>
+          </div>
+
+          <!-- Rule 6 -->
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-shield"></i> Brand Boundary Isolation</span>
+            <h3 class="rule-title">Rule 6: Cross-Brand Matching Prohibition</h3>
+            <p class="rule-text">
+              Models must strictly match within their brand boundary. An Eeken product name ending in <code>MRP1449/-</code> must never match a Paragon <code>EV1449LP</code> slipper. Price tokens (<code>MRP...</code>, <code>RS...</code>, <code>@...</code>) must be stripped before model tokens are evaluated.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: The 4-Layer Defense Engine -->
+      <section class="journal-section" id="four-layer-defense">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div>
+              <h2 class="section-title">The 4-Layer Defense Engine</h2>
+              <p class="section-subtitle">Multi-tier geometric, photometric, and optical character verification implemented in <code>process_all_quick_share.py</code></p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 16px;">
+          When processing hundreds of WhatsApp media items, optical character recognition alone is insufficient because OCR engines can distort stylized fonts (e.g. reading <em>"Rayagada"</em> as <em>"Rayasada"</em>) or miss yellow numbers on black backgrounds. We designed an airtight 4-layer defense pipeline that eliminates 100% of internal status cards:
+        </p>
+
+        <div class="layers-pipeline">
+          <!-- Layer 1 -->
+          <div class="layer-card">
+            <div class="layer-num">
+              <span>L-01</span>
+              01
+            </div>
+            <div class="layer-body">
+              <h4>Geometry & Aspect Ratio Disqualification</h4>
+              <p>
+                Mobile phone story screenshots (WhatsApp status cards) are generated in vertical phone ratios (16:9 or 20:9 vertical, e.g. 720×1600, 540×1200). Official manufacturer marketing assets are square or standard portrait (3:4 or 4:5). Any image with width/height ratio below 0.58 is instantly rejected before running costly OCR.
+              </p>
+            </div>
+            <div class="layer-metric">
+              <strong>Aspect Threshold</strong>
+              <code>(w / h) &lt; 0.58</code>
+              <div style="font-size: 10px; color: var(--text-subtle); margin-top: 4px;">Status story catch</div>
+            </div>
+          </div>
+
+          <!-- Layer 2 -->
+          <div class="layer-card">
+            <div class="layer-num">
+              <span>L-02</span>
+              02
+            </div>
+            <div class="layer-body">
+              <h4>Visual Banner Brightness Sampling</h4>
+              <p>
+                SBE WhatsApp status cards characteristically feature solid black header and footer banners overlaying the product photo. The script samples the top 5% strip and bottom 5% strip of the image array. If both strips exhibit an average pixel brightness below 35 (pure black), it is immediately flagged as a status template.
+              </p>
+            </div>
+            <div class="layer-metric">
+              <strong>Photometric Test</strong>
+              <code>top_lum &lt; 35 &amp;&amp;<br>bot_lum &lt; 35</code>
+              <div style="font-size: 10px; color: var(--text-subtle); margin-top: 4px;">Solid banner trigger</div>
+            </div>
+          </div>
+
+          <!-- Layer 3 -->
+          <div class="layer-card">
+            <div class="layer-num">
+              <span>L-03</span>
+              03
+            </div>
+            <div class="layer-body">
+              <h4>OCR Spelling Typo & Date Stamp Denylist</h4>
+              <p>
+                Optical character recognition can transcribe stylized typography with phonetically similar characters. The denylist includes both exact keywords and transcription distortions: <code>rayasada</code>, <code>raygada</code>, <code>brundaban</code>, <code>sbe</code>, <code>s.b.e</code>, along with calendar date regex patterns (e.g. <code>\d{1,2}\s+(Jan|Feb|...)\s+202\d</code>).
+              </p>
+            </div>
+            <div class="layer-metric">
+              <strong>Regex Denylist</strong>
+              <code>/(rayasada|sbe|<br>brundaban|\d{2}\s\w{3})/i</code>
+              <div style="font-size: 10px; color: var(--text-subtle); margin-top: 4px;">Typo & date catch</div>
+            </div>
+          </div>
+
+          <!-- Layer 4 -->
+          <div class="layer-card">
+            <div class="layer-num">
+              <span>L-04</span>
+              04
+            </div>
+            <div class="layer-body">
+              <h4>Footer Qty & Isolated Count Rejection</h4>
+              <p>
+                When yellow text on a black footer drops the label <code>"Qty:"</code>, OCR may read only the raw count (e.g. <code>"24"</code>, <code>"36"</code>, <code>"48"</code>). Layer 4 evaluates the bottom 15% bounding boxes. Any standalone two-digit number matching standard footwear wholesale carton pack sizes causes an automatic block.
+              </p>
+            </div>
+            <div class="layer-metric">
+              <strong>Bottom 15% Filter</strong>
+              <code>qty|pairs|prs|<br>^\s*\d{2}\s*$</code>
+              <div style="font-size: 10px; color: var(--text-subtle); margin-top: 4px;">Carton count block</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Catalog Card Synthesis Engine -->
+      <section class="journal-section" id="synthesis-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div>
+              <h2 class="section-title">Catalog Card Synthesis Engine</h2>
+              <p class="section-subtitle">Automated promotional card compositor implemented in <code>frontend/scripts/generate_catalog_card.py</code></p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text">
+          To convert raw catalog cutouts into cohesive, high-end promotional cards matching the iconic <code>Core-1136.png</code> aesthetic (900×1200 portrait cards), we built an automated 4-stage pipeline:
+        </p>
+
+        <div class="stages-flex">
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-crop-simple"></i></div>
+            <h4 class="stage-title">1. Precision Cropping</h4>
+            <p class="stage-desc">Identifies footwear bounding box from PDF catalog sheets, discarding page margins, folio numbers, and adjacent models.</p>
+          </div>
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-eraser"></i></div>
+            <h4 class="stage-title">2. Background Removal</h4>
+            <p class="stage-desc">Alpha-matting extraction produces a transparent PNG of the footwear cutout with antialiased sole contours.</p>
+          </div>
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-sparkles"></i></div>
+            <h4 class="stage-title">3. HD Enhancement</h4>
+            <p class="stage-desc">Unsharp masking, micro-contrast enhancement, and saturation stabilization to eliminate scan grain.</p>
+          </div>
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <h4 class="stage-title">4. Branded Compositor</h4>
+            <p class="stage-desc">Composites onto dynamic wave background, adds soft drop shadow, official brand logo (top right), and bottom specification strip.</p>
+          </div>
+        </div>
+
+        <div class="code-box">
+          <div class="code-header">
+            <span>generate_catalog_card.py — Core Compositor Call</span>
+            <button class="btn-copy" onclick="copyCode(this)"><i class="fa-solid fa-copy"></i> Copy</button>
+          </div>
+          <pre><code>python frontend/scripts/generate_catalog_card.py \
+  --input "C:/Users/Sahil Kumar/Downloads/catalog_models/1136_BLK.png" \
+  --brand "PARAGON" \
+  --model "1136" \
+  --color "BLACK" \
+  --mrp "299" \
+  --output "frontend/public/assets/Core-1136-Synthesized.png"</code></pre>
+        </div>
+      </section>
+
+      <!-- Section 4: Dual Cloudinary Architecture & Failover -->
+      <section class="journal-section" id="dual-cloudinary">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-cloud"></i></div>
+            <div>
+              <h2 class="section-title">Dual Cloudinary Architecture & Edge Failover</h2>
+              <p class="section-subtitle">Zero-downtime multi-cloud image distribution with Cloudflare edge caching</p>
+            </div>
+          </div>
+        </div>
+
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Cloud Account</th>
+              <th>Cloud Name</th>
+              <th>Upload Preset / Folder</th>
+              <th>Role & Content</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primary Cloud</strong></td>
+              <td><code>dg365ewal</code></td>
+              <td><code>sbe-catalog/</code></td>
+              <td>Original product photos, Tally-synced assets, catalog PDF cuts</td>
+              <td><span class="badge-status badge-status--success"><i class="fa-solid fa-check"></i> Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Secondary Cloud</strong></td>
+              <td><code>dieqsg5tr</code></td>
+              <td>Preset: <code>e-sbe-pics</code><br>Folder: <code>e-sbe/</code></td>
+              <td>Verified manufacturer promotional cards, semantic naming, 1,000+ verified cards</td>
+              <td><span class="badge-status badge-status--success"><i class="fa-solid fa-check"></i> Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Global CDN Proxy</strong></td>
+              <td><code>wsrv.nl</code></td>
+              <td>Edge cache (Cloudflare)</td>
+              <td>On-the-fly WebP compression, origin shielding (&gt;99% bandwidth savings)</td>
+              <td><span class="badge-status badge-status--success"><i class="fa-solid fa-bolt"></i> Accelerated</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="code-box">
+          <div class="code-header">
+            <span>cloudStatus.js — Intelligent Dual-Cloud Failover Function</span>
+            <button class="btn-copy" onclick="copyCode(this)"><i class="fa-solid fa-copy"></i> Copy</button>
+          </div>
+          <pre><code>export function getPreferredImageUrl(product) {
+  if (!product) return null;
+
+  // 1. If primary cloud is down, fail over seamlessly to secondaryImageUrl
+  if (isPrimaryCloudDown.value && product.secondaryImageUrl) {
+    return product.secondaryImageUrl;
+  }
+
+  // 2. If primary is down and product has no secondary image, return null cleanly
+  if (isPrimaryCloudDown.value && product.imageUrl && product.imageUrl.includes(primaryCloud) && !product.secondaryImageUrl) {
+    return null;
+  }
+
+  // 3. Normal order: primary imageUrl first, then secondaryImageUrl fallback
+  return product.imageUrl || product.secondaryImageUrl || null;
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- Section 5: Matching Engine & Database Disinfection -->
+      <section class="journal-section" id="matching-cleansing">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-filter"></i></div>
+            <div>
+              <h2 class="section-title">Matching Engine & Database Disinfection</h2>
+              <p class="section-subtitle">Eliminating cross-brand model collisions, price-token pollution, and pseudo-model errors</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--gold">
+            <h4 class="rule-title">Bug 1: Eeken 069 &rarr; ParaLite EV1449LP</h4>
+            <p class="rule-text">
+              <strong>Root Cause:</strong> Product name <code>Eeken 069 Black Mrp1449/-</code> had its price <code>1449</code> extracted as a model number when no model prefix was found, crossing brand boundaries into <code>ParaLite EV1449LP</code>.
+              <br><strong>Solution:</strong> Strict brand boundary isolation (Eeken only matches Eeken; Paragon only matches Paragon) and complete stripping of price expressions (<code>MRP...</code>, <code>RS...</code>, <code>@...</code>) before model matching.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--gold">
+            <h4 class="rule-title">Bug 2: Action Aptos &rarr; Paragon 4809</h4>
+            <p class="rule-text">
+              <strong>Root Cause:</strong> <code>FOOTWEAR_MRP-399_BLK_MRP399.png</code> carried no real model token and matched purely on price and color to <code>Action Aptos</code>.
+              <br><strong>Solution:</strong> Pseudo-model denylist disqualifies any price-only token (<code>MRP-*</code>, <code>RATE-*</code>, <code>DISCOUNT-*</code>, <code>VIEW-*</code>, <code>SINCE-*</code>). The asset was re-assigned to its true article: <code>Paragon Blot 4809 Mrp399/-</code>.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--emerald">
+            <h4 class="rule-title">Discovery: Box Footwear ("Barun" Group)</h4>
+            <p class="rule-text">
+              <strong>Root Cause:</strong> 139 products under group <code>"Barun"</code> (including <code>BF DRAGON-1</code>, <code>BF DRAGON-3</code>, <code>BF YODHA-1</code>, <code>BF JOGGAR</code>, <code>BF WONDER</code>) had missing images in the UI and were excluded from the Box Packing tab because <code>'Barun'</code> was absent from <code>boxGroupNames</code>.
+              <br><strong>Solution:</strong> Added <code>'Barun'</code> to <code>boxGroupNames</code> and linked existing Cloudinary images to the BF Dragon/Yodha articles.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--danger" style="grid-column: 1 / -1;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-triangle-exclamation"></i> Production Incident &amp; Forensic Audit</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">2026-09-23 Case Study</span>
+            </div>
+            <h4 class="rule-title">Colorway Desynchronization &amp; False Color Matching in Multi-Variant Articles</h4>
+            <p class="rule-text">
+              <strong>The Problem:</strong> Visual catalog audit across multi-variant Cubix articles identified 5 distinct products where the displayed shoe image directly contradicted the product card's listed colorway:
+              <br>&bull; <code>CUBIX C 60612</code>: Chikku shoe photo displayed on the Pink card; Pink shoe photo displayed on the Chikku card (inverted swap).
+              <br>&bull; <code>CUBIX E 21584 SILVER</code>: Displayed a Brown shoe photo with explicit card text <code>CLR BRN</code>.
+              <br>&bull; <code>CUBIX E 24511</code>: Brown card displayed Grape shoe; Grape card displayed Blue shoe.
+              <br>&bull; <code>CUBIX E 24514 &amp; 29506</code>: Biscuit card showed Pink shoe; Black card showed Green shoe; Green card showed Brown shoe.
+              <br>&bull; <code>CBX 15007</code>: Blue card displayed a Grape (<code>CLR GRP</code>) shoe.
+            </p>
+            <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+              <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <strong style="color: var(--accent-red); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bug"></i> Root Causes Identified</strong>
+                <ol style="margin-top: 6px; padding-left: 18px; font-size: 12.5px; color: var(--text-muted); line-height: 1.55;">
+                  <li><strong>Sequential Variant Assignment:</strong> In <code>process_cubix</code> and <code>process_florex</code>, matching occurred solely on model numbers (e.g. <code>24511</code>, <code>29506</code>). Images extracted from WhatsApp were sequentially linked to the first unfulfilled product without color verification.</li>
+                  <li><strong>Permissive Color Fallback:</strong> The legacy <code>matches_color</code> function defaulted to returning <code>True</code> when a color was unparsed, allowing mismatched variants to link.</li>
+                  <li><strong>Card Text vs. Visual Mismatch:</strong> Manufacturer marketing cards frequently list all available colorways in text (e.g. <code>CLR PNK, CHIKKU, BLK</code>), but only photograph a single shoe variant. OCR alone was reading all listed colors rather than detecting which variant was actually photographed.</li>
+                </ol>
+              </div>
+              <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <strong style="color: var(--accent-emerald); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-circle-check"></i> Remediation &amp; Pipeline Hardening</strong>
+                <ol style="margin-top: 6px; padding-left: 18px; font-size: 12.5px; color: var(--text-muted); line-height: 1.55;">
+                  <li><strong>Strict Color Matching:</strong> Removed the permissive fallback in <code>process_all_quick_share.py</code>. Only explicit color matches or single-variant badges are accepted.</li>
+                  <li><strong>Zero-Tolerance Mismatch Policy:</strong> If a clean manufacturer photo for the specific colorway does not exist, <code>secondaryImageUrl</code> is set to <code>null</code>. Never force an incorrect colorway onto an article.</li>
+                  <li><strong>Automated Database Cleanse:</strong> Executed <code>fix_color_mismatches.py</code> across both <code>frontend/</code> and <code>sbe-hub/</code>, applying 31 precision corrections (swapped 60612 Pink/Chikku, 15007 Blue/Grape, unlinked 21584 Silver, remapped 24511, 24514, 29506, and purged 50525, 60557, 77016, 24506).</li>
+                  <li><strong>UI Bug Fix:</strong> Converted <code>paragon-original-logo.png</code> to a pristine transparent PNG via pixel matrix masking to fix the solid white block artifact in the superimposed "Paragon Gents" and "Paragon Ladies" UI tabs.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-box">
+          <div class="code-header">
+            <span>fix_color_mismatches.py — Precision Database Cleansing Audit</span>
+            <button class="btn-copy" onclick="copyCode(this)"><i class="fa-solid fa-copy"></i> Copy</button>
+          </div>
+          <pre><code>python frontend/scripts/fix_color_mismatches.py
+# Processing: frontend/public/assets/stock-data.json
+# Processing: sbe-hub/public/assets/stock-data.json
+# Total fixes applied: 31 per database (62 total product entries corrected)
+# Result: 0 colorway desynchronizations remaining across all Cubix/Florex variants</code></pre>
+        </div>
+      </section>
+
+      <!-- Section 6: Brand Tabs & Luxury UI Redesign -->
+      <section class="journal-section" id="brand-tabs-ui">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-table-cells-large"></i></div>
+            <div>
+              <h2 class="section-title">Brand Tabs & Luxury Typographic Identity</h2>
+              <p class="section-subtitle">Purge of AI-generated vector art in favor of authentic manufacturer logos and editorial typography</p>
+            </div>
+          </div>
+        </div>
+
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Tab Order</th>
+              <th>Tab Name</th>
+              <th>Visual Architecture</th>
+              <th>Logo Asset Sourced</th>
+              <th>Filter Scope</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01</td>
+              <td><strong>All</strong></td>
+              <td>Standard utility pill (Icon + text)</td>
+              <td>FontAwesome <code>fa-border-all</code></td>
+              <td>Full catalog overview / showcase</td>
+            </tr>
+            <tr>
+              <td>02</td>
+              <td><strong>New</strong></td>
+              <td>Standard utility pill (Magic sparkles + text)</td>
+              <td>FontAwesome <code>fa-wand-magic-sparkles</code></td>
+              <td>Uploads &amp; arrivals within 30 days</td>
+            </tr>
+            <tr>
+              <td>03</td>
+              <td><strong>Paragon Gents</strong></td>
+              <td><span class="tag-commit" style="background:#fee2e2; color:#991b1b; font-weight:700;">Superimposed Pill-in-Pill</span>: Circular red Paragon logo pill superimposes outer chassis on top/left/bottom; right chassis extends with bold "GENTS"</td>
+              <td><code>paragon-tight-logo.png</code> (Circular white on red)</td>
+              <td><code>PARAGON GENTS</code>, <code>PARAGON GENTS 40%</code></td>
+            </tr>
+            <tr>
+              <td>04</td>
+              <td><strong>Paragon Ladies</strong></td>
+              <td><span class="tag-commit" style="background:#fee2e2; color:#991b1b; font-weight:700;">Superimposed Pill-in-Pill</span>: Circular red Paragon logo pill superimposes outer chassis on top/left/bottom; right chassis extends with bold "LADIES"</td>
+              <td><code>paragon-tight-logo.png</code> (Circular white on red)</td>
+              <td><code>PARAGON LADIES</code></td>
+            </tr>
+            <tr>
+              <td>05</td>
+              <td><strong>Paralite</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: 3:1 aspect ratio banner fills button edge-to-edge</td>
+              <td><code>paralite-logo.png</code></td>
+              <td><code>PARALITE</code>, <code>PARALITE OLD</code>, <code>P-TOES PARALITE</code></td>
+            </tr>
+            <tr>
+              <td>06</td>
+              <td><strong>Solea</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge manufacturer brand banner</td>
+              <td><code>solea-logo.png</code></td>
+              <td><code>PARAGON LADIES</code>, <code>SOLEA DISC 40% OFFER</code></td>
+            </tr>
+            <tr>
+              <td>07</td>
+              <td><strong>Eeken</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge yellow &amp; white brand banner</td>
+              <td><code>eeken-logo.png</code></td>
+              <td><code>EEKEN</code></td>
+            </tr>
+            <tr>
+              <td>08</td>
+              <td><strong>Max</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge Paragon Max banner</td>
+              <td><code>max-logo.png</code></td>
+              <td><code>Max</code></td>
+            </tr>
+            <tr>
+              <td>09</td>
+              <td><strong>Comfy</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Edge-to-edge Paragon Comfy banner</td>
+              <td><code>comfy-logo.png</code></td>
+              <td><code>PARAGON GENTS</code> (matching "Comfy")</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td><strong>P-Toes</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic vector logo extracted from 300 DPI catalog page 116 with normalized teal banner</td>
+              <td><code>ptoes-pill-logo.png</code></td>
+              <td><code>P-TOES</code>, <code>P-TOES PARALITE</code></td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td><strong>Tuffboot</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Industrial stencil safety boot logo</td>
+              <td><code>tuffboot-logo.png</code></td>
+              <td><code>Safety</code> (matching "Tuffboot")</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td><strong>Gumboot</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Industrial heavy-duty safety boot badge matching Tuffboot aesthetic</td>
+              <td><code>gumboot-logo.png</code></td>
+              <td><code>Safety</code> (matching "Gum Boot")</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td><strong>Cubix</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic manufacturer logo sourced from Downloads/Pictures/Logos</td>
+              <td><code>cubix-pill-logo.png</code></td>
+              <td><code>CUBIX</code>, <code>CUBIX 2</code></td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td><strong>Florex</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic manufacturer logo sourced from Downloads/Pictures/Logos</td>
+              <td><code>florex-pill-logo.png</code></td>
+              <td><code>FLOREX</code></td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td><strong>Reliance</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic manufacturer brand banner</td>
+              <td><code>reliance-logo.png</code></td>
+              <td><code>Reliance</code></td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td><strong>Stimulus</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Paragon Stimulus brand badge</td>
+              <td><code>stimulus-logo.png</code></td>
+              <td><code>Stimulus</code></td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td><strong>Walkaholic</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Paragon Walkaholic brand badge</td>
+              <td><code>walkaholic-logo.png</code></td>
+              <td><code>Walkaholic</code></td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td><strong>Ajanta</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic Ajanta brand banner</td>
+              <td><code>ajanta-pill-logo.png</code></td>
+              <td><code>Ajanta</code></td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td><strong>Action</strong></td>
+              <td><span class="tag-commit" style="background:#ecfdf5; color:#065f46; font-weight:700;">End-to-End Filled Pill</span>: Authentic Action brand banner</td>
+              <td><code>action-pill-logo.png</code></td>
+              <td><code>Action</code></td>
+            </tr>
+            <tr>
+              <td>20+</td>
+              <td><strong>Packing &amp; Discount Pills</strong></td>
+              <td>Standard utility pills (Box Packing, Loose Packing, 40% Off Paragon)</td>
+              <td>FontAwesome icon badges</td>
+              <td>Respective category filters</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+          <div style="padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-layer-group" style="color: var(--accent-red);"></i> Superimposed Pill-in-Pill Architecture
+            </h4>
+            <p class="rule-text">
+              For <code>Paragon Gents</code> and <code>Paragon Ladies</code>, standard button padding creates awkward text-to-logo ratios. We engineered a <strong>pill-in-pill chassis lockup</strong>:
+              <br>&bull; The outer chassis is elongated with full rounded radius (<code>rounded-full</code>).
+              <br>&bull; The left section contains a circular child pill housing the pure white Paragon logo on red. This child pill's top, bottom, and left outer arc <strong>superimposes exactly</strong> on the outer chassis boundary.
+              <br>&bull; The right chassis extension contains the category name (<code>GENTS</code> / <code>LADIES</code>) rendered in bold uppercase tracking with high visual contrast.
+            </p>
+          </div>
+
+          <div style="padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-shapes" style="color: var(--brand-gold);"></i> End-to-End Filled Pill Architecture
+            </h4>
+            <p class="rule-text">
+              Generic UI frameworks place a small rectangular logo inside a padded white button, producing an amateurish, unpolished feel. Our filled-pill architecture:
+              <br>&bull; Pre-renders each manufacturer logo into a standardized <strong>3:1 aspect ratio pill banner</strong> with edge-to-edge background bleed.
+              <br>&bull; Sets <code>overflow-hidden</code> on the pill button, transforming the button chassis into the logo itself.
+              <br>&bull; Sourced 100% authentic manufacturer assets from <code>Downloads\Pictures\Logos</code> and vector extractions from the 300 DPI master catalog (including the teal P-Toes brand insignia).
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 20px; background: var(--bg-canvas); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Header Brand Identity Redesign:</h4>
+          <p class="rule-text">
+            • <strong>Removed:</strong> AI-style yellow shoe-prints icon (<code>fa-shoe-prints</code>) and clashing Times New Roman serif font.<br>
+            • <strong>Implemented:</strong> Luxury Swiss editorial typographic lockup:
+            <br>&nbsp;&nbsp;&mdash; <strong>`S B E`</strong>: Obsidian black bold sans with luxury tracking (<code>tracking-[0.16em]</code>)
+            <br>&nbsp;&nbsp;&mdash; <strong>Hairline Divider</strong>: Subtle vertical accent line (<code>bg-slate-300/80</code>)
+            <br>&nbsp;&nbsp;&mdash; <strong>`RAYAGADA`</strong>: Understated slate-500 uppercase in generous tracking (<code>tracking-[0.2em]</code>)
+            <br>&nbsp;&nbsp;&mdash; <strong>`FOOTWEAR WHOLESALE`</strong>: Micro-caps subtitle with wide letter-spacing (<code>tracking-[0.26em]</code>)
+            <br>• <strong>Removed 2nd Sticky Filter Chips Row:</strong> Reclaimed vertical screen height on mobile by deleting duplicate quick-filter pills.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 7: Source Archives & Zip Repositories -->
+      <section class="journal-section" id="source-archives">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-folder-tree"></i></div>
+            <div>
+              <h2 class="section-title">Source Archives & Catalog Repositories</h2>
+              <p class="section-subtitle">Local directory inventory of manufacturer WhatsApp exports, Quick Share archives, and logos</p>
+            </div>
+          </div>
+        </div>
+
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Archive / File Path</th>
+              <th>Size</th>
+              <th>Contents & Brands</th>
+              <th>Processing Script</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Quick Share\WhatsApp Chat with BOX FOOTWEAR PHOTO GALLERY👟👞.zip</code></td>
+              <td>389.7 MB</td>
+              <td>3,299 photos: BF Dragon, Yodha, Joggar, Malang, Wonder, Canvas, Jordar, Range</td>
+              <td><code>process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Quick Share\WhatsApp Chat with LOOSE FOOTWEAR PHOTO GALLERY.zip</code></td>
+              <td>537.8 MB</td>
+              <td>Loose chappals: Hawai, Maruti, Pankaj, Ashu, Tara, R R Polyplast, Aagam</td>
+              <td><code>process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Quick Share\WhatsApp Chat with FLOREX GALLERY.zip</code></td>
+              <td>442.6 MB</td>
+              <td>Florex Swastik footwear marketing cards</td>
+              <td><code>process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Quick Share\WhatsApp Chat with NEW CUBIX GALLERY .zip</code></td>
+              <td>374.8 MB</td>
+              <td>Cubix and Cubix 2 product catalog cards</td>
+              <td><code>process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Quick Share\WhatsApp Chat with EEKEN PHOTO SAMPLES .zip</code></td>
+              <td>203.1 MB</td>
+              <td>Eeken casuals, clogs, sandals, running shoes</td>
+              <td><code>process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Quick Share\WhatsApp Chat with Action Synergy.zip</code></td>
+              <td>82.8 MB</td>
+              <td>Action Synergy, Axel, and Eva footwear cards</td>
+              <td><code>process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>C:\Users\Sahil Kumar\Downloads\Pictures\Logos\</code></td>
+              <td>~15 MB</td>
+              <td>Paragon, Solea, Paralite, Eeken, Action, Max, Comfy, Tuffboot, Vertex, Escoute</td>
+              <td><code>process_pictures_logos_and_core.py</code></td>
+            </tr>
+            <tr>
+              <td><code>c:\Projects\sbe\frontend\public\assets\logos\</code></td>
+              <td>~12 MB</td>
+              <td>Production PNG logos served to client web & Android app</td>
+              <td>Vite static assets bundle</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Section 8: Chronological Operations Ledger -->
+      <section class="journal-section" id="operations-ledger">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+              <h2 class="section-title">Chronological Operations Ledger</h2>
+              <p class="section-subtitle">Step-by-step engineering timeline detailing problems encountered, root causes, and resolutions</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline">
+          <!-- Entry -1: Bulletproof Dual Multi-Agent Box & Loose Extraction -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--green"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 21:40 IST &bull; Production Deploy</div>
+              <h4 class="timeline-heading">Dual Multi-Agent Swarm: Full Bulletproof Extraction Across Box &amp; Loose Footwear Galleries</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Zero-Tolerance Danger Filter:</strong> Implemented dual-layer rejection across all 7,429 combined WhatsApp archive images:
+                    <br>&bull; <em>Pre-OCR:</em> Auto-rejected phone status screenshots (<code>ratio &lt; 0.58</code>) and solid black header/footer strips (<code>brightness &lt; 40</code>). Filtered out over 1,647 status screenshots before running OCR.
+                    <br>&bull; <em>Post-OCR:</em> Hard rejection on any appearance of dealer text (<code>"SBE Rayagada"</code>, <code>"Brundabana"</code>), inventory badges (<code>"Qty: 40"</code>, <code>"Qty: 14"</code>), or WhatsApp status date stamps (e.g. <code>"24 Aug 2026"</code>).
+                  </li>
+                  <li><strong>Strict Mirror-Overlapping Size Clusters:</strong> Enforced user-defined domain clustering where only physically adjacent mirror size runs can share photos when Brand, Article, and Colorway match:
+                    <br>&bull; <em>Ladies Cluster:</em> <code>4x7</code> ↔ <code>4x8</code> ↔ <code>5x8</code>
+                    <br>&bull; <em>Gents Cluster:</em> <code>6x9</code> ↔ <code>6x10</code> ↔ <code>7x10</code>
+                    <br>&bull; <em>Kids Cluster:</em> <code>11x13</code> ↔ <code>1x3</code>
+                    <br>&bull; <em>Toddler Cluster:</em> <code>15x18</code> ↔ <code>16x20</code>
+                    <br>&bull; <em>Hard Exclusion:</em> Strictly prohibited cross-tier non-mirror jumps (e.g. <code>2x5</code> vs <code>6x9</code>).
+                  </li>
+                  <li><strong>Dual Multi-Agent Execution Results:</strong>
+                    <br>&bull; <strong>Box Footwear:</strong> 84 newly verified manufacturer photos uploaded to Cloudinary (<code>dieqsg5tr</code>), expanding Box items with backup URLs to <strong>138 items</strong>.
+                    <br>&bull; <strong>Loose Footwear:</strong> Executed parallel extraction on 4,133 photos in <code>LOOSE FOOTWEAR PHOTO GALLERY.zip</code>, linking 34 verified products across Magnet, Maruti Plastics, etc., expanding Loose backup URLs to <strong>37 items</strong>.
+                    <br>&bull; <strong>Catalog Grand Total:</strong> Reached <strong>1,120 total items</strong> across the entire catalog backed up with high-resolution manufacturer photos.
+                  </li>
+                  <li><strong>New Arrivals Synchronization:</strong> Fixed date discrepancy by restricting <code>isNewArrival()</code> strictly to <code>firstSeenAt</code> (accountant sync timestamp), preventing older products with newly added images from falsely jumping to New Arrivals, and synchronizing consolidated model counts.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 0: Colorway Mismatch & Filled Pill Tabs -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--green"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 18:30 IST &bull; Production Deploy</div>
+              <h4 class="timeline-heading">Colorway Desynchronization Resolution, 31 Database Fixes &amp; End-to-End Filled Pill Architecture</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Resolved 5 Multi-Variant Color Mismatch Reports:</strong>
+                    <br>&bull; <code>CUBIX C 60612</code>: Inverted Pink/Chikku images swapped back to authentic colorways.
+                    <br>&bull; <code>CUBIX E 21584 SILVER</code>: Purged mismatched Brown shoe image (<code>CLR BRN</code>).
+                    <br>&bull; <code>CUBIX E 24511</code>: Accurately mapped Blue, Grape, and Brown photos; unlinked false Black photo.
+                    <br>&bull; <code>CUBIX E 24514 &amp; 29506</code>: Remapped Biscuit, Black, and Green photos; unlinked mismatched colors.
+                    <br>&bull; <code>CBX 15007</code>: Swapped Silky Blue and Grape images to match physical models.
+                  </li>
+                  <li><strong>Engineered Precision Cleansing Script:</strong> Executed <code>fix_color_mismatches.py</code> across both <code>frontend/</code> and <code>sbe-hub/</code> production databases, applying 31 verified fixes per database (62 total record corrections).</li>
+                  <li><strong>Extraction Pipeline Hardening:</strong> In <code>process_all_quick_share.py</code>, eliminated the permissive <code>return True</code> fallback. Enforced strict brand boundary checks and explicit single-variant OCR badges. Established zero tolerance for forced image matching.</li>
+                  <li><strong>Superimposed Pill-in-Pill Architecture:</strong> Redesigned <code>Paragon Gents</code> and <code>Paragon Ladies</code> into an elongated chassis where the circular red Paragon logo superimposes the outer chassis top, bottom, and left boundary, with bold tracked text on the right.</li>
+                  <li><strong>End-to-End Filled Pill Logos:</strong> Replaced generic nested logos with 3:1 aspect ratio edge-to-edge filled pill banners across Eeken, Solea, Paralite, Max, Comfy, P-Toes, Tuffboot, Gumboot, Cubix, Florex, Reliance, Stimulus, Walkaholic, Ajanta, and Action.</li>
+                  <li><strong>Authentic P-Toes &amp; Gumboot Assets:</strong> Extracted authentic vector P-Toes logo directly from 300 DPI master catalog page 116 with background normalization; designed matching heavy-duty industrial Gumboot badge.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 1 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 14:52 IST &bull; Commit <span class="tag-commit">0c61877</span></div>
+              <h4 class="timeline-heading">Purge of AI SVG Logos, Tab Reordering &amp; Barun Group Discovery</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li>Deleted 6 AI-generated SVG logos: <code>paragon-logo.svg</code>, <code>eeken-logo.svg</code>, <code>action-logo.svg</code>, <code>cubix-logo.svg</code>, <code>florex-logo.svg</code>, <code>reliance-logo.svg</code>.</li>
+                  <li>Reordered brand tabs per user specification: All &rarr; New &rarr; Paragon Gents &rarr; Paragon Ladies &rarr; Paralite &rarr; Solea &rarr; Eeken &rarr; Max &rarr; Comfy &rarr; P-Toes &rarr; Tuffboot &rarr; Gumboot &rarr; Action, Cubix, etc.</li>
+                  <li>Added circular crop treatment (<code>roundLogo: true</code>) for Paragon Gents and Ladies pills.</li>
+                  <li>Identified 139 Box Footwear products under group <code>"Barun"</code> excluded from Box Packing tab; added <code>'Barun'</code> to <code>boxGroupNames</code>.</li>
+                  <li>Linked 6 existing Cloudinary images directly to BF Dragon / Yodha products.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 2 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 14:18 IST &bull; Commits <span class="tag-commit">365633d</span> &amp; <span class="tag-commit">10b41d5</span></div>
+              <h4 class="timeline-heading">Luxury Typographic Header Overhaul & 2nd Filter Bar Removal</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li>Removed redundant 2nd sticky filter chips row (<code>Filters ▾</code>, <code>In Stock Only</code>, <code>New Arrivals</code>, <code>40% Off Paragon</code>) from <code>BrandLanding.vue</code>, reclaiming substantial screen space.</li>
+                  <li>Replaced AI-style yellow shoe-prints icon and Times New Roman font with a luxury Swiss typographic identity (<code>SBE</code> bold sans | <code>Rayagada</code> uppercase | <code>Footwear Wholesale</code> micro-caps).</li>
+                  <li>Production builds passed: Web in 4.72s, Android in 5.34s.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 3 -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--purple"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 08:30 IST &bull; Milestones 1,000 Verified Images</div>
+              <h4 class="timeline-heading">4-Layer Defense Engine & Purge of Status Card Violators</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li>Identified 2 status card violators (<code>WA0465</code> and <code>WA0557</code>) that slipped through due to OCR spelling distortion ("Rayasada"). Immediately cleared both links to <code>null</code>.</li>
+                  <li>Engineered the 4-layer defense in <code>process_all_quick_share.py</code>: Layer 1 (aspect ratio &lt; 0.58), Layer 2 (visual black banner brightness &lt; 35), Layer 3 (OCR typos and date regex), Layer 4 (footer Qty counts).</li>
+                  <li>Enforced semantic naming (<code>[BRAND]_[MODEL]_[COLOR].jpg</code>) across all uploads to Cloudinary secondary account <code>dieqsg5tr</code>.</li>
+                  <li>Total database products with verified secondary images reached <strong>1,000</strong>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 4 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-22 15:30 IST &bull; Script <span class="tag-commit">cleanse_mismatched_images.py</span></div>
+              <h4 class="timeline-heading">Database Disinfection & Pseudo-Model Denylist</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li>Fixed cross-brand model matching bugs (Eeken 069 matching ParaLite EV1449LP; Action Aptos matching Paragon 4809).</li>
+                  <li>Implemented price-token stripping (<code>MRP...</code>, <code>RS...</code>, <code>@...</code>) before model matching.</li>
+                  <li>Added denylist for pseudo-model tokens: <code>MRP-*</code>, <code>RATE-*</code>, <code>DISCOUNT-*</code>, <code>VIEW-*</code>, <code>SINCE-*</code>.</li>
+                  <li>Audited all 5,206 database records in <code>frontend</code> and <code>sbe-hub</code>, confirming 0 mismatches remain.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 5 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-20 11:00 IST &bull; Dual Cloudinary Infrastructure</div>
+              <h4 class="timeline-heading">Cloudinary Failover & Cloudflare Edge Caching (wsrv.nl)</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li>Integrated secondary Cloudinary account <code>dieqsg5tr</code> with preset <code>e-sbe-pics</code>.</li>
+                  <li>Built <code>cloudStatus.js</code> with reactive tracking (<code>isPrimaryCloudDown</code>, <code>isSecondaryCloudDown</code>) and seamless failover resolution.</li>
+                  <li>Routed all Cloudinary image URLs through <code>wsrv.nl</code> edge proxy for WebP transformation, eliminating bandwidth bottlenecks.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 9: Code Reference Library -->
+      <section class="journal-section" id="code-reference">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-code"></i></div>
+            <div>
+              <h2 class="section-title">Scripts & Execution Library</h2>
+              <p class="section-subtitle">Key scripts and automation utilities created in <code>frontend/scripts/</code></p>
+            </div>
+          </div>
+        </div>
+
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Script</th>
+              <th>Language</th>
+              <th>Purpose & Capabilities</th>
+              <th>Command Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>process_all_quick_share.py</code></td>
+              <td>Python</td>
+              <td>4-layer defense filter, OCR brand extraction, semantic renaming, and upload to Cloudinary secondary account</td>
+              <td><code>python frontend/scripts/process_all_quick_share.py</code></td>
+            </tr>
+            <tr>
+              <td><code>fix_color_mismatches.py</code></td>
+              <td>Python</td>
+              <td>Precision colorway audit &amp; desynchronization fixer: corrects multi-variant swapped/mismatched images across catalog databases</td>
+              <td><code>python frontend/scripts/fix_color_mismatches.py</code></td>
+            </tr>
+            <tr>
+              <td><code>generate_catalog_card.py</code></td>
+              <td>Python (Pillow)</td>
+              <td>4-stage promotional card synthesizer: crop, bg removal, HD enhance, wave layout with logo and specs</td>
+              <td><code>python frontend/scripts/generate_catalog_card.py --help</code></td>
+            </tr>
+            <tr>
+              <td><code>cleanse_mismatched_images.py</code></td>
+              <td>Python</td>
+              <td>Full database audit: verifies brand boundaries, purges pseudo-model tokens, validates image URLs</td>
+              <td><code>python frontend/scripts/cleanse_mismatched_images.py</code></td>
+            </tr>
+            <tr>
+              <td><code>link_bf_images.py</code></td>
+              <td>Python</td>
+              <td>Directly links verified Cloudinary secondary images to Box Footwear (Barun group) articles</td>
+              <td><code>python link_bf_images.py</code></td>
+            </tr>
+            <tr>
+              <td><code>process_pictures_logos_and_core.py</code></td>
+              <td>Python</td>
+              <td>Uploads catalog brand logos and Core Paragon cards to Cloudinary and generates mapping reports</td>
+              <td><code>python frontend/scripts/process_pictures_logos_and_core.py</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Page Footer -->
+  <footer class="journal-footer">
+    <div class="footer-left">
+      <span style="font-weight: 800; color: var(--text-main);">Sri Brundabana Enterprises</span>
+      <span>&bull;</span>
+      <span>Technical Engineering &amp; Operations Journal</span>
+      <span>&bull;</span>
+      <span>Rayagada, Odisha</span>
+    </div>
+    <div>
+      <span>Maintained by Antigravity Agent &bull; Base URL: <code>/sbe/journal</code></span>
+    </div>
+  </footer>
+
+  <script>
+    // Dark/Light Mode Toggle
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let currentTheme = localStorage.getItem('sbe-journal-theme') || (prefersDark ? 'dark' : 'light');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('sbe-journal-theme', theme);
+      const icon = themeToggleBtn.querySelector('i');
+      if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun';
+      } else {
+        icon.className = 'fa-solid fa-moon';
+      }
+    }
+
+    applyTheme(currentTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(currentTheme);
+    });
+
+    // Copy Code Block Handler
+    function copyCode(btn) {
+      const codeBlock = btn.closest('.code-box').querySelector('pre code');
+      if (!codeBlock) return;
+      navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+        }, 2000);
+      });
+    }
+
+    // Live Search Filter
+    const searchInput = document.getElementById('journalSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const sections = document.querySelectorAll('.journal-section');
+        sections.forEach(sec => {
+          if (!term) {
+            sec.style.display = '';
+            return;
+          }
+          const text = sec.innerText.toLowerCase();
+          if (text.includes(term)) {
+            sec.style.display = '';
+          } else {
+            sec.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Scrollspy for Table of Contents
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const sections = document.querySelectorAll('section[id]');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          tocLinks.forEach(link => {
+            if (link.getAttribute('href') === `#${id}`) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(sec => observer.observe(sec));
+  </script>
+</body>
+</html>

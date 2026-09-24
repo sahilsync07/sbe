@@ -1,22 +1,5 @@
 <template>
-  <div class="min-h-screen relative">
-    <!-- Global Persistent App Layout -->
-    <DesktopToolbar
-      v-if="!hubPages.has($route.path)"
-      :loading="stockLoading"
-      :is-caching-images="isCaching"
-      :show-side-panel="showSidePanel"
-      :show-cart="showCart"
-      :company-name="companyName"
-      :cloud-name="cloudName"
-      :hide-mobile-bottom-bar="hideMobileBottomBar"
-      @toggleSidebar="toggleSidebar"
-      @toggleCart="toggleCart"
-      @updateStockData="updateStockData"
-      @promptAdminLogin="showAdminModal = true"
-      @cacheImages="handleCacheImages"
-      @refreshData="refreshStockData"
-    />
+  <div class="min-h-screen relative w-full max-w-full overflow-x-hidden">
 
     <BrandsSidebar
       :show-side-panel="showSidePanel"
@@ -41,6 +24,13 @@
        @login="handleAdminLogin"
     />
 
+    <GitHubSyncModal
+       :show="showGitHubSyncModal"
+       @close="showGitHubSyncModal = false"
+    />
+
+    <GitHubTokenModal />
+
     <!-- Order Details Modal -->
     <OrderModal
        :show="showOrderDetailsModal"
@@ -63,16 +53,16 @@ import { toast } from 'vue3-toastify';
 import { storeToRefs } from 'pinia';
 
 import AdminLoginModal from './components/StockTable/AdminLoginModal.vue';
-import DesktopToolbar from './components/StockTable/DesktopToolbar.vue';
 import BrandsSidebar from './components/StockTable/BrandsSidebar.vue';
 import CartSidebar from './components/StockTable/CartSidebar.vue';
 
-// Use same async import for OrderModal
+// Use same async import for Modals
 const OrderModal = defineAsyncComponent(() => import('./components/StockTable/OrderModal.vue'));
+const GitHubSyncModal = defineAsyncComponent(() => import('./components/StockTable/GitHubSyncModal.vue'));
+const GitHubTokenModal = defineAsyncComponent(() => import('./components/StockTable/GitHubTokenModal.vue'));
 
 import { useAppStore } from './stores/appStore';
 import { useAdmin } from './composables/useAdmin';
-import { performDeltaSync } from './utils/nativeCache';
 import { setupDailySyncNotification } from './utils/notifications';
 import { useStockData } from './composables/useStockData';
 import { useCart } from './composables/useCart';
@@ -84,7 +74,7 @@ const route = useRoute();
 const router = useRouter();
 
 const appStore = useAppStore();
-const { stockData, config, searchQuery } = storeToRefs(appStore);
+const { stockData, config, searchQuery, showSidePanel, showCart, showLanding, showAdminModal, showGitHubSyncModal } = storeToRefs(appStore);
 
 watch(() => route.query, async (query) => {
   if (query.pwd) {
@@ -113,23 +103,38 @@ const hideMobileBottomBar = computed(() => {
 });
 
 // UI State
-const showSidePanel = ref(false);
-const showCart = ref(false);
-const showAdminModal = ref(false);
 const activeScrollGroup = ref('');
 const companyName = ref('SBE');
 
-// Load Config
+
+// Load Config with robust Offline Caching & Fallback
 const loadConfig = async () => {
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
-        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const conf = await response.json();
-        // Update store with loaded config
         appStore.$patch({ config: conf });
         companyName.value = conf.companyName || 'SBE';
+        try {
+            localStorage.setItem('sbe_config_cache', JSON.stringify(conf));
+        } catch (e) {}
     } catch (err) {
-        toast.error("Failed to load app configuration");
+        // Offline Fallback 1: LocalStorage Cache
+        try {
+            const cached = localStorage.getItem('sbe_config_cache');
+            if (cached) {
+                const conf = JSON.parse(cached);
+                appStore.$patch({ config: conf });
+                companyName.value = conf.companyName || 'SBE';
+                return;
+            }
+        } catch (e) {}
+        
+        // Offline Fallback 2: Built-in default config
+        const fallbackConfig = { companyName: 'SBE Rayagada', theme: 'blue' };
+        appStore.$patch({ config: fallbackConfig });
+        companyName.value = fallbackConfig.companyName;
     }
 };
 
@@ -173,9 +178,11 @@ const handleAdminLogin = async (payload) => {
   showAdminModal.value = false;
   if (!pwd) return;
   
-  const success = await performLogin(pwd);
+  const result = await performLogin(pwd);
 
-  if (success && redirectHome) {
+  if (result && typeof result === 'object' && result.workzone) {
+    router.push(`/workzone/${result.workzone}`);
+  } else if (result && redirectHome) {
     router.push('/home');
   }
 };
@@ -203,7 +210,7 @@ const handleCacheImages = async () => {
     
     const allProducts = stockData.value?.flatMap(group => group.products) || [];
     const productsWithImages = allProducts.filter(p => p.imageUrl);
-    const extraUrls = [ 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp' ];
+    const extraUrls = [ `${import.meta.env.BASE_URL}assets/logos/paragon-original-logo.png` ];
     
     if (groupedSidebar.value?.topBrands) {
         groupedSidebar.value.topBrands.forEach(item => {
@@ -224,11 +231,12 @@ const handleCacheImages = async () => {
       toast.update(toastId, { render: `Downloading assets ${current}/${total} (${percent}%)...`, type: 'info', isLoading: true, autoClose: false });
     });
     
+    toast.remove(toastId);
     if (result.success > 0) {
-      toast.update(toastId, { render: `✓ ${result.success} assets cached!`, type: 'success', isLoading: false, autoClose: 4000 });
+      toast.success(`✓ ${result.success} assets cached!`, { autoClose: 3500 });
     }
     if (result.failed > 0) {
-      toast.warning(`${result.failed} assets failed.`, { autoClose: 3000 });
+      toast.warning(`${result.failed} assets failed.`, { autoClose: 3500 });
     }
 };
 
@@ -240,7 +248,6 @@ onMounted(async () => {
   await loadStockData();
 
   await setupDailySyncNotification();
-  await performDeltaSync();
   
   if (Capacitor.isNativePlatform()) {
     try {
@@ -332,16 +339,22 @@ onMounted(async () => {
   border: none !important;
   margin-bottom: 8px !important;
   display: inline-flex !important;
-  animation: toast-spring-up 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
-.Vue3Toastify__progress-bar,
-.Vue3Toastify__close-button {
+.Vue3Toastify__progress-bar {
   display: none !important;
 }
 
-@keyframes toast-spring-up {
-  0% { transform: translateY(100px) scale(0.85); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+.Vue3Toastify__close-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 0.8 !important;
+  margin-left: 10px !important;
+  align-self: center !important;
+  cursor: pointer !important;
+}
+
+.Vue3Toastify__close-button:hover {
+  opacity: 1 !important;
+  color: #ffffff !important;
 }
 </style>

@@ -62,7 +62,8 @@ export const BRAND_LISTS = {
         'ADDA',
         'ADDOXY',
         'AIRFAX',
-        'Hitway',
+        'HITWAY',
+        'ZYF TEX',
         'Paris',
         'TEUZ',
         'VAISHNO PLASTIC',
@@ -78,9 +79,15 @@ export const BRAND_LISTS = {
         'VENUS',
         'Mini F/w',
         'SOLA',
-        'ORTHO'
+        'ORTHO',
+        'UXO',
+        'Brij Footwear',
+        'BRIZ FOOTWEAR',
+        'Durolite'
     ]
 };
+
+const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
 
 export const TOP_BRANDS_CONFIG = [
     {
@@ -101,11 +108,11 @@ export const TOP_BRANDS_CONFIG = [
     },
     {
         name: 'Action',
-        logo: null,
+        logo: `${baseUrl}assets/logos/action-logo.png`,
     },
     {
         name: 'AJANTA',
-        logo: null,
+        logo: `${baseUrl}assets/ajanta-logo.png`,
     },
 ];
 

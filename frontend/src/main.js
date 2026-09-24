@@ -32,10 +32,12 @@ import "./style.css";
   app.use(createPinia());
   app.use(router);
   app.use(Vue3Toasty, {
-    autoClose: 2500,
+    autoClose: 3500,
     position: "bottom-center", 
-    hideProgressBar: true,
-    closeButton: false,
+    hideProgressBar: false,
+    closeButton: true,
+    pauseOnHover: true,
+    pauseOnFocusLoss: true,
     icon: true,
   });
   app.mount("#app");

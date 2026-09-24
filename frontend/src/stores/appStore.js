@@ -10,8 +10,16 @@ export const useAppStore = defineStore('app', {
     searchQuery: '',
     cleanView: true,
     config: {},
+    showCart: false,
+    showSidePanel: false,
+    showLanding: true,
+    showAdminModal: false,
+    showGitHubSyncModal: false,
   }),
   actions: {
+    setShowLanding(status) {
+      this.showLanding = status;
+    },
     setAdmin(status) {
       this.isAdmin = status;
     },
@@ -32,6 +40,25 @@ export const useAppStore = defineStore('app', {
     },
     setCleanView(status) {
       this.cleanView = status;
+    },
+    toggleCart(forceVal) {
+      this.showCart = forceVal !== undefined ? forceVal : !this.showCart;
+      if (this.showCart) {
+        this.searchQuery = '';
+      }
+    },
+    toggleSidePanel(forceVal) {
+      this.showSidePanel = forceVal !== undefined ? forceVal : !this.showSidePanel;
+      if (this.showSidePanel) {
+        this.searchQuery = '';
+      }
+    },
+    toggleAdminModal(forceVal) {
+      this.showAdminModal = forceVal !== undefined ? forceVal : !this.showAdminModal;
+    },
+    toggleGitHubSyncModal(forceVal) {
+      this.showGitHubSyncModal = forceVal !== undefined ? forceVal : !this.showGitHubSyncModal;
     }
   }
 });
+

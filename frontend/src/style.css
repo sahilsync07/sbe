@@ -5,38 +5,55 @@
 :root {
   --background: #ffffff;
   --foreground: #020617;
+  --gold-primary: #c59b27;
+  --gold-light: #dfba73;
+  --gold-dark: #9e782f;
+  --gold-gradient: linear-gradient(135deg, #dfba73 0%, #c59b27 50%, #9e782f 100%);
+  --dark-surface: #121214;
+  --dark-elevated: #1a1a1e;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  @apply bg-slate-50 text-slate-800 antialiased font-sans selection:bg-blue-500 selection:text-white;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+  @apply bg-[#fcfbf9] text-slate-800 antialiased font-sans selection:bg-[#c59b27] selection:text-white;
 }
 
 /* Root app container */
 #app {
   min-height: 100vh;
   min-height: 100dvh;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* ============================================
-   ANDROID-ONLY SAFE AREA STYLES
-   These only apply when running in Capacitor Android app
+   ANDROID & PWA SAFE AREA UTILITIES
    ============================================ */
 
-/* Safe Area Utilities - Android Only */
-.platform-android .safe-area-top {
+.safe-area-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-.platform-android .safe-area-top-fixed {
+.safe-area-top-fixed {
   top: 0;
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-.platform-android .safe-area-bottom {
+.safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Main content offset - Android Only */
+/* Main content offset for non-landing catalog view */
 .platform-android .main-content-offset {
   margin-top: calc(54px + env(safe-area-inset-top, 0px));
 }
@@ -46,9 +63,8 @@ body {
   }
 }
 
-/* Web fallback - no safe area adjustments */
 body:not(.platform-android) .main-content-offset {
-  margin-top: 60px;
+  margin-top: 54px;
 }
 @media (min-width: 768px) {
   body:not(.platform-android) .main-content-offset {
@@ -57,18 +73,16 @@ body:not(.platform-android) .main-content-offset {
 }
 
 /* Sticky Group Header Offset */
-/* Mobile: 54px navbar + safe-area */
 .sticky-group-header {
   top: calc(54px + env(safe-area-inset-top, 20px));
 }
-/* Desktop: 72px navbar */
 @media (min-width: 768px) {
   .sticky-group-header {
     top: 72px;
   }
 }
 
-/* Android-only elements - hidden by default, visible on Android */
+/* Android-only elements */
 .android-only-btn {
   display: none !important;
 }
@@ -76,43 +90,63 @@ body:not(.platform-android) .main-content-offset {
   display: flex !important;
 }
 
-/* Custom Scrollbar */
-/* Custom Scrollbar - Hidden but functional */
+/* ============================================
+   SCROLLBAR & UTILITY HELPERS
+   ============================================ */
+
+.no-scrollbar::-webkit-scrollbar,
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
   background: transparent;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: transparent;
+  display: none;
 }
 
-/* For Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 html {
   scrollbar-width: none;
 }
 
-/* Utilities */
-.holographic-text {
-  background: linear-gradient(to right, #2563eb, #e11d48, #2563eb);
-  background-size: 200% auto;
-  color: #000;
+/* ============================================
+   LUXURY GOLD & BRAND THEME EFFECTS
+   ============================================ */
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #dfba73 0%, #c59b27 50%, #9e782f 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shine 3s linear infinite;
+}
+
+.gold-gradient-bg {
+  background: linear-gradient(135deg, #dfba73 0%, #c59b27 50%, #9e782f 100%);
+}
+
+.gold-border {
+  border-color: rgba(197, 155, 39, 0.3);
+}
+
+.gold-glow {
+  box-shadow: 0 4px 20px -2px rgba(197, 155, 39, 0.25);
+}
+
+.holographic-text {
+  background: linear-gradient(135deg, #18181b 0%, #c59b27 50%, #18181b 100%);
+  background-size: 200% auto;
+  color: #18181b;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
 }
 
 @keyframes shine {
-  0% {
-    background-position: 0% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 .holographic-border {
@@ -123,12 +157,12 @@ html {
 .holographic-border::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: -1.5px;
   border-radius: inherit;
-  background: linear-gradient(to right, #2563eb, #e11d48, #2563eb);
-  background-size: 200% auto;
+  background: linear-gradient(135deg, #dfba73, #c59b27, #18181b, #dfba73);
+  background-size: 300% auto;
   z-index: -1;
-  animation: shine 3s linear infinite;
+  animation: shine 4s linear infinite;
 }
 
 /* Transitions */
@@ -146,67 +180,70 @@ html {
   position: absolute;
 }
 
-
 @media (max-width: 640px) {
   table {
     @apply table-fixed;
   }
-
-  th,
-  td {
+  th, td {
     @apply px-1 py-2 text-xs;
   }
-
-  th:first-child,
-  td:first-child {
-    @apply w-28;
-  }
-
-  th:nth-child(2),
-  td:nth-child(2) {
-    @apply w-16;
-  }
-
-  th:nth-child(3),
-  td:nth-child(3) {
-    @apply w-28;
-  }
-
-  .image-box {
-    @apply w-20 h-28;
-  }
-
-
+  th:first-child, td:first-child { @apply w-28; }
+  th:nth-child(2), td:nth-child(2) { @apply w-16; }
+  th:nth-child(3), td:nth-child(3) { @apply w-28; }
+  .image-box { @apply w-20 h-28; }
 }
 
-
-/* Replaced by App.vue global styles for better cache persistence */
-
-/* 
- * Infinite Marquee Animations for Horizontal Galleries
- * These are applied to flex containers to make them scroll automatically
- */
+/* Marquee Utilities */
 .animate-marquee-left {
   animation: marquee-left 35s linear infinite;
 }
-
 .animate-marquee-right {
   animation: marquee-right 35s linear infinite;
 }
-
 @keyframes marquee-left {
   0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); } /* Scrolls half of its duplicated width */
+  100% { transform: translateX(-50%); }
 }
-
 @keyframes marquee-right {
-  0% { transform: translateX(-50%); } /* Starts half-scrolled */
+  0% { transform: translateX(-50%); }
   100% { transform: translateX(0%); }
 }
-
-/* Pause animations when user hovers or touches the container */
 .pause-marquee:hover,
 .pause-marquee:active,
 .pause-marquee:focus-within {
   animation-play-state: paused;
+}
+
+.Toastify__toast-container {
+  padding: 0 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  bottom: max(env(safe-area-inset-bottom, 32px), 32px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  align-items: center !important;
+  top: auto !important;
+  transform: none !important;
+}
+
+.Toastify__toast {
+  margin: 0 auto !important;
+  border-radius: 99px !important;
+  pointer-events: auto !important;
+  padding: 10px 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: none !important;
+  margin-bottom: 8px !important;
+  display: inline-flex !important;
+}
+
+.Toastify__progress-bar,
+.Toastify__close-button {
+  display: none !important;
 }

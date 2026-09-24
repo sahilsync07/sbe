@@ -1,7 +1,6 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { useAdmin } from '../composables/useAdmin';
-import { performDeltaSync } from './nativeCache';
 
 export async function setupDailySyncNotification() {
     if (!Capacitor.isNativePlatform()) return;
@@ -44,7 +43,6 @@ export async function setupDailySyncNotification() {
         LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
             if (notificationAction.notification.id === 1) {
                 // User tapped the morning sync notification
-                performDeltaSync();
             }
         });
 

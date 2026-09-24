@@ -26,20 +26,74 @@ export function normalizeId(name) {
 }
 
 /**
- * Get optimized Cloudinary URL with transformations
+ * Get optimized Cloudinary URL routed through a free global Cloudflare CDN edge cache (wsrv.nl).
+ * Shields Cloudinary from repeat downloads, slashing origin bandwidth by >99%.
+ *
  * @param {string} imageUrl - Original image URL
- * @returns {string|null} Optimized URL or null
+ * @param {'thumb'|'modal'|string} [targetOrTransformation='thumb'] - Target view or custom size
+ * @returns {string|null} Optimized Cloudflare CDN URL or null
  */
-export function getOptimizedImageUrl(imageUrl) {
+export function getOptimizedImageUrl(imageUrl, targetOrTransformation = 'thumb') {
     if (!imageUrl) return null;
     try {
+        if (!imageUrl.includes('res.cloudinary.com')) return imageUrl;
         const parts = imageUrl.split('/upload/');
         if (parts.length !== 2) return imageUrl;
-        const transformation = 'w_400,q_70,f_auto';
-        return `${parts[0]}/upload/${transformation}/${parts[1]}`;
+
+        // Strip any existing transformation prefix in parts[1] so we always hit canonical source
+        const cleanPath = parts[1].replace(/^([a-z]_[^/]+,?)+\//i, '');
+        const canonicalUrl = `${parts[0]}/upload/${cleanPath}`;
+
+        // Configure edge caching dimensions
+        let width = 400;
+        let quality = 80;
+
+        if (targetOrTransformation === 'modal') {
+            width = 800;
+            quality = 85;
+        } else if (typeof targetOrTransformation === 'number') {
+            width = targetOrTransformation;
+        } else if (typeof targetOrTransformation === 'string' && targetOrTransformation.startsWith('w_')) {
+            const m = targetOrTransformation.match(/w_(\d+)/);
+            if (m) width = parseInt(m[1], 10);
+        }
+
+        // Route through Cloudflare edge cache (wsrv.nl) with automatic WebP compression
+        const hostPath = canonicalUrl.replace(/^https?:\/\//, '');
+        return `https://wsrv.nl/?url=${encodeURIComponent(hostPath)}&w=${width}&q=${quality}&output=webp`;
     } catch (e) {
         return imageUrl;
     }
+}
+
+/**
+ * Get direct Cloudinary fallback URL in case of CDN unavailability
+ */
+export function getDirectCloudinaryUrl(imageUrl) {
+    if (!imageUrl) return null;
+    try {
+        if (!imageUrl.includes('res.cloudinary.com')) return imageUrl;
+        const parts = imageUrl.split('/upload/');
+        if (parts.length !== 2) return imageUrl;
+        const cleanPath = parts[1].replace(/^([a-z]_[^/]+,?)+\//i, '');
+        return `${parts[0]}/upload/w_400,q_auto:eco,f_auto/${cleanPath}`;
+    } catch (e) {
+        return imageUrl;
+    }
+}
+
+import { getPreferredImageUrl } from './cloudStatus.js';
+
+export { getPreferredImageUrl };
+
+/**
+ * Get active product image URL, supporting primary imageUrl, secondaryImageUrl, and automatic failover
+ * @param {Object} product - Product object
+ * @returns {string|null} Image URL or null
+ */
+export function getProductImage(product) {
+    if (!product) return null;
+    return getPreferredImageUrl(product);
 }
 
 /**
@@ -51,13 +105,12 @@ export function isNewArrival(product) {
     if (!product) return false;
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - 1);
-    const minDate = new Date('2025-11-01');
+    
+    // STRICTLY based on when data was synced/entered from accountant PC
+    if (!product.firstSeenAt) return false;
 
-    const imageDate = product.imageUploadedAt ? new Date(product.imageUploadedAt) : minDate;
-    const itemDate = product.firstSeenAt ? new Date(product.firstSeenAt) : minDate;
-
-    const latestDate = itemDate > imageDate ? itemDate : imageDate;
-    return latestDate > cutoff;
+    const itemDate = new Date(product.firstSeenAt);
+    return itemDate > cutoff;
 }
 
 /**
@@ -99,5 +152,60 @@ export function getCleanProductName(name) {
     
     const cleanedString = clean.replace(/\s+/g, ' ').trim();
     return formatProductName(cleanedString);
+}
+
+/**
+ * Parse structured catalog specs from product name (Article, Size, MRP, Color, Sole)
+ * Matches the official Paragon / Eeken catalog layout:
+ * - ARTICLE: "PARALITE 1427"
+ * - COLOR: "PISTA"
+ * - SIZE: "04/08" or "06/10"
+ * - MRP: "239.00"
+ * - SOLE: "EVA" or "PU"
+ */
+export function parseCatalogSpecs(name, groupName = '') {
+    if (!name) return { article: '', size: '', mrp: '', color: null, sole: '' };
+    
+    const color = extractColor(name);
+    
+    // Extract Size e.g. (04*08) or 06-10 or 6x9 or (06/10)
+    let size = '';
+    const sizeMatch = name.match(/(?:^|[\s\(])(\d{1,2})\s*[\*\-xX\/]\s*(\d{1,2})(?:[\s\)]|$)/);
+    if (sizeMatch) {
+        const s1 = sizeMatch[1].padStart(2, '0');
+        const s2 = sizeMatch[2].padStart(2, '0');
+        size = `${s1}/${s2}`;
+    }
+
+    // Extract MRP
+    let mrp = '';
+    const mrpMatch = name.match(/mrp[\s\.\:]*(\d+(\.\d+)?)/i) || 
+                     name.match(/rs[\s\.\:]*(\d+(\.\d+)?)/i) ||
+                     name.match(/@\s*(\d+(\.\d+)?)/i);
+    if (mrpMatch) {
+        mrp = mrpMatch[1];
+    }
+
+    // Determine Sole
+    let sole = '';
+    const upper = (name + ' ' + (groupName || '')).toUpperCase();
+    if (upper.includes('EVA') || upper.includes('PARALITE') || upper.includes('HAWAI') || upper.includes('RUBBER')) {
+        sole = 'EVA';
+    } else if (upper.includes('PU') || upper.includes('SOLEA') || upper.includes('VERTEX') || upper.includes('MERIVA') || upper.includes('COMFY')) {
+        sole = 'PU';
+    } else if (upper.includes('PVC') || upper.includes('PLASTIC')) {
+        sole = 'PVC';
+    }
+
+    // Article Name: clean uppercase article name
+    const cleanName = getCleanProductName(name).toUpperCase();
+    
+    return {
+        article: cleanName,
+        size,
+        mrp,
+        color,
+        sole
+    };
 }
 

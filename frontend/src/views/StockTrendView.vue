@@ -110,7 +110,7 @@
                       <div v-if="topSellers.length > 0" class="space-y-2">
                          <div v-for="p in topSellers" :key="p.productName" class="trend-float-card rounded-2xl p-3 flex items-center gap-3 cursor-pointer group" @click="openLightbox(p)">
                             <div class="w-12 h-12 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden relative">
-                                <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                <CachedImage v-if="getProductImage(p)" :src="getOptimizedImageUrl(getProductImage(p))" :fallback-src="p.secondaryImageUrl ? getOptimizedImageUrl(p.secondaryImageUrl) : null" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                                 <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-sm"></i></div>
                             </div>
                             <div class="min-w-0 flex-1">
@@ -131,7 +131,7 @@
                       <div v-if="soldOutAlerts.length > 0" class="space-y-2">
                          <div v-for="p in soldOutAlerts" :key="p.productName" class="trend-float-card rounded-2xl p-3 flex items-center gap-3 cursor-pointer group border border-rose-100" @click="openLightbox(p)">
                             <div class="w-12 h-12 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden relative">
-                                <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform grayscale" />
+                                <CachedImage v-if="getProductImage(p)" :src="getOptimizedImageUrl(getProductImage(p))" :fallback-src="p.secondaryImageUrl ? getOptimizedImageUrl(p.secondaryImageUrl) : null" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform grayscale" />
                                 <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-sm"></i></div>
                                 <div class="absolute inset-0 bg-rose-500/10 mix-blend-multiply"></div>
                             </div>
@@ -153,7 +153,7 @@
                       <div v-if="deadStock.length > 0" class="space-y-2">
                          <div v-for="p in deadStock" :key="p.productName" class="trend-float-card rounded-2xl p-3 flex items-center gap-3 cursor-pointer group" @click="openLightbox(p)">
                             <div class="w-12 h-12 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden relative">
-                                <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                <CachedImage v-if="getProductImage(p)" :src="getOptimizedImageUrl(getProductImage(p))" :fallback-src="p.secondaryImageUrl ? getOptimizedImageUrl(p.secondaryImageUrl) : null" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                                 <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-sm"></i></div>
                             </div>
                             <div class="min-w-0 flex-1">
@@ -224,7 +224,7 @@
                       class="trend-float-card rounded-2xl p-3 active:scale-[0.99]">
                       <div class="flex items-start gap-2.5 mb-2">
                         <div class="flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-slate-100 ring-1 ring-slate-200/60 cursor-pointer" @click="openLightbox(p)">
-                          <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="Product" class="w-full h-full object-cover" />
+                          <CachedImage v-if="getProductImage(p)" :src="getOptimizedImageUrl(getProductImage(p))" :fallback-src="p.secondaryImageUrl ? getOptimizedImageUrl(p.secondaryImageUrl) : null" alt="Product" class="w-full h-full object-cover" />
                           <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-sm"></i></div>
                         </div>
                         <div class="min-w-0 flex-1">
@@ -276,7 +276,7 @@
                             <td class="min-w-[220px] px-3 py-2.5 sm:px-5 sm:py-3.5">
                               <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0 w-10 h-10 rounded-xl overflow-hidden bg-slate-100 ring-1 ring-slate-200/60 cursor-pointer" @click="openLightbox(p)">
-                                  <CachedImage v-if="p.imageUrl" :src="getOptimizedImageUrl(p.imageUrl)" alt="" class="w-full h-full object-cover" />
+                                  <CachedImage v-if="getProductImage(p)" :src="getOptimizedImageUrl(getProductImage(p))" :fallback-src="p.secondaryImageUrl ? getOptimizedImageUrl(p.secondaryImageUrl) : null" alt="" class="w-full h-full object-cover" />
                                   <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-image text-xs"></i></div>
                                 </div>
                                 <div>
@@ -364,7 +364,7 @@ import { storeToRefs } from 'pinia';
 import { useStockData } from '../composables/useStockData';
 import { useStockAnalytics } from '../composables/useStockAnalytics';
 import { useIntersectionObserver } from '@vueuse/core';
-import { getOptimizedImageUrl } from '../utils/formatters';
+import { getOptimizedImageUrl, getProductImage } from '../utils/formatters';
 import CachedImage from '../components/StockTable/CachedImage.vue';
 import ImageLightbox from '../components/ImageLightbox.vue';
 

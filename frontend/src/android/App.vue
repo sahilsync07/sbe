@@ -1,21 +1,5 @@
 <template>
-  <div class="min-h-screen relative">
-    <!-- Global Persistent App Layout -->
-    <DesktopToolbar
-      :loading="stockLoading"
-      :is-caching-images="isCaching"
-      :show-side-panel="showSidePanel"
-      :show-cart="showCart"
-      :company-name="companyName"
-      :cloud-name="cloudName"
-      :hide-mobile-bottom-bar="hideMobileBottomBar"
-      @toggleSidebar="toggleSidebar"
-      @toggleCart="toggleCart"
-      @updateStockData="updateStockData"
-      @promptAdminLogin="showAdminModal = true"
-      @cacheImages="handleCacheImages"
-      @refreshData="refreshStockData"
-    />
+  <div class="min-h-screen relative w-full max-w-full overflow-x-hidden">
 
     <BrandsSidebar
       :show-side-panel="showSidePanel"
@@ -40,6 +24,13 @@
        @login="handleAdminLogin"
     />
 
+    <GitHubSyncModal
+       :show="showGitHubSyncModal"
+       @close="showGitHubSyncModal = false"
+    />
+
+    <GitHubTokenModal />
+
     <!-- Order Details Modal -->
     <OrderModal
        :show="showOrderDetailsModal"
@@ -63,15 +54,15 @@ import { toast } from 'vue3-toastify';
 import { storeToRefs } from 'pinia';
 
 import AdminLoginModal from '../components/StockTable/AdminLoginModal.vue';
-import DesktopToolbar from '../components/StockTable/DesktopToolbar.vue';
 import BrandsSidebar from '../components/StockTable/BrandsSidebar.vue';
 import CartSidebar from '../components/StockTable/CartSidebar.vue';
 
 const OrderModal = defineAsyncComponent(() => import('../components/StockTable/OrderModal.vue'));
+const GitHubSyncModal = defineAsyncComponent(() => import('../components/StockTable/GitHubSyncModal.vue'));
+const GitHubTokenModal = defineAsyncComponent(() => import('../components/StockTable/GitHubTokenModal.vue'));
 
 import { useAppStore } from '../stores/appStore';
 import { useAdmin } from '../composables/useAdmin';
-import { performDeltaSync } from '../utils/nativeCache';
 import { setupDailySyncNotification } from '../utils/notifications';
 import { useStockData } from '../composables/useStockData';
 import { useCart } from '../composables/useCart';
@@ -83,7 +74,7 @@ const route = useRoute();
 const router = useRouter();
 
 const appStore = useAppStore();
-const { stockData, config, searchQuery } = storeToRefs(appStore);
+const { stockData, config, searchQuery, showSidePanel, showCart, showLanding, showAdminModal, showGitHubSyncModal } = storeToRefs(appStore);
 
 watch(() => route.query.login, (newVal) => {
   if (newVal === 'admin') {
@@ -101,26 +92,41 @@ const hideMobileBottomBar = computed(() => {
 });
 
 // UI State
-const showSidePanel = ref(false);
-const showCart = ref(false);
-const showAdminModal = ref(false);
 const activeScrollGroup = ref('');
 const companyName = ref('SBE');
 
-// Load Config
+// Load Config with robust Offline Caching & Fallback
 const loadConfig = async () => {
     try {
         const configFile = import.meta.env.VITE_CONFIG_FILE || 'sbe.json';
-        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${new Date().getTime()}`);
+        const response = await fetch(`${import.meta.env.BASE_URL}config/${configFile}?t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const conf = await response.json();
         appStore.$patch({ config: conf });
         companyName.value = conf.companyName || 'SBE';
+        try {
+            localStorage.setItem('sbe_config_cache', JSON.stringify(conf));
+        } catch (e) {}
     } catch (err) {
-        toast.error("Failed to load app configuration");
+        // Offline Fallback 1: LocalStorage Cache
+        try {
+            const cached = localStorage.getItem('sbe_config_cache');
+            if (cached) {
+                const conf = JSON.parse(cached);
+                appStore.$patch({ config: conf });
+                companyName.value = conf.companyName || 'SBE';
+                return;
+            }
+        } catch (e) {}
+        
+        // Offline Fallback 2: Built-in default config
+        const fallbackConfig = { companyName: 'SBE Rayagada', theme: 'blue' };
+        appStore.$patch({ config: fallbackConfig });
+        companyName.value = fallbackConfig.companyName;
     }
 };
 
-const { checkAdminState, isAdmin, isSuperAdmin } = useAdmin();
+const { checkAdminState, isAdmin, isSuperAdmin, login: performLogin } = useAdmin();
 
 const { 
   loading: stockLoading, isRefreshing, error,
@@ -153,19 +159,17 @@ const toggleCart = () => {
     }
 };
 
-const handleAdminLogin = (password) => {
+const handleAdminLogin = async (payload) => {
   showAdminModal.value = false;
-  if (!password) return;
-  if (password === 'admin123') {
-    isAdmin.value = true;
-    isSuperAdmin.value = false;
-    toast.success('Admin Mode Enabled', { autoClose: 2000 });
-  } else if (password === 'superadmin') {
-    isAdmin.value = false;
-    isSuperAdmin.value = true;
-    toast.success('Super Admin Mode Enabled', { autoClose: 2000 });
-  } else {
-    toast.error('Incorrect password', { autoClose: 3000 });
+  const pwd = typeof payload === 'object' ? payload?.password : payload;
+  const redirectHome = typeof payload === 'object' ? payload?.redirectHome : false;
+  if (!pwd) return;
+  
+  const result = await performLogin(pwd);
+  if (result && typeof result === 'object' && result.workzone) {
+    router.push(`/workzone/${result.workzone}`);
+  } else if (result && redirectHome) {
+    router.push('/home');
   }
 };
 
@@ -191,7 +195,7 @@ const handleCacheImages = async () => {
     
     const allProducts = stockData.value?.flatMap(group => group.products) || [];
     const productsWithImages = allProducts.filter(p => p.imageUrl);
-    const extraUrls = [ 'https://res.cloudinary.com/dg365ewal/image/upload/v1749667072/paragonLogo_rqk3hu.webp' ];
+    const extraUrls = [ `${import.meta.env.BASE_URL}assets/logos/paragon-original-logo.png` ];
     
     if (groupedSidebar.value?.topBrands) {
         groupedSidebar.value.topBrands.forEach(item => {
@@ -227,7 +231,6 @@ onMounted(async () => {
   await checkAdminState();
   await loadStockData();
   await setupDailySyncNotification();
-  await performDeltaSync();
   
   // Android App Update Check
   if (Capacitor.isNativePlatform()) {

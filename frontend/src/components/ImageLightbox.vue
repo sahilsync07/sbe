@@ -32,8 +32,9 @@
         <!-- Image Area -->
         <div class="flex-1 flex items-center justify-center p-4 overflow-auto" @click.self="$emit('close')">
           <CachedImage
-            v-if="src"
+            v-if="src || fallbackSrc"
             :src="optimizedSrc"
+            :fallback-src="fallbackSrc"
             alt="Enlarged view"
             class="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg"
           />
@@ -62,6 +63,7 @@ import CachedImage from './StockTable/CachedImage.vue';
 const props = defineProps({
   show: { type: Boolean, default: false },
   src: { type: String, default: null },
+  fallbackSrc: { type: String, default: null },
   title: { type: String, default: '' },
   subtitle: { type: String, default: '' },
   info: { type: String, default: '' },

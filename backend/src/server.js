@@ -25,12 +25,34 @@ const ledgerDataPath = path.resolve(
   __dirname,
   "../../frontend/public/assets/ledger-data.json"
 );
-const tallyTimeout = 30000;
+const hubStockDataPath = path.resolve(
+  __dirname,
+  "../../sbe-hub/public/assets/stock-data.json"
+);
+const hubLedgerDataPath = path.resolve(
+  __dirname,
+  "../../sbe-hub/public/assets/ledger-data.json"
+);
+const tallyTimeout = 120000; // 2 minutes timeout for Tally queries
 const repoRoot = path.resolve(__dirname, "../../");
 
 // ============================================================
 //  GIT AUTO-COMMIT & PUSH
 // ============================================================
+
+const gitEnv = {
+  ...process.env,
+  GIT_EDITOR: 'true',           // Prevent editor from opening
+  GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
+  GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
+};
+const execOpts = { cwd: repoRoot, timeout: 60000, env: gitEnv };
+
+const runGit = (cmd) => new Promise((resolve) => {
+  exec(cmd, execOpts, (error, stdout, stderr) => {
+    resolve({ error, stdout: stdout || '', stderr: stderr || '' });
+  });
+});
 
 /**
  * Runs git add, commit, and push in the repo root directory.
@@ -39,20 +61,7 @@ const repoRoot = path.resolve(__dirname, "../../");
  * @returns {Promise<{success: boolean, message: string}>}
  */
 async function gitCommitAndPush(commitMessage) {
-  const gitEnv = {
-    ...process.env,
-    GIT_EDITOR: 'true',           // Prevent editor from opening
-    GIT_TERMINAL_PROMPT: '0',     // Disable all interactive prompts
-    GIT_MERGE_AUTOEDIT: 'no',     // Prevent merge edit prompts
-  };
-  const execOpts = { cwd: repoRoot, timeout: 30000, env: gitEnv };
-
-  const run = (cmd) => new Promise((resolve) => {
-    exec(cmd, execOpts, (error, stdout, stderr) => {
-      resolve({ error, stdout: stdout || '', stderr: stderr || '' });
-    });
-  });
-
+  const run = runGit;
   console.log(`🚀 Git: Running in ${repoRoot}`);
 
   // Step 1: Stage all changes
@@ -411,7 +420,7 @@ async function fetchLedgerData() {
       console.log("  → Step 2: Fetching voucher summaries (server-side aggregation)...");
       const voucherResponse = await axios.post(tallyUrl, voucherSummaryXML, {
         headers: { "Content-Type": "text/xml" },
-        timeout: tallyTimeout * 2,
+        timeout: 180000, // 3 minutes timeout for large ledger summaries
       });
 
       if (voucherResponse.data && voucherResponse.data.toString().trim()) {
@@ -536,7 +545,11 @@ async function syncLedgerToFile() {
   });
 
   try {
-    await fs.writeFile(ledgerDataPath, JSON.stringify(ledgerData, null, 2));
+    const jsonStr = JSON.stringify(ledgerData, null, 2);
+    await fs.writeFile(ledgerDataPath, jsonStr);
+    try {
+      await fs.writeFile(hubLedgerDataPath, jsonStr);
+    } catch (e) {}
     console.log("✅ Updated ledger-data.json at:", ledgerDataPath);
     return { success: true, groups: ledgerData.length - 1, lastSync: lastSyncTime };
   } catch (err) {
@@ -598,6 +611,21 @@ app.post("/api/updateLedgerData", async (req, res) => {
 app.post("/api/updateStockData", async (req, res) => {
   try {
     console.log("Starting updateStockData, stockDataPath:", stockDataPath);
+
+    // ---- 0. Pull latest remote changes (preserves photos uploaded from phone) ----
+    try {
+      console.log("📥 Pulling latest remote changes before Tally sync...");
+      const pullRes = await runGit('git pull --rebase origin main');
+      if (pullRes.error) {
+        console.warn("⚠️ Git pull before Tally sync had warning, attempting auto-resolve:", pullRes.stderr);
+        await runGit('git rebase --abort').catch(() => {});
+        await runGit('git pull -X ours origin main').catch(() => {});
+      } else {
+        console.log("✅ Successfully pulled latest remote changes before Tally sync");
+      }
+    } catch (pullErr) {
+      console.warn("⚠️ Could not pull remote before sync (offline/network):", pullErr.message);
+    }
 
     // ---- 1. Verify file access ------------------------------------------------
     try {
@@ -752,7 +780,11 @@ app.post("/api/updateStockData", async (req, res) => {
 
     // ---- 8. Write updated files ------------------------------------------------
     try {
-      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      const jsonStr = JSON.stringify(stockData, null, 2);
+      await fs.writeFile(stockDataPath, jsonStr);
+      try {
+        await fs.writeFile(hubStockDataPath, jsonStr);
+      } catch (e) {}
       console.log("Updated stock-data.json at:", stockDataPath);
     } catch (err) {
       console.error("Error writing stock-data.json:", err.message, err.stack);
@@ -820,12 +852,16 @@ app.post("/api/updateImage", async (req, res) => {
     let updated = false;
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
+      if (!group.products || !Array.isArray(group.products)) return;
       group.products.forEach((product) => {
         if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
 
         if (product.productName === productName) {
           product.imageUrl = imageUrl;
+          if (imageUrl && imageUrl.includes('dieqsg5tr')) {
+            product.secondaryImageUrl = imageUrl;
+          }
           product.imageUploadedAt = new Date().toISOString();
           updated = true;
         }
@@ -837,11 +873,20 @@ app.post("/api/updateImage", async (req, res) => {
     }
 
     try {
-      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      const jsonStr = JSON.stringify(stockData, null, 2);
+      await fs.writeFile(stockDataPath, jsonStr);
+      try {
+        await fs.writeFile(hubStockDataPath, jsonStr);
+      } catch (e) {}
       console.log(`Updated imageUrl for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
     }
+
+    // Git commit & push (fire-and-forget in background)
+    gitCommitAndPush(`Update image for ${productName}`).catch((e) => {
+      console.warn("Git push failed for updateImage (non-fatal):", e.message);
+    });
 
     res.json({ message: `Image URL updated for ${productName}` });
   } catch (error) {
@@ -876,6 +921,7 @@ app.post("/api/removeImage", async (req, res) => {
     let updated = false;
     stockData.forEach((group) => {
       if (group.totalAmount !== undefined) delete group.totalAmount; // Ensure group total is removed
+      if (!group.products || !Array.isArray(group.products)) return;
       group.products.forEach((product) => {
         if (product.rate !== undefined) delete product.rate; // Ensure rate is removed
         if (product.amount !== undefined) delete product.amount; // Ensure amount is removed
@@ -892,11 +938,20 @@ app.post("/api/removeImage", async (req, res) => {
     }
 
     try {
-      await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
+      const jsonStr = JSON.stringify(stockData, null, 2);
+      await fs.writeFile(stockDataPath, jsonStr);
+      try {
+        await fs.writeFile(hubStockDataPath, jsonStr);
+      } catch (e) {}
       console.log(`Removed image for ${productName} in stock-data.json`);
     } catch (err) {
       throw new Error(`Cannot write to stock-data.json: ${err.message}`);
     }
+
+    // Git commit & push (fire-and-forget in background)
+    gitCommitAndPush(`Remove image for ${productName}`).catch((e) => {
+      console.warn("Git push failed for removeImage (non-fatal):", e.message);
+    });
 
     res.json({ message: `Image removed for ${productName}` });
   } catch (error) {

@@ -12,12 +12,15 @@ import RateChartView from "./views/RateChartView.vue";
 import LineListView from "./views/LineListView.vue";
 import QuotationView from "./views/QuotationView.vue";
 import AnalyzerView from "./views/AnalyzerView.vue";
+import OrderMakerView from "./views/OrderMakerView.vue";
+import WorkzoneView from "./views/WorkzoneView.vue";
 import { useAdmin } from "./composables/useAdmin";
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 
-const PdfGenerator = () => isAndroid ? import('./android/components/PdfGenerator.vue') : import('./components/PdfGenerator.vue');
+const PdfGenerator = () => import('./components/PdfGenerator.vue');
 const LatestStock = () => import('./android/components/LatestStock.vue');
+const JournalView = () => import('./views/JournalView.vue');
 
 const routes = [
   { path: "/", component: StockTable },
@@ -31,9 +34,14 @@ const routes = [
   { path: "/line-list", component: LineListView },
   { path: "/latest-stock", component: LatestStock },
   { path: "/home", component: HomeView },
+  { path: "/sbe-hub", redirect: "/home" },
+  { path: "/hub", redirect: "/home" },
+  { path: "/journal", component: JournalView },
   { path: "/old-stock", component: OldStockView },
   { path: "/quotation", component: QuotationView },
   { path: "/analyzer", component: AnalyzerView },
+  { path: "/order-maker", component: OrderMakerView },
+  { path: "/workzone/:zone", component: WorkzoneView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];
