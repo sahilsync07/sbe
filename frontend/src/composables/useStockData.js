@@ -579,6 +579,9 @@ export function useStockData(isLocal) {
                 group.products.forEach(p => {
                     if (p.productName === productName) {
                         p.imageUrl = newImageUrl || null;
+                        if (newImageUrl && newImageUrl.includes('dieqsg5tr')) {
+                            p.secondaryImageUrl = newImageUrl;
+                        }
                         if (newImageUrl) {
                             p.imageUploadedAt = new Date().toISOString();
                         } else {

@@ -859,6 +859,9 @@ app.post("/api/updateImage", async (req, res) => {
 
         if (product.productName === productName) {
           product.imageUrl = imageUrl;
+          if (imageUrl && imageUrl.includes('dieqsg5tr')) {
+            product.secondaryImageUrl = imageUrl;
+          }
           product.imageUploadedAt = new Date().toISOString();
           updated = true;
         }
