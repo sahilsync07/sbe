@@ -30,6 +30,7 @@
     />
 
     <GitHubTokenModal />
+    <ToastContainer />
 
     <!-- Order Details Modal -->
     <OrderModal
@@ -60,6 +61,7 @@ import CartSidebar from '../components/StockTable/CartSidebar.vue';
 const OrderModal = defineAsyncComponent(() => import('../components/StockTable/OrderModal.vue'));
 const GitHubSyncModal = defineAsyncComponent(() => import('../components/StockTable/GitHubSyncModal.vue'));
 const GitHubTokenModal = defineAsyncComponent(() => import('../components/StockTable/GitHubTokenModal.vue'));
+import ToastContainer from '../components/Common/ToastContainer.vue';
 
 import { useAppStore } from '../stores/appStore';
 import { useAdmin } from '../composables/useAdmin';

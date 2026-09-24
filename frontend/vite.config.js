@@ -7,7 +7,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'vue3-toastify/dist/index.css': fileURLToPath(new URL('./src/composables/empty.css', import.meta.url)),
+      'vue3-toastify': fileURLToPath(new URL('./src/composables/useToast.js', import.meta.url))
     }
   },
   plugins: [
