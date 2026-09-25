@@ -1329,11 +1329,21 @@
           >
             <i class="fa-solid fa-xmark"></i> Cancel
           </button>
+          <!-- Share Mode Dropdown -->
+          <div v-if="!isOneTouchPreparing" class="relative flex-shrink-0">
+            <select
+              v-model="oneTouchShareMode"
+              class="h-full pl-3 pr-8 py-3.5 rounded-2xl border-2 border-violet-300 bg-violet-50 text-violet-800 font-black text-xs appearance-none cursor-pointer focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
+            >
+              <option value="image">📸 Image</option>
+              <option value="pdf">📄 PDF</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-violet-400 pointer-events-none"></i>
+          </div>
           <button
             @click="prepareOneTouch"
             :disabled="isOneTouchPreparing || selectedGroupsCount === 0"
-            class="py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black rounded-2xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer"
-            :class="isOneTouchPreparing ? 'w-2/3' : 'w-full'"
+            class="py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black rounded-2xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer flex-1"
           >
             <span v-if="isOneTouchPreparing" class="flex items-center gap-2">
               <svg
@@ -1356,11 +1366,14 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <span>{{ oneTouchProgress || 'Preparing PDFs...' }}</span>
+              <span>{{ oneTouchProgress || 'Preparing...' }}</span>
             </span>
-            <span v-else class="flex items-center gap-2">
-              <i class="fa-solid fa-bolt"></i>
-              <span>Start One Touch Share ({{ selectedGroupsCount }} Groups)</span>
+            <span v-else class="flex flex-col items-center leading-tight">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt"></i>
+                Start One Touch Share
+              </span>
+              <span class="text-[11px] font-bold opacity-80">({{ selectedGroupsCount }} Groups)</span>
             </span>
           </button>
         </div>
@@ -1432,7 +1445,7 @@ import { useStockData } from '../composables/useStockData';
 import { useAdmin } from '../composables/useAdmin';
 import { BRAND_LISTS } from '../utils/constants';
 import { fetchCachedImageAsBase64 } from '../utils/nativeCache';
-import { getOptimizedImageUrl } from '../utils/formatters';
+import { getOptimizedImageUrl, getCleanProductName, parseCatalogSpecs } from '../utils/formatters';
 import { generateBrandSummaryImage } from '../utils/generateBrandSummaryImage.js';
 
 const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
@@ -1526,6 +1539,7 @@ const oneTouchGroups = ref(
   }))
 );
 const oneTouchOnlyWithPhotos = ref(true);
+const oneTouchShareMode = ref('image'); // 'image' (default) or 'pdf'
 const oneTouchMinQtyEnabled = ref(true);
 const oneTouchLowStockMode = ref(false);
 const isOneTouchSharing = ref(false);
@@ -2311,6 +2325,190 @@ const openOneTouchModal = () => {
   showOneTouchModal.value = true;
 };
 
+// --- PDF Mode: Generate a single multi-page PDF with LEFT/RIGHT black bars ---
+const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue) => {
+  const data = stockData.value;
+  const filteredGroups = data.filter((group) => {
+    return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
+  });
+
+  if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+
+  const { jsPDF } = await import('jspdf');
+  const { clashDisplayBoldBase64 } = await import('../utils/fonts.js');
+
+  const PAGE_W = 1200; // width in portrait
+  const PAGE_H = 1600; // height in portrait
+  const BAR_W = 140;   // sleek black sidebar width
+  const IMG_AREA_W = PAGE_W - (BAR_W * 2); // 920pt center image area
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PAGE_W, PAGE_H] });
+
+  doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
+  doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
+  doc.setFont('Clash Display', 'bold');
+
+  let hasAddedPage = false;
+  let pageCount = 0;
+  const dateStr = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  for (const group of filteredGroups) {
+    for (const product of group.products) {
+      const activeImg = product.imageUrl || product.secondaryImageUrl;
+      if (onlyWithPhotosFlag && !activeImg) continue;
+      if (product.quantity < minQtyValue) continue;
+      if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
+
+      if (hasAddedPage) {
+        doc.addPage([PAGE_W, PAGE_H]);
+      }
+      hasAddedPage = true;
+      pageCount++;
+
+      // Seamless clean white background (no top/bottom black bars)
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+
+      // LEFT sleek dark bar
+      doc.setFillColor(15, 23, 42); // slate-900
+      doc.rect(0, 0, BAR_W, PAGE_H, 'F');
+
+      // RIGHT sleek dark bar
+      doc.rect(PAGE_W - BAR_W, 0, BAR_W, PAGE_H, 'F');
+
+      // --- CENTER: Product Image ---
+      if (activeImg) {
+        try {
+          const imgData = await fetchImageAsBase64(activeImg, product.productName);
+          const dims = await getImageDimensions(imgData);
+
+          const scaleW = IMG_AREA_W / dims.width;
+          const scaleH = PAGE_H / dims.height;
+          const scale = Math.min(scaleW, scaleH);
+          const finalWidth = dims.width * scale;
+          const finalHeight = dims.height * scale;
+          const x = BAR_W + (IMG_AREA_W - finalWidth) / 2;
+          const y = (PAGE_H - finalHeight) / 2;
+
+          doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+        } catch (imgErr) {
+          doc.setTextColor(148, 163, 184);
+          doc.setFontSize(22);
+          doc.text('Image Load Failed', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
+        }
+      } else {
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(28);
+        doc.text('No Photo Available', PAGE_W / 2, PAGE_H / 2, { align: 'center' });
+      }
+
+      // --- LEFT BAR: Vertical branding text (reads straight when tilted 90° clockwise) ---
+      doc.setFont('Clash Display', 'bold');
+      const leftX1 = BAR_W * 0.42;
+      const leftX2 = BAR_W * 0.75;
+
+      // Store Title
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      doc.text('SRI BRUNDABANA ENTERPRISES', leftX1, PAGE_H - 80, { angle: 90 });
+
+      // Store City Subtitle
+      doc.setFontSize(14);
+      doc.setTextColor(148, 163, 184);
+      doc.text('RAYAGADA', leftX2, PAGE_H - 80, { angle: 90 });
+
+      // Brand Name at right end when tilted
+      doc.setFontSize(20);
+      doc.setTextColor(251, 191, 36); // warm gold
+      doc.text(group.groupName.toUpperCase(), leftX1, 80, { angle: 90, align: 'right' });
+
+      // Date at right end when tilted
+      doc.setFontSize(13);
+      doc.setTextColor(148, 163, 184);
+      doc.text(dateStr.toUpperCase(), leftX2, 80, { angle: 90, align: 'right' });
+
+      // --- RIGHT BAR: Structured article details stacked vertically ---
+      const specs = parseCatalogSpecs(product.productName, group.groupName);
+      const fields = [];
+      fields.push({
+        label: 'ARTICLE',
+        val: specs.article || product.productName.toUpperCase(),
+        color: [255, 255, 255],
+        size: 19,
+      });
+      if (specs.color && specs.color.text) {
+        fields.push({
+          label: 'COLOR',
+          val: specs.color.text.toUpperCase(),
+          color: [226, 232, 240],
+          size: 15,
+        });
+      }
+      if (specs.size) {
+        fields.push({
+          label: 'SIZE',
+          val: specs.size,
+          color: [226, 232, 240],
+          size: 15,
+        });
+      }
+      if (specs.mrp) {
+        fields.push({
+          label: 'MRP',
+          val: `₹${specs.mrp}`,
+          color: [226, 232, 240],
+          size: 15,
+        });
+      }
+      fields.push({
+        label: 'QTY',
+        val: `${product.quantity} PAIRS`,
+        color: [251, 191, 36],
+        size: 18,
+      });
+
+      const startX = PAGE_W - BAR_W + 24;
+      const rowStep = Math.min(22, Math.floor((BAR_W - 32) / fields.length));
+
+      fields.forEach((f, idx) => {
+        const currentX = startX + (idx * rowStep);
+
+        // Field Label (smaller, muted slate)
+        doc.setFontSize(10);
+        doc.setTextColor(148, 163, 184);
+        doc.text(f.label, currentX, PAGE_H - 80, { angle: 90 });
+
+        // Field Value (bold, bright)
+        let valSize = f.size;
+        doc.setFontSize(valSize);
+        const maxTextW = 850;
+        const textW = doc.getTextWidth(f.val);
+        if (textW > maxTextW) {
+          valSize = Math.max(12, Math.floor(valSize * (maxTextW / textW)));
+          doc.setFontSize(valSize);
+        }
+        doc.setTextColor(f.color[0], f.color[1], f.color[2]);
+        doc.text(f.val, currentX, PAGE_H - 180, { angle: 90 });
+      });
+
+      // Right-aligned Big Stock Quantity summary on the right side of the bottom bar
+      const qtyX1 = startX + (1.5 * rowStep);
+      const qtyX2 = startX + (3.2 * rowStep);
+      doc.setFontSize(11);
+      doc.setTextColor(148, 163, 184);
+      doc.text('STOCK QUANTITY', qtyX1, 80, { angle: 90, align: 'right' });
+      doc.setFontSize(26);
+      doc.setTextColor(251, 191, 36);
+      doc.text(`${product.quantity} PAIRS`, qtyX2, 80, { angle: 90, align: 'right' });
+    }
+  }
+  return { blob: hasAddedPage ? doc.output('blob') : null, pageCount };
+};
+
 const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue) => {
   const data = stockData.value;
   const filteredGroups = data.filter((group) => {
@@ -2437,6 +2635,93 @@ const prepareOneTouch = async () => {
     g.batches = [];
   });
 
+  // ========== PDF MODE: Generate a single PDF per group & share directly ==========
+  if (oneTouchShareMode.value === 'pdf') {
+    for (const group of checkedGroups) {
+      if (cancelOneTouch.value) break;
+      group.status = 'preparing';
+      group.isExpanded = true;
+      oneTouchProgress.value = `📄 ${group.label}...`;
+
+      try {
+        const effectiveMinQty = oneTouchMinQtyEnabled.value ? group.minQty : 0;
+        const effectiveMaxQty = oneTouchMinQtyEnabled.value ? parseMaxQty(group.maxQty) : Infinity;
+
+        const { blob, pageCount } = await generateOneTouchPdfBlob(
+          group.activeBrands,
+          oneTouchOnlyWithPhotos.value,
+          effectiveMinQty,
+          effectiveMaxQty
+        );
+
+        if (!blob || pageCount === 0) {
+          group.status = 'ready';
+          continue;
+        }
+
+        // Save and share as a single PDF file
+        const today = new Date().toISOString().split('T')[0];
+        const pdfFileName = `SBE_${group.label.replace(/[^a-zA-Z0-9]/g, '_')}_${today}.pdf`;
+
+        if (isNativeApp.value) {
+          // Convert blob to base64 for Capacitor
+          const reader = new FileReader();
+          const base64Promise = new Promise((resolve) => {
+            reader.onloadend = () => {
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.readAsDataURL(blob);
+          });
+          const pdfBase64 = await base64Promise;
+
+          const savedPdf = await Filesystem.writeFile({
+            path: pdfFileName,
+            data: pdfBase64,
+            directory: Directory.Cache,
+          });
+
+          // Set up as a single "batch" for UI consistency
+          group.batches = [{ id: 0, status: 'ready', fileUris: [savedPdf.uri] }];
+
+          // Auto-share to WhatsApp
+          try {
+            await Share.share({ files: [savedPdf.uri] });
+          } catch (shareErr) {
+            console.log('PDF share cancelled or failed:', shareErr);
+          }
+        } else {
+          // Web fallback: download the PDF
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = pdfFileName;
+          a.click();
+          URL.revokeObjectURL(url);
+          group.batches = [{ id: 0, status: 'ready', fileUris: [pdfFileName] }];
+        }
+
+        group.status = cancelOneTouch.value ? 'idle' : 'ready';
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (err) {
+        console.error(`One Touch PDF failed for ${group.label}:`, err);
+        group.status = 'idle';
+      }
+    }
+
+    if (oneTouchTimerInterval) clearInterval(oneTouchTimerInterval);
+    isOneTouchPreparing.value = false;
+    isGenerating.value = false;
+    oneTouchProgress.value = '';
+    showToast.value = true;
+    toastMessage.value = cancelOneTouch.value
+      ? 'One Touch Preparation Cancelled'
+      : 'PDF Sharing complete!';
+    setTimeout(() => (showToast.value = false), 4000);
+    return;
+  }
+
+  // ========== IMAGE MODE (original behavior) ==========
   const pdfjsLib = await import('pdfjs-dist');
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
