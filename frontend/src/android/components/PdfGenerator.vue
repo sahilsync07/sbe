@@ -1802,8 +1802,16 @@ const generatePdfBlob = async (targetBrands) => {
 
       // FOOTER
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(40);
-      doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center' });
+      doc.setFont('Clash Display', 'bold');
+      let articleFontSize = 32;
+      doc.setFontSize(articleFontSize);
+      const maxTextWidth = PAGE_W - 120;
+      const textWidth = doc.getTextWidth(product.productName);
+      if (textWidth > maxTextWidth) {
+        articleFontSize = Math.max(20, Math.floor(articleFontSize * (maxTextWidth / textWidth)));
+        doc.setFontSize(articleFontSize);
+      }
+      doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center', maxWidth: maxTextWidth });
 
       doc.setTextColor(255, 215, 0); // Muted gold
       doc.setFontSize(54);
@@ -2385,8 +2393,16 @@ const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQ
 
       // FOOTER
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(64);
-      doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center' });
+      doc.setFont('Clash Display', 'bold');
+      let articleFontSize = 32;
+      doc.setFontSize(articleFontSize);
+      const maxTextWidth = PAGE_W - 120;
+      const textWidth = doc.getTextWidth(product.productName);
+      if (textWidth > maxTextWidth) {
+        articleFontSize = Math.max(20, Math.floor(articleFontSize * (maxTextWidth / textWidth)));
+        doc.setFontSize(articleFontSize);
+      }
+      doc.text(product.productName, PAGE_W / 2, PAGE_H - 160, { align: 'center', maxWidth: maxTextWidth });
 
       doc.setTextColor(255, 215, 0); // Muted gold
       doc.setFontSize(54);
