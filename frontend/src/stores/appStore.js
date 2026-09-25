@@ -8,7 +8,7 @@ export const useAppStore = defineStore('app', {
     isRefreshing: false,
     lastSyncTime: null,
     searchQuery: '',
-    cleanView: false,
+    cleanView: true,
     config: {},
     showCart: false,
     showSidePanel: false,
