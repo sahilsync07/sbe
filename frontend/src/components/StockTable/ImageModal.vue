@@ -156,7 +156,7 @@
               >
                 <span
                   class="w-2 h-2 rounded-full ring-1 ring-white/30"
-                  :style="{ backgroundColor: getProductColor(currentProduct?.productName).hex }"
+                  :style="{ background: getProductColor(currentProduct?.productName).gradient || getProductColor(currentProduct?.productName).hex }"
                 ></span>
                 {{ getProductColor(currentProduct?.productName).text }}
               </span>
@@ -251,7 +251,7 @@
 <script setup>
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { extractColor } from '../../utils/colors';
-import { getOptimizedImageUrl } from '../../utils/formatters';
+import { getOptimizedImageUrl, getCleanProductName } from '../../utils/formatters';
 import { useCart } from '../../composables/useCart';
 import { useAdmin } from '../../composables/useAdmin';
 import { useStockData } from '../../composables/useStockData';
@@ -403,28 +403,5 @@ const getProductSize = (name) => {
 
 const getProductColor = (name) => {
   return extractColor(name);
-};
-
-const getCleanProductName = (name) => {
-  if (!name) return '';
-  let clean = name;
-
-  const colorData = extractColor(name);
-  if (colorData && colorData.originalTokens) {
-    colorData.originalTokens.forEach(token => {
-      const regex = new RegExp(`\\b${token}\\b`, 'gi');
-      clean = clean.replace(regex, '');
-    });
-  }
-
-  clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
-  clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
-  clean = clean.replace(/\(\s*\)/g, '');
-  clean = clean.replace(/[\/\-]+\s*$/g, '')
-               .replace(/^\s*[\/\-]+/g, '')
-               .replace(/\s*[\/\-]+\s*/g, ' ');
-
-  const cleanedString = clean.replace(/\s+/g, ' ').trim().toLowerCase();
-  return cleanedString.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 </script>

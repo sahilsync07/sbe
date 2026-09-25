@@ -92,7 +92,7 @@
                <!-- Color Swatch & Label -->
                <div v-if="catalogSpecs.color" class="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 max-w-[110px]">
                   <span class="w-2.5 h-2.5 rounded-full shadow-xs ring-1 ring-slate-200 shrink-0" 
-                        :style="{ backgroundColor: catalogSpecs.color.hex }"
+                        :style="{ background: catalogSpecs.color.gradient || catalogSpecs.color.hex }"
                   ></span>
                   <span class="text-[10px] font-black uppercase text-slate-700 truncate">
                      {{ catalogSpecs.color.text }}

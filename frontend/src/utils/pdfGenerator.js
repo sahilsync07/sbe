@@ -1,35 +1,5 @@
-import { formatProductName, normalizeId } from "./formatters";
+import { formatProductName, normalizeId, getCleanProductName } from "./formatters";
 import { extractColor } from "./colors";
-
-/**
- * Clean product name by removing colors and sizes for the table
- */
-const getCleanProductName = (name) => {
-    if (!name) return '';
-    let clean = name;
-
-    // Remove Colors
-    const colorData = extractColor(name);
-    if (colorData && colorData.originalTokens) {
-        colorData.originalTokens.forEach(token => {
-            const regex = new RegExp(`\\b${token}\\b`, 'gi');
-            clean = clean.replace(regex, '');
-        });
-    }
-
-    // Remove Price pattern
-    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
-    // Remove Size pattern
-    clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
-
-    clean = clean.replace(/\(\s*\)/g, '');
-    clean = clean.replace(/[\/\-]+\s*$/g, '')
-        .replace(/^\s*[\/\-]+/g, '')
-        .replace(/\s*[\/\-]+\s*/g, ' ');
-
-    const cleanedString = clean.replace(/\s+/g, ' ').trim();
-    return formatProductName(cleanedString);
-};
 
 const getProductSize = (name) => {
     if (!name) return '-';

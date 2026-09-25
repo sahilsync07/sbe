@@ -95,7 +95,7 @@
                           <div class="text-white font-['Clash_Display'] font-bold tracking-wide truncate text-base">{{ formatProductNameToolbar(product.productName) }}</div>
                           <div class="text-slate-300 font-medium text-xs mt-1 truncate flex items-center gap-2.5">
                             <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
-                              <span class="w-2.5 h-2.5 rounded-full ring-1 ring-white/20 shrink-0" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                              <span class="w-2.5 h-2.5 rounded-full ring-1 ring-white/20 shrink-0" :style="{ background: getProductColor(product.productName).gradient || getProductColor(product.productName).hex }"></span>
                               <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
                               <span class="w-1 h-1 rounded-full bg-slate-600"></span>
                             </span>
@@ -234,7 +234,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { extractColor } from '../../utils/colors';
-import { getOptimizedImageUrl } from '../../utils/formatters.js';
+import { getOptimizedImageUrl, getCleanProductName } from '../../utils/formatters.js';
 
 // Pinia global stores
 import { useAppStore } from '../../stores/appStore';
@@ -353,33 +353,7 @@ const localQuery = ref(searchQuery.value || '');
 const showDesktopDropdown = ref(false);
 const desktopSearchRef = ref(null);
 
-const formatProductNameToolbar = (fullName) => {
-    if (!fullName) return '';
-    let clean = fullName;
-
-    const colorData = extractColor(fullName);
-    if (colorData && colorData.originalTokens) {
-        colorData.originalTokens.forEach(token => {
-            const regex = new RegExp(`\\b${token}\\b`, 'gi');
-            clean = clean.replace(regex, '');
-        });
-    }
-
-    clean = clean.replace(/((?:RS|MRP|@))[.\s]*(\d+(\.\d+)?)/gi, '');
-    clean = clean.replace(/(?:^|[\s(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s)]|$)/g, ' ');
-    clean = clean.replace(/\(\s*\)/g, '');
-    clean = clean.replace(/[/\-.]+\s*$/g, '')
-                 .replace(/^\s*[/\-.]+/g, '')
-                 .replace(/\s*[/\-.]+\s*/g, ' ');
-
-    return clean
-        .replace(/\s+/g, ' ')
-        .trim()
-        .toLowerCase()
-        .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-};
+const formatProductNameToolbar = (fullName) => getCleanProductName(fullName);
 
 const getProductColor = (name) => extractColor(name);
 

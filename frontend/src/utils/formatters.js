@@ -134,17 +134,20 @@ export function getCleanProductName(name) {
     if (!name) return '';
     let clean = name;
     
-    // Remove Colors
+    // Remove Colors safely
     const colorData = extractColor(name);
     if (colorData && colorData.originalTokens) {
         colorData.originalTokens.forEach(token => {
-            const regex = new RegExp(`\\b${token}\\b`, 'gi');
-            clean = clean.replace(regex, '');
+            const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(^|[^a-zA-Z0-9])${escaped}(?=[^a-zA-Z0-9]|$)`, 'gi');
+            clean = clean.replace(regex, '$1 ');
         });
     }
 
-    // Remove Price pattern
-    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    // Remove Price pattern (including MRP, RS, MP, @)
+    clean = clean.replace(/((?:RS|MRP|MP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    // Remove discount percentages e.g. 40%, 45%
+    clean = clean.replace(/\b\d+%/g, '');
     // Remove Size pattern
     clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
     

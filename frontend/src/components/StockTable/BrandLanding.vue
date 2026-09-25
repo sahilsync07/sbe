@@ -289,7 +289,7 @@
               <!-- Color, Size & Price badges -->
               <div class="flex flex-wrap items-center gap-2 mt-3 text-xs">
                 <span v-if="getProductColor(selectedItem.productName)" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs font-bold text-slate-700">
-                  <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: getProductColor(selectedItem.productName).hex }"></span>
+                  <span class="w-2.5 h-2.5 rounded-full" :style="{ background: getProductColor(selectedItem.productName).gradient || getProductColor(selectedItem.productName).hex }"></span>
                   <span class="capitalize">{{ getProductColor(selectedItem.productName).text }}</span>
                 </span>
                 <span v-if="getProductSize(selectedItem.productName)" class="px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs font-extrabold text-slate-800">
@@ -890,7 +890,7 @@
 
                   <div class="flex items-center justify-between mt-1 text-[10px] text-slate-500">
                     <span v-if="getProductColor(product.productName)" class="flex items-center gap-1 truncate max-w-[50px]">
-                      <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                      <span class="w-2 h-2 rounded-full" :style="{ background: getProductColor(product.productName).gradient || getProductColor(product.productName).hex }"></span>
                       <span class="capitalize truncate">{{ getProductColor(product.productName).text }}</span>
                     </span>
                     <span v-if="getProductSize(product.productName)" class="font-bold text-slate-600 px-1 rounded bg-slate-100">
@@ -1251,7 +1251,7 @@
                   </div>
                   <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                     <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
-                      <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: getProductColor(product.productName).hex }"></span>
+                      <span class="w-2 h-2 rounded-full" :style="{ background: getProductColor(product.productName).gradient || getProductColor(product.productName).hex }"></span>
                       <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
                     </span>
                     <span v-if="getProductSize(product.productName)" class="font-semibold text-slate-600">
@@ -1284,7 +1284,7 @@ import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } fr
 import { useIntersectionObserver } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import SlideshowCard from './SlideshowCard.vue';
-import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage, parseCatalogSpecs } from '../../utils/formatters';
+import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage, parseCatalogSpecs, getCleanProductName } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 
 import { useAdmin } from '../../composables/useAdmin';
@@ -1711,21 +1711,6 @@ const getProductSize = (name) => {
 };
 
 const getProductColor = (name) => extractColor(name);
-
-const getCleanProductName = (name) => {
-  if (!name) return '';
-  let clean = name;
-  const colorData = extractColor(name);
-  if (colorData && colorData.originalTokens) {
-    colorData.originalTokens.forEach(token => {
-      clean = clean.replace(new RegExp(`\\b${token}\\b`, 'gi'), '');
-    });
-  }
-  clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
-  clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
-  clean = clean.replace(/\(\s*\)/g, '').replace(/[\/\-\.]+\s*$/g, '').replace(/^\s*[\/\-\.]+/g, '').replace(/\s*[\/\-\.]+\s*/g, ' ');
-  return formatProductName(clean.replace(/\s+/g, ' ').trim());
-};
 
 // Data Collection Functions
 const getNewArrivalProducts = () => {
