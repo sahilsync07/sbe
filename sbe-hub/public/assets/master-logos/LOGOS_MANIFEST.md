@@ -26,7 +26,7 @@ Source: `C:\Users\Sahil Kumar\Downloads\Pictures\Logos`
 | `Paragon-logo.png` | 731.5 KB | `063819fd60b42b84fc04fa5a2507f906` | Paragon |
 | `paragon-school-logo.png` | 1218.3 KB | `1399bb18a682e583b795aa079b0e8014` | Paragon |
 | `Paralite-Logo.png` | 857.0 KB | `7704a28404ab94f7c80c51bab9423e01` |  |
-| `Paris-logo.jpg` | 189.3 KB | `afdb1c3ddc4abd5a645e1adfe5de5355` | Paris Footwear |
+| `paris-logo.jpg` | 189.3 KB | `afdb1c3ddc4abd5a645e1adfe5de5355` | Paris Footwear |
 | `reliance-logo.png` | 642.4 KB | `e28be9fc8c96c6a2b1d36ad63009fe0b` |  |
 | `SKIL Lifestyle Black Transparent BG Logo.png` | 133.7 KB | `41818e4867c49a1faac37af8ddf3bc7e` | SKIL Lifestyle Transparent |
 | `SKIL Lifestyle White Transparent BG Logo.png` | 152.2 KB | `db94a0c8802ec81c32adda88dfd2f6a8` | SKIL Lifestyle Transparent |
