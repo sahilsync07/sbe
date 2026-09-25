@@ -106,11 +106,14 @@ export function isNewArrival(product) {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - 1);
     
-    // STRICTLY based on when data was synced/entered from accountant PC
-    if (!product.firstSeenAt) return false;
+    const dates = [];
+    if (product.lastPurchasedAt) dates.push(new Date(product.lastPurchasedAt));
+    if (product.firstSeenAt) dates.push(new Date(product.firstSeenAt));
+    if (product.imageUploadedAt) dates.push(new Date(product.imageUploadedAt));
 
-    const itemDate = new Date(product.firstSeenAt);
-    return itemDate > cutoff;
+    if (dates.length === 0) return false;
+    const latestDate = new Date(Math.max(...dates));
+    return latestDate > cutoff;
 }
 
 /**

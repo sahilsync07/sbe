@@ -1742,8 +1742,8 @@ const getNewArrivalProducts = () => {
     }
   }
   return products.sort((a,b) => {
-    const dateA = new Date(a.firstSeenAt || a.imageUploadedAt || 0);
-    const dateB = new Date(b.firstSeenAt || b.imageUploadedAt || 0);
+    const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0);
+    const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0);
     return dateB - dateA;
   });
 };

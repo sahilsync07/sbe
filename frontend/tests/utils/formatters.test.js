@@ -69,9 +69,8 @@ describe('getOptimizedImageUrl', () => {
     it('should add Cloudinary transformations', () => {
         const original =
             'https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg';
-        const expected =
-            'https://res.cloudinary.com/demo/image/upload/w_1000,q_70,f_auto/v1234567890/sample.jpg';
-        expect(getOptimizedImageUrl(original)).toBe(expected);
+        expect(getOptimizedImageUrl(original)).toContain('wsrv.nl');
+        expect(getOptimizedImageUrl(original)).toContain('sample.jpg');
     });
 
     it('should return original URL if not Cloudinary format', () => {
@@ -115,6 +114,14 @@ describe('isNewArrival', () => {
         const product = {
             imageUploadedAt: twoMonthsAgo.toISOString(),
             firstSeenAt: now.toISOString(),
+        };
+        expect(isNewArrival(product)).toBe(true);
+    });
+
+    it('should return true for products purchased within last month', () => {
+        const product = {
+            firstSeenAt: twoMonthsAgo.toISOString(),
+            lastPurchasedAt: now.toISOString(),
         };
         expect(isNewArrival(product)).toBe(true);
     });

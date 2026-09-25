@@ -45,13 +45,14 @@ export function useProductFilter(stockData, config) {
         if (!product) return false;
         const cutoff = new Date();
         cutoff.setMonth(cutoff.getMonth() - NEW_ARRIVAL_MONTHS);
-        // Use default min date from constants or passed as string
-        const minDate = DEFAULT_MIN_DATE;
 
-        const imageDate = product.imageUploadedAt ? new Date(product.imageUploadedAt) : minDate;
-        const itemDate = product.firstSeenAt ? new Date(product.firstSeenAt) : minDate;
+        const dates = [];
+        if (product.lastPurchasedAt) dates.push(new Date(product.lastPurchasedAt));
+        if (product.firstSeenAt) dates.push(new Date(product.firstSeenAt));
+        if (product.imageUploadedAt) dates.push(new Date(product.imageUploadedAt));
 
-        const latestDate = itemDate > imageDate ? itemDate : imageDate;
+        if (dates.length === 0) return false;
+        const latestDate = new Date(Math.max(...dates));
         return latestDate > cutoff;
     };
 
@@ -103,10 +104,10 @@ export function useProductFilter(stockData, config) {
                     });
                 });
 
-                // Sort by most recent first (imageUploadedAt = when made visible to customers)
+                // Sort by most recent first (purchase date, first seen, or image date)
                 allNewProducts.sort((a, b) => {
-                    const dateA = new Date(a.imageUploadedAt || a.firstSeenAt || minDate);
-                    const dateB = new Date(b.imageUploadedAt || b.firstSeenAt || minDate);
+                    const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || minDate);
+                    const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || minDate);
                     return dateB - dateA;
                 });
 
@@ -206,8 +207,8 @@ export function useProductFilter(stockData, config) {
 
             if (newProducts.length > 0) {
                 newProducts.sort((a, b) => {
-                    const dateA = new Date(a.imageUploadedAt || a.firstSeenAt || minDate);
-                    const dateB = new Date(b.imageUploadedAt || b.firstSeenAt || minDate);
+                    const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || minDate);
+                    const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || minDate);
                     return dateB - dateA;
                 });
 

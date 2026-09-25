@@ -657,11 +657,12 @@ app.post("/api/updateStockData", async (req, res) => {
       if (!group.products) return;
 
       group.products.forEach((product) => {
-        // Save metadata for ALL known products to track "first seen" and history
+        // Save metadata for ALL known products to track "first seen", purchase history and timestamps
         productMeta[product.productName] = {
           imageUrl: product.imageUrl || null,
           imageUploadedAt: product.imageUploadedAt || null,
           firstSeenAt: product.firstSeenAt || null,
+          lastPurchasedAt: product.lastPurchasedAt || null,
           oldQty: product.quantity ?? 0,
           productHistory: product.productHistory || [],
           inSampleRoom: product.inSampleRoom || false
@@ -717,13 +718,20 @@ app.post("/api/updateStockData", async (req, res) => {
           p.imageUrl = saved.imageUrl;
           p.imageUploadedAt = saved.imageUploadedAt;
           p.firstSeenAt = saved.firstSeenAt; // Preserve original seen time
+          p.lastPurchasedAt = saved.lastPurchasedAt || null;
           p.inSampleRoom = saved.inSampleRoom; // Preserve sample room flag
+
+          // If previously had no firstSeenAt but now received stock, mark firstSeenAt
+          if (!p.firstSeenAt && Number(p.quantity) > 0) {
+            p.firstSeenAt = syncTimestamp;
+          }
 
           // --- Product History Tracking ---
           const history = [...saved.productHistory];
           const delta = p.quantity - saved.oldQty;
           if (delta > 0) {
             history.push({ date: syncTimestamp, type: "purchased", qty: delta, newTotal: p.quantity });
+            p.lastPurchasedAt = syncTimestamp; // Track new purchase timestamp
             historyEntriesAdded++;
           } else if (delta < 0) {
             history.push({ date: syncTimestamp, type: "sold", qty: Math.abs(delta), newTotal: p.quantity });
@@ -733,8 +741,16 @@ app.post("/api/updateStockData", async (req, res) => {
         } else {
           // New product from Tally!
           p.imageUrl = null;
-          p.firstSeenAt = syncTimestamp;
-          p.productHistory = [{ date: syncTimestamp, type: "initial", qty: p.quantity }];
+          // Only assign arrival / purchase timestamps if product has positive stock
+          if (Number(p.quantity) > 0) {
+            p.firstSeenAt = syncTimestamp;
+            p.lastPurchasedAt = syncTimestamp;
+            p.productHistory = [{ date: syncTimestamp, type: "initial", qty: p.quantity }];
+          } else {
+            p.firstSeenAt = null;
+            p.lastPurchasedAt = null;
+            p.productHistory = [];
+          }
           historyEntriesAdded++;
         }
       });
