@@ -1820,6 +1820,19 @@ const getActiveTabProducts = () => {
     // Vertex products live under PARAGON GENTS
     const all = getBrandProducts(['PARAGON GENTS']);
     products = all.filter(p => /vertex/i.test(p.productName));
+  } else if (tab === 'Max' || tab === 'MAX') {
+    // Paragon Max products: dedicated 'Max' group + Max products in PARAGON GENTS & PARAGON
+    const isMaxProduct = (name) => /\b(max|prg\s*max|pg\s*max|pargon\s*max)\b/i.test(name) || /paragon\s*max/i.test(name);
+    const maxGroup = getBrandProducts(['Max']);
+    const pgMax = getBrandProducts(['PARAGON GENTS', 'PARAGON']).filter(p => isMaxProduct(p.productName));
+    const seen = new Set();
+    products = [];
+    for (const p of [...maxGroup, ...pgMax]) {
+      if (!seen.has(p.productName)) {
+        seen.add(p.productName);
+        products.push(p);
+      }
+    }
   } else if (tab === 'ACTION') {
     products = getBrandProducts(['ACTION']);
   } else if (tab === 'EEKEN') {
@@ -1860,6 +1873,7 @@ const filteredTabProducts = computed(() => getActiveTabProducts());
 
 const PARAGON_GROUPS = new Set([
   'Hawai Chappal',
+  'Max',
   'PARAGON',
   'Paragon Blot',
   'PARAGON COMFY',
@@ -2197,7 +2211,7 @@ const paragonCards = [
   { id: 'Safety', label: 'Safety Shoes', groupNames: ['Safety'] },
   { id: 'School', label: 'School Shoes', groupNames: ['School', 'SCHOOL SHOE DUROLITE'] },
   { id: 'Walkaholic', label: 'Walkaholic', groupNames: ['Walkaholic'] },
-  { id: 'Max', label: 'Max', groupNames: ['Max'] },
+  { id: 'Max', label: 'Max', groupNames: ['Max', 'PARAGON GENTS', 'PARAGON'] },
   { id: 'Escoute', label: 'Escoute', groupNames: ['Escoute'] },
 ];
 
