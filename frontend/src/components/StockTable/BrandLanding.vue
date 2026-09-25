@@ -1574,6 +1574,24 @@ const TaraLogo = `${baseUrl}assets/logos/tara-logo.png`;
 const BrockkieLogo = `${baseUrl}assets/logos/brockkie-logo.png`;
 const XpaniaLogo = `${baseUrl}assets/logos/xpania-logo.png`;
 
+const hasProductImage = (p) => Boolean(p && (p.imageUrl || p.secondaryImageUrl));
+
+const looseGroupNames = [
+  'ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS',
+  'AAGAM POLYMER', 'AAGAM POLYMERE', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS',
+  'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY', 'SHYAM',
+  'AVTAR V V POLYMERS', 'ATHARV PLASTIC', 'SALASAR BALAJI', 'Balaji', 'NON BRAND',
+  'Shree Shyam Ind', 'PU-LION', 'S S BANSAL', 'ARIHANT', 'ARHINAT', 'NAV DURGA RAIPUR'
+];
+
+const boxGroupNames = [
+  'Mini F/w', 'ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC',
+  'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR',
+  'Kohinoor', 'UAM FOOTWEAR', 'BROCKKIE', 'Barun', 'VENUS', 'LEO', 'BRIZ FOOTWEAR',
+  'Brij Footwear', 'Ruban F/w', 'SOLA', 'ZYF TEX', 'ORTHO', 'UXO', 'NX KIDS SANDEL', 'GLAMIUM',
+  'Avon International (WOODS)', 'KHADIM', '4WAY SPORT', 'Durolite'
+];
+
 const brandTabs = [
   // 1. All
   { id: 'All', label: 'All Products', icon: 'fa-solid fa-border-all', iconColor: 'text-[#c59b27]' },
@@ -1717,7 +1735,7 @@ const getNewArrivalProducts = () => {
     if (group.products) {
       for (const p of group.products) {
         if (cleanView.value) {
-          if (!getProductImage(p) || Number(p.quantity) < 4) continue;
+          if (!hasProductImage(p) || Number(p.quantity) < 4) continue;
         }
         if (isNewArrival(p)) products.push(p);
       }
@@ -1747,9 +1765,6 @@ const getBrandProducts = (groupNames) => {
   for (const group of stockData.value) {
     if (lower.includes(group.groupName.toLowerCase()) && group.products) {
       for (const p of group.products) {
-        if (cleanView.value) {
-          if (!getProductImage(p) || Number(p.quantity) < 4) continue;
-        }
         products.push(p);
       }
     }
@@ -1770,7 +1785,7 @@ const getActiveTabProducts = () => {
       if (group.groupName === '_META_DATA_' || !group.products) continue;
       for (const p of group.products) {
         if (cleanView.value) {
-          if (!getProductImage(p) || Number(p.quantity) < 4) continue;
+          if (!hasProductImage(p) || Number(p.quantity) < 4) continue;
         }
         products.push(p);
       }
@@ -1858,7 +1873,7 @@ const getActiveTabProducts = () => {
   // Apply In Stock & Price Filters
   return products.filter(p => {
     if (cleanView.value) {
-      if (!getProductImage(p) || Number(p.quantity) < 4) return false;
+      if (!hasProductImage(p) || Number(p.quantity) < 4) return false;
     }
     if (inStockOnly.value && Number(p.quantity) <= 0) return false;
     if (maxPriceFilter.value) {
@@ -2195,9 +2210,6 @@ const localCarousals = {
   'LoosePacking': [],
   'BoxPacking': []
 };
-
-const looseGroupNames = ['ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS', 'AAGAM POLYMER', 'A G ENTERPRISES', 'NAV DURGA ENTERPRISES', 'NEXUS', 'R K TRADERS', 'SRG ENTERPRISES', 'VARDHMAN PLASTICS', 'YASH FOOTWEAR', 'KRISHNA AGENCY', 'SHYAM', 'AVTAR V V POLYMERS', 'ATHARV PLASTIC'];
-const boxGroupNames = ['Mini F/w', 'ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC', 'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR', 'Kohinoor', 'UAM FOOTWEAR', 'BROCKKIE', 'Barun'];
 
 const paragonCards = [
   { id: 'ParagonCore', label: 'Paragon Core', groupNames: ['PARAGON GENTS', 'PARAGON LADIES', 'PARALITE', 'P-TOES', 'Hawai Chappal'] },
