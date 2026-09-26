@@ -660,6 +660,7 @@ app.post("/api/updateStockData", async (req, res) => {
         // Save metadata for ALL known products to track "first seen", purchase history and timestamps
         productMeta[product.productName] = {
           imageUrl: product.imageUrl || null,
+          secondaryImageUrl: product.secondaryImageUrl || null,
           imageUploadedAt: product.imageUploadedAt || null,
           firstSeenAt: product.firstSeenAt || null,
           lastPurchasedAt: product.lastPurchasedAt || null,
@@ -716,6 +717,7 @@ app.post("/api/updateStockData", async (req, res) => {
         const saved = productMeta[p.productName];
         if (saved) {
           p.imageUrl = saved.imageUrl;
+          p.secondaryImageUrl = saved.secondaryImageUrl;
           p.imageUploadedAt = saved.imageUploadedAt;
           p.firstSeenAt = saved.firstSeenAt; // Preserve original seen time
           p.lastPurchasedAt = saved.lastPurchasedAt || null;
@@ -741,6 +743,7 @@ app.post("/api/updateStockData", async (req, res) => {
         } else {
           // New product from Tally!
           p.imageUrl = null;
+          p.secondaryImageUrl = null;
           // Only assign arrival / purchase timestamps if product has positive stock
           if (Number(p.quantity) > 0) {
             p.firstSeenAt = syncTimestamp;
