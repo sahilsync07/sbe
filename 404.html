@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>SBE App</title>
+    <script>
+      // GitHub Pages SPA redirect hack
+      // When GitHub Pages can't find a route (e.g. /sbe/ledger),
+      // it serves this 404.html. This script redirects to index.html
+      // while preserving the path as a query parameter, which index.html
+      // then restores to the correct client-side route.
+      var pathSegmentsToKeep = 1; // Keep '/sbe' prefix (1 segment)
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
