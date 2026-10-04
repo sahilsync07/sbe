@@ -27,30 +27,49 @@
           </span>
         </div>
 
-        <!-- Right: Action Buttons (Clean View, Sync, Admin, Cart) -->
+        <!-- Right: Action Buttons (Triple Clean View, Sync, Admin, Commit Preview / Cart) -->
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <!-- Clean View Switch (Dedicated, Uncramped Button) -->
-          <button
-            @click="cleanView = !cleanView"
-            type="button"
-            class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl transition-all select-none shrink-0 shadow-xs active:scale-95 border"
-            :class="cleanView ? 'bg-amber-50 border-amber-300/80 text-amber-900' : 'bg-slate-50 border-slate-200/80 text-slate-600 hover:bg-slate-100'"
-            title="Toggle Images Only & In Stock"
-          >
-            <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider" :class="cleanView ? 'text-amber-800' : 'text-slate-600'">
-              Clean View
-            </span>
-            <!-- Custom Toggle Pill -->
-            <div
-              class="w-6 sm:w-7 h-3.5 sm:h-4 rounded-full p-0.5 transition-colors relative shrink-0"
-              :class="cleanView ? 'bg-[#c59b27]' : 'bg-slate-300'"
+          <!-- Triple Mode Switch (Clean | All | Upload) -->
+          <div class="flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200/90 shadow-xs">
+            <button
+              @click="appStore.setCleanView('clean')"
+              type="button"
+              class="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all select-none text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-wider"
+              :class="(cleanView === 'clean' || cleanView === true) 
+                ? 'bg-gradient-to-r from-amber-500 to-[#c59b27] text-white shadow-xs' 
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'"
+              title="Clean Mode (Photos & stock only)"
             >
-              <div
-                class="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-white shadow-sm transition-transform"
-                :class="cleanView ? 'translate-x-2.5 sm:translate-x-3' : 'translate-x-0'"
-              ></div>
-            </div>
-          </button>
+              <i class="fa-solid fa-sparkles text-[8px]" :class="(cleanView === 'clean' || cleanView === true) ? 'text-amber-100' : 'text-amber-500'"></i>
+              <span>Clean</span>
+            </button>
+
+            <button
+              @click="appStore.setCleanView('all')"
+              type="button"
+              class="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all select-none text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-wider"
+              :class="(cleanView === 'all' || cleanView === false) 
+                ? 'bg-slate-800 text-white shadow-xs' 
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'"
+              title="All Products"
+            >
+              <i class="fa-solid fa-border-all text-[8px]" :class="(cleanView === 'all' || cleanView === false) ? 'text-slate-200' : 'text-slate-400'"></i>
+              <span>All</span>
+            </button>
+
+            <button
+              @click="appStore.setCleanView('upload')"
+              type="button"
+              class="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all select-none text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-wider"
+              :class="cleanView === 'upload' 
+                ? 'bg-sky-600 text-white shadow-xs animate-pulse' 
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'"
+              title="Upload Mode (Missing photos only, most to least recent)"
+            >
+              <i class="fa-solid fa-cloud-arrow-up text-[8px]" :class="cleanView === 'upload' ? 'text-sky-100' : 'text-sky-500'"></i>
+              <span>Upload</span>
+            </button>
+          </div>
 
           <!-- Sync Button (Admin Mode - Tally Data Sync) -->
           <button
@@ -80,8 +99,22 @@
             <i class="fa-solid fa-shield-halved text-xs sm:text-sm"></i>
           </button>
 
-          <!-- Shopping Bag Cart Button -->
+          <!-- Commit Preview Button (Replaces Cart button when photos are staged in session) -->
           <button
+            v-if="pendingUploads && pendingUploads.length > 0"
+            @click="showCommitPreviewModal = true"
+            class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white flex items-center justify-center transition-all active:scale-95 shadow-md shadow-emerald-800/30 ring-2 ring-emerald-400 shrink-0 animate-pulse"
+            title="Commit Preview: Review and Push Staged Photos to GitHub"
+          >
+            <div class="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-950 text-[9px] font-black h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full ring-2 ring-white shadow-sm font-mono">
+              {{ pendingUploads.length }}
+            </div>
+            <i class="fa-solid fa-code-commit text-xs sm:text-sm text-emerald-100"></i>
+          </button>
+
+          <!-- Shopping Bag Cart Button (Standard view when no pending uploads) -->
+          <button
+            v-else
             @click="appStore.toggleCart(true)"
             class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-[#18181b] text-white flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-md shadow-black/10 shrink-0"
             title="View Cart"
@@ -217,7 +250,7 @@
           <!-- Image Section -->
           <div 
             class="relative w-full sm:w-[170px] aspect-[4/5] sm:aspect-square bg-white rounded-2xl overflow-hidden cursor-pointer shrink-0 border border-amber-200/60 shadow-sm flex items-center justify-center p-2"
-            @click="$emit('open-image-popup', selectedItem)"
+            @click="handleProductClickFromSearch(selectedItem)"
           >
             <!-- Admin Actions Overlay -->
             <div v-if="isAdmin || isSuperAdmin" class="absolute top-2 right-2 z-30 flex items-center gap-1.5" @click.stop>
@@ -356,7 +389,7 @@
             <ParagonCoreCard
               v-if="product.isCore"
               :core="product.core"
-              @open-image-popup="$emit('open-image-popup', $event)"
+              @open-image-popup="handleProductClickFromSearch($event)"
             />
             <div
               v-else
@@ -365,7 +398,7 @@
             <!-- Image Area -->
             <div 
               class="relative w-full aspect-[4/5] bg-slate-50 cursor-pointer overflow-hidden"
-              @click="$emit('open-image-popup', product)"
+              @click="handleProductClickFromSearch(product)"
             >
               <!-- Out of Stock Overlay -->
               <div v-if="product.quantity <= 0" class="absolute inset-0 z-10 bg-slate-50/80 backdrop-blur-[2px] flex items-center justify-center">
@@ -702,12 +735,148 @@
          FULL STOREFRONT SHOWCASE: Shown when activeTab === 'All'
          ══════════════════════════════════════════════════════════ -->
     <template v-else>
-      <!-- ROTATING HERO CAROUSEL: Sub-Brand Catalog Coverpages -->
-      <div class="mt-3 sm:mt-4 px-3 sm:px-6">
-        <CatalogHeroCarousel 
-          @select-tab="selectTab"
-        />
-      </div>
+      <!-- UPLOAD MODE FEED: Shown when cleanView === 'upload' and activeTab === 'All' -->
+      <section v-if="cleanView === 'upload'" class="mt-4 px-3 sm:px-6 pb-12">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 bg-gradient-to-r from-sky-50 via-white to-amber-50/40 p-4 rounded-3xl border border-sky-200/80 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/20 shrink-0">
+              <i class="fa-solid fa-cloud-arrow-up text-base"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-base sm:text-lg font-black font-['Clash_Display'] text-slate-900 tracking-tight">
+                  Upload Mode • Missing Photos
+                </h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">
+                  {{ uploadModeProducts.length }} Articles
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">
+                Sorted from most recent to least recent. Tap any camera icon to snap or upload a photo.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              v-if="pendingUploads && pendingUploads.length > 0"
+              @click="showCommitPreviewModal = true"
+              class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-sm flex items-center gap-1.5 transition-all active:scale-95 animate-pulse"
+            >
+              <i class="fa-solid fa-code-commit text-xs"></i>
+              <span>Review {{ pendingUploads.length }} Staged</span>
+            </button>
+            <button
+              @click="appStore.setCleanView('clean')"
+              class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold transition-all shadow-xs"
+            >
+              Exit Upload Mode
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty state if all articles have photos -->
+        <div v-if="uploadModeProducts.length === 0" class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+          <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-2"></i>
+          <h3 class="text-base font-black text-slate-800">100% Photo Coverage!</h3>
+          <p class="text-xs text-slate-400 mt-1">All products in the catalog currently have photos uploaded.</p>
+        </div>
+
+        <!-- Upload Grid -->
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div
+            v-for="product in uploadModeProducts"
+            :key="product.productName"
+            class="flex flex-col bg-white rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 border border-slate-200/80 overflow-hidden relative group/card"
+          >
+            <!-- Image Area / Upload Trigger -->
+            <div
+              class="relative w-full aspect-[4/5] bg-slate-50 flex flex-col items-center justify-center p-3 text-center cursor-pointer border-b border-slate-100 group-hover/card:bg-sky-50/30 transition-colors"
+              @click="triggerCardPhotoUpload(product)"
+            >
+              <!-- Stock overlay if out of stock -->
+              <div v-if="Number(product.quantity) <= 0" class="absolute top-2 left-2 z-10">
+                <span class="px-2 py-0.5 bg-slate-200/90 text-slate-600 text-[9px] font-bold rounded-full">Out of Stock</span>
+              </div>
+              <div v-else class="absolute top-2 left-2 z-10">
+                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-extrabold rounded-full border border-emerald-200">
+                  {{ product.quantity }} pairs
+                </span>
+              </div>
+
+              <!-- Recency Badge -->
+              <div v-if="formatProductRecencyDate(product)" class="absolute top-2 right-2 z-10">
+                <span class="px-2 py-0.5 bg-white/90 backdrop-blur-xs text-slate-600 text-[9px] font-bold rounded-full border border-slate-200 shadow-xs flex items-center gap-1">
+                  <i class="fa-solid fa-clock text-[8px] text-slate-400"></i>
+                  <span>{{ formatProductRecencyDate(product) }}</span>
+                </span>
+              </div>
+
+              <!-- Uploading Spinner or Camera Trigger -->
+              <div v-if="uploading[product.productName]" class="flex flex-col items-center justify-center text-sky-600">
+                <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+                <span class="text-xs font-bold">Uploading...</span>
+              </div>
+              <div v-else-if="product.imageUrl" class="w-full h-full relative">
+                <img :src="product.imageUrl" :alt="product.productName" class="w-full h-full object-cover rounded-xl" />
+                <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center gap-1 shadow-md">
+                  <i class="fa-solid fa-check text-[8px]"></i> Staged
+                </div>
+              </div>
+              <div v-else class="flex flex-col items-center justify-center text-slate-400 group-hover/card:text-sky-600 transition-colors">
+                <div class="w-12 h-12 rounded-2xl bg-slate-100 group-hover/card:bg-sky-100 flex items-center justify-center mb-2 transition-colors shadow-xs">
+                  <i class="fa-solid fa-camera text-xl"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-700 group-hover/card:text-sky-700">Add Photo</span>
+                <span class="text-[10px] text-slate-400 mt-0.5">Tap to capture / upload</span>
+              </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="p-3 flex-1 flex flex-col justify-between">
+              <div>
+                <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-snug line-clamp-1 group-hover/card:text-sky-700 transition-colors">
+                  {{ getCleanProductName(product.productName) }}
+                </h4>
+                <p class="text-[11px] text-slate-500 font-medium mt-0.5 truncate">
+                  {{ product.productName }}
+                </p>
+                <div class="flex items-center gap-1.5 mt-2 flex-wrap text-[10px]">
+                  <span v-if="product.groupName" class="px-1.5 py-0.5 bg-slate-100 rounded-md font-bold text-slate-600">
+                    {{ product.groupName }}
+                  </span>
+                  <span v-if="getProductSize(product.productName)" class="px-1.5 py-0.5 bg-slate-100 rounded-md font-bold text-slate-700">
+                    {{ getProductSize(product.productName) }}
+                  </span>
+                  <span class="font-extrabold text-slate-900 ml-auto">
+                    ₹{{ getPriceInfo(product.productName).price }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Bottom Direct Upload Button -->
+              <button
+                @click.stop="triggerCardPhotoUpload(product)"
+                :disabled="uploading[product.productName]"
+                class="mt-3 w-full py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 active:scale-95 text-sky-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all border border-sky-200"
+              >
+                <i v-if="uploading[product.productName]" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                <i v-else class="fa-solid fa-camera text-xs"></i>
+                <span>{{ product.imageUrl ? 'Change Photo' : 'Upload Photo' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Standard Storefront Showcase (when cleanView !== 'upload') -->
+      <template v-else>
+        <!-- ROTATING HERO CAROUSEL: Sub-Brand Catalog Coverpages -->
+        <div class="mt-3 sm:mt-4 px-3 sm:px-6">
+          <CatalogHeroCarousel 
+            @select-tab="selectTab"
+          />
+        </div>
 
       <!-- 4. PARAGON 40% DISCOUNT STRIP: Eye-Catching Marquee -->
       <div class="mt-4 sm:mt-5 px-3 sm:px-6">
@@ -1164,6 +1333,7 @@
         </button>
       </div>
     </template>
+  </template>
 
     <!-- ══════════════════════════════════════════════════════════
          BOTTOM BAR: Fixed Search Bar & Autocomplete
@@ -1276,6 +1446,13 @@
       </div>
     </div>
 
+    <!-- Commit Preview Modal -->
+    <CommitPreviewModal
+      :show="showCommitPreviewModal"
+      @close="showCommitPreviewModal = false"
+      @committed="showCommitPreviewModal = false"
+    />
+
   </div>
 </template>
 
@@ -1298,6 +1475,7 @@ import { storeToRefs } from 'pinia';
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 const ParagonCoreCard = defineAsyncComponent(() => import('./ParagonCoreCard.vue'));
 const CatalogHeroCarousel = defineAsyncComponent(() => import('./CatalogHeroCarousel.vue'));
+const CommitPreviewModal = defineAsyncComponent(() => import('./CommitPreviewModal.vue'));
 
 const baseUrl = import.meta.env.BASE_URL || '/';
 
@@ -1310,8 +1488,9 @@ const { cleanView, searchQuery, lastSyncTime } = storeToRefs(appStore);
 const { cartTotalItems } = storeToRefs(cartStore);
 
 const { isAdmin, isSuperAdmin } = useAdmin();
-const { stockData, loading: isSyncing, updateStockData, uploading, uploadImage, deleteImage } = useStockData();
+const { stockData, loading: isSyncing, updateStockData, uploading, uploadImage, deleteImage, pendingUploads } = useStockData();
 const { addToCart, updateCart, getCartQty } = useCart();
+const showCommitPreviewModal = ref(false);
 
 const triggerCardPhotoUpload = (product) => {
   if (!product) return;
@@ -1488,11 +1667,16 @@ const handleSearchSubmit = (q) => {
 };
 
 const handleProductSelect = (product) => {
+  if (!product) return;
   showDropdown.value = false;
-  selectedItem.value = product;
-  searchQuery.value = product.productName;
-  localQuery.value = product.productName;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  emit('open-image-popup', product);
+  clearSearch();
+};
+
+const handleProductClickFromSearch = (product) => {
+  if (!product) return;
+  emit('open-image-popup', product);
+  clearSearch();
 };
 
 const clearSearch = () => {
@@ -1713,14 +1897,42 @@ const getProductSize = (name) => {
 const getProductColor = (name) => extractColor(name);
 
 // Data Collection Functions
+const uploadModeProducts = computed(() => {
+  if (!stockData.value) return [];
+  const list = [];
+  for (const group of stockData.value) {
+    if (group.groupName === '_META_DATA_' || !group.products) continue;
+    for (const p of group.products) {
+      if (!hasProductImage(p)) {
+        list.push({ ...p, groupName: p.groupName || group.groupName });
+      }
+    }
+  }
+  return list.sort((a, b) => {
+    const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
+    const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
+    return dateB - dateA || (Number(b.quantity) || 0) - (Number(a.quantity) || 0);
+  });
+});
+
+const formatProductRecencyDate = (p) => {
+  const d = p.lastPurchasedAt || p.firstSeenAt || p.imageUploadedAt;
+  if (!d) return null;
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
 const getNewArrivalProducts = () => {
   let products = [];
   if (!stockData.value) return products;
   for (const group of stockData.value) {
     if (group.products) {
       for (const p of group.products) {
-        if (cleanView.value) {
+        if (cleanView.value === 'clean' || cleanView.value === true) {
           if (!hasProductImage(p) || Number(p.quantity) < 4) continue;
+        } else if (cleanView.value === 'upload') {
+          if (hasProductImage(p)) continue;
         }
         if (isNewArrival(p)) products.push(p);
       }
@@ -1769,8 +1981,10 @@ const getActiveTabProducts = () => {
     for (const group of stockData.value) {
       if (group.groupName === '_META_DATA_' || !group.products) continue;
       for (const p of group.products) {
-        if (cleanView.value) {
+        if (cleanView.value === 'clean' || cleanView.value === true) {
           if (!hasProductImage(p) || Number(p.quantity) < 4) continue;
+        } else if (cleanView.value === 'upload') {
+          if (hasProductImage(p)) continue;
         }
         products.push(p);
       }
@@ -1857,8 +2071,10 @@ const getActiveTabProducts = () => {
 
   // Apply In Stock & Price Filters
   return products.filter(p => {
-    if (cleanView.value) {
+    if (cleanView.value === 'clean' || cleanView.value === true) {
       if (!hasProductImage(p) || Number(p.quantity) < 4) return false;
+    } else if (cleanView.value === 'upload') {
+      if (hasProductImage(p)) return false;
     }
     if (inStockOnly.value && Number(p.quantity) <= 0) return false;
     if (maxPriceFilter.value) {
@@ -1866,6 +2082,13 @@ const getActiveTabProducts = () => {
       if (!isNaN(price) && price > maxPriceFilter.value) return false;
     }
     return true;
+  }).sort((a, b) => {
+    if (cleanView.value === 'upload') {
+      const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
+      const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
+      return dateB - dateA || (Number(b.quantity) || 0) - (Number(a.quantity) || 0);
+    }
+    return 0;
   });
 };
 
@@ -2025,7 +2248,7 @@ const paragonCoreList = computed(() => {
 
     return buildCoreObject(def, matched);
   }).filter(core => {
-    if (cleanView.value && core.totalStock <= 0) return false;
+    if ((cleanView.value === 'clean' || cleanView.value === true) && core.totalStock <= 0) return false;
     if (inStockOnly.value && core.totalStock <= 0) return false;
     return true;
   });
@@ -2065,7 +2288,7 @@ function consolidateProducts(products) {
     return it;
   }).filter(it => {
     if (it.isCore) {
-      if (cleanView.value && it.core.totalStock <= 0) return false;
+      if ((cleanView.value === 'clean' || cleanView.value === true) && it.core.totalStock <= 0) return false;
       if (inStockOnly.value && it.core.totalStock <= 0) return false;
     }
     return true;

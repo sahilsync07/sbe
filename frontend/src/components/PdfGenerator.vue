@@ -1841,7 +1841,7 @@ const fetchImageAsBase64 = async (url, productName = '') => {
     if (cached) return cached;
   } catch (e) {}
 
-  const targetUrl = getOptimizedImageUrl(url) || url;
+  const targetUrl = getOptimizedImageUrl(url, 1200) || url;
   const res = await axios.get(targetUrl, { responseType: 'arraybuffer' });
   const base64 = btoa(
     new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
@@ -2955,7 +2955,7 @@ const prepareOneTouch = async () => {
           }
 
           const page = await pdf.getPage(p);
-          const viewport = page.getViewport({ scale: 1.0 }); // Changed from 1.5 to 1.0 to save memory
+          const viewport = page.getViewport({ scale: 1.25 }); // HD Crisp Rendering for footwear images
           const canvas = document.createElement('canvas');
           canvas.width = viewport.width;
           canvas.height = viewport.height;
@@ -2963,8 +2963,8 @@ const prepareOneTouch = async () => {
 
           await page.render({ canvasContext: ctx, viewport }).promise;
 
-          // Extract Base64 (lower quality to 0.75 for smaller payload over Capacitor bridge)
-          const b64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+          // Extract Base64 in crisp HD quality (0.92)
+          const b64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
           const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_${p}.jpg`;
 
           // Memory Cleanup - CRITICAL to prevent Webview crash!

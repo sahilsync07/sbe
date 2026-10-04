@@ -256,6 +256,27 @@ async function commitFileToGitHub(filePath, updatedContentString, commitMessage,
     throw new Error(`Failed to commit ${filePath} to GitHub after retry attempts due to SHA conflict`);
 }
 
+// Module-scoped reactive pending uploads queue (shared across all components)
+const pendingUploads = ref([]);
+const PENDING_UPLOADS_KEY = 'sbe_pending_uploads';
+
+try {
+    const saved = localStorage.getItem(PENDING_UPLOADS_KEY);
+    if (saved) {
+        pendingUploads.value = JSON.parse(saved);
+    }
+} catch (e) {
+    console.warn('[Pending Uploads] Failed to parse cached pending uploads:', e);
+}
+
+const savePendingUploads = () => {
+    try {
+        localStorage.setItem(PENDING_UPLOADS_KEY, JSON.stringify(pendingUploads.value));
+    } catch (e) {
+        console.warn('[Pending Uploads] Failed to cache pending uploads:', e);
+    }
+};
+
 export function useStockData(isLocal) {
     const appStore = useAppStore();
     const { stockData, isRefreshing, lastSyncTime: lastRefresh } = storeToRefs(appStore);
@@ -267,6 +288,74 @@ export function useStockData(isLocal) {
     const uploadErrors = ref({});
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
+
+    const addPendingUpload = ({ productName, imageUrl, oldImageUrl, groupName, status = 'uploaded' }) => {
+        const norm = (productName || '').trim().toLowerCase();
+        const existingIndex = pendingUploads.value.findIndex(u => (u.productName || '').trim().toLowerCase() === norm);
+        const record = {
+            productName,
+            imageUrl: imageUrl || null,
+            oldImageUrl: oldImageUrl !== undefined ? oldImageUrl : (existingIndex !== -1 ? pendingUploads.value[existingIndex].oldImageUrl : null),
+            groupName: groupName || '',
+            status,
+            timestamp: Date.now()
+        };
+        if (existingIndex !== -1) {
+            pendingUploads.value[existingIndex] = record;
+        } else {
+            pendingUploads.value.push(record);
+        }
+        savePendingUploads();
+    };
+
+    const discardPendingUpload = (productName) => {
+        const norm = (productName || '').trim().toLowerCase();
+        const idx = pendingUploads.value.findIndex(u => (u.productName || '').trim().toLowerCase() === norm);
+        if (idx === -1) return;
+        const item = pendingUploads.value[idx];
+
+        // Revert in-memory stockData
+        if (stockData.value && Array.isArray(stockData.value)) {
+            stockData.value.forEach(group => {
+                (group.products || []).forEach(p => {
+                    if ((p.productName || '').trim().toLowerCase() === norm) {
+                        p.imageUrl = item.oldImageUrl || null;
+                        p.secondaryImageUrl = item.oldImageUrl || null;
+                        if (!item.oldImageUrl) delete p.imageUploadedAt;
+                    }
+                });
+            });
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+            } catch (e) {}
+        }
+
+        pendingUploads.value.splice(idx, 1);
+        savePendingUploads();
+        toast.info(`Discarded changes for ${productName}`);
+    };
+
+    const clearPendingUploads = (revert = false) => {
+        if (revert && stockData.value && Array.isArray(stockData.value)) {
+            pendingUploads.value.forEach(item => {
+                const norm = (item.productName || '').trim().toLowerCase();
+                stockData.value.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        if ((p.productName || '').trim().toLowerCase() === norm) {
+                            p.imageUrl = item.oldImageUrl || null;
+                            p.secondaryImageUrl = item.oldImageUrl || null;
+                            if (!item.oldImageUrl) delete p.imageUploadedAt;
+                        }
+                    });
+                });
+            });
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
+            } catch (e) {}
+        }
+        pendingUploads.value = [];
+        localStorage.removeItem(PENDING_UPLOADS_KEY);
+    };
 
     // Check if truly on a local node dev server (native mobile devices should always fetch live remote)
     const isLocalMachine = () => {
@@ -878,11 +967,13 @@ export function useStockData(isLocal) {
             // 4. Instant Optimistic UI & localStorage update (Zero latency on screen)
             const nowIso = new Date().toISOString();
             const targetNorm = (productName || '').trim().toLowerCase();
+            let oldImageUrl = null;
             if (stockData.value && Array.isArray(stockData.value)) {
                 stockData.value.forEach(group => {
                     (group.products || []).forEach(p => {
                         const prodNorm = (p.productName || '').trim().toLowerCase();
                         if (p.productName === productName || (prodNorm && prodNorm === targetNorm)) {
+                            if (!oldImageUrl && p.imageUrl) oldImageUrl = p.imageUrl;
                             p.imageUrl = newImageUrl;
                             p.secondaryImageUrl = newImageUrl;
                             p.imageUploadedAt = nowIso;
@@ -895,6 +986,7 @@ export function useStockData(isLocal) {
             }
 
             if (typeof productOrName === 'object' && productOrName) {
+                if (!oldImageUrl && productOrName.imageUrl) oldImageUrl = productOrName.imageUrl;
                 productOrName.imageUrl = newImageUrl;
                 productOrName.secondaryImageUrl = newImageUrl;
                 productOrName.imageUploadedAt = nowIso;
@@ -902,26 +994,28 @@ export function useStockData(isLocal) {
 
             delete imageFiles.value[productName];
 
-            // 5. Persist change: Local backend if available, or direct GitHub API
-            const syncResult = await syncImageChange(productName, newImageUrl);
+            // 5. Stage into pendingUploads session queue (BATCH GITHUB COMMITS TO PREVENT ACTIONS COLLISION)
+            addPendingUpload({
+                productName,
+                imageUrl: newImageUrl,
+                oldImageUrl,
+                groupName: typeof productOrName === 'object' ? productOrName?.groupName : '',
+                status: 'uploaded'
+            });
+
+            // If local machine dev server is running, inform local server non-blockingly
+            if (isLocalMachine()) {
+                try {
+                    axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/updateImage`, {
+                        productName,
+                        imageUrl: newImageUrl
+                    }, { timeout: 1500 }).catch(() => {});
+                } catch (e) {}
+            }
 
             toast.remove(toastId);
             const provMsg = usedProvider === 'GitHub-CDN' ? ' (GitHub CDN)' : '';
-            if (syncResult && syncResult.success) {
-                if (syncResult.via === 'github') {
-                    toast.success(`✓ Photo uploaded${provMsg} & committed to GitHub!`, { autoClose: 3500 });
-                } else {
-                    toast.success(`✓ Photo uploaded${provMsg} & synced to server!`, { autoClose: 3000 });
-                }
-            } else if (syncResult && syncResult.reason === 'canceled') {
-                toast.warning(`Photo uploaded${provMsg}, but GitHub commit canceled (no token entered).`, { autoClose: 5000 });
-            } else if (syncResult && syncResult.reason === 'expired') {
-                toast.warning(`Photo uploaded${provMsg}, but GitHub token expired.`, { autoClose: 5000 });
-            } else if (syncResult && syncResult.reason === 'no_token') {
-                toast.warning(`Photo uploaded${provMsg}, but GitHub commit skipped (no GitHub token).`, { autoClose: 5000 });
-            } else {
-                toast.info(`Photo uploaded${provMsg}.`, { autoClose: 3000 });
-            }
+            toast.success(`✓ Photo uploaded${provMsg}! Staged in session (${pendingUploads.value.length} pending commit)`, { autoClose: 3500 });
             return newImageUrl;
         } catch (err) {
             console.error('Error uploading image:', err);
@@ -949,11 +1043,13 @@ export function useStockData(isLocal) {
         try {
             // 1. Instant Optimistic UI & localStorage update (clears both imageUrl and secondaryImageUrl)
             const targetNorm = (productName || '').trim().toLowerCase();
+            let existingImageUrl = null;
             if (stockData.value && Array.isArray(stockData.value)) {
                 stockData.value.forEach(group => {
                     (group.products || []).forEach(p => {
                         const prodNorm = (p.productName || '').trim().toLowerCase();
                         if (p.productName === productName || (prodNorm && prodNorm === targetNorm)) {
+                            if (!existingImageUrl && p.imageUrl) existingImageUrl = p.imageUrl;
                             p.imageUrl = null;
                             p.secondaryImageUrl = null;
                             delete p.imageUploadedAt;
@@ -966,6 +1062,7 @@ export function useStockData(isLocal) {
             }
 
             if (typeof productOrName === 'object' && productOrName) {
+                if (!existingImageUrl && productOrName.imageUrl) existingImageUrl = productOrName.imageUrl;
                 productOrName.imageUrl = null;
                 productOrName.secondaryImageUrl = null;
                 delete productOrName.imageUploadedAt;
@@ -973,23 +1070,25 @@ export function useStockData(isLocal) {
 
             delete imageFiles.value[productName];
 
-            // 2. Persist change: Local backend if available, or direct GitHub API
-            const syncResult = await syncImageChange(productName, null);
+            // 2. Stage deletion into pendingUploads session queue (BATCH COMMITS)
+            addPendingUpload({
+                productName,
+                imageUrl: null,
+                oldImageUrl: existingImageUrl,
+                groupName: typeof productOrName === 'object' ? productOrName?.groupName : '',
+                status: 'deleted'
+            });
+
+            if (isLocalMachine()) {
+                try {
+                    axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/removeImage`, {
+                        productName
+                    }, { timeout: 1500 }).catch(() => {});
+                } catch (e) {}
+            }
 
             toast.remove(toastId);
-            if (syncResult && syncResult.success) {
-                if (syncResult.via === 'github') {
-                    toast.success(`✓ Photo removed & committed to GitHub!`, { autoClose: 3000 });
-                } else {
-                    toast.success(`✓ Photo removed & synced to server!`, { autoClose: 2500 });
-                }
-            } else if (syncResult && (syncResult.reason === 'no_token' || syncResult.reason === 'canceled')) {
-                toast.warning(`Photo removed locally, but GitHub commit canceled (no token).`, { autoClose: 4000 });
-            } else if (syncResult && syncResult.reason === 'expired') {
-                toast.warning(`Photo removed locally, but GitHub token expired.`, { autoClose: 4000 });
-            } else {
-                toast.success(`✓ Photo removed for ${productName}`, { autoClose: 2500 });
-            }
+            toast.info(`Photo removed! Staged in session (${pendingUploads.value.length} pending commit)`, { autoClose: 3000 });
             return true;
         } catch (err) {
             console.error('Error removing image:', err);
@@ -1108,6 +1207,136 @@ export function useStockData(isLocal) {
         }
     };
 
+    /**
+     * Batch commit all staged session uploads to GitHub in ONE single combined commit
+     */
+    const commitPendingUploadsToGitHub = async (customCommitMessage = '') => {
+        if (!pendingUploads.value || pendingUploads.value.length === 0) {
+            toast.info('No pending uploads to commit.', { autoClose: 2500 });
+            return { success: false, reason: 'empty' };
+        }
+
+        const count = pendingUploads.value.length;
+        const toastId = toast.loading(`Committing batch of ${count} changes to GitHub...`, { autoClose: false, closeButton: false });
+
+        try {
+            let token = getGitHubToken();
+            if (!token) {
+                token = await promptForToken('missing');
+                if (!token) {
+                    toast.remove(toastId);
+                    toast.warning('Commit canceled: GitHub token required.', { autoClose: 4000 });
+                    return { success: false, reason: 'canceled' };
+                }
+            }
+
+            // 1. Fetch freshest remote stock data to avoid conflicts
+            let fullCatalog = null;
+            try {
+                const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+                if (res.ok) {
+                    fullCatalog = await res.json();
+                }
+            } catch (e) {
+                console.warn('[Sync] Could not fetch remote catalog, falling back to local memory:', e.message);
+            }
+            if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
+                fullCatalog = stockData.value;
+            }
+
+            if (!fullCatalog || !Array.isArray(fullCatalog)) {
+                throw new Error('Catalog data not available for GitHub sync');
+            }
+
+            // 2. Apply all pending changes
+            const pendingMap = new Map();
+            pendingUploads.value.forEach(item => {
+                pendingMap.set((item.productName || '').trim().toLowerCase(), item);
+            });
+
+            const nowIso = new Date().toISOString();
+            fullCatalog.forEach(group => {
+                if (!group.products || !Array.isArray(group.products)) return;
+                group.products.forEach(p => {
+                    const norm = (p.productName || '').trim().toLowerCase();
+                    if (pendingMap.has(norm)) {
+                        const staged = pendingMap.get(norm);
+                        if (staged.imageUrl) {
+                            p.imageUrl = staged.imageUrl;
+                            p.secondaryImageUrl = staged.imageUrl;
+                            p.imageUploadedAt = nowIso;
+                        } else {
+                            p.imageUrl = null;
+                            p.secondaryImageUrl = null;
+                            delete p.imageUploadedAt;
+                        }
+                    }
+                });
+            });
+
+            // 3. Build smart commit message
+            let commitMessage = (customCommitMessage || '').trim();
+            if (!commitMessage) {
+                const names = pendingUploads.value.map(u => u.productName).slice(0, 3).join(', ');
+                const more = count > 3 ? ` +${count - 3} more` : '';
+                commitMessage = `Upload photos for ${count} article${count > 1 ? 's' : ''} (${names}${more})`;
+            }
+
+            const jsonString = JSON.stringify(fullCatalog, null, 2);
+
+            // 4. Commit to frontend and sbe-hub in one batch
+            const executeCommit = async (currentToken) => {
+                try {
+                    await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    try {
+                        await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
+                    } catch (hubErr) {
+                        console.warn('[Sync] SBE Hub mirror warning:', hubErr.message);
+                    }
+                    return { success: true };
+                } catch (commitErr) {
+                    if (commitErr.status === 401 || commitErr.status === 403 || commitErr.message?.includes('401') || commitErr.message?.includes('Bad credentials')) {
+                        const freshToken = await promptForToken('expired');
+                        if (freshToken) {
+                            await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            try {
+                                await commitFileToGitHub('sbe-hub/public/assets/stock-data.json', jsonString, commitMessage, freshToken);
+                            } catch (e) {}
+                            return { success: true };
+                        }
+                        return { success: false, reason: 'expired' };
+                    }
+                    throw commitErr;
+                }
+            };
+
+            const result = await executeCommit(token);
+            if (!result.success) {
+                toast.remove(toastId);
+                toast.error('GitHub commit failed. Changes remain held in session.', { autoClose: 5000 });
+                return result;
+            }
+
+            // 5. Update local storage cache with committed data
+            stockData.value = fullCatalog;
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(fullCatalog));
+            } catch (e) {}
+
+            // 6. Clear pending session
+            clearPendingUploads(false);
+
+            toast.remove(toastId);
+            toast.success(`✓ Successfully pushed ${count} photo changes to GitHub!`, { autoClose: 4000 });
+            return { success: true, count };
+        } catch (err) {
+            toast.remove(toastId);
+            console.error('[Sync] Batch commit error:', err);
+            toast.error(`GitHub commit failed: ${err.message}`, { autoClose: 5000 });
+            return { success: false, error: err.message };
+        }
+    };
+
     return {
         stockData,
         loading,
@@ -1115,6 +1344,10 @@ export function useStockData(isLocal) {
         uploading,
         uploadErrors,
         imageFiles,
+        pendingUploads,
+        discardPendingUpload,
+        clearPendingUploads,
+        commitPendingUploadsToGitHub,
         lastRefresh,
         isRefreshing,
         loadStockData,

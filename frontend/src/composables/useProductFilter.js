@@ -73,11 +73,22 @@ export function useProductFilter(stockData, config) {
                 .filter((group) => group.products.length > 0);
         }
 
-        // Clean View Logic (Replaces Images Only & Hide Negative) - applies when not searching
-        if (cleanView.value && !searchQuery.value) {
+        // Clean View / Upload Mode Logic - applies when not searching
+        if ((cleanView.value === true || cleanView.value === 'clean') && !searchQuery.value) {
             filtered = filtered.map(group => ({
                 ...group,
                 products: group.products.filter(p => !!p.imageUrl && Number(p.quantity) >= 4)
+            })).filter(group => group.products.length > 0);
+        } else if (cleanView.value === 'upload' && !searchQuery.value) {
+            filtered = filtered.map(group => ({
+                ...group,
+                products: group.products
+                    .filter(p => !p.imageUrl && !p.secondaryImageUrl)
+                    .sort((a, b) => {
+                        const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
+                        const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
+                        return dateB - dateA || (Number(b.quantity) || 0) - (Number(a.quantity) || 0);
+                    })
             })).filter(group => group.products.length > 0);
         }
 
@@ -194,9 +205,11 @@ export function useProductFilter(stockData, config) {
                         if (!queryParts.every(part => productName.includes(part))) return;
                     }
 
-                    // Clean View Logic for New Arrivals
-                    if (cleanView.value && !searchQuery.value) {
+                    // Clean View / Upload Mode Logic for New Arrivals
+                    if ((cleanView.value === true || cleanView.value === 'clean') && !searchQuery.value) {
                         if (!p.imageUrl || Number(p.quantity) < 4) return;
+                    } else if (cleanView.value === 'upload' && !searchQuery.value) {
+                        if (p.imageUrl || p.secondaryImageUrl) return;
                     }
 
                     if (isNewArrival(p)) {

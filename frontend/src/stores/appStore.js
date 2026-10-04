@@ -8,7 +8,7 @@ export const useAppStore = defineStore('app', {
     isRefreshing: false,
     lastSyncTime: null,
     searchQuery: '',
-    cleanView: true,
+    cleanView: 'clean', // 'clean' | 'all' | 'upload'
     config: {},
     showCart: false,
     showSidePanel: false,
@@ -16,6 +16,11 @@ export const useAppStore = defineStore('app', {
     showAdminModal: false,
     showGitHubSyncModal: false,
   }),
+  getters: {
+    isCleanMode: (state) => state.cleanView === 'clean' || state.cleanView === true,
+    isUploadMode: (state) => state.cleanView === 'upload',
+    isAllMode: (state) => state.cleanView === 'all' || state.cleanView === false,
+  },
   actions: {
     setShowLanding(status) {
       this.showLanding = status;
@@ -39,7 +44,18 @@ export const useAppStore = defineStore('app', {
       this.searchQuery = query;
     },
     setCleanView(status) {
-      this.cleanView = status;
+      if (status === true) this.cleanView = 'clean';
+      else if (status === false) this.cleanView = 'all';
+      else this.cleanView = status;
+    },
+    cycleCleanView() {
+      if (this.cleanView === 'clean' || this.cleanView === true) {
+        this.cleanView = 'all';
+      } else if (this.cleanView === 'all' || this.cleanView === false) {
+        this.cleanView = 'upload';
+      } else {
+        this.cleanView = 'clean';
+      }
     },
     toggleCart(forceVal) {
       this.showCart = forceVal !== undefined ? forceVal : !this.showCart;
