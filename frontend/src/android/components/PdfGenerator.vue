@@ -2325,8 +2325,8 @@ const openOneTouchModal = () => {
   showOneTouchModal.value = true;
 };
 
-// --- PDF Mode: Generate a single multi-page PDF with LEFT/RIGHT black bars ---
-const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue) => {
+// --- PDF Mode: Generate a single multi-page PDF with sleek sides and royal cover page ---
+const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue, groupLabel = '') => {
   const data = stockData.value;
   const filteredGroups = data.filter((group) => {
     return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
@@ -2355,6 +2355,37 @@ const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyV
     month: 'short',
     year: 'numeric',
   });
+
+  // Page 1: Royal White-Gold Minimalist Cover Page
+  try {
+    const groupProducts = filteredGroups
+      .flatMap((g) => g.products || [])
+      .filter((p) => {
+        const hasImg = p.imageUrl || p.secondaryImageUrl;
+        if (onlyWithPhotosFlag && !hasImg) return false;
+        if (p.quantity < minQtyValue) return false;
+        if (maxQtyValue > 0 && p.quantity > maxQtyValue) return false;
+        return true;
+      });
+
+    const summaryImg = await generateBrandSummaryImage({
+      groupLabel: groupLabel || (targetBrands.length === 1 ? targetBrands[0] : 'Footwear Catalog'),
+      subBrands: targetBrands,
+      products: groupProducts,
+    });
+
+    if (summaryImg && summaryImg.dataUrl) {
+      doc.setFillColor(252, 252, 250);
+      doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+      const coverW = 1080;
+      const coverX = Math.max(0, (PAGE_W - coverW) / 2);
+      doc.addImage(summaryImg.dataUrl, 'JPEG', coverX, 0, coverW, PAGE_H);
+      hasAddedPage = true;
+      pageCount++;
+    }
+  } catch (covErr) {
+    console.warn('Cover page error for One Touch PDF:', covErr);
+  }
 
   for (const group of filteredGroups) {
     for (const product of group.products) {
@@ -2722,7 +2753,8 @@ const prepareOneTouch = async () => {
           group.activeBrands,
           oneTouchOnlyWithPhotos.value,
           effectiveMinQty,
-          effectiveMaxQty
+          effectiveMaxQty,
+          group.label
         );
 
         if (!blob || pageCount === 0) {
