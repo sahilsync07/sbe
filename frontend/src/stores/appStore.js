@@ -52,7 +52,7 @@ export const useAppStore = defineStore('app', {
       if (this.cleanView === 'clean' || this.cleanView === true) {
         this.cleanView = 'all';
       } else if (this.cleanView === 'all' || this.cleanView === false) {
-        this.cleanView = 'upload';
+        this.cleanView = (this.isAdmin || this.isSuperAdmin) ? 'upload' : 'clean';
       } else {
         this.cleanView = 'clean';
       }

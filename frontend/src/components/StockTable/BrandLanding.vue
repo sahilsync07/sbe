@@ -7,30 +7,24 @@
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-2.5 sm:px-6 pb-2 transition-all w-full max-w-full overflow-hidden" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
       <!-- Top Branding & Action Buttons Row -->
       <div class="flex items-center justify-between gap-2 w-full">
-        <!-- Left: SBE Rayagada (Luxury Minimalist Lockup) -->
+        <!-- Left: SBE New Logo (Replaces "SBE Rayagada" text) -->
         <div 
-          class="flex flex-col select-none min-w-0 cursor-pointer group py-0.5" 
+          class="flex items-center select-none cursor-pointer group py-0.5 shrink-0" 
           @click="selectTab('All')"
-          title="SBE Rayagada • Wholesale Footwear"
+          title="SBE • Wholesale Footwear"
         >
-          <div class="flex items-center gap-2 leading-none">
-            <span class="font-black text-base sm:text-lg tracking-[0.16em] text-slate-950 font-sans uppercase group-hover:text-black transition-colors">
-              SBE
-            </span>
-            <span class="h-3 w-px bg-slate-300/80"></span>
-            <span class="font-bold text-[11px] sm:text-xs text-slate-500 uppercase tracking-[0.2em] font-sans group-hover:text-slate-800 transition-colors">
-              Rayagada
-            </span>
-          </div>
-          <span class="text-[7.5px] sm:text-[8.5px] font-semibold text-slate-400 uppercase tracking-[0.26em] leading-none mt-1 truncate">
-            Footwear Wholesale
-          </span>
+          <img 
+            :src="`${baseUrl}assets/logos/e-sbe-new-logo.png`" 
+            alt="SBE Logo" 
+            class="h-8 sm:h-9 w-8 sm:w-9 object-contain rounded-xl shadow-xs border border-amber-200/60 bg-white p-0.5 group-hover:scale-105 transition-all" 
+            @error="$event.target.src = `${baseUrl}e-sbe-new-logo.png`"
+          />
         </div>
 
-        <!-- Right: Action Buttons (Triple Clean View, Sync, Admin, Commit Preview / Cart) -->
+        <!-- Right: Action Buttons (Clean View, Sync, Admin, Commit Preview / Cart) -->
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <!-- Triple Mode Switch (Clean | All | Upload) -->
-          <div class="flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200/90 shadow-xs">
+          <!-- ADMIN ONLY: Triple Mode Switch (Clean | All | Upload) -->
+          <div v-if="isAdmin || isSuperAdmin" class="flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200/90 shadow-xs">
             <button
               @click="appStore.setCleanView('clean')"
               type="button"
@@ -71,6 +65,30 @@
             </button>
           </div>
 
+          <!-- NORMAL USER: Old Clean View Switch (Binary pill toggle) -->
+          <button
+            v-else
+            @click="toggleNormalCleanView"
+            type="button"
+            class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl transition-all select-none shrink-0 shadow-xs active:scale-95 border"
+            :class="(cleanView === 'clean' || cleanView === true) ? 'bg-amber-50 border-amber-300/80 text-amber-900' : 'bg-slate-50 border-slate-200/80 text-slate-600 hover:bg-slate-100'"
+            title="Toggle Images Only & In Stock"
+          >
+            <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider" :class="(cleanView === 'clean' || cleanView === true) ? 'text-amber-800' : 'text-slate-600'">
+              Clean View
+            </span>
+            <!-- Custom Toggle Pill -->
+            <div
+              class="w-6 sm:w-7 h-3.5 sm:h-4 rounded-full p-0.5 transition-colors relative shrink-0"
+              :class="(cleanView === 'clean' || cleanView === true) ? 'bg-[#c59b27]' : 'bg-slate-300'"
+            >
+              <div
+                class="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-white shadow-sm transition-transform"
+                :class="(cleanView === 'clean' || cleanView === true) ? 'translate-x-2.5 sm:translate-x-3' : 'translate-x-0'"
+              ></div>
+            </div>
+          </button>
+
           <!-- Sync Button (Admin Mode - Tally Data Sync) -->
           <button
             v-if="isAdmin || isSuperAdmin"
@@ -99,9 +117,9 @@
             <i class="fa-solid fa-shield-halved text-xs sm:text-sm"></i>
           </button>
 
-          <!-- Commit Preview Button (Replaces Cart button when photos are staged in session) -->
+          <!-- Commit Preview Button (Replaces Cart button when photos are staged in session by admin) -->
           <button
-            v-if="pendingUploads && pendingUploads.length > 0"
+            v-if="pendingUploads && pendingUploads.length > 0 && (isAdmin || isSuperAdmin)"
             @click="showCommitPreviewModal = true"
             class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white flex items-center justify-center transition-all active:scale-95 shadow-md shadow-emerald-800/30 ring-2 ring-emerald-400 shrink-0 animate-pulse"
             title="Commit Preview: Review and Push Staged Photos to GitHub"
@@ -735,8 +753,8 @@
          FULL STOREFRONT SHOWCASE: Shown when activeTab === 'All'
          ══════════════════════════════════════════════════════════ -->
     <template v-else>
-      <!-- UPLOAD MODE FEED: Shown when cleanView === 'upload' and activeTab === 'All' -->
-      <section v-if="cleanView === 'upload'" class="mt-4 px-3 sm:px-6 pb-12">
+      <!-- UPLOAD MODE FEED: Shown when cleanView === 'upload' and activeTab === 'All' (Admin only) -->
+      <section v-if="cleanView === 'upload' && (isAdmin || isSuperAdmin)" class="mt-4 px-3 sm:px-6 pb-12">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 bg-gradient-to-r from-sky-50 via-white to-amber-50/40 p-4 rounded-3xl border border-sky-200/80 shadow-sm">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/20 shrink-0">
@@ -1491,6 +1509,21 @@ const { isAdmin, isSuperAdmin } = useAdmin();
 const { stockData, loading: isSyncing, updateStockData, uploading, uploadImage, deleteImage, pendingUploads } = useStockData();
 const { addToCart, updateCart, getCartQty } = useCart();
 const showCommitPreviewModal = ref(false);
+
+const toggleNormalCleanView = () => {
+  if (cleanView.value === 'clean' || cleanView.value === true) {
+    appStore.setCleanView('all');
+  } else {
+    appStore.setCleanView('clean');
+  }
+};
+
+// Ensure non-admins are never stuck in upload mode
+watch([isAdmin, isSuperAdmin], ([admin, superAdmin]) => {
+  if (!admin && !superAdmin && cleanView.value === 'upload') {
+    appStore.setCleanView('clean');
+  }
+}, { immediate: true });
 
 const triggerCardPhotoUpload = (product) => {
   if (!product) return;

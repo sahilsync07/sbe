@@ -231,7 +231,8 @@ export async function generateBrandSummaryImage({
     }
   } catch (_) {}
 
-  const FONT_SBE_SUB = 'bold 16px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  const FONT_SBE_TITLE = 'bold 26px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  const FONT_SBE_CITY = 'bold 17px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   const FONT_DAY = 'bold 52px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   const FONT_DATE_NUM = 'bold 160px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   const FONT_MONTH_YEAR = 'bold 52px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
@@ -265,7 +266,7 @@ export async function generateBrandSummaryImage({
     ctx.fill();
   });
 
-  // 3. TOP: SBE NEW LOGO (from C:\Projects\sbe\e-SBE new logo.png)
+  // 3. TOP: SBE NEW LOGO (Moved down to iconY = 160)
   const sbeLogoCandidates = [
     `${prefix}assets/logos/e-sbe-new-logo.png`,
     `${prefix}e-sbe-new-logo.png`,
@@ -278,7 +279,7 @@ export async function generateBrandSummaryImage({
   }
   const iconSize = 185;
   const iconX = (WIDTH - iconSize) / 2;
-  const iconY = 120;
+  const iconY = 160;
 
   if (sbeImg) {
     // Outer luxury gold squircle ring
@@ -294,25 +295,30 @@ export async function generateBrandSummaryImage({
     ctx.restore();
   }
 
-  // SBE Subtitle
+  // SBE Title (enlarged font)
   ctx.fillStyle = '#B8860B';
-  ctx.font = FONT_SBE_SUB;
+  ctx.font = FONT_SBE_TITLE;
   ctx.textAlign = 'center';
-  ctx.fillText('SRI BRUNDABANA ENTERPRISES  •  RAYAGADA', WIDTH / 2, 350);
+  ctx.fillText('SRI BRUNDABANA ENTERPRISES', WIDTH / 2, 395);
+
+  // Rayagada on next line
+  ctx.fillStyle = '#D4AF37';
+  ctx.font = FONT_SBE_CITY;
+  ctx.fillText('—  RAYAGADA  —', WIDTH / 2, 432);
 
   // Elegant Thin Gold Divider
   ctx.strokeStyle = '#D4AF37';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(WIDTH / 2 - 140, 375);
-  ctx.lineTo(WIDTH / 2 + 140, 375);
+  ctx.moveTo(WIDTH / 2 - 140, 465);
+  ctx.lineTo(WIDTH / 2 + 140, 465);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(WIDTH / 2, 375, 3, 0, Math.PI * 2);
+  ctx.arc(WIDTH / 2, 465, 3, 0, Math.PI * 2);
   ctx.fill();
 
-  // 4. CENTER: DYNAMIC BRAND LOGO
+  // 4. CENTER: DYNAMIC BRAND LOGO (Moved down to drawY = 560)
   const logoPath = customLogoUrl || getBrandLogoPath(groupLabel) || (subBrands.length > 0 ? getBrandLogoPath(subBrands[0]) : null);
   const logoImg = await loadImgAsync(logoPath);
 
@@ -327,7 +333,7 @@ export async function generateBrandSummaryImage({
       drawW = drawH * ratio;
     }
     const drawX = (WIDTH - drawW) / 2;
-    const drawY = 480 + (maxH - drawH) / 2;
+    const drawY = 560 + (maxH - drawH) / 2;
     ctx.save();
     drawRoundRect(ctx, drawX, drawY, drawW, drawH, 16, false, false);
     ctx.clip();
@@ -337,10 +343,10 @@ export async function generateBrandSummaryImage({
     ctx.font = FONT_BRAND_FALLBACK;
     ctx.fillStyle = '#0F172A';
     ctx.textAlign = 'center';
-    ctx.fillText((groupLabel || 'FOOTWEAR').toUpperCase(), WIDTH / 2, 560);
+    ctx.fillText((groupLabel || 'FOOTWEAR').toUpperCase(), WIDTH / 2, 640);
   }
 
-  // 5. LOWER CENTER: LUXURY DATE SECTION (BIG LETTERS + BIGGER DAY & MONTH-YEAR)
+  // 5. LOWER CENTER: LUXURY DATE SECTION (Moved down for balanced elegance)
   const now = new Date();
   const dayStr = now.toLocaleDateString('en-GB', { weekday: 'long' }).toUpperCase();
   const dateNum = now.toLocaleDateString('en-GB', { day: '2-digit' });
@@ -350,38 +356,38 @@ export async function generateBrandSummaryImage({
   ctx.strokeStyle = '#D4AF37';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(WIDTH / 2 - 220, 750);
-  ctx.lineTo(WIDTH / 2 + 220, 750);
+  ctx.moveTo(WIDTH / 2 - 220, 850);
+  ctx.lineTo(WIDTH / 2 + 220, 850);
   ctx.stroke();
 
   // Day of week in grand gold display (larger)
   ctx.font = FONT_DAY;
   ctx.fillStyle = '#B8860B';
   ctx.textAlign = 'center';
-  ctx.fillText(`—  ${dayStr}  —`, WIDTH / 2, 825);
+  ctx.fillText(`—  ${dayStr}  —`, WIDTH / 2, 925);
 
   // Big Date Number (kept at 160px)
   ctx.font = FONT_DATE_NUM;
   ctx.fillStyle = '#0F172A';
-  ctx.fillText(dateNum, WIDTH / 2, 1000);
+  ctx.fillText(dateNum, WIDTH / 2, 1080);
 
   // Month & Year (larger)
   ctx.font = FONT_MONTH_YEAR;
   ctx.fillStyle = '#0F172A';
-  ctx.fillText(monthYear, WIDTH / 2, 1080);
+  ctx.fillText(monthYear, WIDTH / 2, 1180);
 
   // Gold rule below date
   ctx.strokeStyle = '#D4AF37';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(WIDTH / 2 - 220, 1140);
-  ctx.lineTo(WIDTH / 2 + 220, 1140);
+  ctx.moveTo(WIDTH / 2 - 220, 1240);
+  ctx.lineTo(WIDTH / 2 + 220, 1240);
   ctx.stroke();
 
   // 6. BOTTOM: ROYAL CATALOG CREST
   ctx.font = FONT_CREST;
   ctx.fillStyle = '#94A3B8';
-  ctx.fillText('OFFICIAL WHOLESALE FOOTWEAR CATALOG', WIDTH / 2, 1480);
+  ctx.fillText('OFFICIAL WHOLESALE FOOTWEAR CATALOG', WIDTH / 2, 1500);
 
   // Export in HD quality
   const dataUrl = canvas.toDataURL('image/jpeg', 0.95);

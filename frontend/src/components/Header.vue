@@ -23,8 +23,12 @@
             @contextmenu.prevent
             class="flex items-center gap-1.5 justify-center w-full pointer-events-auto cursor-pointer select-none"
           >
-            <span class="text-lg font-black tracking-tighter text-slate-900 truncate">SBE</span>
-            <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase bg-slate-100 px-1.5 py-0.5 rounded-sm shrink-0">Rayagada</span>
+            <img 
+              src="/assets/logos/e-sbe-new-logo.png" 
+              alt="SBE Logo" 
+              class="h-7 w-7 object-contain rounded-lg shadow-xs" 
+              @error="$event.target.src = '/e-sbe-new-logo.png'"
+            />
           </div>
           <span v-if="lastSyncFormatted" class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5 whitespace-nowrap">
              Last Synced: {{ lastSyncFormatted }}
