@@ -1,17 +1,20 @@
 name: Build and Release Android App (Alpha)
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Build and Release Android App (Internal)"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: google-play-deploy-sbe-alpha-${{ github.ref }}
+  group: google-play-deploy-com-sbe-stock-app
   cancel-in-progress: false
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: write
 
@@ -62,6 +65,11 @@ jobs:
         run: chmod +x ./gradlew && ./gradlew bundleRelease
 
 
+      - name: Cooldown buffer to avoid Play Store track collision
+        run: |
+          echo "Waiting 60s cooldown buffer to ensure previous Google Play edit session is fully closed..."
+          sleep 60
+
       - name: Upload to Play Store (Alpha)
         id: upload_alpha
         continue-on-error: true
@@ -75,7 +83,7 @@ jobs:
 
       - name: Retry Upload to Play Store (Alpha)
         if: steps.upload_alpha.outcome == 'failure'
-        run: sleep 30
+        run: sleep 45
 
       - name: Re-attempt Upload to Play Store (Alpha)
         if: steps.upload_alpha.outcome == 'failure'

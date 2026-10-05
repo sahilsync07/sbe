@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: google-play-deploy-sbe-internal-${{ github.ref }}
+  group: google-play-deploy-com-sbe-stock-app
   cancel-in-progress: false
 
 jobs:
