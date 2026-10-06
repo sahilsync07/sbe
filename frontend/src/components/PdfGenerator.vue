@@ -2540,176 +2540,262 @@ const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyV
   return { blob: hasAddedPage ? doc.output('blob') : null, pageCount };
 };
 
-const generatePdfBlobForOneTouch = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue) => {
-  const data = stockData.value;
-  const filteredGroups = data.filter((group) => {
-    return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
-  });
+let clashFontReady = false;
+const ensureClashFont = async () => {
+  if (clashFontReady) return;
+  try {
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.check('bold 16px "Clash Display"')) {
+      clashFontReady = true;
+      return;
+    }
+    const { clashDisplayBoldBase64 } = await import('../utils/fonts.js');
+    if (clashDisplayBoldBase64 && typeof FontFace !== 'undefined' && typeof document !== 'undefined') {
+      const font = new FontFace('Clash Display', `url(data:font/ttf;base64,${clashDisplayBoldBase64})`, { weight: 'bold' });
+      await font.load();
+      document.fonts.add(font);
+      clashFontReady = true;
+    }
+  } catch (e) {
+    console.warn('[OneTouch] Font load fallback:', e);
+  }
+};
 
-  if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+const loadProductImageElement = async (product) => {
+  const activeImg = product.imageUrl || product.secondaryImageUrl;
+  if (!activeImg) return null;
 
-  const { jsPDF } = await import('jspdf');
-  const { clashDisplayBoldBase64 } = await import('../utils/fonts.js');
+  // 1. Try local native filesystem cache first (0ms instant)
+  let imgSource = null;
+  try {
+    imgSource = await fetchCachedImageAsBase64(activeImg, product.productName);
+  } catch (e) {}
 
-  const PAGE_W = 1080;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt' });
+  // 2. If not cached, check if secondaryImageUrl is better (e.g. if primary is on disabled dg365ewal)
+  if (!imgSource && activeImg.includes('dg365ewal') && product.secondaryImageUrl && !product.secondaryImageUrl.includes('dg365ewal')) {
+    try {
+      imgSource = await fetchCachedImageAsBase64(product.secondaryImageUrl, product.productName);
+    } catch (e) {}
+  }
 
-  doc.addFileToVFS('ClashDisplay-Bold.ttf', clashDisplayBoldBase64);
-  doc.addFont('ClashDisplay-Bold.ttf', 'Clash Display', 'bold');
+  // 3. If still not in local cache, fetch optimized URL (w=800 for high quality yet fast load)
+  if (!imgSource) {
+    const fetchUrl = (activeImg.includes('dg365ewal') && product.secondaryImageUrl && !product.secondaryImageUrl.includes('dg365ewal'))
+      ? product.secondaryImageUrl
+      : activeImg;
 
-  let isFirstPage = true;
-  let pageCount = 0;
-  const dateStr = new Date().toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).toUpperCase();
-
-  for (const group of filteredGroups) {
-    for (const product of group.products) {
-      const activeImg = product.imageUrl || product.secondaryImageUrl;
-      if (onlyWithPhotosFlag && !activeImg) continue;
-      if (product.quantity < minQtyValue) continue;
-      if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
-
-      let imgData = null;
-      let finalWidth = PAGE_W;
-      let finalHeight = 1080; // default square height if image is missing
-      let hasValidImg = false;
-
-      if (activeImg) {
-        try {
-          imgData = await fetchImageAsBase64(activeImg, product.productName);
-          const dims = await getImageDimensions(imgData);
-          if (dims && dims.width > 0 && dims.height > 0) {
-            finalHeight = Math.round(dims.height * (PAGE_W / dims.width));
-            hasValidImg = true;
-          }
-        } catch (imgErr) {
-          console.warn('Image fetch failed for', product.productName, imgErr);
+    // Fast-fail if trying to fetch from known disabled cloud
+    if (fetchUrl.includes('dg365ewal')) {
+      // Disabled cloud: don't hang, timeout immediately in 1.5s
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        const targetUrl = getOptimizedImageUrl(fetchUrl, 800) || fetchUrl;
+        const resp = await fetch(targetUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          imgSource = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
         }
+      } catch (_) {
+        return null; // Known disabled account, fail cleanly and fast
       }
-
-      // Bottom black extension bar (~0.8cm - 1.0cm on typical mobile screen: 135 pt)
-      const BAR_H = 135;
-      const PAGE_H = finalHeight + BAR_H;
-
-      doc.addPage([PAGE_W, PAGE_H]);
-      if (isFirstPage) {
-        doc.deletePage(1);
-        isFirstPage = false;
-      }
-      pageCount++;
-
-      // Background: black
-      doc.setFillColor('#000000');
-      doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
-
-      // 1. Draw photo at native aspect ratio without any top or side bars
-      if (hasValidImg && imgData) {
-        doc.addImage(imgData, 'JPEG', 0, 0, finalWidth, finalHeight);
-      } else {
-        doc.setTextColor(148, 163, 184);
-        doc.setFont('Clash Display', 'bold');
-        doc.setFontSize(36);
-        doc.text(activeImg ? 'Image Load Failed' : 'No Photo Available', PAGE_W / 2, finalHeight / 2, { align: 'center' });
-      }
-
-      // 2. Draw bottom black extension bar
-      doc.setFillColor('#050505');
-      doc.rect(0, finalHeight, PAGE_W, BAR_H, 'F');
-
-      // Thin gold accent divider line between photo and bottom bar
-      doc.setDrawColor(251, 191, 36);
-      doc.setLineWidth(1.5);
-      doc.line(0, finalHeight, PAGE_W, finalHeight);
-
-      // 3. Extract structured product details
-      const specs = parseCatalogSpecs(product.productName, group.groupName);
-      let articleName = specs.article || getCleanProductName(product.productName) || product.productName;
-      let sizeVal = specs.size;
-      let colorVal = (specs.color && (specs.color.label || specs.color.text)) || '';
-      let mrpVal = specs.mrp;
-
-      // Extract metadata from clean image filename if missing in Tally name
-      if (activeImg) {
-        try {
-          const urlClean = decodeURIComponent(activeImg).split('?')[0];
-          const fn = urlClean.substring(urlClean.lastIndexOf('/') + 1);
-          const m = fn.match(/^([A-Za-z0-9\-]+)_([A-Za-z0-9\-]+)_([0-9XA-Za-z\-]+)_(?:MRP|RS)([0-9\-]+)/i);
-          if (m) {
-            if (!colorVal || colorVal === 'MULTI') colorVal = m[2].replace(/-/g, ' ');
-            if (!sizeVal) sizeVal = m[3].replace(/-/g, ' ');
-            if (!mrpVal) mrpVal = m[4];
-          }
-        } catch (_) {}
-      }
-
-      if (!sizeVal) {
-        const sm = product.productName.match(/(?:^|[\s\(])(\d{1,2}\s*[\*\-xX\/]\s*\d{1,2})(?:[\s\)]|$)/);
-        if (sm) sizeVal = sm[1].replace('*', 'X').replace(/\s+/g, '');
-      }
-
-      articleName = (articleName || product.productName).toUpperCase().trim();
-      if (sizeVal) sizeVal = sizeVal.toUpperCase().trim();
-      if (colorVal) colorVal = colorVal.toUpperCase().trim();
-
-      const padX = 36;
-      const rightX = PAGE_W - padX;
-
-      // ROW 1: ITEM NAME (left) & QTY (right)
-      const row1Y = finalHeight + 52;
-      const qtyStr = `QTY: ${product.quantity} ${product.quantity === 1 ? 'PAIR' : 'PAIRS'}`;
-
-      doc.setFont('Clash Display', 'bold');
-      doc.setFontSize(30);
-      doc.setTextColor(251, 191, 36); // warm gold
-      doc.text(qtyStr, rightX, row1Y, { align: 'right' });
-      const qtyWidth = doc.getTextWidth(qtyStr);
-
-      const maxItemW = PAGE_W - padX * 2 - qtyWidth - 30;
-      let itemFontSize = 32;
-      doc.setFontSize(itemFontSize);
-      doc.setTextColor(255, 255, 255);
-      const itemTextW = doc.getTextWidth(articleName);
-      if (itemTextW > maxItemW) {
-        itemFontSize = Math.max(20, Math.floor(itemFontSize * (maxItemW / itemTextW)));
-        doc.setFontSize(itemFontSize);
-      }
-      doc.text(articleName, padX, row1Y);
-
-      // ROW 2: SPECS (SIZE, COLOR, MRP) (left) & DATE (right)
-      const row2Y = finalHeight + 102;
-      const dateTag = `DATE: ${dateStr}`;
-
-      doc.setFont('Clash Display', 'bold');
-      doc.setFontSize(18);
-      doc.setTextColor(148, 163, 184); // slate 400
-      doc.text(dateTag, rightX, row2Y, { align: 'right' });
-      const dateWidth = doc.getTextWidth(dateTag);
-
-      const specItems = [];
-      if (sizeVal) specItems.push(`SIZE: ${sizeVal}`);
-      if (colorVal) specItems.push(`COLOR: ${colorVal}`);
-      if (mrpVal) specItems.push(`MRP: ${mrpVal}`);
-      const specsStr = specItems.join('   •   ');
-
-      if (specsStr) {
-        const maxSpecsW = PAGE_W - padX * 2 - dateWidth - 30;
-        let specsFontSize = 20;
-        doc.setFontSize(specsFontSize);
-        doc.setTextColor(226, 232, 240); // slate 200
-        const specsTextW = doc.getTextWidth(specsStr);
-        if (specsTextW > maxSpecsW) {
-          specsFontSize = Math.max(14, Math.floor(specsFontSize * (maxSpecsW / specsTextW)));
-          doc.setFontSize(specsFontSize);
+    } else {
+      // Normal URL: fetch with 4s timeout
+      try {
+        const targetUrl = getOptimizedImageUrl(fetchUrl, 800) || fetchUrl;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const resp = await fetch(targetUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          imgSource = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
         }
-        doc.text(specsStr, padX, row2Y);
+      } catch (fetchErr) {
+        // Fallback to axios if CORS or stream issue
+        try {
+          const targetUrl = getOptimizedImageUrl(fetchUrl, 800) || fetchUrl;
+          const res = await axios.get(targetUrl, { responseType: 'arraybuffer', timeout: 3500 });
+          const base64 = btoa(new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+          imgSource = `data:${res.headers['content-type'] || 'image/jpeg'};base64,${base64}`;
+        } catch (_) {
+          return null;
+        }
       }
     }
   }
 
-  return { blob: !isFirstPage ? doc.output('blob') : null, pageCount };
+  if (!imgSource) return null;
+
+  // Convert Base64 / Data URL to HTMLImageElement
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = imgSource;
+  });
+};
+
+const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
+  const PAGE_W = 1080;
+  const BAR_H = 135;
+
+  let finalWidth = PAGE_W;
+  let finalHeight = 1080; // default square
+  const hasValidImg = Boolean(imgElement && imgElement.naturalWidth > 0 && imgElement.naturalHeight > 0);
+
+  if (hasValidImg) {
+    // Preserve natural photo aspect ratio, width locked to 1080px
+    finalHeight = Math.round(imgElement.naturalHeight * (PAGE_W / imgElement.naturalWidth));
+    // Clamp height to sensible range (min 600px, max 1600px)
+    if (finalHeight < 600) finalHeight = 600;
+    if (finalHeight > 1600) finalHeight = 1600;
+  }
+
+  const PAGE_H = finalHeight + BAR_H;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = PAGE_W;
+  canvas.height = PAGE_H;
+  const ctx = canvas.getContext('2d');
+
+  // Background: Pure Black
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, PAGE_W, PAGE_H);
+
+  // 1. Draw Photo or Clean Fallback
+  if (hasValidImg) {
+    ctx.drawImage(imgElement, 0, 0, finalWidth, finalHeight);
+  } else {
+    ctx.fillStyle = '#0f172a'; // slate-900
+    ctx.fillRect(0, 0, PAGE_W, finalHeight);
+
+    ctx.fillStyle = '#94a3b8'; // slate-400
+    ctx.font = 'bold 36px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('No Photo Available', PAGE_W / 2, finalHeight / 2);
+  }
+
+  // 2. Draw Bottom Extension Bar
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, finalHeight, PAGE_W, BAR_H);
+
+  // Divider Line: Warm Gold
+  ctx.strokeStyle = '#FBBF24';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, finalHeight);
+  ctx.lineTo(PAGE_W, finalHeight);
+  ctx.stroke();
+
+  // 3. Extract Specs
+  const specs = parseCatalogSpecs(product.productName, group?.groupName || '');
+  let articleName = specs.article || getCleanProductName(product.productName) || product.productName;
+  let sizeVal = specs.size;
+  let colorVal = (specs.color && (specs.color.label || specs.color.text)) || '';
+  let mrpVal = specs.mrp;
+
+  const activeImgUrl = product.imageUrl || product.secondaryImageUrl;
+  if (activeImgUrl) {
+    try {
+      const urlClean = decodeURIComponent(activeImgUrl).split('?')[0];
+      const fn = urlClean.substring(urlClean.lastIndexOf('/') + 1);
+      const m = fn.match(/^([A-Za-z0-9\-]+)_([A-Za-z0-9\-]+)_([0-9XA-Za-z\-]+)_(?:MRP|RS)([0-9\-]+)/i);
+      if (m) {
+        if (!colorVal || colorVal === 'MULTI') colorVal = m[2].replace(/-/g, ' ');
+        if (!sizeVal) sizeVal = m[3].replace(/-/g, ' ');
+        if (!mrpVal) mrpVal = m[4];
+      }
+    } catch (_) {}
+  }
+
+  if (!sizeVal) {
+    const sm = product.productName.match(/(?:^|[\s\(])(\d{1,2}\s*[\*\-xX\/]\s*\d{1,2})(?:[\s\)]|$)/);
+    if (sm) sizeVal = sm[1].replace('*', 'X').replace(/\s+/g, '');
+  }
+
+  articleName = (articleName || product.productName).toUpperCase().trim();
+  if (sizeVal) sizeVal = sizeVal.toUpperCase().trim();
+  if (colorVal) colorVal = colorVal.toUpperCase().trim();
+
+  const padX = 36;
+  const rightX = PAGE_W - padX;
+
+  // ROW 1: ITEM NAME (left) & QTY (right)
+  const row1Y = finalHeight + 52;
+  const qtyStr = `QTY: ${product.quantity} ${Number(product.quantity) === 1 ? 'PAIR' : 'PAIRS'}`;
+
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#FBBF24'; // warm gold
+  ctx.font = 'bold 30px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillText(qtyStr, rightX, row1Y);
+  const qtyWidth = ctx.measureText(qtyStr).width;
+
+  const maxItemW = PAGE_W - padX * 2 - qtyWidth - 30;
+  let itemFontSize = 32;
+  ctx.font = `bold ${itemFontSize}px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+  let itemTextW = ctx.measureText(articleName).width;
+  if (itemTextW > maxItemW) {
+    itemFontSize = Math.max(20, Math.floor(itemFontSize * (maxItemW / itemTextW)));
+    ctx.font = `bold ${itemFontSize}px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+  }
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(articleName, padX, row1Y);
+
+  // ROW 2: SPECS (SIZE, COLOR, MRP) (left) & DATE (right)
+  const row2Y = finalHeight + 102;
+  const dateTag = `DATE: ${dateStr}`;
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#94A3B8'; // slate-400
+  ctx.font = 'bold 18px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillText(dateTag, rightX, row2Y);
+  const dateWidth = ctx.measureText(dateTag).width;
+
+  const specItems = [];
+  if (sizeVal) specItems.push(`SIZE: ${sizeVal}`);
+  if (colorVal) specItems.push(`COLOR: ${colorVal}`);
+  if (mrpVal) specItems.push(`MRP: ${mrpVal}`);
+  const specsStr = specItems.join('   •   ');
+
+  if (specsStr) {
+    const maxSpecsW = PAGE_W - padX * 2 - dateWidth - 30;
+    let specsFontSize = 20;
+    ctx.font = `bold ${specsFontSize}px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    const specsTextW = ctx.measureText(specsStr).width;
+    if (specsTextW > maxSpecsW) {
+      specsFontSize = Math.max(14, Math.floor(specsFontSize * (maxSpecsW / specsTextW)));
+      ctx.font = `bold ${specsFontSize}px "Clash Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    }
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#E2E8F0'; // slate-200
+    ctx.fillText(specsStr, padX, row2Y);
+  }
+
+  // Export Base64 JPEG at 0.88 quality (crisp HD yet fast and lightweight)
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+  const b64 = dataUrl.split(',')[1];
+
+  // Immediate Memory Cleanup
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.width = 0;
+  canvas.height = 0;
+
+  return b64;
 };
 
 const prepareOneTouch = async () => {
@@ -2824,9 +2910,8 @@ const prepareOneTouch = async () => {
     return;
   }
 
-  // ========== IMAGE MODE (original behavior) ==========
-  const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  // ========== IMAGE MODE: Direct HTML5 Canvas Rendering (Ultra Fast & Lightweight) ==========
+  await ensureClashFont();
 
   for (const group of checkedGroups) {
     if (cancelOneTouch.value) break;
@@ -2837,39 +2922,40 @@ const prepareOneTouch = async () => {
       const effectiveMinQty = oneTouchMinQtyEnabled.value ? group.minQty : 0;
       const effectiveMaxQty = oneTouchMinQtyEnabled.value ? parseMaxQty(group.maxQty) : Infinity;
 
-      // Pre-calculate batches
-      let productCount = 0;
+      // Filter products for this group
       const data = stockData.value;
       const filteredGroups = data.filter((g) => {
         return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
       });
+
+      const targetProducts = [];
       for (const fg of filteredGroups) {
         for (const product of fg.products) {
           const hasImg = product.imageUrl || product.secondaryImageUrl;
           if (oneTouchOnlyWithPhotos.value && !hasImg) continue;
           if (product.quantity < effectiveMinQty) continue;
-          if (product.quantity > effectiveMaxQty) continue;
-          productCount++;
+          if (effectiveMaxQty > 0 && product.quantity > effectiveMaxQty) continue;
+          targetProducts.push({ product, group: fg });
         }
       }
 
-      if (productCount === 0) {
+      if (targetProducts.length === 0) {
         group.status = 'ready';
         continue;
       }
 
       // Add 1 to account for the dynamic summary cover image in Batch 0
-      const totalBatches = Math.ceil((productCount + 1) / 99);
+      const totalBatches = Math.ceil((targetProducts.length + 1) / 99);
       for (let i = 0; i < totalBatches; i++) {
         group.batches.push({ id: i, status: 'pending', fileUris: [] });
       }
 
-      const cacheKey = `${group.label}_vbottombar_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}_${effectiveMaxQty}_${group.activeBrands.sort().join(',')}`;
+      const cacheKey = `${group.label}_vdirectcanvas_${oneTouchOnlyWithPhotos.value}_${effectiveMinQty}_${effectiveMaxQty}_${group.activeBrands.sort().join(',')}`;
       let fileUris = [];
 
       if (oneTouchCache.value[cacheKey]) {
         fileUris = oneTouchCache.value[cacheKey];
-        await new Promise((r) => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 200));
 
         // Distribute to batches (Max 99 per batch)
         const chunkSize = 99;
@@ -2890,21 +2976,10 @@ const prepareOneTouch = async () => {
         // 1. Generate the Dynamic Summary Cover for this One Touch group (Prepend to Batch 0)
         let summaryFileUri = null;
         try {
-          const groupProducts = data
-            .filter((g) => group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase()))
-            .flatMap((g) => g.products || [])
-            .filter((p) => {
-              const hasImg = p.imageUrl || p.secondaryImageUrl;
-              if (oneTouchOnlyWithPhotos.value && !hasImg) return false;
-              if (p.quantity < effectiveMinQty) return false;
-              if (effectiveMaxQty > 0 && p.quantity > effectiveMaxQty) return false;
-              return true;
-            });
-
           const summaryImg = await generateBrandSummaryImage({
             groupLabel: group.label,
             subBrands: group.activeBrands,
-            products: groupProducts,
+            products: targetProducts.map((t) => t.product),
           });
 
           const summaryFileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_000_summary.jpg`;
@@ -2922,21 +2997,6 @@ const prepareOneTouch = async () => {
           console.error(`Dynamic summary cover failed for ${group.label}:`, sumErr);
         }
 
-        const { blob, pageCount } = await generatePdfBlobForOneTouch(
-          group.activeBrands,
-          oneTouchOnlyWithPhotos.value,
-          effectiveMinQty,
-          effectiveMaxQty
-        );
-
-        if (!blob || pageCount === 0) {
-          group.status = 'ready';
-          continue;
-        }
-
-        const pdfUrl = URL.createObjectURL(blob);
-        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-
         let currentBatchIndex = 0;
         let currentBatchUris = [];
 
@@ -2946,32 +3006,38 @@ const prepareOneTouch = async () => {
           fileUris.push(summaryFileUri);
         }
 
-        for (let p = 1; p <= pdf.numPages; p++) {
+        const dateStr = new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).toUpperCase();
+
+        let generatedImageCount = 0;
+        for (let i = 0; i < targetProducts.length; i++) {
           if (cancelOneTouch.value) break;
 
-          // Yield to main thread every 10 pages to allow UI updates and Garbage Collection
-          if (p % 10 === 0) {
-            await new Promise((resolve) => setTimeout(resolve, 20));
+          const { product, group: prodGroup } = targetProducts[i];
+          oneTouchProgress.value = `📸 ${group.label} (${i + 1}/${targetProducts.length})...`;
+
+          // Yield to event loop periodically for buttery-smooth UI
+          if (i % 5 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 10));
           }
 
-          const page = await pdf.getPage(p);
-          const viewport = page.getViewport({ scale: 1.25 }); // HD Crisp Rendering for footwear images
-          const canvas = document.createElement('canvas');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          const ctx = canvas.getContext('2d');
+          // 2. Load Image Element with fast failover & timeout
+          const imgElement = await loadProductImageElement(product);
 
-          await page.render({ canvasContext: ctx, viewport }).promise;
+          // If user selected "Only with photos" and this photo is missing or failed to load, skip it!
+          if (oneTouchOnlyWithPhotos.value && !imgElement) {
+            continue;
+          }
 
-          // Extract Base64 in crisp HD quality (0.92)
-          const b64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
-          const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_${p}.jpg`;
+          // 3. Render directly onto HTML5 Canvas
+          const b64 = renderProductShareImageDirect(product, prodGroup, dateStr, imgElement);
+          if (!b64) continue;
 
-          // Memory Cleanup - CRITICAL to prevent Webview crash!
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          canvas.width = 0;
-          canvas.height = 0;
-          page.cleanup(); // Free pdf.js internal memory for this page
+          generatedImageCount++;
+          const fileName = `ot_${group.label.replace(/[^a-zA-Z0-9]/g, '')}_${generatedImageCount}.jpg`;
 
           if (isNativeApp.value) {
             const saved = await Filesystem.writeFile({
@@ -2986,13 +3052,13 @@ const prepareOneTouch = async () => {
             a.href = `data:image/jpeg;base64,${b64}`;
             a.download = fileName;
             a.click();
-            await new Promise((r) => setTimeout(r, 100)); // Rate limit downloads on Web
+            await new Promise((r) => setTimeout(r, 60)); // Rate limit downloads on Web
             currentBatchUris.push(fileName);
             fileUris.push(fileName);
           }
 
-          // If we hit 99 in current batch or it's the very last page
-          if (currentBatchUris.length === 99 || p === pdf.numPages) {
+          // If we hit 99 in current batch
+          if (currentBatchUris.length === 99) {
             if (group.batches[currentBatchIndex]) {
               group.batches[currentBatchIndex].fileUris = [...currentBatchUris];
               group.batches[currentBatchIndex].status = 'ready';
@@ -3004,16 +3070,22 @@ const prepareOneTouch = async () => {
             }
           }
         }
-        URL.revokeObjectURL(pdfUrl);
-        pdf.destroy();
+
+        // Flush remaining images in final batch
+        if (currentBatchUris.length > 0 && group.batches[currentBatchIndex]) {
+          group.batches[currentBatchIndex].fileUris = [...currentBatchUris];
+          group.batches[currentBatchIndex].status = 'ready';
+        }
+
+        // Clean up any empty extra batches if products were skipped
+        group.batches = group.batches.filter((b) => b.fileUris && b.fileUris.length > 0);
 
         if (!cancelOneTouch.value && isNativeApp.value && fileUris.length > 0) {
           oneTouchCache.value[cacheKey] = fileUris;
         }
         group.status = cancelOneTouch.value ? 'idle' : 'ready';
 
-        // Yield to event loop between group processing
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
     } catch (err) {
       console.error(`One Touch failed for ${group.label}:`, err);
