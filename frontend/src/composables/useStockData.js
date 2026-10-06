@@ -14,6 +14,7 @@ import {
     clearAllStagedBase64,
     getAllStagedPhotos
 } from '../utils/stagedPhotoStorage.js';
+import { checkAndNotifyNewArrivals } from '../utils/notifications.js';
 
 const SYNC_KEY = 'sbe_last_sync_timestamp';
 const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
@@ -558,6 +559,7 @@ export function useStockData(isLocal) {
                     } catch (e) {}
 
                     console.log("Updated stock data from Live URL (Tier 3), sync:", lastRefresh.value);
+                    checkAndNotifyNewArrivals(stockData.value);
                 }
             } catch (liveErr) {
                 console.warn("Background live fetch failed or timed out:", liveErr);
@@ -621,6 +623,7 @@ export function useStockData(isLocal) {
             }
 
             toast.success(`✓ Stock synced (${data.length} brands updated)!`, { autoClose: 3000 });
+            checkAndNotifyNewArrivals(stockData.value);
         } catch (err) {
             console.error(err);
             toast.remove(toastId);

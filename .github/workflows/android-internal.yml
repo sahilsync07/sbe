@@ -3,6 +3,23 @@ name: Build and Release Android App (Internal)
 on:
   push:
     branches: [main]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/android/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/capacitor.config.json'
+      - 'frontend/vite.config.js'
+      - '.github/workflows/android-internal.yml'
+    paths-ignore:
+      - '**/stock-data.json'
+      - '**/assets/stock-data.json'
+      - '**/*.md'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.webp'
+      - 'e-SBE new logo.png'
   workflow_dispatch:
 
 concurrency:

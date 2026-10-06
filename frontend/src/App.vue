@@ -65,7 +65,7 @@ import ToastContainer from './components/Common/ToastContainer.vue';
 
 import { useAppStore } from './stores/appStore';
 import { useAdmin } from './composables/useAdmin';
-import { setupDailySyncNotification } from './utils/notifications';
+import { setupDailySyncNotification, checkAndNotifyNewArrivals } from './utils/notifications';
 import { useStockData } from './composables/useStockData';
 import { useCart } from './composables/useCart';
 import { useBrandGroups } from './composables/useBrandGroups';
@@ -249,7 +249,8 @@ onMounted(async () => {
   // Actually load Initial StockData (instead of inside StockTable.vue)
   await loadStockData();
 
-  await setupDailySyncNotification();
+  await setupDailySyncNotification(router);
+  await checkAndNotifyNewArrivals(stockData.value, router);
   
   if (Capacitor.isNativePlatform()) {
     try {
