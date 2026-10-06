@@ -6,10 +6,9 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy.yml'
-    paths-ignore:
-      - '**/stock-data.json'
-      - '**/assets/stock-data.json'
-      - '**/*.md'
+      - '!**/stock-data.json'
+      - '!**/assets/stock-data.json'
+      - '!**/*.md'
   workflow_dispatch:
 
 permissions:
