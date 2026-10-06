@@ -84,4 +84,28 @@ describe('useProductFilter Composable', () => {
         expect(filteredStockData.value).toHaveLength(1);
         expect(filteredStockData.value[0].groupName).toBe('BrandB');
     });
+
+    it('should filter by upload mode: exclude items with images and exclude out of stock items', () => {
+        const testStock = [
+            {
+                groupName: 'BrandX',
+                products: [
+                    { productName: 'Shoe with Image', imageUrl: 'http://img.jpg', quantity: 10 },
+                    { productName: 'Shoe Missing Photo In Stock', imageUrl: null, quantity: 8 },
+                    { productName: 'Shoe Missing Photo Out Of Stock', imageUrl: null, quantity: 0 },
+                    { productName: 'Shoe Missing Photo Negative Qty', imageUrl: null, quantity: -2 }
+                ]
+            }
+        ];
+        const stock = ref(testStock);
+        const config = ref(mockConfig);
+        const { filteredStockData, cleanView } = useProductFilter(stock, config);
+
+        cleanView.value = 'upload';
+
+        expect(filteredStockData.value).toHaveLength(1);
+        expect(filteredStockData.value[0].products).toHaveLength(1);
+        expect(filteredStockData.value[0].products[0].productName).toBe('Shoe Missing Photo In Stock');
+        expect(filteredStockData.value[0].products[0].quantity).toBe(8);
+    });
 });

@@ -83,7 +83,7 @@ export function useProductFilter(stockData, config) {
             filtered = filtered.map(group => ({
                 ...group,
                 products: group.products
-                    .filter(p => !p.imageUrl && !p.secondaryImageUrl)
+                    .filter(p => !p.imageUrl && !p.secondaryImageUrl && Number(p.quantity) > 0)
                     .sort((a, b) => {
                         const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
                         const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
@@ -209,7 +209,7 @@ export function useProductFilter(stockData, config) {
                     if ((cleanView.value === true || cleanView.value === 'clean') && !searchQuery.value) {
                         if (!p.imageUrl || Number(p.quantity) < 4) return;
                     } else if (cleanView.value === 'upload' && !searchQuery.value) {
-                        if (p.imageUrl || p.secondaryImageUrl) return;
+                        if (p.imageUrl || p.secondaryImageUrl || Number(p.quantity) <= 0) return;
                     }
 
                     if (isNewArrival(p)) {

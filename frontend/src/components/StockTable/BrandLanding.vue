@@ -815,17 +815,10 @@
               <!-- Prominent Stock Quantity Badge (Top-Left) -->
               <div class="absolute top-2 left-2 z-10">
                 <span
-                  v-if="Number(product.quantity) > 0"
                   class="px-2.5 py-1 bg-emerald-600 text-white text-[10px] sm:text-xs font-black rounded-lg shadow-md flex items-center gap-1 ring-1 ring-white/40"
                 >
                   <i class="fa-solid fa-boxes-stacked text-[9px]"></i>
                   <span>{{ product.quantity }} pairs</span>
-                </span>
-                <span
-                  v-else
-                  class="px-2 py-0.5 bg-slate-800/90 text-white text-[9px] font-extrabold rounded-lg shadow-sm"
-                >
-                  0 pairs
                 </span>
               </div>
 
@@ -880,10 +873,9 @@
                   <div class="flex items-center gap-1">
                     <span class="text-[10px] font-bold text-slate-400 uppercase">Stock:</span>
                     <span 
-                      class="text-xs font-black px-1.5 py-0.5 rounded-md"
-                      :class="Number(product.quantity) > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-extrabold' : 'bg-rose-50 text-rose-600 font-bold'"
+                      class="text-xs font-black px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-extrabold"
                     >
-                      {{ Number(product.quantity) > 0 ? `${product.quantity} prs` : 'Out of stock' }}
+                      {{ product.quantity }} prs
                     </span>
                   </div>
                   <span class="font-black text-xs sm:text-sm text-slate-900">
@@ -1956,7 +1948,7 @@ const uploadModeProducts = computed(() => {
   for (const group of stockData.value) {
     if (group.groupName === '_META_DATA_' || !group.products) continue;
     for (const p of group.products) {
-      if (!hasProductImage(p)) {
+      if (!hasProductImage(p) && Number(p.quantity) > 0) {
         list.push({ ...p, groupName: p.groupName || group.groupName });
       }
     }
@@ -1985,7 +1977,7 @@ const getNewArrivalProducts = () => {
         if (cleanView.value === 'clean' || cleanView.value === true) {
           if (!hasProductImage(p) || Number(p.quantity) < 4) continue;
         } else if (cleanView.value === 'upload') {
-          if (hasProductImage(p)) continue;
+          if (hasProductImage(p) || Number(p.quantity) <= 0) continue;
         }
         if (isNewArrival(p)) products.push(p);
       }
@@ -2037,7 +2029,7 @@ const getActiveTabProducts = () => {
         if (cleanView.value === 'clean' || cleanView.value === true) {
           if (!hasProductImage(p) || Number(p.quantity) < 4) continue;
         } else if (cleanView.value === 'upload') {
-          if (hasProductImage(p)) continue;
+          if (hasProductImage(p) || Number(p.quantity) <= 0) continue;
         }
         products.push(p);
       }
@@ -2127,7 +2119,7 @@ const getActiveTabProducts = () => {
     if (cleanView.value === 'clean' || cleanView.value === true) {
       if (!hasProductImage(p) || Number(p.quantity) < 4) return false;
     } else if (cleanView.value === 'upload') {
-      if (hasProductImage(p)) return false;
+      if (hasProductImage(p) || Number(p.quantity) <= 0) return false;
     }
     if (inStockOnly.value && Number(p.quantity) <= 0) return false;
     if (maxPriceFilter.value) {
