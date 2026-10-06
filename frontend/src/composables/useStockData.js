@@ -7,6 +7,13 @@ import { storeToRefs } from 'pinia';
 import { extractColor } from '../utils/colors.js';
 import { useGitHubTokenModal, DEFAULT_GITHUB_TOKEN } from './useGitHubTokenModal';
 import { isPrimaryCloudDown, markCloudFailed } from '../utils/cloudStatus.js';
+import {
+    saveStagedBase64,
+    getStagedBase64,
+    removeStagedBase64,
+    clearAllStagedBase64,
+    getAllStagedPhotos
+} from '../utils/stagedPhotoStorage.js';
 
 const SYNC_KEY = 'sbe_last_sync_timestamp';
 const REMOTE_DATA_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
@@ -260,6 +267,9 @@ async function commitFileToGitHub(filePath, updatedContentString, commitMessage,
 const pendingUploads = ref([]);
 const PENDING_UPLOADS_KEY = 'sbe_pending_uploads';
 
+// In-memory cache for staged image Base64 data (avoids localStorage size limit)
+const stagedBase64Map = new Map();
+
 try {
     const saved = localStorage.getItem(PENDING_UPLOADS_KEY);
     if (saved) {
@@ -267,6 +277,17 @@ try {
     }
 } catch (e) {
     console.warn('[Pending Uploads] Failed to parse cached pending uploads:', e);
+}
+
+// Hydrate in-memory base64 map from IndexedDB on startup
+if (typeof window !== 'undefined') {
+    getAllStagedPhotos().then(records => {
+        records.forEach(r => {
+            if (r.productName && r.base64Data) {
+                stagedBase64Map.set(r.productName.trim().toLowerCase(), r.base64Data);
+            }
+        });
+    }).catch(() => {});
 }
 
 const savePendingUploads = () => {
@@ -289,11 +310,13 @@ export function useStockData(isLocal) {
     const imageFiles = ref({});
     const CACHE_KEY = 'sbe_stock_data_cache';
 
-    const addPendingUpload = ({ productName, imageUrl, oldImageUrl, groupName, status = 'uploaded' }) => {
+    const addPendingUpload = ({ productName, imageUrl, oldImageUrl, groupName, status = 'uploaded', base64Data = null, publicId = '' }) => {
         const norm = (productName || '').trim().toLowerCase();
         const existingIndex = pendingUploads.value.findIndex(u => (u.productName || '').trim().toLowerCase() === norm);
+        const resolvedPublicId = publicId || (existingIndex !== -1 ? pendingUploads.value[existingIndex].publicId : '') || generateProductPublicId(productName);
         const record = {
             productName,
+            publicId: resolvedPublicId,
             imageUrl: imageUrl || null,
             oldImageUrl: oldImageUrl !== undefined ? oldImageUrl : (existingIndex !== -1 ? pendingUploads.value[existingIndex].oldImageUrl : null),
             groupName: groupName || '',
@@ -304,6 +327,13 @@ export function useStockData(isLocal) {
             pendingUploads.value[existingIndex] = record;
         } else {
             pendingUploads.value.push(record);
+        }
+        if (base64Data) {
+            stagedBase64Map.set(norm, base64Data);
+            saveStagedBase64(productName, base64Data, resolvedPublicId);
+        } else if (imageUrl === null) {
+            stagedBase64Map.delete(norm);
+            removeStagedBase64(productName);
         }
         savePendingUploads();
     };
@@ -330,6 +360,8 @@ export function useStockData(isLocal) {
             } catch (e) {}
         }
 
+        stagedBase64Map.delete(norm);
+        removeStagedBase64(productName);
         pendingUploads.value.splice(idx, 1);
         savePendingUploads();
         toast.info(`Discarded changes for ${productName}`);
@@ -353,6 +385,8 @@ export function useStockData(isLocal) {
                 localStorage.setItem(CACHE_KEY, JSON.stringify(stockData.value));
             } catch (e) {}
         }
+        stagedBase64Map.clear();
+        clearAllStagedBase64();
         pendingUploads.value = [];
         localStorage.removeItem(PENDING_UPLOADS_KEY);
     };
@@ -771,67 +805,165 @@ export function useStockData(isLocal) {
     };
 
     /**
-     * Upload image directly to permanent free GitHub Photos CDN repository (sahilsync07/sbe-photos)
-     * Images served via fast global jsDelivr CDN: https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@main/photos/{publicId}.jpg
+     * Push all staged photo binaries to sahilsync07/sbe-photos in ONE single combined Git commit
+     * using the GitHub Git Database API (Blobs -> Tree -> Commit -> Ref update)
      */
-    const uploadToGitHubPhotosRepo = async (file, publicId, token) => {
+    const batchUploadToGitHubPhotosRepo = async (items, token) => {
         if (!token) throw new Error('No GitHub token available for CDN upload');
 
-        // Convert file to Base64
-        const base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const res = String(reader.result || '');
-                const base64String = res.split(',')[1];
-                resolve(base64String);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
+        // Deduplicate items by publicId (keeping the latest)
+        const dedupedMap = new Map();
+        items.forEach(it => {
+            const pid = it.publicId || generateProductPublicId(it.productName);
+            if (it.base64Data && pid) {
+                dedupedMap.set(pid, { ...it, publicId: pid });
+            }
         });
+        const uploadItems = Array.from(dedupedMap.values());
+        if (uploadItems.length === 0) return { success: true, count: 0, cdnMap: new Map() };
 
-        const fileName = `${publicId}.jpg`;
-        const path = `photos/${fileName}`;
-        const url = `https://api.github.com/repos/sahilsync07/sbe-photos/contents/${path}`;
+        console.log(`[Batch Photos CDN] Creating Git blobs for ${uploadItems.length} photos...`);
 
-        // Check if file already exists to get SHA for in-place update
-        let sha = null;
-        try {
-            const checkRes = await fetch(`${url}?ref=main`, {
+        // 1. Create Git blobs for each photo in parallel
+        const treeEntries = await Promise.all(uploadItems.map(async (item) => {
+            const blobRes = await fetch(`https://api.github.com/repos/sahilsync07/sbe-photos/git/blobs`, {
+                method: 'POST',
                 headers: {
                     'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    content: item.base64Data,
+                    encoding: 'base64'
+                })
             });
-            if (checkRes.ok) {
-                const checkData = await checkRes.json();
-                sha = checkData.sha;
+
+            if (!blobRes.ok) {
+                const err = await blobRes.json().catch(() => ({}));
+                const error = new Error(`Failed to create blob for ${item.publicId}: ${err.message || blobRes.status}`);
+                error.status = blobRes.status;
+                throw error;
             }
-        } catch (e) {}
 
-        const body = {
-            message: `Upload photo for ${publicId}`,
-            content: base64Data,
-            branch: 'main'
-        };
-        if (sha) body.sha = sha;
+            const blobData = await blobRes.json();
+            return {
+                path: `photos/${item.publicId}.jpg`,
+                mode: '100644',
+                type: 'blob',
+                sha: blobData.sha,
+                publicId: item.publicId
+            };
+        }));
 
-        const res = await fetch(url, {
-            method: 'PUT',
+        // 2. Fetch current main branch commit SHA
+        const refRes = await fetch(`https://api.github.com/repos/sahilsync07/sbe-photos/git/refs/heads/main`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        if (!refRes.ok) {
+            const err = await refRes.json().catch(() => ({}));
+            const error = new Error(`Could not fetch main ref for sbe-photos: ${err.message || refRes.status}`);
+            error.status = refRes.status;
+            throw error;
+        }
+        const refData = await refRes.json();
+        const parentCommitSha = refData.object.sha;
+
+        // 3. Fetch parent commit tree SHA
+        const commitRes = await fetch(`https://api.github.com/repos/sahilsync07/sbe-photos/git/commits/${parentCommitSha}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        if (!commitRes.ok) {
+            const err = await commitRes.json().catch(() => ({}));
+            const error = new Error(`Could not fetch parent commit for sbe-photos: ${err.message || commitRes.status}`);
+            error.status = commitRes.status;
+            throw error;
+        }
+        const commitData = await commitRes.json();
+        const baseTreeSha = commitData.tree.sha;
+
+        // 4. Create new Git tree with all photo blobs
+        const newTreeRes = await fetch(`https://api.github.com/repos/sahilsync07/sbe-photos/git/trees`, {
+            method: 'POST',
             headers: {
                 'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify({
+                base_tree: baseTreeSha,
+                tree: treeEntries.map(({ path, mode, type, sha }) => ({ path, mode, type, sha }))
+            })
         });
+        if (!newTreeRes.ok) {
+            const err = await newTreeRes.json().catch(() => ({}));
+            const error = new Error(`Could not create tree for sbe-photos: ${err.message || newTreeRes.status}`);
+            error.status = newTreeRes.status;
+            throw error;
+        }
+        const newTreeData = await newTreeRes.json();
 
-        if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `GitHub CDN upload failed: HTTP ${res.status}`);
+        // 5. Create ONE single Git commit
+        const newCommitRes = await fetch(`https://api.github.com/repos/sahilsync07/sbe-photos/git/commits`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Upload photos for ${uploadItems.length} article${uploadItems.length > 1 ? 's' : ''}`,
+                tree: newTreeData.sha,
+                parents: [parentCommitSha]
+            })
+        });
+        if (!newCommitRes.ok) {
+            const err = await newCommitRes.json().catch(() => ({}));
+            const error = new Error(`Could not create commit for sbe-photos: ${err.message || newCommitRes.status}`);
+            error.status = newCommitRes.status;
+            throw error;
+        }
+        const newCommitData = await newCommitRes.json();
+
+        // 6. Update main branch ref
+        const updateRefRes = await fetch(`https://api.github.com/repos/sahilsync07/sbe-photos/git/refs/heads/main`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sha: newCommitData.sha,
+                force: false
+            })
+        });
+        if (!updateRefRes.ok) {
+            const err = await updateRefRes.json().catch(() => ({}));
+            const error = new Error(`Could not update ref for sbe-photos: ${err.message || updateRefRes.status}`);
+            error.status = updateRefRes.status;
+            throw error;
         }
 
-        // Return high-speed global jsDelivr CDN URL
-        return `https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@main/${path}`;
+        console.log(`[Batch Photos CDN] ✓ Successfully committed ${uploadItems.length} photos to sbe-photos in 1 commit: ${newCommitData.sha}`);
+
+        const cdnMap = new Map();
+        treeEntries.forEach(entry => {
+            cdnMap.set(entry.publicId, `https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@main/${entry.path}`);
+        });
+
+        return {
+            success: true,
+            count: uploadItems.length,
+            commitSha: newCommitData.sha,
+            cdnMap
+        };
     };
 
     /**
@@ -923,45 +1055,48 @@ export function useStockData(isLocal) {
                 console.warn('[Upload] Image compression skipped:', compErr.message);
             }
 
-            // 2. Priority 1: Free GitHub Photos CDN (sahilsync07/sbe-photos via jsDelivr) - 100% Free, zero billing, zero card
-            let token = getGitHubToken();
-            if (!token) {
-                console.log('[Upload] GitHub token missing for CDN upload, prompting user...');
-                token = await promptForToken('missing');
+            // 2. Read image as Base64 for batch CDN commit on final Push
+            let base64Data = null;
+            try {
+                base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const res = String(reader.result || '');
+                        resolve(res.split(',')[1] || '');
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(uploadFile);
+                });
+            } catch (b64Err) {
+                console.warn('[Upload] Failed to convert image to Base64:', b64Err.message);
             }
-            if (token) {
+
+            // 3. Spontaneous Cloudinary Upload (Zero Git lock collisions, instant live preview)
+            for (const cloud of clouds) {
+                if (!cloud.cloudName || !cloud.uploadPreset) continue;
+                if (cloud.name === 'Primary' && isPrimaryCloudDown.value) continue;
                 try {
-                    console.log(`[Multi-Cloud] Attempting upload via Free GitHub CDN (sahilsync07/sbe-photos)...`);
-                    newImageUrl = await uploadToGitHubPhotosRepo(uploadFile, publicId, token);
-                    usedProvider = 'GitHub-CDN';
-                    console.log(`[Multi-Cloud] ✓ Upload succeeded via Free GitHub CDN: ${newImageUrl}`);
-                } catch (ghErr) {
-                    console.warn(`[Multi-Cloud] ⚠️ GitHub CDN upload failed: ${ghErr.message}. Failing over to Cloudinary...`);
-                    lastError = ghErr;
+                    console.log(`[Multi-Cloud] Spontaneously uploading via ${cloud.name} Cloud (${cloud.cloudName})...`);
+                    newImageUrl = await uploadToCloudinaryInstance(uploadFile, cloud, publicId);
+                    usedProvider = cloud.name;
+                    console.log(`[Multi-Cloud] ✓ Spontaneous upload succeeded via ${cloud.name} Cloud: ${newImageUrl}`);
+                    break;
+                } catch (cloudErr) {
+                    console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}`);
+                    markCloudFailed(cloud.cloudName);
+                    lastError = cloudErr;
                 }
             }
 
-            // 3. Priority 2: Failover to Cloudinary Secondary if GitHub CDN was not used or failed
-            if (!newImageUrl) {
-                for (const cloud of clouds) {
-                    if (!cloud.cloudName || !cloud.uploadPreset) continue;
-                    if (cloud.name === 'Primary' && isPrimaryCloudDown.value) continue;
-                    try {
-                        console.log(`[Multi-Cloud] Attempting upload via ${cloud.name} Cloud (${cloud.cloudName})...`);
-                        newImageUrl = await uploadToCloudinaryInstance(uploadFile, cloud, publicId);
-                        usedProvider = cloud.name;
-                        console.log(`[Multi-Cloud] ✓ Upload succeeded via ${cloud.name} Cloud (${cloud.cloudName})`);
-                        break;
-                    } catch (cloudErr) {
-                        console.warn(`[Multi-Cloud] ⚠️ ${cloud.name} Cloud (${cloud.cloudName}) failed: ${cloudErr.message}`);
-                        markCloudFailed(cloud.cloudName);
-                        lastError = cloudErr;
-                    }
-                }
+            // Fallback: If Cloudinary fails/offline, use local dataUrl for instant on-device preview
+            if (!newImageUrl && base64Data) {
+                newImageUrl = `data:image/jpeg;base64,${base64Data}`;
+                usedProvider = 'Local-Preview';
+                console.log(`[Multi-Cloud] Using instant local preview dataUrl for ${productName}`);
             }
 
             if (!newImageUrl) {
-                throw new Error(`Upload failed on all image providers. Last error: ${lastError?.message || 'Unknown error'}`);
+                throw new Error(`Upload failed on image providers. Last error: ${lastError?.message || 'Unknown error'}`);
             }
 
             // 4. Instant Optimistic UI & localStorage update (Zero latency on screen)
@@ -997,6 +1132,8 @@ export function useStockData(isLocal) {
             // 5. Stage into pendingUploads session queue (BATCH GITHUB COMMITS TO PREVENT ACTIONS COLLISION)
             addPendingUpload({
                 productName,
+                publicId,
+                base64Data, // held in session for batch push to sbe-photos
                 imageUrl: newImageUrl,
                 oldImageUrl,
                 groupName: typeof productOrName === 'object' ? productOrName?.groupName : '',
@@ -1014,8 +1151,7 @@ export function useStockData(isLocal) {
             }
 
             toast.remove(toastId);
-            const provMsg = usedProvider === 'GitHub-CDN' ? ' (GitHub CDN)' : '';
-            toast.success(`✓ Photo uploaded${provMsg}! Staged in session (${pendingUploads.value.length} pending commit)`, { autoClose: 3500 });
+            toast.success(`✓ Photo uploaded! Staged in session (${pendingUploads.value.length} pending commit)`, { autoClose: 3500 });
             return newImageUrl;
         } catch (err) {
             console.error('Error uploading image:', err);
@@ -1230,7 +1366,57 @@ export function useStockData(isLocal) {
                 }
             }
 
-            // 1. Fetch freshest remote stock data to avoid conflicts
+            // 1. Collect staged photo binaries for sahilsync07/sbe-photos CDN batch commit
+            const stagedPhotosToUpload = [];
+            for (const item of pendingUploads.value) {
+                if (item.imageUrl) {
+                    const norm = (item.productName || '').trim().toLowerCase();
+                    let b64 = stagedBase64Map.get(norm);
+                    if (!b64) {
+                        try {
+                            b64 = await getStagedBase64(item.productName);
+                        } catch (e) {}
+                    }
+                    const pid = item.publicId || generateProductPublicId(item.productName);
+                    if (b64) {
+                        stagedPhotosToUpload.push({
+                            productName: item.productName,
+                            publicId: pid,
+                            base64Data: b64
+                        });
+                    }
+                }
+            }
+
+            // 2. Batch commit photos to sahilsync07/sbe-photos repository in ONE single commit
+            let cdnMap = new Map();
+            if (stagedPhotosToUpload.length > 0) {
+                try {
+                    console.log(`[Batch Photos CDN] Uploading ${stagedPhotosToUpload.length} photos in 1 commit to sbe-photos...`);
+                    const batchRes = await batchUploadToGitHubPhotosRepo(stagedPhotosToUpload, token);
+                    if (batchRes && batchRes.cdnMap) {
+                        cdnMap = batchRes.cdnMap;
+                    }
+                } catch (batchErr) {
+                    console.warn('[Batch Photos CDN] Warning: Batch photo upload to sbe-photos failed, falling back to Cloudinary URLs:', batchErr.message);
+                    if (batchErr.status === 401 || batchErr.status === 403 || batchErr.message?.includes('401') || batchErr.message?.includes('Bad credentials')) {
+                        const freshToken = await promptForToken('expired');
+                        if (freshToken) {
+                            token = freshToken;
+                            try {
+                                const retryRes = await batchUploadToGitHubPhotosRepo(stagedPhotosToUpload, token);
+                                if (retryRes && retryRes.cdnMap) {
+                                    cdnMap = retryRes.cdnMap;
+                                }
+                            } catch (retryErr) {
+                                console.warn('[Batch Photos CDN] Retry also failed, keeping Cloudinary URLs:', retryErr.message);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Fetch freshest remote stock data to avoid conflicts
             let fullCatalog = null;
             try {
                 const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
@@ -1248,10 +1434,16 @@ export function useStockData(isLocal) {
                 throw new Error('Catalog data not available for GitHub sync');
             }
 
-            // 2. Apply all pending changes
+            // 4. Apply all pending changes with jsDelivr CDN URLs (or Cloudinary fallback)
             const pendingMap = new Map();
             pendingUploads.value.forEach(item => {
-                pendingMap.set((item.productName || '').trim().toLowerCase(), item);
+                const norm = (item.productName || '').trim().toLowerCase();
+                const pid = item.publicId || generateProductPublicId(item.productName);
+                const finalUrl = cdnMap.get(pid) || item.imageUrl || null;
+                pendingMap.set(norm, {
+                    ...item,
+                    finalUrl
+                });
             });
 
             const nowIso = new Date().toISOString();
@@ -1261,9 +1453,9 @@ export function useStockData(isLocal) {
                     const norm = (p.productName || '').trim().toLowerCase();
                     if (pendingMap.has(norm)) {
                         const staged = pendingMap.get(norm);
-                        if (staged.imageUrl) {
-                            p.imageUrl = staged.imageUrl;
-                            p.secondaryImageUrl = staged.imageUrl;
+                        if (staged.finalUrl) {
+                            p.imageUrl = staged.finalUrl;
+                            p.secondaryImageUrl = staged.finalUrl;
                             p.imageUploadedAt = nowIso;
                         } else {
                             p.imageUrl = null;
@@ -1274,7 +1466,7 @@ export function useStockData(isLocal) {
                 });
             });
 
-            // 3. Build smart commit message
+            // 5. Build smart commit message
             let commitMessage = (customCommitMessage || '').trim();
             if (!commitMessage) {
                 const names = pendingUploads.value.map(u => u.productName).slice(0, 3).join(', ');
@@ -1284,7 +1476,7 @@ export function useStockData(isLocal) {
 
             const jsonString = JSON.stringify(fullCatalog, null, 2);
 
-            // 4. Commit to frontend and sbe-hub in one batch
+            // 6. Commit to frontend and sbe-hub in one batch
             const executeCommit = async (currentToken) => {
                 try {
                     await commitFileToGitHub('frontend/public/assets/stock-data.json', jsonString, commitMessage, currentToken);
@@ -1317,7 +1509,7 @@ export function useStockData(isLocal) {
                 return result;
             }
 
-            // 5. Update local storage cache with committed data
+            // 7. Update local storage cache with committed data
             stockData.value = fullCatalog;
             try {
                 localStorage.setItem(CACHE_KEY, JSON.stringify(fullCatalog));

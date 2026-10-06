@@ -812,13 +812,20 @@
               class="relative w-full aspect-[4/5] bg-slate-50 flex flex-col items-center justify-center p-3 text-center cursor-pointer border-b border-slate-100 group-hover/card:bg-sky-50/30 transition-colors"
               @click="triggerCardPhotoUpload(product)"
             >
-              <!-- Stock overlay if out of stock -->
-              <div v-if="Number(product.quantity) <= 0" class="absolute top-2 left-2 z-10">
-                <span class="px-2 py-0.5 bg-slate-200/90 text-slate-600 text-[9px] font-bold rounded-full">Out of Stock</span>
-              </div>
-              <div v-else class="absolute top-2 left-2 z-10">
-                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-extrabold rounded-full border border-emerald-200">
-                  {{ product.quantity }} pairs
+              <!-- Prominent Stock Quantity Badge (Top-Left) -->
+              <div class="absolute top-2 left-2 z-10">
+                <span
+                  v-if="Number(product.quantity) > 0"
+                  class="px-2.5 py-1 bg-emerald-600 text-white text-[10px] sm:text-xs font-black rounded-lg shadow-md flex items-center gap-1 ring-1 ring-white/40"
+                >
+                  <i class="fa-solid fa-boxes-stacked text-[9px]"></i>
+                  <span>{{ product.quantity }} pairs</span>
+                </span>
+                <span
+                  v-else
+                  class="px-2 py-0.5 bg-slate-800/90 text-white text-[9px] font-extrabold rounded-lg shadow-sm"
+                >
+                  0 pairs
                 </span>
               </div>
 
@@ -866,7 +873,20 @@
                   <span v-if="getProductSize(product.productName)" class="px-1.5 py-0.5 bg-slate-100 rounded-md font-bold text-slate-700">
                     {{ getProductSize(product.productName) }}
                   </span>
-                  <span class="font-extrabold text-slate-900 ml-auto">
+                </div>
+
+                <!-- Dedicated Stock Qty & Price Row -->
+                <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div class="flex items-center gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Stock:</span>
+                    <span 
+                      class="text-xs font-black px-1.5 py-0.5 rounded-md"
+                      :class="Number(product.quantity) > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-extrabold' : 'bg-rose-50 text-rose-600 font-bold'"
+                    >
+                      {{ Number(product.quantity) > 0 ? `${product.quantity} prs` : 'Out of stock' }}
+                    </span>
+                  </div>
+                  <span class="font-black text-xs sm:text-sm text-slate-900">
                     ₹{{ getPriceInfo(product.productName).price }}
                   </span>
                 </div>
