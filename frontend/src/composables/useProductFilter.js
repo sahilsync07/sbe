@@ -1,6 +1,7 @@
 
 import { ref, computed } from 'vue';
 import { BRAND_LISTS, DEFAULT_MIN_DATE, NEW_ARRIVAL_MONTHS } from '../utils/constants';
+import { getProductImage } from '../utils/formatters';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 
@@ -77,13 +78,13 @@ export function useProductFilter(stockData, config) {
         if ((cleanView.value === true || cleanView.value === 'clean') && !searchQuery.value) {
             filtered = filtered.map(group => ({
                 ...group,
-                products: group.products.filter(p => !!p.imageUrl && Number(p.quantity) >= 4)
+                products: group.products.filter(p => !!getProductImage(p) && Number(p.quantity) >= 4)
             })).filter(group => group.products.length > 0);
         } else if (cleanView.value === 'upload' && !searchQuery.value) {
             filtered = filtered.map(group => ({
                 ...group,
                 products: group.products
-                    .filter(p => !p.imageUrl && !p.secondaryImageUrl && Number(p.quantity) > 0)
+                    .filter(p => !getProductImage(p) && Number(p.quantity) > 0)
                     .sort((a, b) => {
                         const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
                         const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
@@ -207,9 +208,9 @@ export function useProductFilter(stockData, config) {
 
                     // Clean View / Upload Mode Logic for New Arrivals
                     if ((cleanView.value === true || cleanView.value === 'clean') && !searchQuery.value) {
-                        if (!p.imageUrl || Number(p.quantity) < 4) return;
+                        if (!getProductImage(p) || Number(p.quantity) < 4) return;
                     } else if (cleanView.value === 'upload' && !searchQuery.value) {
-                        if (p.imageUrl || p.secondaryImageUrl || Number(p.quantity) <= 0) return;
+                        if (getProductImage(p) || Number(p.quantity) <= 0) return;
                     }
 
                     if (isNewArrival(p)) {

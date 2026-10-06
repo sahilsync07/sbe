@@ -1803,7 +1803,7 @@ const TaraLogo = `${baseUrl}assets/logos/tara-logo.png`;
 const BrockkieLogo = `${baseUrl}assets/logos/brockkie-logo.png`;
 const XpaniaLogo = `${baseUrl}assets/logos/xpania-logo.png`;
 
-const hasProductImage = (p) => Boolean(p && (p.imageUrl || p.secondaryImageUrl));
+const hasProductImage = (p) => Boolean(p && getProductImage(p));
 
 const looseGroupNames = [
   'ASHU', 'PANKAJ PLASTIC', 'TARA', 'J.K Plastic', 'MAGNET', 'MARUTI PLASTICS',

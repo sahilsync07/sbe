@@ -45,17 +45,23 @@ export function markCloudFailed(urlOrCloud) {
 export function getPreferredImageUrl(product) {
   if (!product) return null;
 
-  // 1. If primary cloud is known to be down, prefer secondaryImageUrl if present
-  if (isPrimaryCloudDown.value && product.secondaryImageUrl) {
+  const isInvalidCloud = (url) => {
+    if (!url || typeof url !== 'string') return true;
+    if (isPrimaryCloudDown.value && (url.includes(primaryCloud) || url.includes('dg365ewal'))) return true;
+    if (isSecondaryCloudDown.value && (url.includes(secondaryCloud) || url.includes('dieqsg5tr'))) return true;
+    return false;
+  };
+
+  // 1. Try primary imageUrl if valid and not on a disabled cloud
+  if (product.imageUrl && !isInvalidCloud(product.imageUrl)) {
+    return product.imageUrl;
+  }
+
+  // 2. Try secondaryImageUrl if valid and not on a disabled cloud
+  if (product.secondaryImageUrl && !isInvalidCloud(product.secondaryImageUrl)) {
     return product.secondaryImageUrl;
   }
 
-  // 2. If primary cloud is known to be down, and product only has primary imageUrl on primary cloud
-  // returning it will only produce 401/404 errors. Return null so the UI cleanly renders placeholder.
-  if (isPrimaryCloudDown.value && product.imageUrl && product.imageUrl.includes(primaryCloud) && !product.secondaryImageUrl) {
-    return null;
-  }
-
-  // 3. Normal order: primary imageUrl first, then secondaryImageUrl
-  return product.imageUrl || product.secondaryImageUrl || null;
+  // 3. No valid working image available
+  return null;
 }
