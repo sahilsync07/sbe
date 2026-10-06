@@ -266,10 +266,10 @@ export async function generateBrandSummaryImage({
     ctx.fill();
   });
 
-  // 3. TOP: SBE NEW LOGO (Moved down to iconY = 160)
+  // 3. TOP: SBE NEW LOGO
   const sbeLogoCandidates = [
-    `${prefix}assets/logos/e-sbe-new-logo.png`,
-    `${prefix}e-sbe-new-logo.png`,
+    `${prefix}assets/logos/e-sbe-new-logo.png?v=${Date.now()}`,
+    `${prefix}e-sbe-new-logo.png?v=${Date.now()}`,
     `${prefix}pwa-512x512.png`
   ];
   let sbeImg = null;
@@ -277,48 +277,78 @@ export async function generateBrandSummaryImage({
     sbeImg = await loadImgAsync(p);
     if (sbeImg) break;
   }
-  const iconSize = 185;
-  const iconX = (WIDTH - iconSize) / 2;
-  const iconY = 160;
 
   if (sbeImg) {
-    // Outer luxury gold squircle ring
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 3;
-    drawRoundRect(ctx, iconX - 4, iconY - 4, iconSize + 8, iconSize + 8, 36, false, true);
+    const sbeRatio = sbeImg.width / sbeImg.height;
+    let cardW, cardH, radius;
+    if (sbeRatio > 2.0) {
+      // Wide horizontal wordmark logo (newly cropped e-SBE: 512x133)
+      cardW = 340;
+      cardH = 118;
+      radius = 24;
+    } else {
+      // Square icon logo fallback
+      cardW = 185;
+      cardH = 185;
+      radius = 32;
+    }
+    const cardX = (WIDTH - cardW) / 2;
+    const cardY = 230; // Shifted down so top and bottom spaces are equal (182px vs 190px)
 
-    // Clip image to rounded rect
+    // Outer luxury gold squircle/capsule ring
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 2.5;
+    drawRoundRect(ctx, cardX, cardY, cardW, cardH, radius, false, true);
+
+    // Inner subtle champagne gold line
+    ctx.strokeStyle = '#E5C768';
+    ctx.lineWidth = 0.8;
+    drawRoundRect(ctx, cardX + 3, cardY + 3, cardW - 6, cardH - 6, radius - 3, false, true);
+
+    // Draw SBE logo centered inside card preserving aspect ratio
+    const imgPad = 16;
+    const maxImgW = cardW - imgPad * 2;
+    const maxImgH = cardH - imgPad * 2;
+    let drawImgW = maxImgW;
+    let drawImgH = drawImgW / sbeRatio;
+    if (drawImgH > maxImgH) {
+      drawImgH = maxImgH;
+      drawImgW = drawImgH * sbeRatio;
+    }
+    const imgX = cardX + (cardW - drawImgW) / 2;
+    const imgY = cardY + (cardH - drawImgH) / 2;
+
     ctx.save();
-    drawRoundRect(ctx, iconX, iconY, iconSize, iconSize, 32, false, false);
+    drawRoundRect(ctx, cardX + 4, cardY + 4, cardW - 8, cardH - 8, radius - 4, false, false);
     ctx.clip();
-    ctx.drawImage(sbeImg, iconX, iconY, iconSize, iconSize);
+    ctx.drawImage(sbeImg, imgX, imgY, drawImgW, drawImgH);
     ctx.restore();
   }
 
-  // SBE Title (enlarged font)
+  // SBE Title (enlarged font, shifted down)
   ctx.fillStyle = '#B8860B';
   ctx.font = FONT_SBE_TITLE;
   ctx.textAlign = 'center';
-  ctx.fillText('SRI BRUNDABANA ENTERPRISES', WIDTH / 2, 395);
+  ctx.fillText('SRI BRUNDABANA ENTERPRISES', WIDTH / 2, 465);
 
   // Rayagada on next line
   ctx.fillStyle = '#D4AF37';
   ctx.font = FONT_SBE_CITY;
-  ctx.fillText('—  RAYAGADA  —', WIDTH / 2, 432);
+  ctx.fillText('—  RAYAGADA  —', WIDTH / 2, 502);
 
   // Elegant Thin Gold Divider
   ctx.strokeStyle = '#D4AF37';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(WIDTH / 2 - 140, 465);
-  ctx.lineTo(WIDTH / 2 + 140, 465);
+  ctx.moveTo(WIDTH / 2 - 140, 535);
+  ctx.lineTo(WIDTH / 2 + 140, 535);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(WIDTH / 2, 465, 3, 0, Math.PI * 2);
+  ctx.arc(WIDTH / 2, 535, 3, 0, Math.PI * 2);
   ctx.fill();
 
-  // 4. CENTER: DYNAMIC BRAND LOGO (Moved down to drawY = 560)
+  // 4. CENTER: DYNAMIC BRAND LOGO (Shifted down to drawY = 630)
   const logoPath = customLogoUrl || getBrandLogoPath(groupLabel) || (subBrands.length > 0 ? getBrandLogoPath(subBrands[0]) : null);
   const logoImg = await loadImgAsync(logoPath);
 
@@ -333,7 +363,7 @@ export async function generateBrandSummaryImage({
       drawW = drawH * ratio;
     }
     const drawX = (WIDTH - drawW) / 2;
-    const drawY = 560 + (maxH - drawH) / 2;
+    const drawY = 630 + (maxH - drawH) / 2;
     ctx.save();
     drawRoundRect(ctx, drawX, drawY, drawW, drawH, 16, false, false);
     ctx.clip();
@@ -343,10 +373,10 @@ export async function generateBrandSummaryImage({
     ctx.font = FONT_BRAND_FALLBACK;
     ctx.fillStyle = '#0F172A';
     ctx.textAlign = 'center';
-    ctx.fillText((groupLabel || 'FOOTWEAR').toUpperCase(), WIDTH / 2, 640);
+    ctx.fillText((groupLabel || 'FOOTWEAR').toUpperCase(), WIDTH / 2, 710);
   }
 
-  // 5. LOWER CENTER: LUXURY DATE SECTION (Moved down for balanced elegance)
+  // 5. LOWER CENTER: LUXURY DATE SECTION (Shifted down for equal top & bottom spacing)
   const now = new Date();
   const dayStr = now.toLocaleDateString('en-GB', { weekday: 'long' }).toUpperCase();
   const dateNum = now.toLocaleDateString('en-GB', { day: '2-digit' });
@@ -356,32 +386,32 @@ export async function generateBrandSummaryImage({
   ctx.strokeStyle = '#D4AF37';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(WIDTH / 2 - 220, 850);
-  ctx.lineTo(WIDTH / 2 + 220, 850);
+  ctx.moveTo(WIDTH / 2 - 220, 920);
+  ctx.lineTo(WIDTH / 2 + 220, 920);
   ctx.stroke();
 
-  // Day of week in grand gold display (larger)
+  // Day of week in grand gold display
   ctx.font = FONT_DAY;
   ctx.fillStyle = '#B8860B';
   ctx.textAlign = 'center';
-  ctx.fillText(`—  ${dayStr}  —`, WIDTH / 2, 925);
+  ctx.fillText(`—  ${dayStr}  —`, WIDTH / 2, 995);
 
-  // Big Date Number (kept at 160px)
+  // Big Date Number
   ctx.font = FONT_DATE_NUM;
   ctx.fillStyle = '#0F172A';
-  ctx.fillText(dateNum, WIDTH / 2, 1080);
+  ctx.fillText(dateNum, WIDTH / 2, 1150);
 
-  // Month & Year (larger)
+  // Month & Year
   ctx.font = FONT_MONTH_YEAR;
   ctx.fillStyle = '#0F172A';
-  ctx.fillText(monthYear, WIDTH / 2, 1180);
+  ctx.fillText(monthYear, WIDTH / 2, 1250);
 
   // Gold rule below date
   ctx.strokeStyle = '#D4AF37';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(WIDTH / 2 - 220, 1240);
-  ctx.lineTo(WIDTH / 2 + 220, 1240);
+  ctx.moveTo(WIDTH / 2 - 220, 1310);
+  ctx.lineTo(WIDTH / 2 + 220, 1310);
   ctx.stroke();
 
   // 6. BOTTOM: ROYAL CATALOG CREST
