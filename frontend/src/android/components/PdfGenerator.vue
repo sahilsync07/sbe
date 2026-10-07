@@ -2650,17 +2650,33 @@ const loadProductImageElement = async (product) => {
 const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
   const PAGE_W = 1080;
   const BAR_H = 135;
+  const MAX_PHOTO_H = 1920; // Full 9:16 vertical standard (1080x1920)
 
-  let finalWidth = PAGE_W;
   let finalHeight = 1080; // default square
+  let drawW = PAGE_W;
+  let drawH = 1080;
+  let drawX = 0;
+  let drawY = 0;
   const hasValidImg = Boolean(imgElement && imgElement.naturalWidth > 0 && imgElement.naturalHeight > 0);
 
   if (hasValidImg) {
-    // Preserve natural photo aspect ratio, width locked to 1080px
-    finalHeight = Math.round(imgElement.naturalHeight * (PAGE_W / imgElement.naturalWidth));
-    // Clamp height to sensible range (min 600px, max 1600px)
-    if (finalHeight < 600) finalHeight = 600;
-    if (finalHeight > 1600) finalHeight = 1600;
+    const naturalScaledH = Math.round(imgElement.naturalHeight * (PAGE_W / imgElement.naturalWidth));
+    if (naturalScaledH > MAX_PHOTO_H) {
+      // For ultra-tall photos (> 9:16), cap photo area height to 1920px and scale proportionally (never squeeze!)
+      finalHeight = MAX_PHOTO_H;
+      const scale = MAX_PHOTO_H / imgElement.naturalHeight;
+      drawW = Math.round(imgElement.naturalWidth * scale);
+      drawH = MAX_PHOTO_H;
+      drawX = Math.round((PAGE_W - drawW) / 2);
+      drawY = 0;
+    } else {
+      // Natural 100% true-to-life aspect ratio edge-to-edge
+      finalHeight = Math.max(400, naturalScaledH);
+      drawW = PAGE_W;
+      drawH = naturalScaledH;
+      drawX = 0;
+      drawY = Math.round((finalHeight - drawH) / 2);
+    }
   }
 
   const PAGE_H = finalHeight + BAR_H;
@@ -2676,7 +2692,7 @@ const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
 
   // 1. Draw Photo or Clean Fallback
   if (hasValidImg) {
-    ctx.drawImage(imgElement, 0, 0, finalWidth, finalHeight);
+    ctx.drawImage(imgElement, drawX, drawY, drawW, drawH);
   } else {
     ctx.fillStyle = '#0f172a'; // slate-900
     ctx.fillRect(0, 0, PAGE_W, finalHeight);
