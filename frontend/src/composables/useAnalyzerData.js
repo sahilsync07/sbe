@@ -222,6 +222,11 @@ export function useAnalyzerData() {
           groupName: group.groupName || 'Rayagada Local',
           closingBalance: closing,
           totalOutstanding,
+          partyType: ledger.partyType || 'retailer',
+          creditStatus: ledger.creditStatus || 'normal',
+          settlementStatus: ledger.settlementStatus || 'normal',
+          settlementNote: ledger.settlementNote || '',
+          settledAmount: ledger.settledAmount || 0,
           isDebtor: true,
           primaryBucket,
           rawLedger: ledger,
@@ -311,6 +316,9 @@ export function useAnalyzerData() {
     let count31_60 = 0;
     let count0_30 = 0;
 
+    let badDebtTotal = 0;
+    let settledTotal = 0;
+
     for (const item of list) {
       totalOutstanding += item.totalOutstanding;
       b0_30 += item.aging.b0_30;
@@ -319,6 +327,9 @@ export function useAnalyzerData() {
       b90_180 += item.aging.b90_180;
       b180_plus += item.aging.b180_plus;
 
+      if (item.creditStatus === 'bad_debt') badDebtTotal += item.totalOutstanding;
+      if (item.settlementStatus === 'settled_unaccounted') settledTotal += item.totalOutstanding;
+
       if (item.primaryBucket === '180plus') count180_plus++;
       else if (item.primaryBucket === '90_180') count90_180++;
       else if (item.primaryBucket === '61_90') count61_90++;
@@ -326,9 +337,14 @@ export function useAnalyzerData() {
       else count0_30++;
     }
 
+    const netRecoverableOutstanding = Math.max(0, totalOutstanding - badDebtTotal - settledTotal);
+
     return {
       totalOutstanding,
       totalCount: list.length,
+      badDebtTotal,
+      settledTotal,
+      netRecoverableOutstanding,
       b0_30,
       b31_60,
       b61_90,

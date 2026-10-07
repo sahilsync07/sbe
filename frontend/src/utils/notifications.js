@@ -50,7 +50,22 @@ export async function setupDailySyncNotification(router = null) {
         // Listen for user tapping any notification
         LocalNotifications.removeAllListeners();
         LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
-            if (action.notification.extra?.type === 'new_arrivals' || action.notification.id === ALERT_NOTIFICATION_ID) {
+            const extra = action.notification.extra || {};
+            if (extra.type === 'broadcast') {
+                console.log('[Notifications] User tapped Broadcast notification:', extra);
+                const target = extra.target || 'Stock';
+                if (router) {
+                    if (target === 'NewArrivals') {
+                        router.push({ path: '/', query: { brand: 'NewArrivals' } });
+                    } else if (target === 'Stock') {
+                        router.push({ path: '/' });
+                    } else {
+                        router.push({ path: '/', query: { brand: target } });
+                    }
+                } else if (typeof window !== 'undefined') {
+                    window.location.hash = target === 'Stock' ? '#/' : `/#/?brand=${target}`;
+                }
+            } else if (extra.type === 'new_arrivals' || action.notification.id === ALERT_NOTIFICATION_ID) {
                 console.log('[Notifications] User tapped New Arrivals notification');
                 if (router) {
                     router.push({ path: '/', query: { brand: 'NewArrivals' } });
@@ -203,3 +218,84 @@ export async function checkAndNotifyNewArrivals(catalog, router = null) {
         console.warn('[Notifications] Error checking new arrivals:', err);
     }
 }
+
+const STORAGE_KEY_SEEN_BROADCASTS = 'sbe_seen_broadcast_notifications';
+const REMOTE_NOTIFICATIONS_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/notifications.json';
+
+/**
+ * Checks for unseen admin broadcast notifications from notifications.json
+ * and rings native Android status bar with an alert
+ */
+export async function checkAndNotifyBroadcasts(router = null) {
+    if (!Capacitor.isNativePlatform()) return;
+
+    try {
+        let broadcasts = [];
+        try {
+            const baseUrl = typeof window !== 'undefined' ? (window.location.origin + (window.location.pathname.startsWith('/sbe') ? '/sbe/' : '/')) : '/';
+            const res = await fetch(`${baseUrl}assets/notifications.json?t=${Date.now()}`);
+            if (res.ok) {
+                broadcasts = await res.json();
+            }
+        } catch (_) {}
+
+        if (!Array.isArray(broadcasts) || broadcasts.length === 0) {
+            try {
+                const res = await fetch(`${REMOTE_NOTIFICATIONS_URL}?t=${Date.now()}`);
+                if (res.ok) {
+                    broadcasts = await res.json();
+                }
+            } catch (_) {}
+        }
+
+        if (!Array.isArray(broadcasts) || broadcasts.length === 0) return;
+
+        let seenIds = [];
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY_SEEN_BROADCASTS);
+            if (raw) seenIds = JSON.parse(raw);
+        } catch (_) {}
+
+        // Find unseen broadcasts
+        const unseen = broadcasts.filter(b => b.id && !seenIds.includes(b.id));
+        if (unseen.length === 0) return;
+
+        const latest = unseen[0]; // broadcasts list is sorted newest first
+
+        const permStatus = await LocalNotifications.checkPermissions();
+        if (permStatus.display !== 'granted') {
+            const req = await LocalNotifications.requestPermissions();
+            if (req.display !== 'granted') return;
+        }
+
+        const notifId = Number(String(latest.id).slice(-8)) || 2001;
+
+        await LocalNotifications.schedule({
+            notifications: [
+                {
+                    title: latest.title,
+                    body: latest.body,
+                    id: notifId,
+                    extra: {
+                        type: 'broadcast',
+                        target: latest.target,
+                        id: latest.id
+                    },
+                    sound: null,
+                    autoCancel: true
+                }
+            ]
+        });
+
+        console.log(`[Notifications] ✓ Triggered Broadcast alert: "${latest.title}"`);
+
+        // Mark unseen as seen
+        unseen.forEach(b => {
+            if (!seenIds.includes(b.id)) seenIds.push(b.id);
+        });
+        localStorage.setItem(STORAGE_KEY_SEEN_BROADCASTS, JSON.stringify(seenIds.slice(-50)));
+    } catch (err) {
+        console.warn('[Notifications] Error checking broadcasts:', err);
+    }
+}
+

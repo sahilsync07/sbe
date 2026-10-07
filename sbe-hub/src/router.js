@@ -11,9 +11,12 @@ import QuotationView from "@/views/QuotationView.vue";
 import AnalyzerView from "@/views/AnalyzerView.vue";
 import OrderMakerView from "@/views/OrderMakerView.vue";
 import WorkzoneView from "@/views/WorkzoneView.vue";
+import PartyTaggerView from "@/views/PartyTaggerView.vue";
+import NotificationSenderView from "@/views/NotificationSenderView.vue";
 import { useAdmin } from "@/composables/useAdmin";
 
 const PdfGenerator = () => import('@/components/PdfGenerator.vue');
+const JournalView = () => import('@/views/JournalView.vue');
 
 const routes = [
   { path: "/", component: HomeView },
@@ -22,6 +25,7 @@ const routes = [
   { path: "/stock-trend", component: StockTrendView },
   { path: "/sample-room", component: SampleRoomView },
   { path: "/pdf-gen", component: PdfGenerator },
+  { path: "/journal", component: JournalView },
   { path: "/rate-chart", component: RateChartView },
   { path: "/line-list", component: LineListView },
   { path: "/quotation", component: QuotationView },
@@ -29,6 +33,8 @@ const routes = [
   { path: "/analyzer", component: AnalyzerView },
   { path: "/order-maker", component: OrderMakerView },
   { path: "/workzone/:zone", component: WorkzoneView },
+  { path: "/party-tagger", component: PartyTaggerView },
+  { path: "/notification-sender", component: NotificationSenderView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
@@ -40,7 +46,7 @@ const router = createRouter({
 
 // Admin route guard — protected pages require admin login
 router.beforeEach(async (to, from, next) => {
-  const protectedPaths = ['/ledger', '/daybook', '/line-list', '/quotation', '/analyzer'];
+  const protectedPaths = ['/ledger', '/daybook', '/line-list', '/quotation', '/analyzer', '/party-tagger', '/notification-sender'];
   if (protectedPaths.includes(to.path)) {
     const { isAdmin, isSuperAdmin, checkAdminState } = useAdmin();
     await checkAdminState();

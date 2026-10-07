@@ -33,6 +33,14 @@ const hubLedgerDataPath = path.resolve(
   __dirname,
   "../../sbe-hub/public/assets/ledger-data.json"
 );
+const notificationsPath = path.resolve(
+  __dirname,
+  "../../frontend/public/assets/notifications.json"
+);
+const hubNotificationsPath = path.resolve(
+  __dirname,
+  "../../sbe-hub/public/assets/notifications.json"
+);
 const tallyTimeout = 120000; // 2 minutes timeout for Tally queries
 const repoRoot = path.resolve(__dirname, "../../");
 
@@ -520,6 +528,38 @@ async function fetchLedgerData() {
 async function syncLedgerToFile() {
   console.log("📒 Syncing ledger data to file...");
 
+  // Preserve existing custom tags (partyType, creditStatus, settlementStatus, settlementNote, settledAmount)
+  const partyMeta = {};
+  try {
+    const existingFile = await fs.readFile(ledgerDataPath, "utf-8");
+    if (existingFile.trim()) {
+      const existingJson = JSON.parse(existingFile);
+      existingJson.forEach((group) => {
+        (group.ledgers || []).forEach((ledger) => {
+          const key = (ledger.ledgerName || "").trim().toLowerCase();
+          if (
+            ledger.partyType ||
+            ledger.creditStatus ||
+            ledger.settlementStatus ||
+            ledger.settlementNote ||
+            ledger.settledAmount
+          ) {
+            partyMeta[key] = {
+              partyType: ledger.partyType || "retailer",
+              creditStatus: ledger.creditStatus || "normal",
+              settlementStatus: ledger.settlementStatus || "normal",
+              settlementNote: ledger.settlementNote || "",
+              settledAmount: ledger.settledAmount || 0,
+            };
+          }
+        });
+      });
+      console.log(`Preserved ${Object.keys(partyMeta).length} custom party tags`);
+    }
+  } catch (metaErr) {
+    console.warn("Could not read existing ledger metadata:", metaErr.message);
+  }
+
   let ledgerData;
   try {
     ledgerData = await fetchLedgerData();
@@ -535,6 +575,21 @@ async function syncLedgerToFile() {
     } catch (_) { /* no existing file */ }
     return { success: false, fallback: false, error: err.message };
   }
+
+  // Re-attach preserved custom tags to fresh ledgers
+  ledgerData.forEach((group) => {
+    (group.ledgers || []).forEach((ledger) => {
+      const key = (ledger.ledgerName || "").trim().toLowerCase();
+      const saved = partyMeta[key];
+      if (saved) {
+        ledger.partyType = saved.partyType;
+        ledger.creditStatus = saved.creditStatus;
+        ledger.settlementStatus = saved.settlementStatus;
+        ledger.settlementNote = saved.settlementNote;
+        ledger.settledAmount = saved.settledAmount;
+      }
+    });
+  });
 
   // Add metadata
   const lastSyncTime = new Date().toISOString();
@@ -605,6 +660,56 @@ app.post("/api/updateLedgerData", async (req, res) => {
   } catch (error) {
     console.error("Error in /api/updateLedgerData:", error.message);
     res.status(500).json({ error: `Failed to update ledger data: ${error.message}` });
+  }
+});
+
+// Batch update party metadata (partyType, creditStatus, settlementStatus, settlementNote, settledAmount)
+app.post("/api/ledger/updateBatchMeta", async (req, res) => {
+  try {
+    const { updates, commitMessage } = req.body;
+    if (!updates || typeof updates !== "object") {
+      return res.status(400).json({ error: "Missing updates object" });
+    }
+
+    const fileContent = await fs.readFile(ledgerDataPath, "utf-8");
+    const ledgerData = JSON.parse(fileContent);
+
+    let changedCount = 0;
+    const updateKeys = Object.keys(updates).reduce((acc, k) => {
+      acc[k.trim().toLowerCase()] = updates[k];
+      return acc;
+    }, {});
+
+    ledgerData.forEach((group) => {
+      (group.ledgers || []).forEach((ledger) => {
+        const key = (ledger.ledgerName || "").trim().toLowerCase();
+        if (updateKeys[key]) {
+          const u = updateKeys[key];
+          if (u.partyType !== undefined) ledger.partyType = u.partyType;
+          if (u.creditStatus !== undefined) ledger.creditStatus = u.creditStatus;
+          if (u.settlementStatus !== undefined) ledger.settlementStatus = u.settlementStatus;
+          if (u.settlementNote !== undefined) ledger.settlementNote = u.settlementNote;
+          if (u.settledAmount !== undefined) ledger.settledAmount = u.settledAmount;
+          changedCount++;
+        }
+      });
+    });
+
+    const jsonStr = JSON.stringify(ledgerData, null, 2);
+    await fs.writeFile(ledgerDataPath, jsonStr);
+    try {
+      await fs.writeFile(hubLedgerDataPath, jsonStr);
+    } catch (_) {}
+
+    const msg = commitMessage || `Update tags for ${changedCount} parties`;
+    gitCommitAndPush(msg).catch((e) => {
+      console.warn("Git push failed for ledger batch update:", e.message);
+    });
+
+    res.json({ success: true, count: changedCount, message: `Updated tags for ${changedCount} parties` });
+  } catch (err) {
+    console.error("Error updating batch ledger meta:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -998,7 +1103,7 @@ app.post("/api/removeImage", async (req, res) => {
 // ===== SAMPLE ROOM FLAG =====
 app.post("/api/updateSampleRoom", async (req, res) => {
   try {
-    const { updates } = req.body; // { "productName": true/false, ... }
+    const { updates, commitMessage } = req.body; // { "productName": true/false, ... }
     if (!updates || typeof updates !== "object") {
       return res.status(400).json({ error: "Missing updates object" });
     }
@@ -1017,11 +1122,46 @@ app.post("/api/updateSampleRoom", async (req, res) => {
       });
     });
 
-    await fs.writeFile(stockDataPath, JSON.stringify(stockData, null, 2));
-    res.json({ message: `Updated ${changed} products`, changed });
+    const jsonStr = JSON.stringify(stockData, null, 2);
+    await fs.writeFile(stockDataPath, jsonStr);
+    try {
+      await fs.writeFile(hubStockDataPath, jsonStr);
+    } catch (_) {}
+
+    const msg = commitMessage || `Update Sample Room status for ${changed} items`;
+    gitCommitAndPush(msg).catch((e) => {
+      console.warn("Git push failed for updateSampleRoom (non-fatal):", e.message);
+    });
+
+    res.json({ message: `Updated ${changed} products in Sample Room`, changed });
   } catch (error) {
     console.error("Error in updateSampleRoom:", error.message);
     res.status(500).json({ error: `Failed to update: ${error.message}` });
+  }
+});
+
+// ===== BROADCAST NOTIFICATIONS =====
+app.post("/api/updateNotifications", async (req, res) => {
+  try {
+    const { notifications, commitMessage } = req.body;
+    if (!Array.isArray(notifications)) {
+      return res.status(400).json({ error: "notifications must be an array" });
+    }
+    const jsonStr = JSON.stringify(notifications, null, 2);
+    await fs.writeFile(notificationsPath, jsonStr);
+    try {
+      await fs.writeFile(hubNotificationsPath, jsonStr);
+    } catch (_) {}
+
+    const msg = commitMessage || `Update broadcast notifications (${notifications.length})`;
+    gitCommitAndPush(msg).catch((e) => {
+      console.warn("Git push failed for notifications (non-fatal):", e.message);
+    });
+
+    res.json({ success: true, count: notifications.length });
+  } catch (error) {
+    console.error("Error in updateNotifications:", error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 

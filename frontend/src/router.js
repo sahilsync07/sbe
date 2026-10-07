@@ -14,6 +14,8 @@ import QuotationView from "./views/QuotationView.vue";
 import AnalyzerView from "./views/AnalyzerView.vue";
 import OrderMakerView from "./views/OrderMakerView.vue";
 import WorkzoneView from "./views/WorkzoneView.vue";
+import PartyTaggerView from "./views/PartyTaggerView.vue";
+import NotificationSenderView from "./views/NotificationSenderView.vue";
 import { useAdmin } from "./composables/useAdmin";
 
 const isAndroid = Capacitor.getPlatform() === 'android';
@@ -42,6 +44,8 @@ const routes = [
   { path: "/analyzer", component: AnalyzerView },
   { path: "/order-maker", component: OrderMakerView },
   { path: "/workzone/:zone", component: WorkzoneView },
+  { path: "/party-tagger", component: PartyTaggerView },
+  { path: "/notification-sender", component: NotificationSenderView },
 
   { path: "/:pathMatch(.*)*", redirect: "/" }, // Redirect unmatched routes to /
 ];
@@ -52,7 +56,8 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  if (to.path === '/ledger' || to.path === '/daybook' || to.path === '/line-list' || to.path === '/quotation' || to.path === '/analyzer') {
+  const protectedPaths = ['/ledger', '/daybook', '/line-list', '/quotation', '/analyzer', '/party-tagger', '/notification-sender'];
+  if (protectedPaths.includes(to.path)) {
     const { isAdmin, isSuperAdmin, checkAdminState } = useAdmin();
     await checkAdminState();
     

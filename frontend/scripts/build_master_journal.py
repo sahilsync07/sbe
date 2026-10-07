@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+import os
+import shutil
+
+html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1324,7 +1327,7 @@
             <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-code-compare"></i> Commandment 4</span>
             <h3 class="rule-title">Multi-Repo Mirroring: Keep Git Trees in Sync</h3>
             <p class="rule-text">
-              The project is mirrored across two local repositories: <code>c:\Projects\sbe</code> and <code>C:\Projects\sriyasync_github\sbe</code>. Whenever making commits and pushing to remote, both repositories must be updated and kept in strict lockstep to prevent diverged heads.
+              The project is mirrored across two local repositories: <code>c:\\Projects\\sbe</code> and <code>C:\\Projects\\sriyasync_github\\sbe</code>. Whenever making commits and pushing to remote, both repositories must be updated and kept in strict lockstep to prevent diverged heads.
             </p>
           </div>
 
@@ -2341,3 +2344,18 @@ sbe-hub/public/assets/notifications.json</code></pre>
   </script>
 </body>
 </html>
+"""
+
+# Targets to write
+targets = [
+    'frontend/public/journal/index.html',
+    'frontend/public/journal.html',
+    'sbe-hub/public/journal/index.html',
+    'sbe-hub/public/journal.html'
+]
+
+for target in targets:
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    with open(target, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    print(f'Successfully wrote: {target} ({len(html_content)} bytes)')

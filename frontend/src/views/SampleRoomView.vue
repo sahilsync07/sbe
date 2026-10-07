@@ -33,6 +33,17 @@
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-2">
+            <!-- Staged Commit Preview Button -->
+            <button
+              v-if="stagedCount > 0"
+              @click="showCommitModal = true"
+              class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white sm:px-4 sm:py-2 sm:text-sm active:scale-[0.97] transition-all bg-gradient-to-r from-indigo-600 to-violet-600 shadow-md shadow-indigo-600/30 animate-pulse"
+              title="Review and push staged Sample Room updates"
+            >
+              <i class="fa-solid fa-code-commit text-xs"></i>
+              <span>Commit Preview ({{ stagedCount }})</span>
+            </button>
+
             <!-- Brand Actions -->
             <template v-if="selectedGroup">
               <!-- View Mode Toggle -->
@@ -346,6 +357,13 @@
       :subtitle="lightboxSubtitle"
       @close="lightboxOpen = false"
     />
+
+    <!-- Sample Room Commit Preview Modal -->
+    <SampleRoomCommitPreviewModal
+      :show="showCommitModal"
+      @close="showCommitModal = false"
+      @committed="handleCommitted"
+    />
   </div>
 </template>
 
@@ -355,17 +373,31 @@ import { useRouter } from 'vue-router';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 import { useStockData } from '../composables/useStockData';
+import { useSampleRoomTagger } from '../composables/useSampleRoomTagger';
 import { generateSampleRoomPDF } from '../utils/pdfSampleRoom';
 import { getOptimizedImageUrl, getProductImage } from '../utils/formatters';
-import axios from 'axios';
-import { toast } from 'vue3-toastify';
 import CachedImage from '../components/StockTable/CachedImage.vue';
 import ImageLightbox from '../components/ImageLightbox.vue';
+import SampleRoomCommitPreviewModal from '../components/SampleRoomCommitPreviewModal.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
 const { stockData } = storeToRefs(appStore);
 const { loadStockData } = useStockData();
+
+const {
+  stagedCount,
+  stageToggle: stageSampleToggle,
+  stageBatchSet,
+  getEffectiveInSampleRoom,
+} = useSampleRoomTagger();
+
+const showCommitModal = ref(false);
+
+const handleCommitted = () => {
+  showCommitModal.value = false;
+  initCheckedMap();
+};
 
 const loading = ref(true);
 const saving = ref(false);
@@ -389,7 +421,7 @@ const sortedGroupProducts = computed(() => {
       return qParts.every(part => name.includes(part));
     });
   }
-  
+
   // Apply Filter
   if (filterMode.value === 'present') {
     arr = arr.filter(p => checkedMap.value[p.productName]);
@@ -428,14 +460,14 @@ const openLightbox = (product) => {
   lightboxOpen.value = true;
 };
 
-// Build checkedMap from inSampleRoom flags in stockData
+// Build checkedMap from inSampleRoom flags in stockData & staged changes
 const initCheckedMap = () => {
   const map = {};
   if (!stockData.value) return map;
   stockData.value.forEach(group => {
     if (!group.products) return;
     group.products.forEach(p => {
-      if (p.inSampleRoom) map[p.productName] = true;
+      if (getEffectiveInSampleRoom(p)) map[p.productName] = true;
     });
   });
   checkedMap.value = map;
@@ -510,53 +542,33 @@ const handleBack = () => {
   }
 };
 
-// Persist changes to backend -> stock-data.json
-const persistToBackend = async (updates) => {
-  try {
-    saving.value = true;
-    await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/updateSampleRoom`, { updates });
-  } catch (err) {
-    toast.error('Server not running — changes won\'t be saved', { autoClose: 3000, toastId: 'sr-offline' });
-  } finally {
-    saving.value = false;
+const toggleCheck = (name) => {
+  let targetProduct = null;
+  stockData.value.forEach((g) => {
+    if (!g.products) return;
+    const found = g.products.find((p) => p.productName === name);
+    if (found) targetProduct = found;
+  });
+  if (targetProduct) {
+    stageSampleToggle(targetProduct);
+    checkedMap.value[name] = getEffectiveInSampleRoom(targetProduct);
   }
 };
 
-const toggleCheck = (name) => {
-  const newVal = !checkedMap.value[name];
-  checkedMap.value[name] = newVal;
-  // Also update the reactive stockData so it stays in sync
-  stockData.value.forEach(g => {
-    if (!g.products) return;
-    g.products.forEach(p => {
-      if (p.productName === name) p.inSampleRoom = newVal;
-    });
-  });
-  persistToBackend({ [name]: newVal });
-};
-
 const selectAll = () => {
-  const updates = {};
-  selectedGroup.value.products.forEach(p => {
-    // only select filtered items if filtered? 
-    // let's select all visible items
-    sortedGroupProducts.value.forEach(p => {
-      checkedMap.value[p.productName] = true;
-      p.inSampleRoom = true;
-      updates[p.productName] = true;
-    });
+  if (!selectedGroup.value) return;
+  stageBatchSet(sortedGroupProducts.value, true);
+  sortedGroupProducts.value.forEach((p) => {
+    checkedMap.value[p.productName] = true;
   });
-  persistToBackend(updates);
 };
 
 const selectNone = () => {
-  const updates = {};
-  sortedGroupProducts.value.forEach(p => {
+  if (!selectedGroup.value) return;
+  stageBatchSet(sortedGroupProducts.value, false);
+  sortedGroupProducts.value.forEach((p) => {
     checkedMap.value[p.productName] = false;
-    p.inSampleRoom = false;
-    updates[p.productName] = false;
   });
-  persistToBackend(updates);
 };
 
 const printPDF = async () => {

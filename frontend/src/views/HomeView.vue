@@ -16,11 +16,11 @@
             <!-- Build Version Tag with Info Popover -->
             <VersionBadge />
 
+            <!-- Smart Sync / Refresh Button (Works on both PC Tally & Phone GitHub) -->
             <button
-              v-if="isAdmin || isSuperAdmin"
-              @click="updateStockData"
+              @click="handleSmartSync"
               class="hub-icon-btn hub-icon-btn--accent"
-              title="Sync Stock from Tally"
+              :title="isLocal ? 'Sync Stock from Tally' : 'Refresh Latest Catalog from GitHub'"
             >
               <i class="fa-solid fa-rotate" :class="{ 'animate-spin': isSyncing }"></i>
             </button>
@@ -53,9 +53,15 @@
         </header>
 
         <!-- Hero Section -->
-        <section class="hub-hero">
+        <section class="hub-hero flex flex-col items-center">
+          <img
+            :src="`${baseUrl}assets/logos/e-sbe-new-logo.png`"
+            alt="e-SBE"
+            class="h-10 sm:h-12 w-auto object-contain mb-2 drop-shadow-sm select-none"
+            @error="$event.target.src = `${baseUrl}e-sbe-new-logo.png`"
+          />
           <h1 class="hub-hero__title">
-            <span class="hub-hero__label">SBE</span>
+            <span class="hub-hero__label">e-SBE</span>
             <span class="hub-hero__gradient">Hub</span>
           </h1>
           <p class="hub-hero__sub">{{ lastSyncText }}</p>
@@ -120,15 +126,21 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAdmin } from '../composables/useAdmin';
 import { useWorkzoneAuth } from '../composables/useWorkzoneAuth';
 import { useStockData, fetchStockMetadataLastSync } from '../composables/useStockData';
+import { useLedgerData } from '../composables/useLedgerData';
 import { useAppStore } from '../stores/appStore';
 import ConsoleViewer from '../components/ConsoleViewer.vue';
 import VersionBadge from '../components/VersionBadge.vue';
+import axios from 'axios';
+import { toast } from 'vue3-toastify';
 
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const { isAdmin, isSuperAdmin, logout } = useAdmin();
 const { isWorkzoneAuthenticated, checkWorkzoneAuth } = useWorkzoneAuth();
+const { loadLedgerData } = useLedgerData();
+
+const baseUrl = import.meta.env.BASE_URL || '/';
 
 const showConsole = ref(false);
 const toggleConsole = () => {
@@ -142,6 +154,43 @@ const handleLogout = async () => {
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const { updateStockData, loading: isSyncing, lastRefresh, loadStockData } = useStockData(isLocal);
+
+// Smart Dual Sync / Refresh: Tally sync on PC; Direct GitHub Live refresh on Phone
+const handleSmartSync = async () => {
+  if (isSyncing.value) return;
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  let isBackendOnline = false;
+
+  try {
+    const health = await axios.get(`${backendUrl}/api/tally-health`, { timeout: 1500 });
+    if (health.status === 200) isBackendOnline = true;
+  } catch (_) {}
+
+  if (isBackendOnline && (isAdmin.value || isSuperAdmin.value)) {
+    // Running on PC with Tally
+    await updateStockData();
+    await loadLedgerData(true);
+  } else {
+    // Running on mobile phone or away from PC: Pull latest data directly from GitHub
+    isSyncing.value = true;
+    const toastId = toast.loading('Refreshing catalog & ledgers from GitHub...', { autoClose: false });
+    try {
+      localStorage.removeItem('sbe-stock-cache');
+      localStorage.removeItem('sbe_ledger_data_cache');
+      await loadStockData();
+      await loadLedgerData(true);
+      await fetchStockMetadataLastSync();
+      toast.remove(toastId);
+      toast.success('✓ Refreshed with latest data from GitHub!', { autoClose: 3000 });
+    } catch (err) {
+      toast.remove(toastId);
+      toast.error('Refresh failed: ' + err.message, { autoClose: 4000 });
+    } finally {
+      isSyncing.value = false;
+    }
+  }
+};
 
 const lastSyncText = computed(() => {
   const syncDate = lastRefresh.value || appStore.lastSyncTime;
@@ -206,6 +255,22 @@ const links = [
     icon: 'fa-chart-pie',
     colorKey: 'teal',
     gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+  },
+  {
+    path: '/party-tagger',
+    label: 'Party Tagger',
+    desc: 'Classify Wholesalers, Retailers, Bad Debts & Settlements',
+    icon: 'fa-tags',
+    colorKey: 'indigo',
+    gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+  },
+  {
+    path: '/notification-sender',
+    label: 'Notification Sender',
+    desc: 'Broadcast push alerts to all app users',
+    icon: 'fa-bullhorn',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
   },
   {
     path: '/order-maker',

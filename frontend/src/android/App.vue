@@ -65,7 +65,7 @@ import ToastContainer from '../components/Common/ToastContainer.vue';
 
 import { useAppStore } from '../stores/appStore';
 import { useAdmin } from '../composables/useAdmin';
-import { setupDailySyncNotification, checkAndNotifyNewArrivals } from '../utils/notifications';
+import { setupDailySyncNotification, checkAndNotifyNewArrivals, checkAndNotifyBroadcasts } from '../utils/notifications';
 import { useStockData } from '../composables/useStockData';
 import { useCart } from '../composables/useCart';
 import { useBrandGroups } from '../composables/useBrandGroups';
@@ -234,6 +234,7 @@ onMounted(async () => {
   await loadStockData();
   await setupDailySyncNotification(router);
   await checkAndNotifyNewArrivals(stockData.value, router);
+  await checkAndNotifyBroadcasts(router);
   
   // Android App Update Check
   if (Capacitor.isNativePlatform()) {
