@@ -1493,6 +1493,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SlideshowCard from './SlideshowCard.vue';
 import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage, parseCatalogSpecs, getCleanProductName } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
+import { isKidsProduct } from '../../utils/kidsUtils';
 
 import { useAdmin } from '../../composables/useAdmin';
 import { useStockData } from '../../composables/useStockData';
@@ -1830,7 +1831,9 @@ const brandTabs = [
   { id: 'PARAGON GENTS', label: 'Paragon Gents', image: ParagonLogo, subLabel: 'Gents', superimposed: true },
   // 4. Paragon Ladies (Superimposed pill-in-pill + "Ladies" text extender)
   { id: 'PARAGON LADIES', label: 'Paragon Ladies', image: ParagonLogo, subLabel: 'Ladies', superimposed: true },
-  // 5. Paralite (End-to-end pill logo)
+  // 5. Kids (Small sizes: 16x20, 15x20, 21x26, 11x13, 9x11, 2x5, 4x5, etc. across all brands)
+  { id: 'Kids', label: 'Kids', icon: 'fa-solid fa-child-reaching', iconColor: 'text-amber-500' },
+  // 6. Paralite (End-to-end pill logo)
   { id: 'PARALITE', label: 'Paralite', image: ParaliteLogo, fillLogo: true },
   // 6. Solea
   { id: 'Solea', label: 'Solea', image: SoleaLogo, fillLogo: true },
@@ -2014,6 +2017,20 @@ const getBrandProducts = (groupNames) => {
   return products;
 };
 
+const getAllKidsProducts = () => {
+  let products = [];
+  if (!stockData.value) return products;
+  for (const group of stockData.value) {
+    if (group.groupName === '_META_DATA_' || !group.products) continue;
+    for (const p of group.products) {
+      if (isKidsProduct(p.productName, group.groupName)) {
+        products.push(p);
+      }
+    }
+  }
+  return products;
+};
+
 // Dynamic Category Products for Selected Bubble
 const getActiveTabProducts = () => {
   if (activeTab.value === 'All') return [];
@@ -2048,6 +2065,8 @@ const getActiveTabProducts = () => {
     products = getBrandProducts(['PARAGON GENTS', 'PARAGON GENTS 40%']);
   } else if (tab === 'PARAGON LADIES') {
     products = getBrandProducts(['PARAGON LADIES']);
+  } else if (tab === 'Kids') {
+    products = getAllKidsProducts();
   } else if (tab === 'PARALITE') {
     products = getBrandProducts(['PARALITE', 'PARALITE OLD', 'P-TOES PARALITE']);
   } else if (tab === 'Solea') {

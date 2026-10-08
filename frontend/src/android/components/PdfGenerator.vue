@@ -1447,6 +1447,7 @@ import { BRAND_LISTS } from '../utils/constants';
 import { fetchCachedImageAsBase64 } from '../utils/nativeCache';
 import { getOptimizedImageUrl, getCleanProductName, parseCatalogSpecs } from '../utils/formatters';
 import { generateBrandSummaryImage } from '../utils/generateBrandSummaryImage.js';
+import { isKidsProduct } from '../utils/kidsUtils.js';
 
 const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
 
@@ -1456,6 +1457,7 @@ const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/uplo
 const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
+  { label: 'Kids', isKids: true, brands: [], icon: '🧒', defaultMinQty: 10 },
   { label: 'Eeken', brands: ['EEKEN'], icon: '🏃', defaultMinQty: 10 },
   { label: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], icon: '👟', defaultMinQty: 10 },
   { label: 'Florex', brands: ['Florex (Swastik)'], icon: '🌸', defaultMinQty: 10 },
@@ -2326,13 +2328,39 @@ const openOneTouchModal = () => {
 };
 
 // --- PDF Mode: Generate a single multi-page PDF with sleek sides and royal cover page ---
-const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue, groupLabel = '') => {
+const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue, groupLabel = '', isKids = false) => {
   const data = stockData.value;
-  const filteredGroups = data.filter((group) => {
-    return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
-  });
+  let targetProducts = [];
 
-  if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+  if (isKids || groupLabel === 'Kids') {
+    for (const group of data) {
+      if (group.groupName === '_META_DATA_' || !group.products) continue;
+      for (const product of group.products) {
+        if (!isKidsProduct(product.productName, group.groupName)) continue;
+        const activeImg = product.imageUrl || product.secondaryImageUrl;
+        if (onlyWithPhotosFlag && !activeImg) continue;
+        if (product.quantity < minQtyValue) continue;
+        if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
+        targetProducts.push({ product, group });
+      }
+    }
+  } else {
+    const filteredGroups = data.filter((group) => {
+      return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
+    });
+    if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+    for (const group of filteredGroups) {
+      for (const product of group.products) {
+        const activeImg = product.imageUrl || product.secondaryImageUrl;
+        if (onlyWithPhotosFlag && !activeImg) continue;
+        if (product.quantity < minQtyValue) continue;
+        if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
+        targetProducts.push({ product, group });
+      }
+    }
+  }
+
+  if (targetProducts.length === 0) return { blob: null, pageCount: 0 };
 
   const { jsPDF } = await import('jspdf');
   const { clashDisplayBoldBase64 } = await import('../utils/fonts.js');
@@ -2358,20 +2386,10 @@ const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyV
 
   // Page 1: Royal White-Gold Minimalist Cover Page
   try {
-    const groupProducts = filteredGroups
-      .flatMap((g) => g.products || [])
-      .filter((p) => {
-        const hasImg = p.imageUrl || p.secondaryImageUrl;
-        if (onlyWithPhotosFlag && !hasImg) return false;
-        if (p.quantity < minQtyValue) return false;
-        if (maxQtyValue > 0 && p.quantity > maxQtyValue) return false;
-        return true;
-      });
-
     const summaryImg = await generateBrandSummaryImage({
       groupLabel: groupLabel || (targetBrands.length === 1 ? targetBrands[0] : 'Footwear Catalog'),
       subBrands: targetBrands,
-      products: groupProducts,
+      products: targetProducts.map((t) => t.product),
     });
 
     if (summaryImg && summaryImg.dataUrl) {
@@ -2387,12 +2405,7 @@ const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyV
     console.warn('Cover page error for One Touch PDF:', covErr);
   }
 
-  for (const group of filteredGroups) {
-    for (const product of group.products) {
-      const activeImg = product.imageUrl || product.secondaryImageUrl;
-      if (onlyWithPhotosFlag && !activeImg) continue;
-      if (product.quantity < minQtyValue) continue;
-      if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
+  for (const { product, group } of targetProducts) {
 
       if (hasAddedPage) {
         doc.addPage([PAGE_W, PAGE_H]);
@@ -2856,7 +2869,8 @@ const prepareOneTouch = async () => {
           oneTouchOnlyWithPhotos.value,
           effectiveMinQty,
           effectiveMaxQty,
-          group.label
+          group.label,
+          group.isKids
         );
 
         if (!blob || pageCount === 0) {
@@ -2940,18 +2954,33 @@ const prepareOneTouch = async () => {
 
       // Filter products for this group
       const data = stockData.value;
-      const filteredGroups = data.filter((g) => {
-        return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
-      });
-
       const targetProducts = [];
-      for (const fg of filteredGroups) {
-        for (const product of fg.products) {
-          const hasImg = product.imageUrl || product.secondaryImageUrl;
-          if (oneTouchOnlyWithPhotos.value && !hasImg) continue;
-          if (product.quantity < effectiveMinQty) continue;
-          if (effectiveMaxQty > 0 && product.quantity > effectiveMaxQty) continue;
-          targetProducts.push({ product, group: fg });
+
+      if (group.isKids) {
+        for (const fg of data) {
+          if (fg.groupName === '_META_DATA_' || !fg.products) continue;
+          for (const product of fg.products) {
+            if (!isKidsProduct(product.productName, fg.groupName)) continue;
+            const hasImg = product.imageUrl || product.secondaryImageUrl;
+            if (oneTouchOnlyWithPhotos.value && !hasImg) continue;
+            if (product.quantity < effectiveMinQty) continue;
+            if (effectiveMaxQty > 0 && product.quantity > effectiveMaxQty) continue;
+            targetProducts.push({ product, group: fg });
+          }
+        }
+      } else {
+        const filteredGroups = data.filter((g) => {
+          return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
+        });
+
+        for (const fg of filteredGroups) {
+          for (const product of fg.products) {
+            const hasImg = product.imageUrl || product.secondaryImageUrl;
+            if (oneTouchOnlyWithPhotos.value && !hasImg) continue;
+            if (product.quantity < effectiveMinQty) continue;
+            if (effectiveMaxQty > 0 && product.quantity > effectiveMaxQty) continue;
+            targetProducts.push({ product, group: fg });
+          }
         }
       }
 
