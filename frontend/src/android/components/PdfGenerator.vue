@@ -2549,9 +2549,8 @@ const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyV
       doc.setTextColor(251, 191, 36);
       doc.text(`${product.quantity} PAIRS`, qtyX2, 80, { angle: 90, align: 'right' });
     }
-  }
-  return { blob: hasAddedPage ? doc.output('blob') : null, pageCount };
-};
+    return { blob: hasAddedPage ? doc.output('blob') : null, pageCount };
+  };
 
 let clashFontReady = false;
 const ensureClashFont = async () => {
