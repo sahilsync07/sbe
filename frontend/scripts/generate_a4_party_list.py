@@ -64,7 +64,7 @@ html_content = f'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SBE Party Directory - Malkangiri | Koraput | Phulbani</title>
+<title>Sri Brundaban Enterprises, Rayagada - Party Directory (Agent: Dulamani)</title>
 <style>
   @page {{
     size: A4 portrait;
@@ -118,6 +118,15 @@ html_content = f'''<!DOCTYPE html>
     font-size: 13px;
     font-weight: 600;
     color: #f8fafc;
+  }}
+  .agent-badge {{
+    background: #1e293b;
+    color: #38bdf8;
+    border: 1px solid #0284c7;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
   }}
   .quick-links {{
     display: flex;
@@ -207,11 +216,21 @@ html_content = f'''<!DOCTYPE html>
     text-transform: uppercase;
   }}
   .brand-sub {{
-    margin-top: 2px;
-    font-size: 9.5px;
-    color: #475569;
+    margin-top: 3px;
+    font-size: 10px;
+    color: #334155;
     font-weight: 600;
     letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }}
+  .brand-sub .agent-tag {{
+    color: #0369a1;
+    font-weight: 800;
+    background: #e0f2fe;
+    padding: 1px 6px;
+    border-radius: 3px;
   }}
   .header-meta {{
     text-align: right;
@@ -226,7 +245,6 @@ html_content = f'''<!DOCTYPE html>
   /* Section Banner - NO PAGE BREAKS */
   .section-container {{
     margin-bottom: 12px;
-    /* Do NOT break page after group */
     page-break-after: auto;
     break-after: auto;
   }}
@@ -383,8 +401,9 @@ html_content = f'''<!DOCTYPE html>
 <!-- TOP CONTROL BAR (SCREEN ONLY) -->
 <div class="control-bar">
   <div class="control-left">
-    <span class="brand-badge-pill">SBE DIRECTORY</span>
-    <span class="control-title">Continuous Route Ledger &bull; {total_parties} Total Parties</span>
+    <span class="brand-badge-pill">SRI BRUNDABAN ENTERPRISES</span>
+    <span class="agent-badge">Agent: Dulamani</span>
+    <span class="control-title">Rayagada &bull; {total_parties} Total Parties</span>
     <div class="quick-links">
       <a href="#sec-malkangiri" class="quick-link-btn">Malkangiri ({len(malkangiri_parties)})</a>
       <a href="#sec-koraput" class="quick-link-btn">Koraput ({len(koraput_parties)})</a>
@@ -406,16 +425,20 @@ html_content = f'''<!DOCTYPE html>
   <!-- MAIN HEADER -->
   <div class="main-header">
     <div>
-      <h1 class="brand-h1">SHREE BALAJEE ENTERPRISES</h1>
-      <div class="brand-sub">Master Party Route Directory &bull; Malkangiri &bull; Koraput &bull; Phulbani</div>
+      <h1 class="brand-h1">SRI BRUNDABAN ENTERPRISES, RAYAGADA</h1>
+      <div class="brand-sub">
+        <span>Master Party Route Directory &bull; Malkangiri &bull; Koraput &bull; Phulbani</span>
+        <span class="agent-tag">Agent: Dulamani</span>
+      </div>
     </div>
     <div class="header-meta">
       <div>Total Verified Parties: <strong>{total_parties}</strong></div>
+      <div>Agent in Charge: <strong>Dulamani</strong></div>
       <div>Format: <strong>Continuous 2-Column A4</strong></div>
     </div>
   </div>
 
-  <!-- GROUP 1: MALKANGIRI LINE -->
+  <!-- GROUP 1: BALIMELA, CHITROKUNDA, MALKANGIRI LINE -->
   <div class="section-container" id="sec-malkangiri">
     <div class="section-banner malkangiri">
       <span class="section-title">Line 1: Balimela, Chitrokunda, Malkangiri Line</span>
@@ -483,8 +506,8 @@ html_content = f'''<!DOCTYPE html>
 
   <!-- FOOTER -->
   <div class="main-footer">
-    <span>e-SBE Master Ledger Directory &bull; Malkangiri, Koraput, Phulbaani Lines</span>
-    <span>Continuous A4 Flow &bull; Shree Balajee Enterprises</span>
+    <span>Sri Brundaban Enterprises, Rayagada &bull; Malkangiri, Koraput, Phulbaani Lines</span>
+    <span>Agent: Dulamani &bull; Continuous Flow A4 Route Directory</span>
   </div>
 
 </div>
