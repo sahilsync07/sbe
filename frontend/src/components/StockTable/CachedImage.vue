@@ -22,9 +22,7 @@
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { getLocalImageUri } from '../../utils/nativeCache';
 import { 
-  primaryCloud, 
   secondaryCloud, 
-  isPrimaryCloudDown, 
   isSecondaryCloudDown, 
   markCloudFailed 
 } from '../../utils/cloudStatus';
@@ -48,14 +46,6 @@ const triedUrls = ref(new Set());
 const CACHE_NAME = 'sbe-images-v1';
 
 const getInitialUrl = () => {
-  // If primary cloud is known to be down, prefer fallbackSrc
-  if (isPrimaryCloudDown.value && props.fallbackSrc) {
-    return props.fallbackSrc;
-  }
-  // If primary cloud is down and src is on primary cloud with no fallback, don't waste 401 request
-  if (isPrimaryCloudDown.value && props.src && props.src.includes(primaryCloud) && !props.fallbackSrc) {
-    return null;
-  }
   return props.src || props.fallbackSrc || null;
 };
 
@@ -119,10 +109,8 @@ const handleError = () => {
   const failedUrl = displaySrc.value;
   triedUrls.value.add(failedUrl);
 
-  // If failed on primary cloud, trigger global failover
-  if (failedUrl.includes(`/${primaryCloud}/`) || failedUrl.includes(primaryCloud)) {
-    markCloudFailed(primaryCloud);
-  } else if (failedUrl.includes(`/${secondaryCloud}/`) || failedUrl.includes(secondaryCloud)) {
+  // If failed on secondary cloud, trigger global failover
+  if (failedUrl.includes(`/${secondaryCloud}/`) || failedUrl.includes(secondaryCloud)) {
     markCloudFailed(secondaryCloud);
   }
 
@@ -145,16 +133,7 @@ const handleError = () => {
     return;
   }
 
-  // 3. If failedUrl was on primary cloud and fallbackSrc was not set, try secondary cloud once
-  if (failedUrl.includes(`/${primaryCloud}/`) && !isSecondaryCloudDown.value) {
-    const altUrl = failedUrl.replace(`/${primaryCloud}/`, `/${secondaryCloud}/`);
-    if (!triedUrls.value.has(altUrl)) {
-      displaySrc.value = altUrl;
-      return;
-    }
-  }
-
-  // 4. All fallbacks exhausted -> display graceful placeholder
+  // 3. All fallbacks exhausted -> display graceful placeholder
   hasError.value = true;
   displaySrc.value = null;
 };

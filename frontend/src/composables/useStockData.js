@@ -6,7 +6,7 @@ import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 import { extractColor } from '../utils/colors.js';
 import { useGitHubTokenModal, DEFAULT_GITHUB_TOKEN } from './useGitHubTokenModal';
-import { isPrimaryCloudDown, markCloudFailed } from '../utils/cloudStatus.js';
+import { markCloudFailed } from '../utils/cloudStatus.js';
 import {
     saveStagedBase64,
     getStagedBase64,
@@ -1077,7 +1077,7 @@ export function useStockData(isLocal) {
             // 3. Spontaneous Cloudinary Upload (Zero Git lock collisions, instant live preview)
             for (const cloud of clouds) {
                 if (!cloud.cloudName || !cloud.uploadPreset) continue;
-                if (cloud.name === 'Primary' && isPrimaryCloudDown.value) continue;
+                if (cloud.name === 'Primary') continue;
                 try {
                     console.log(`[Multi-Cloud] Spontaneously uploading via ${cloud.name} Cloud (${cloud.cloudName})...`);
                     newImageUrl = await uploadToCloudinaryInstance(uploadFile, cloud, publicId);

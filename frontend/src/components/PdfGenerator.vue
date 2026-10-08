@@ -1452,7 +1452,7 @@ import { isKidsProduct } from '../utils/kidsUtils.js';
 const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
 
 // Separator image: 'Old stock ends here / New stocks start'
-const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/Old_stock_ends_here_oc3rh7.png';
+const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790151882/e-sbe/Old_stock_ends_here_oc3rh7.png';
 
 const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
@@ -2582,42 +2582,10 @@ const loadProductImageElement = async (product) => {
     imgSource = await fetchCachedImageAsBase64(activeImg, product.productName);
   } catch (e) {}
 
-  // 2. If not cached, check if secondaryImageUrl is better (e.g. if primary is on disabled dg365ewal)
-  if (!imgSource && activeImg.includes('dg365ewal') && product.secondaryImageUrl && !product.secondaryImageUrl.includes('dg365ewal')) {
-    try {
-      imgSource = await fetchCachedImageAsBase64(product.secondaryImageUrl, product.productName);
-    } catch (e) {}
-  }
-
-  // 3. If still not in local cache, fetch optimized URL (w=800 for high quality yet fast load)
+  // 2. If still not in local cache, fetch optimized URL (w=800 for high quality yet fast load)
   if (!imgSource) {
-    const fetchUrl = (activeImg.includes('dg365ewal') && product.secondaryImageUrl && !product.secondaryImageUrl.includes('dg365ewal'))
-      ? product.secondaryImageUrl
-      : activeImg;
-
-    // Fast-fail if trying to fetch from known disabled cloud
-    if (fetchUrl.includes('dg365ewal')) {
-      // Disabled cloud: don't hang, timeout immediately in 1.5s
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500);
-        const targetUrl = getOptimizedImageUrl(fetchUrl, 800) || fetchUrl;
-        const resp = await fetch(targetUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (resp.ok) {
-          const blob = await resp.blob();
-          imgSource = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        }
-      } catch (_) {
-        return null; // Known disabled account, fail cleanly and fast
-      }
-    } else {
-      // Normal URL: fetch with 4s timeout
+    const fetchUrl = activeImg;
+    // Normal URL: fetch with 4s timeout
       try {
         const targetUrl = getOptimizedImageUrl(fetchUrl, 800) || fetchUrl;
         const controller = new AbortController();
@@ -2643,7 +2611,6 @@ const loadProductImageElement = async (product) => {
         } catch (_) {
           return null;
         }
-      }
     }
   }
 

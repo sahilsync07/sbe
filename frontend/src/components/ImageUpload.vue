@@ -38,7 +38,7 @@ export default {
       uploading: false,
       uploadError: null,
       uploadedImageUrl: null,
-      cloudinary: new Cloudinary({ cloud: { cloudName: "dg365ewal" } }),
+      cloudinary: new Cloudinary({ cloud: { cloudName: "dieqsg5tr" } }),
     };
   },
   methods: {
@@ -54,7 +54,7 @@ export default {
         formData.append("file", this.file);
         formData.append("upload_preset", "sbe-stock");
         const response = await fetch(
-          "https://api.cloudinary.com/v1_1/dg365ewal/image/upload",
+          "https://api.cloudinary.com/v1_1/dieqsg5tr/image/upload",
           {
             method: "POST",
             body: formData,

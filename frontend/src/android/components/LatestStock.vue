@@ -163,7 +163,7 @@ import { generateBrandSummaryImage } from '../../utils/generateBrandSummaryImage
 const STORAGE_KEY = 'sbe_latest_stock';
 
 // Separator image: 'Old stock ends here / New stocks start'
-const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dg365ewal/image/upload/v1779506378/Old_stock_ends_here_oc3rh7.png';
+const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790151882/e-sbe/Old_stock_ends_here_oc3rh7.png';
 
 const GROUPS = [
   { folder: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], onlyWithPhotos: true, minQty: 6, icon: '👟' },

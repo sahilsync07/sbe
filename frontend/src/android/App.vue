@@ -86,7 +86,7 @@ watch(() => route.query.login, (newVal) => {
 }, { immediate: true });
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
+const cloudName = import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr';
 
 // Hide mobile bottom bar inside Daybook & Ledger
 const hideMobileBottomBar = computed(() => {

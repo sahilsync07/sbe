@@ -94,7 +94,7 @@ watch(() => route.query, async (query) => {
 }, { immediate: true, deep: true });
 
 const isLocal = ref(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
+const cloudName = import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr';
 
 // Pages that are part of the Hub (navbar is completely hidden on these)
 const hubPages = new Set(['/home', '/ledger', '/daybook', '/sample-room', '/stock-trend', '/pdf-gen', '/rate-chart', '/line-list', '/quotation', '/old-stock', '/analyzer']);
