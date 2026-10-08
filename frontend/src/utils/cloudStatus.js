@@ -1,64 +1,57 @@
 import { ref } from 'vue';
 
-export const primaryCloud = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dg365ewal';
+// Cloudinary cloud name (only dieqsg5tr is active; dg365ewal is retired/over-quota)
 export const secondaryCloud = import.meta.env.VITE_CLOUDINARY_SECONDARY_CLOUD_NAME || 'dieqsg5tr';
 
-// Global reactive health status of Cloudinary accounts (Primary dg365ewal is over quota, default to true)
-export const isPrimaryCloudDown = ref(true);
+// Reactive health status of the remaining Cloudinary account
 export const isSecondaryCloudDown = ref(false);
 
-let loggedPrimaryWarning = false;
-let loggedSecondaryWarning = false;
+let loggedWarning = false;
 
 /**
- * Mark a specific Cloudinary cloud as failed/degraded
+ * Mark Cloudinary cloud as failed/degraded
  * @param {string} urlOrCloud 
  */
 export function markCloudFailed(urlOrCloud) {
   if (!urlOrCloud) return;
   const str = String(urlOrCloud);
 
-  if (str.includes(primaryCloud) || str === primaryCloud) {
-    if (!isPrimaryCloudDown.value) {
-      isPrimaryCloudDown.value = true;
-      if (!loggedPrimaryWarning) {
-        console.warn(`[Cloudinary Failover] Primary cloud '${primaryCloud}' unreachable or unauthorized. Automatically failing over to secondary cloud '${secondaryCloud}'.`);
-        loggedPrimaryWarning = true;
-      }
-    }
-  } else if (str.includes(secondaryCloud) || str === secondaryCloud) {
+  if (str.includes(secondaryCloud) || str === secondaryCloud) {
     if (!isSecondaryCloudDown.value) {
       isSecondaryCloudDown.value = true;
-      if (!loggedSecondaryWarning) {
-        console.warn(`[Cloudinary Failover] Secondary cloud '${secondaryCloud}' unreachable or failed.`);
-        loggedSecondaryWarning = true;
+      if (!loggedWarning) {
+        console.warn(`[Cloudinary] Cloud '${secondaryCloud}' unreachable or failed.`);
+        loggedWarning = true;
       }
     }
   }
 }
 
 /**
- * Returns the best working image URL for a product, honoring cloud failover status.
+ * Returns the best working image URL for a product.
+ * Skips any dieqsg5tr URLs if that cloud is marked down.
+ * dg365ewal URLs are always rejected (account retired).
  * @param {Object} product - Product object with imageUrl and/or secondaryImageUrl
  * @returns {string|null} Active image URL or null
  */
 export function getPreferredImageUrl(product) {
   if (!product) return null;
 
-  const isInvalidCloud = (url) => {
+  const isInvalid = (url) => {
     if (!url || typeof url !== 'string') return true;
-    if (isPrimaryCloudDown.value && (url.includes(primaryCloud) || url.includes('dg365ewal'))) return true;
-    if (isSecondaryCloudDown.value && (url.includes(secondaryCloud) || url.includes('dieqsg5tr'))) return true;
+    // Always reject retired dg365ewal cloud
+    if (url.includes('dg365ewal')) return true;
+    if (isSecondaryCloudDown.value && url.includes('dieqsg5tr')) return true;
     return false;
   };
 
-  // 1. Try primary imageUrl if valid and not on a disabled cloud
-  if (product.imageUrl && !isInvalidCloud(product.imageUrl)) {
+  // 1. Try primary imageUrl
+  if (product.imageUrl && !isInvalid(product.imageUrl)) {
     return product.imageUrl;
   }
 
-  // 2. Try secondaryImageUrl if valid and not on a disabled cloud
-  if (product.secondaryImageUrl && !isInvalidCloud(product.secondaryImageUrl)) {
+  // 2. Try secondaryImageUrl
+  if (product.secondaryImageUrl && !isInvalid(product.secondaryImageUrl)) {
     return product.secondaryImageUrl;
   }
 
