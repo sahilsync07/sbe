@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBE Party Directory - Malkangiri | Koraput | Phulbani</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: #111827;
+  }
+  
+  /* Screen Presentation */
+  @media screen {
+    body {
+      padding: 24px 0 60px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+    .print-bar {
+      position: sticky;
+      top: 12px;
+      z-index: 999;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .print-btn {
+      background: #f59e0b;
+      color: #111827;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .print-btn:hover {
+      background: #fbbf24;
+      transform: translateY(-1px);
+    }
+    .a4-page {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  @media print {
+    body {
+      background: #ffffff;
+      padding: 0;
+    }
+    .print-bar {
+      display: none !important;
+    }
+    .a4-page {
+      margin: 0 !important;
+      box-shadow: none !important;
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+  }
+
+  /* Strict A4 Page Dimensions */
+  .a4-page {
+    width: 210mm;
+    height: 297mm;
+    max-height: 297mm;
+    padding: 8mm 10mm 7mm 10mm;
+    background: #ffffff;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  /* Header Section */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+  }
+  .brand-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #0f172a;
+    text-transform: uppercase;
+  }
+  .brand-badge {
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .page-indicator {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  /* Section Title Bar */
+  .section-banner {
+    background: #f1f5f9;
+    border-left: 3.5px solid #0284c7;
+    padding: 3px 8px;
+    margin-bottom: 4px;
+    margin-top: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-banner.malkangiri {
+    border-left-color: #0284c7;
+  }
+  .section-banner.koraput {
+    border-left-color: #10b981;
+  }
+  .section-banner.phulbani {
+    border-left-color: #f59e0b;
+  }
+  .section-title {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .section-count {
+    font-size: 8px;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  /* Table Style - Ultra Compact 2 Column */
+  .party-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .party-table th {
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 7.8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 2px 4px;
+    text-align: left;
+    border: none;
+  }
+  .party-table th.sno-head {
+    width: 22px;
+    text-align: center;
+  }
+  .party-table th.div-head {
+    width: 6px;
+    background: transparent;
+    padding: 0;
+  }
+  .party-table td {
+    padding: 1.6px 4px;
+    font-size: 8px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 0.5px solid #e2e8f0;
+  }
+  .party-table tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+  .party-table td.sno {
+    width: 22px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    font-size: 7.5px;
+    border-right: 0.5px solid #cbd5e1;
+    background-color: #f1f5f9;
+  }
+  .party-table td.name {
+    color: #1e293b;
+    font-weight: 600;
+    padding-left: 5px;
+  }
+  .party-table td.divider {
+    width: 6px;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  .party-table td.empty {
+    background: transparent !important;
+    border-bottom: none;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 3px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5px;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="print-bar">
+  <span><strong>SBE Party Directory</strong> &bull; Malkangiri (90) &bull; Koraput (62) &bull; Phulbani (29) &bull; Total: 181 Parties</span>
+  <button class="print-btn" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+    Print / Save PDF (A4)
+  </button>
+</div>
+
+<!-- PAGE 1: MALKANGIRI LINE (90 PARTIES -> 2 COLS OF 45) -->
+<div class="a4-page">
+  <div>
+    <div class="header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="brand-title">SHREE BALAJEE ENTERPRISES</span>
+        <span class="brand-badge">Official Route Sheet</span>
+      </div>
+      <div class="page-indicator">PAGE 1 OF 2</div>
+    </div>
+
+    <div class="section-banner malkangiri">
+      <span class="section-title">Line 1: Balimela, Chitrokunda, Malkangiri Line</span>
+      <span class="section-count">Total Parties: 90 (Cols: 45 + 45)</span>
+    </div>
+
+    <table class="party-table">
+      <thead>
+        <tr>
+          <th class="sno-head">#</th>
+          <th>Party Name</th>
+          <th class="div-head"></th>
+          <th class="sno-head">#</th>
+          <th>Party Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sno">1</td>
+          <td class="name" title="AARAN F/W, KALIMELA">AARAN F/W, KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">46</td>
+          <td class="name">M/S YUSUF FOOT WEAR, KOTAPAD</td>
+        </tr>
+        <tr>
+          <td class="sno">2</td>
+          <td class="name" title="ABHI FOOTEAR, PENDRIPANI">ABHI FOOTEAR, PENDRIPANI</td>
+          <td class="divider"></td>
+          <td class="sno">47</td>
+          <td class="name">MANAS FOOTWEAR, KALIMELA</td>
+        </tr>
+        <tr>
+          <td class="sno">3</td>
+          <td class="name" title="ALOK BOOT HOUSE,KORUKONDA">ALOK BOOT HOUSE,KORUKONDA</td>
+          <td class="divider"></td>
+          <td class="sno">48</td>
+          <td class="name">MANIK DAY, KHATAMETA</td>
+        </tr>
+        <tr>
+          <td class="sno">4</td>
+          <td class="name" title="AMRIT ISSUE, CHITROKUNDA">AMRIT ISSUE, CHITROKUNDA</td>
+          <td class="divider"></td>
+          <td class="sno">49</td>
+          <td class="name">Maa Damaldei, Khairaput(Ajay Kumar Sahu)</td>
+        </tr>
+        <tr>
+          <td class="sno">5</td>
+          <td class="name" title="ANKIT FOOTWEAR, MV-88">ANKIT FOOTWEAR, MV-88</td>
+          <td class="divider"></td>
+          <td class="sno">50</td>
+          <td class="name">Malik Boot House, Balimela</td>
+        </tr>
+        <tr>
+          <td class="sno">6</td>
+          <td class="name" title="APPA RAO, GOVINDPALI">APPA RAO, GOVINDPALI</td>
+          <td class="divider"></td>
+          <td class="sno">51</td>
+          <td class="name">Midul Day, Khatameta</td>
+        </tr>
+        <tr>
+          <td class="sno">7</td>
+          <td class="name" title="ARIHANT ENTERPRISES, JEYPORE">ARIHANT ENTERPRISES, JEYPORE</td>
+          <td class="divider"></td>
+          <td class="sno">52</td>
+          <td class="name">Milan Footwear, Pangam</td>
+        </tr>
+        <tr>
+          <td class="sno">8</td>
+          <td class="name" title="ASISH FOOTWEAR, POTERU">ASISH FOOTWEAR, POTERU</td>
+          <td class="divider"></td>
+          <td class="sno">53</td>
+          <td class="name">Mithun  Thakaar, Kudumulugumma</td>
+        </tr>
+        <tr>
+          <td class="sno">9</td>
+          <td class="name" title="Aayush Footwear, Balimela">Aayush Footwear, Balimela</td>
+          <td class="divider"></td>
+          <td class="sno">54</td>
+          <td class="name">Mithun Sardar, Kalimela</td>
+        </tr>
+        <tr>
+          <td class="sno">10</td>
+          <td class="name" title="Anata Mandinga, Damanganda">Anata Mandinga, Damanganda</td>
+          <td class="divider"></td>
+          <td class="sno">55</td>
+          <td class="name">Muna F/w, Khairput</td>
+        </tr>
+        <tr>
+          <td class="sno">11</td>
+          <td class="name" title="Antarjyami Patro, Kumliput">Antarjyami Patro, Kumliput</td>
+          <td class="divider"></td>
+          <td class="sno">56</td>
+          <td class="name">N STEPS, BOIPARIGUDA</td>
+        </tr>
+        <tr>
+          <td class="sno">12</td>
+          <td class="name" title="Aurobindo Nayak, Jeypore">Aurobindo Nayak, Jeypore</td>
+          <td class="divider"></td>
+          <td class="sno">57</td>
+          <td class="name">NALINI BIWAS , M.P.V-81</td>
+        </tr>
+        <tr>
+          <td class="sno">13</td>
+          <td class="name" title="B. LOKESWAR RAO, CHITROKUNDA">B. LOKESWAR RAO, CHITROKUNDA</td>
+          <td class="divider"></td>
+          <td class="sno">58</td>
+          <td class="name">NILANCHAL MOHANTY, KUDUMULUGUMMA</td>
+        </tr>
+        <tr>
+          <td class="sno">14</td>
+          <td class="name" title="BABULA PATRO, CHITROKUNDA">BABULA PATRO, CHITROKUNDA</td>
+          <td class="divider"></td>
+          <td class="sno">59</td>
+          <td class="name">NIRMAL HOWLADAL, MV-79</td>
+        </tr>
+        <tr>
+          <td class="sno">15</td>
+          <td class="name" title="BARMAN & SON'S F/W, KALIMELA">BARMAN & SON'S F/W, KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">60</td>
+          <td class="name">New Popular Shoes,Jeypur(Metro)</td>
+        </tr>
+        <tr>
+          <td class="sno">16</td>
+          <td class="name" title="BIBHUTI BADIYA, MATHILI">BIBHUTI BADIYA, MATHILI</td>
+          <td class="divider"></td>
+          <td class="sno">61</td>
+          <td class="name">PREMANDA KHANA,PANGAM</td>
+        </tr>
+        <tr>
+          <td class="sno">17</td>
+          <td class="name" title="BUDHA HIMIRIKA, MALIGON">BUDHA HIMIRIKA, MALIGON</td>
+          <td class="divider"></td>
+          <td class="sno">62</td>
+          <td class="name">PRINCE STORE, CHITRAKUNDA</td>
+        </tr>
+        <tr>
+          <td class="sno">18</td>
+          <td class="name" title="Babula F/w, Chalanguda(Kpt)">Babula F/w, Chalanguda(Kpt)</td>
+          <td class="divider"></td>
+          <td class="sno">63</td>
+          <td class="name">Pradeep Mandal, Pendripani</td>
+        </tr>
+        <tr>
+          <td class="sno">19</td>
+          <td class="name" title="Bidhan Mallick, Mv-7">Bidhan Mallick, Mv-7</td>
+          <td class="divider"></td>
+          <td class="sno">64</td>
+          <td class="name">Priyanshi Collection, Digapur</td>
+        </tr>
+        <tr>
+          <td class="sno">20</td>
+          <td class="name" title="D.RAMAKRISHNA,CHITRAKUNDA">D.RAMAKRISHNA,CHITRAKUNDA</td>
+          <td class="divider"></td>
+          <td class="sno">65</td>
+          <td class="name">Puja Mahanty, Boipariguda</td>
+        </tr>
+        <tr>
+          <td class="sno">21</td>
+          <td class="name" title="DEBABRAT F/W,KALIMELA">DEBABRAT F/W,KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">66</td>
+          <td class="name">R K FOOTWEAR, KALIMELA</td>
+        </tr>
+        <tr>
+          <td class="sno">22</td>
+          <td class="name" title="DEEPANKARA HALADAR,MV-88">DEEPANKARA HALADAR,MV-88</td>
+          <td class="divider"></td>
+          <td class="sno">67</td>
+          <td class="name">RAHUL F/W, KALIMELA</td>
+        </tr>
+        <tr>
+          <td class="sno">23</td>
+          <td class="name" title="DEVRAJ  & SONS (SONEJA)">DEVRAJ  & SONS (SONEJA)</td>
+          <td class="divider"></td>
+          <td class="sno">68</td>
+          <td class="name">RAJENDRA BEHERA, MATHILI</td>
+        </tr>
+        <tr>
+          <td class="sno">24</td>
+          <td class="name" title="Durga Madhab Store(Shri Ashok Ku. Hota), Kumuli">Durga Madhab Store(Shri Ashok Ku. Hota), Kumuli</td>
+          <td class="divider"></td>
+          <td class="sno">69</td>
+          <td class="name">ROSHON BISWAS , MV-79</td>
+        </tr>
+        <tr>
+          <td class="sno">25</td>
+          <td class="name" title="FANCY FOOTWEAR, BAIPARIGUDA">FANCY FOOTWEAR, BAIPARIGUDA</td>
+          <td class="divider"></td>
+          <td class="sno">70</td>
+          <td class="name">Rockteach Engineer Laxmipur</td>
+        </tr>
+        <tr>
+          <td class="sno">26</td>
+          <td class="name" title="Foot Fashion, Baipariguda">Foot Fashion, Baipariguda</td>
+          <td class="divider"></td>
+          <td class="sno">71</td>
+          <td class="name">SADA FOOTWEAR, SIMILIGUDA</td>
+        </tr>
+        <tr>
+          <td class="sno">27</td>
+          <td class="name" title="GOKUL MANDAL, MV-79">GOKUL MANDAL, MV-79</td>
+          <td class="divider"></td>
+          <td class="sno">72</td>
+          <td class="name">SAHIL BHAI FOOTWEAR, GOVINDPALI</td>
+        </tr>
+        <tr>
+          <td class="sno">28</td>
+          <td class="name" title="GOURANGA BOLA, MV-79">GOURANGA BOLA, MV-79</td>
+          <td class="divider"></td>
+          <td class="sno">73</td>
+          <td class="name">SANJAY F/W, POTTERU</td>
+        </tr>
+        <tr>
+          <td class="sno">29</td>
+          <td class="name" title="GOVINDA REDDY, BALDA">GOVINDA REDDY, BALDA</td>
+          <td class="divider"></td>
+          <td class="sno">74</td>
+          <td class="name">SANTI ROY CHOUDHURY, KHAIRPUT</td>
+        </tr>
+        <tr>
+          <td class="sno">30</td>
+          <td class="name" title="GUDU F/W, GOBINDAPALI">GUDU F/W, GOBINDAPALI</td>
+          <td class="divider"></td>
+          <td class="sno">75</td>
+          <td class="name">SARADA PRASAD NANDI, KUDUMULUGUMA</td>
+        </tr>
+        <tr>
+          <td class="sno">31</td>
+          <td class="name" title="HARI PRADHAN, KHAIRAPUT">HARI PRADHAN, KHAIRAPUT</td>
+          <td class="divider"></td>
+          <td class="sno">76</td>
+          <td class="name">SHREE JAGANNATH TRADIING, JEYPORE</td>
+        </tr>
+        <tr>
+          <td class="sno">32</td>
+          <td class="name" title="J Kadaraka,Mathalput(Damajodi)">J Kadaraka,Mathalput(Damajodi)</td>
+          <td class="divider"></td>
+          <td class="sno">77</td>
+          <td class="name">SIBU SAHA, MV-17</td>
+        </tr>
+        <tr>
+          <td class="sno">33</td>
+          <td class="name" title="JAGADISH PRADHAN, BALIMELA">JAGADISH PRADHAN, BALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">78</td>
+          <td class="name">SMART BOOT HOUSE, MALKANGIRI</td>
+        </tr>
+        <tr>
+          <td class="sno">34</td>
+          <td class="name" title="JAGDISH BANITI, PENDRIPANI">JAGDISH BANITI, PENDRIPANI</td>
+          <td class="divider"></td>
+          <td class="sno">79</td>
+          <td class="name">SRI GOPAL FOOTWEAR, BALIMELA</td>
+        </tr>
+        <tr>
+          <td class="sno">35</td>
+          <td class="name" title="KANKAN KUMAR MONDAL, KALIMELA">KANKAN KUMAR MONDAL, KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">80</td>
+          <td class="name">SRI RAMA RAJU ENTERPRISES, CHITRAKUNDA</td>
+        </tr>
+        <tr>
+          <td class="sno">36</td>
+          <td class="name" title="KISHORE FOOTWEAR, KALIMELA">KISHORE FOOTWEAR, KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">81</td>
+          <td class="name">SUBHANKAR MONDAL, MV-79/-</td>
+        </tr>
+        <tr>
+          <td class="sno">37</td>
+          <td class="name" title="KRISHNA F/W, CHITRAKUNDA">KRISHNA F/W, CHITRAKUNDA</td>
+          <td class="divider"></td>
+          <td class="sno">82</td>
+          <td class="name">SUDHANSU MANDAL,MV-79</td>
+        </tr>
+        <tr>
+          <td class="sno">38</td>
+          <td class="name" title="Kalipuja Pal, Mv - 79, Malkangiri">Kalipuja Pal, Mv - 79, Malkangiri</td>
+          <td class="divider"></td>
+          <td class="sno">83</td>
+          <td class="name">SUSHANTH BALA, KHUMBHARIPUT</td>
+        </tr>
+        <tr>
+          <td class="sno">39</td>
+          <td class="name" title="LITU BISOI DASMANTHPUR">LITU BISOI DASMANTHPUR</td>
+          <td class="divider"></td>
+          <td class="sno">84</td>
+          <td class="name">SWASTIK F/W, KALIMELA</td>
+        </tr>
+        <tr>
+          <td class="sno">40</td>
+          <td class="name" title="LOKANATHA FOOTWEAR, MV-72">LOKANATHA FOOTWEAR, MV-72</td>
+          <td class="divider"></td>
+          <td class="sno">85</td>
+          <td class="name">Sai Shankar Fancy Store, Bandhugaon</td>
+        </tr>
+        <tr>
+          <td class="sno">41</td>
+          <td class="name" title="LUKMAN ANSARI, GOVNDAPALI">LUKMAN ANSARI, GOVNDAPALI</td>
+          <td class="divider"></td>
+          <td class="sno">86</td>
+          <td class="name">Sanjib Mandal, Karukonda</td>
+        </tr>
+        <tr>
+          <td class="sno">42</td>
+          <td class="name" title="M Ashok,Tangiliguda">M Ashok,Tangiliguda</td>
+          <td class="divider"></td>
+          <td class="sno">87</td>
+          <td class="name">Suresh Baral, Kudumuluguma</td>
+        </tr>
+        <tr>
+          <td class="sno">43</td>
+          <td class="name" title="M/S S M TRADERS, MALKANGIRI">M/S S M TRADERS, MALKANGIRI</td>
+          <td class="divider"></td>
+          <td class="sno">88</td>
+          <td class="name">VEERABHADRA CLOTH & GENERAL STORE, CHITROKUNDA</td>
+        </tr>
+        <tr>
+          <td class="sno">44</td>
+          <td class="name" title="M/S TARUN FOOTWEAR, KALIMELA">M/S TARUN FOOTWEAR, KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">89</td>
+          <td class="name">VEERABHADRA CLOTH AND GENERAL STORE GST</td>
+        </tr>
+        <tr>
+          <td class="sno">45</td>
+          <td class="name" title="M/S UPENDRA BARMAN, KALIMELA">M/S UPENDRA BARMAN, KALIMELA</td>
+          <td class="divider"></td>
+          <td class="sno">90</td>
+          <td class="name">Zenul Ansari, Govidapali</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span>e-SBE Route Master Ledger &bull; Balimela, Chitrokunda, Malkangiri Line</span>
+    <span>A4 Dimension Strictly (210mm x 297mm) &bull; Sheet 1 of 2</span>
+  </div>
+</div>
+
+<!-- PAGE 2: KORAPUT LINE (62 PARTIES) + PHULBANI LINE (29 PARTIES) -->
+<div class="a4-page">
+  <div>
+    <div class="header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="brand-title">SHREE BALAJEE ENTERPRISES</span>
+        <span class="brand-badge">Official Route Sheet</span>
+      </div>
+      <div class="page-indicator">PAGE 2 OF 2</div>
+    </div>
+
+    <!-- KORAPUT LINE -->
+    <div class="section-banner koraput" style="margin-top: 0;">
+      <span class="section-title">Line 2: Koraput Line</span>
+      <span class="section-count">Total Parties: 62 (Cols: 31 + 31)</span>
+    </div>
+
+    <table class="party-table">
+      <thead>
+        <tr>
+          <th class="sno-head">#</th>
+          <th>Party Name</th>
+          <th class="div-head"></th>
+          <th class="sno-head">#</th>
+          <th>Party Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sno">1</td>
+          <td class="name" title="A K Mandal, Laxmipur">A K Mandal, Laxmipur</td>
+          <td class="divider"></td>
+          <td class="sno">32</td>
+          <td class="name">New Genration Footpoint, Umerkote</td>
+        </tr>
+        <tr>
+          <td class="sno">2</td>
+          <td class="name" title="AMBIKA FOOTWEAR, LAXMIPUR">AMBIKA FOOTWEAR, LAXMIPUR</td>
+          <td class="divider"></td>
+          <td class="sno">33</td>
+          <td class="name">Niranjan Bisai</td>
+        </tr>
+        <tr>
+          <td class="sno">3</td>
+          <td class="name" title="Asha Traders">Asha Traders</td>
+          <td class="divider"></td>
+          <td class="sno">34</td>
+          <td class="name">OM PRASAD FOOTWEAR, NANDPUR</td>
+        </tr>
+        <tr>
+          <td class="sno">4</td>
+          <td class="name" title="BABULA BISOI,KAKIRIGUMMA">BABULA BISOI,KAKIRIGUMMA</td>
+          <td class="divider"></td>
+          <td class="sno">35</td>
+          <td class="name">P. K Mohapatra, Doraguda</td>
+        </tr>
+        <tr>
+          <td class="sno">5</td>
+          <td class="name" title="BALARAM SAHU,NARAYANPATNA">BALARAM SAHU,NARAYANPATNA</td>
+          <td class="divider"></td>
+          <td class="sno">36</td>
+          <td class="name">PRAKSH MOHAPATRA, POTANGI</td>
+        </tr>
+        <tr>
+          <td class="sno">6</td>
+          <td class="name" title="Chandu Traders ,Narayanpatana">Chandu Traders ,Narayanpatana</td>
+          <td class="divider"></td>
+          <td class="sno">37</td>
+          <td class="name">PRAPHULO BADIYA, LAMTAPUT</td>
+        </tr>
+        <tr>
+          <td class="sno">7</td>
+          <td class="name" title="DILIP SAHU, NARAYANPATNA">DILIP SAHU, NARAYANPATNA</td>
+          <td class="divider"></td>
+          <td class="sno">38</td>
+          <td class="name">PUSPA FANCY, KUNDURA</td>
+        </tr>
+        <tr>
+          <td class="sno">8</td>
+          <td class="name" title="ELEGANCE FOOTWEAR,SIMILIGUDA">ELEGANCE FOOTWEAR,SIMILIGUDA</td>
+          <td class="divider"></td>
+          <td class="sno">39</td>
+          <td class="name">Prasad Footwear, Nandapur</td>
+        </tr>
+        <tr>
+          <td class="sno">9</td>
+          <td class="name" title="G. GURUNATHA , NARAYANPATNA">G. GURUNATHA , NARAYANPATNA</td>
+          <td class="divider"></td>
+          <td class="sno">40</td>
+          <td class="name">R.K FOOTWEAR, JEYPORE</td>
+        </tr>
+        <tr>
+          <td class="sno">10</td>
+          <td class="name" title="G. SEETA RAM METRO SHOES, JEYPORE">G. SEETA RAM METRO SHOES, JEYPORE</td>
+          <td class="divider"></td>
+          <td class="sno">41</td>
+          <td class="name">RAMAKRISHNA ,LAXMIPUR</td>
+        </tr>
+        <tr>
+          <td class="sno">11</td>
+          <td class="name" title="GOURANGA BISOI">GOURANGA BISOI</td>
+          <td class="divider"></td>
+          <td class="sno">42</td>
+          <td class="name">ROYAL FOOWEAR, JEYPORE</td>
+        </tr>
+        <tr>
+          <td class="sno">12</td>
+          <td class="name" title="GOUTAM FOTWEAR, LAXMIPUR">GOUTAM FOTWEAR, LAXMIPUR</td>
+          <td class="divider"></td>
+          <td class="sno">43</td>
+          <td class="name">RUPA LAXMI FOOTWEAR, NANDAPUR</td>
+        </tr>
+        <tr>
+          <td class="sno">13</td>
+          <td class="name" title="Hari Shankar Panda,Dumadangar(Nilabadi)">Hari Shankar Panda,Dumadangar(Nilabadi)</td>
+          <td class="divider"></td>
+          <td class="sno">44</td>
+          <td class="name">Raj Kumar Hantal, Jeypore</td>
+        </tr>
+        <tr>
+          <td class="sno">14</td>
+          <td class="name" title="ISWAR CHANDRA PANDU, KUBHARIPUT">ISWAR CHANDRA PANDU, KUBHARIPUT</td>
+          <td class="divider"></td>
+          <td class="sno">45</td>
+          <td class="name">Rajesh Traders,Similiguda</td>
+        </tr>
+        <tr>
+          <td class="sno">15</td>
+          <td class="name" title="JANRADHAN FOOTWEAR, KUMBHARIPUT">JANRADHAN FOOTWEAR, KUMBHARIPUT</td>
+          <td class="divider"></td>
+          <td class="sno">46</td>
+          <td class="name">Raju Fotwear, Koraput</td>
+        </tr>
+        <tr>
+          <td class="sno">16</td>
+          <td class="name" title="JILANI FOOTWEAR, PADUA">JILANI FOOTWEAR, PADUA</td>
+          <td class="divider"></td>
+          <td class="sno">47</td>
+          <td class="name">Ram Krishna Sahu, Badhugaon</td>
+        </tr>
+        <tr>
+          <td class="sno">17</td>
+          <td class="name" title="JUHI TRADERS, (BIKASH)SIMILIGUDA">JUHI TRADERS, (BIKASH)SIMILIGUDA</td>
+          <td class="divider"></td>
+          <td class="sno">48</td>
+          <td class="name">Ramesh Chandra Bisoi,Laxmipur</td>
+        </tr>
+        <tr>
+          <td class="sno">18</td>
+          <td class="name" title="K Madhav Rao, Almanda">K Madhav Rao, Almanda</td>
+          <td class="divider"></td>
+          <td class="sno">49</td>
+          <td class="name">S Narasingh Rao, Kotulupeta</td>
+        </tr>
+        <tr>
+          <td class="sno">19</td>
+          <td class="name" title="K.CHANDRA RAO, JAYPORE">K.CHANDRA RAO, JAYPORE</td>
+          <td class="divider"></td>
+          <td class="sno">50</td>
+          <td class="name">SHREE ENTERPISES, KORAPUT</td>
+        </tr>
+        <tr>
+          <td class="sno">20</td>
+          <td class="name" title="KAMESH BIJILANI,GUNEIPADA">KAMESH BIJILANI,GUNEIPADA</td>
+          <td class="divider"></td>
+          <td class="sno">51</td>
+          <td class="name">SHREE FOOT WEAR</td>
+        </tr>
+        <tr>
+          <td class="sno">21</td>
+          <td class="name" title="KISHOR PORIDA (KUMBARIPUT),">KISHOR PORIDA (KUMBARIPUT),</td>
+          <td class="divider"></td>
+          <td class="sno">52</td>
+          <td class="name">SHREE GANESH TRADERS, JEYPORE</td>
+        </tr>
+        <tr>
+          <td class="sno">22</td>
+          <td class="name" title="L. K. Pradhan, Narayanpatna">L. K. Pradhan, Narayanpatna</td>
+          <td class="divider"></td>
+          <td class="sno">53</td>
+          <td class="name">Sai Sagun F/w, Narayanpatna</td>
+        </tr>
+        <tr>
+          <td class="sno">23</td>
+          <td class="name" title="M Ventrawana,Kanagan(Nilabadi)">M Ventrawana,Kanagan(Nilabadi)</td>
+          <td class="divider"></td>
+          <td class="sno">54</td>
+          <td class="name">Santosh Footwear, Umarkot</td>
+        </tr>
+        <tr>
+          <td class="sno">24</td>
+          <td class="name" title="MAA AGNI GANGA MAA, NILABADI">MAA AGNI GANGA MAA, NILABADI</td>
+          <td class="divider"></td>
+          <td class="sno">55</td>
+          <td class="name">Sing Footwear (Siba Shankara), Koraput</td>
+        </tr>
+        <tr>
+          <td class="sno">25</td>
+          <td class="name" title="MAA JAYA DURGA SHOE HOUSE, SIMILIGUDA">MAA JAYA DURGA SHOE HOUSE, SIMILIGUDA</td>
+          <td class="divider"></td>
+          <td class="sno">56</td>
+          <td class="name">Suraj Kumar Mandal, Kundura</td>
+        </tr>
+        <tr>
+          <td class="sno">26</td>
+          <td class="name" title="MANTOSH KUMAR, KORAPUT">MANTOSH KUMAR, KORAPUT</td>
+          <td class="divider"></td>
+          <td class="sno">57</td>
+          <td class="name">Suresh Nayak,Baipariguda</td>
+        </tr>
+        <tr>
+          <td class="sno">27</td>
+          <td class="name" title="MD HAJI, NABARANGAPUR">MD HAJI, NABARANGAPUR</td>
+          <td class="divider"></td>
+          <td class="sno">58</td>
+          <td class="name">TANU FOOTWEAR, KUMBHARIPUT</td>
+        </tr>
+        <tr>
+          <td class="sno">28</td>
+          <td class="name" title="Maa Majji Gouri F/w, Narayanpatna">Maa Majji Gouri F/w, Narayanpatna</td>
+          <td class="divider"></td>
+          <td class="sno">59</td>
+          <td class="name">UMMA FOOTWEAR,LAMTAPUT</td>
+        </tr>
+        <tr>
+          <td class="sno">29</td>
+          <td class="name" title="N ANNAJI RAO, BANDHUGAON">N ANNAJI RAO, BANDHUGAON</td>
+          <td class="divider"></td>
+          <td class="sno">60</td>
+          <td class="name">V KUMARI, NANDAPUR</td>
+        </tr>
+        <tr>
+          <td class="sno">30</td>
+          <td class="name" title="NAYAK TRADERS, JEYPORE">NAYAK TRADERS, JEYPORE</td>
+          <td class="divider"></td>
+          <td class="sno">61</td>
+          <td class="name">V. NARAYAN RAO FOOTWEAR, LAXMIPUR</td>
+        </tr>
+        <tr>
+          <td class="sno">31</td>
+          <td class="name" title="Nayak Footwear,Phampuni.Jeypore">Nayak Footwear,Phampuni.Jeypore</td>
+          <td class="divider"></td>
+          <td class="sno">62</td>
+          <td class="name">VAISHNOVI ENTERPRISES, JEYPORE</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PHULBANI LINE -->
+    <div class="section-banner phulbani" style="margin-top: 6px;">
+      <span class="section-title">Line 3: Phulbaani Line</span>
+      <span class="section-count">Total Parties: 29 (Cols: 15 + 14)</span>
+    </div>
+
+    <table class="party-table">
+      <thead>
+        <tr>
+          <th class="sno-head">#</th>
+          <th>Party Name</th>
+          <th class="div-head"></th>
+          <th class="sno-head">#</th>
+          <th>Party Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sno">1</td>
+          <td class="name" title="AASHIRVAAD F/W , PHULBANI">AASHIRVAAD F/W , PHULBANI</td>
+          <td class="divider"></td>
+          <td class="sno">16</td>
+          <td class="name">MAHARANA FOOTWEAR, SARANGADA</td>
+        </tr>
+        <tr>
+          <td class="sno">2</td>
+          <td class="name" title="ASHOK SAHU (MANU FOOTWEAR), SARANGADA">ASHOK SAHU (MANU FOOTWEAR), SARANGADA</td>
+          <td class="divider"></td>
+          <td class="sno">17</td>
+          <td class="name">MONALISHA FOOTWEAR, PHULBANI</td>
+        </tr>
+        <tr>
+          <td class="sno">3</td>
+          <td class="name" title="Ajanta Footwear, G.Udaygiri">Ajanta Footwear, G.Udaygiri</td>
+          <td class="divider"></td>
+          <td class="sno">18</td>
+          <td class="name">Manoranjan Maharana, Kotagada</td>
+        </tr>
+        <tr>
+          <td class="sno">4</td>
+          <td class="name" title="Ajit Footwear, Kotagada">Ajit Footwear, Kotagada</td>
+          <td class="divider"></td>
+          <td class="sno">19</td>
+          <td class="name">PRADHAN F/W, PHULBANI</td>
+        </tr>
+        <tr>
+          <td class="sno">5</td>
+          <td class="name" title="Andhar Bhauti,Tambisuga">Andhar Bhauti,Tambisuga</td>
+          <td class="divider"></td>
+          <td class="sno">20</td>
+          <td class="name">Padma Footwear, Dengaostha</td>
+        </tr>
+        <tr>
+          <td class="sno">6</td>
+          <td class="name" title="BABULA F/W, SARANGADA">BABULA F/W, SARANGADA</td>
+          <td class="divider"></td>
+          <td class="sno">21</td>
+          <td class="name">ROHAN FOOTWEAR,SARANGADA</td>
+        </tr>
+        <tr>
+          <td class="sno">7</td>
+          <td class="name" title="BALAJI SHOES STORE, PHULBANI">BALAJI SHOES STORE, PHULBANI</td>
+          <td class="divider"></td>
+          <td class="sno">22</td>
+          <td class="name">S K PARIDA, SARANGAGADA</td>
+        </tr>
+        <tr>
+          <td class="sno">8</td>
+          <td class="name" title="Babu Footwear, Kotagada">Babu Footwear, Kotagada</td>
+          <td class="divider"></td>
+          <td class="sno">23</td>
+          <td class="name">SAHU FOOTWEAR, PHULBANI</td>
+        </tr>
+        <tr>
+          <td class="sno">9</td>
+          <td class="name" title="DAS FOOTWEAR, K NUAGAON">DAS FOOTWEAR, K NUAGAON</td>
+          <td class="divider"></td>
+          <td class="sno">24</td>
+          <td class="name">SANTOSH F/W,PHULBANI</td>
+        </tr>
+        <tr>
+          <td class="sno">10</td>
+          <td class="name" title="Gudu F/w, Tumubiribandaha">Gudu F/w, Tumubiribandaha</td>
+          <td class="divider"></td>
+          <td class="sno">25</td>
+          <td class="name">SOM SUDIN FOOTWEAR, PHULBANI</td>
+        </tr>
+        <tr>
+          <td class="sno">11</td>
+          <td class="name" title="KGN (AAYAAN), PHULBANI">KGN (AAYAAN), PHULBANI</td>
+          <td class="divider"></td>
+          <td class="sno">26</td>
+          <td class="name">STYLE FOOTWEAR, SARANGAGADA</td>
+        </tr>
+        <tr>
+          <td class="sno">12</td>
+          <td class="name" title="Konark Footwear, G.Udaygiri">Konark Footwear, G.Udaygiri</td>
+          <td class="divider"></td>
+          <td class="sno">27</td>
+          <td class="name">SUSIL  BOOT HOUSE, RAIKIA</td>
+        </tr>
+        <tr>
+          <td class="sno">13</td>
+          <td class="name" title="Kwality Foowear, G. Udayagiri">Kwality Foowear, G. Udayagiri</td>
+          <td class="divider"></td>
+          <td class="sno">28</td>
+          <td class="name">Sohan Footwear,Shankarakhol</td>
+        </tr>
+        <tr>
+          <td class="sno">14</td>
+          <td class="name" title="Loknath Sahu, Kotraguda">Loknath Sahu, Kotraguda</td>
+          <td class="divider"></td>
+          <td class="sno">29</td>
+          <td class="name">Sushili Footwear, Raikia</td>
+        </tr>
+        <tr>
+          <td class="sno">15</td>
+          <td class="name" title="MAA RUDRAKALI F/W, PHIRANGIA">MAA RUDRAKALI F/W, PHIRANGIA</td>
+          <td class="divider"></td>
+          <td class="sno empty"></td>
+          <td class="name empty"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span>e-SBE Route Master Ledger &bull; Koraput Line &amp; Phulbaani Line</span>
+    <span>A4 Dimension Strictly (210mm x 297mm) &bull; Sheet 2 of 2</span>
+  </div>
+</div>
+
+</body>
+</html>
