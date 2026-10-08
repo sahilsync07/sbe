@@ -24,10 +24,10 @@
             class="flex items-center gap-1.5 justify-center w-full pointer-events-auto cursor-pointer select-none"
           >
             <img 
-              src="/assets/logos/e-sbe-new-logo.png" 
-              alt="SBE Logo" 
-              class="h-7 w-7 object-contain rounded-lg shadow-xs" 
-              @error="$event.target.src = '/e-sbe-new-logo.png'"
+              :src="`${baseUrl}assets/logos/e-sbe-new-logo.png`" 
+              alt="e-SBE Logo" 
+              class="h-7 sm:h-8 w-auto max-w-[130px] object-contain drop-shadow-xs" 
+              @error="$event.target.src = `${baseUrl}e-sbe-new-logo.png`"
             />
           </div>
           <span v-if="lastSyncFormatted" class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5 whitespace-nowrap">
@@ -86,6 +86,8 @@
 <script setup>
 import { computed } from 'vue';
 import { Menu, ShoppingBag, Search, ShieldCheck } from 'lucide-vue-next';
+
+const baseUrl = import.meta.env.BASE_URL || '/';
 
 const props = defineProps({
   cartItemCount: {

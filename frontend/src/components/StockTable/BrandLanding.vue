@@ -7,16 +7,16 @@
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-2.5 sm:px-6 pb-2 transition-all w-full max-w-full overflow-hidden" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
       <!-- Top Branding & Action Buttons Row -->
       <div class="flex items-center justify-between gap-2 w-full">
-        <!-- Left: SBE New Logo (Replaces "SBE Rayagada" text) -->
+        <!-- Left: e-SBE Brand Logo -->
         <div 
           class="flex items-center select-none cursor-pointer group py-0.5 shrink-0" 
           @click="selectTab('All')"
-          title="SBE • Wholesale Footwear"
+          title="e-SBE • Wholesale Footwear"
         >
           <img 
             :src="`${baseUrl}assets/logos/e-sbe-new-logo.png`" 
-            alt="SBE Logo" 
-            class="h-8 sm:h-9 w-8 sm:w-9 object-contain rounded-xl shadow-xs border border-amber-200/60 bg-white p-0.5 group-hover:scale-105 transition-all" 
+            alt="e-SBE Logo" 
+            class="h-8 sm:h-10 w-auto max-w-[140px] sm:max-w-[170px] object-contain group-hover:scale-105 transition-transform duration-200" 
             @error="$event.target.src = `${baseUrl}e-sbe-new-logo.png`"
           />
         </div>

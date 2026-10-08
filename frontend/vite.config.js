@@ -38,9 +38,9 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       manifest: {
-        name: 'Sri Brundabana Enterprises',
-        short_name: 'SBE App',
-        description: 'Sri Brundabana Enterprises Application',
+        name: 'e-SBE Wholesale Footwear',
+        short_name: 'e-SBE',
+        description: 'e-SBE Footwear Wholesale Catalog Application',
         theme_color: '#ffffff',
         icons: [
           {

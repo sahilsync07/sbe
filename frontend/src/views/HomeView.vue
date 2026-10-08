@@ -53,15 +53,9 @@
         </header>
 
         <!-- Hero Section -->
-        <section class="hub-hero flex flex-col items-center">
-          <img
-            :src="`${baseUrl}assets/logos/e-sbe-new-logo.png`"
-            alt="e-SBE"
-            class="h-10 sm:h-12 w-auto object-contain mb-2 drop-shadow-sm select-none"
-            @error="$event.target.src = `${baseUrl}e-sbe-new-logo.png`"
-          />
+        <section class="hub-hero">
           <h1 class="hub-hero__title">
-            <span class="hub-hero__label">e-SBE</span>
+            <span class="hub-hero__label">SBE</span>
             <span class="hub-hero__gradient">Hub</span>
           </h1>
           <p class="hub-hero__sub">{{ lastSyncText }}</p>
@@ -139,8 +133,6 @@ const appStore = useAppStore();
 const { isAdmin, isSuperAdmin, logout } = useAdmin();
 const { isWorkzoneAuthenticated, checkWorkzoneAuth } = useWorkzoneAuth();
 const { loadLedgerData } = useLedgerData();
-
-const baseUrl = import.meta.env.BASE_URL || '/';
 
 const showConsole = ref(false);
 const toggleConsole = () => {
