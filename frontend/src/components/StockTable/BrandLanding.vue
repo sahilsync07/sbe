@@ -1590,7 +1590,7 @@ const getProductCardImage = (product) => {
   if (stagedUploadsMap.value.has(name)) {
     return stagedUploadsMap.value.get(name);
   }
-  return product.imageUrl || product.secondaryImageUrl || getProductImage(product);
+  return getProductImage(product);
 };
 
 const triggerCardPhotoUpload = (product) => {
