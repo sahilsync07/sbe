@@ -13,18 +13,8 @@ let loggedWarning = false;
  * @param {string} urlOrCloud 
  */
 export function markCloudFailed(urlOrCloud) {
-  if (!urlOrCloud) return;
-  const str = String(urlOrCloud);
-
-  if (str.includes(secondaryCloud) || str === secondaryCloud) {
-    if (!isSecondaryCloudDown.value) {
-      isSecondaryCloudDown.value = true;
-      if (!loggedWarning) {
-        console.warn(`[Cloudinary] Cloud '${secondaryCloud}' unreachable or failed.`);
-        loggedWarning = true;
-      }
-    }
-  }
+  // Deprecated: Do not globally disable entire clouds on a single 404
+  return;
 }
 
 /**
@@ -41,7 +31,6 @@ export function getPreferredImageUrl(product) {
     if (!url || typeof url !== 'string') return true;
     // Always reject retired dg365ewal cloud
     if (url.includes('dg365ewal')) return true;
-    if (isSecondaryCloudDown.value && url.includes('dieqsg5tr')) return true;
     return false;
   };
 
