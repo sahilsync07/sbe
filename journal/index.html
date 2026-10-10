@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBE Engineering & Operations Journal | Sri Brundabana Enterprises</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #ffffff;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --brand-obsidian: #090d16;
+      --brand-gold: #c59b27;
+      --brand-gold-subtle: #fef9c3;
+      --brand-gold-dark: #854d0e;
+      --accent-red: #ef4444;
+      --accent-emerald: #10b981;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --code-bg: #090d16;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-gold: 0 4px 20px -2px rgba(197, 155, 39, 0.25);
+    }
+
+    [data-theme="dark"] {
+      --bg-canvas: #090d16;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --border-subtle: #1e293b;
+      --border-strong: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --brand-obsidian: #ffffff;
+      --code-bg: #030712;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      line-height: 1.65;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Top Sticky Header */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    [data-theme="dark"] .top-nav {
+      background: rgba(17, 24, 39, 0.85);
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-badge {
+      font-weight: 900;
+      font-size: 17px;
+      letter-spacing: 0.16em;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 16px;
+      background-color: var(--border-strong);
+    }
+
+    .brand-loc {
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .journal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background-color: rgba(197, 155, 39, 0.12);
+      border: 1px solid rgba(197, 155, 39, 0.3);
+      color: var(--brand-gold-dark);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    [data-theme="dark"] .journal-pill {
+      color: #fbbf24;
+      background-color: rgba(251, 191, 36, 0.15);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+
+    .btn-nav:hover {
+      background: var(--bg-canvas);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .btn-nav-primary {
+      background: var(--brand-obsidian);
+      color: #ffffff;
+      border-color: transparent;
+    }
+    [data-theme="dark"] .btn-nav-primary {
+      background: #f8fafc;
+      color: #090d16;
+    }
+    .btn-nav-primary:hover {
+      background: #1e293b;
+      color: #ffffff;
+    }
+
+    /* Page Layout */
+    .page-layout {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px 80px 24px;
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .page-layout {
+        grid-template-columns: 1fr;
+      }
+      .toc-sidebar {
+        display: none;
+      }
+    }
+
+    /* TOC Sidebar */
+    .toc-sidebar {
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      padding: 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toc-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+      line-height: 1.35;
+    }
+
+    .toc-link:hover {
+      color: var(--text-main);
+      background: rgba(197, 155, 39, 0.08);
+    }
+
+    .toc-link.active {
+      color: var(--brand-gold-dark);
+      background: rgba(197, 155, 39, 0.14);
+      font-weight: 700;
+    }
+    [data-theme="dark"] .toc-link.active {
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.15);
+    }
+
+    /* Hero Section */
+    .journal-hero {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .journal-hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #c59b27, #fef08a, #c59b27);
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .hero-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: var(--bg-canvas);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+      color: var(--text-main);
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 900px;
+      margin-bottom: 24px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--brand-gold);
+    }
+    [data-theme="dark"] .stat-num {
+      color: #fbbf24;
+    }
+
+    .stat-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Live Search & Filter Bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-subtle);
+    }
+
+    /* Section Component */
+    .journal-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .section-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: rgba(197, 155, 39, 0.12);
+      color: var(--brand-gold-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    [data-theme="dark"] .section-icon {
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.15);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* App Comparison Cards Matrix */
+    .apps-matrix {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .app-card {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .app-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .app-card--esbe {
+      border-top: 4px solid #c59b27;
+    }
+
+    .app-card--hub {
+      border-top: 4px solid #8b5cf6;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .app-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-badge-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #ffffff;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .app-role {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .app-pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .app-feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .app-feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+
+    .app-feature-list i {
+      color: var(--accent-emerald);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    /* Rules Grid */
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .rule-card {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .rule-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .rule-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      align-self: flex-start;
+    }
+
+    .rule-badge--danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    [data-theme="dark"] .rule-badge--danger {
+      background: #450a0a;
+      color: #fca5a5;
+      border-color: #7f1d1d;
+    }
+
+    .rule-badge--gold {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fef08a;
+    }
+    [data-theme="dark"] .rule-badge--gold {
+      background: #422006;
+      color: #fde047;
+      border-color: #713f12;
+    }
+
+    .rule-badge--blue {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+    [data-theme="dark"] .rule-badge--blue {
+      background: #172554;
+      color: #93c5fd;
+      border-color: #1e3a8a;
+    }
+
+    .rule-badge--emerald {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    [data-theme="dark"] .rule-badge--emerald {
+      background: #022c22;
+      color: #6ee7b7;
+      border-color: #064e3b;
+    }
+
+    .rule-badge--purple {
+      background: #ede9fe;
+      color: #5b21b6;
+      border: 1px solid #ddd6fe;
+    }
+    [data-theme="dark"] .rule-badge--purple {
+      background: #2e1065;
+      color: #c4b5fd;
+      border-color: #4c1d95;
+    }
+
+    .rule-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .rule-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin: 16px 0;
+    }
+
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    .styled-table th {
+      background: var(--bg-canvas);
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .styled-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    .styled-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .styled-table tr:hover td {
+      background: rgba(197, 155, 39, 0.03);
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-status--success {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    [data-theme="dark"] .badge-status--success {
+      background: #052e16;
+      color: #86efac;
+    }
+
+    .badge-status--danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    [data-theme="dark"] .badge-status--danger {
+      background: #450a0a;
+      color: #fca5a5;
+    }
+
+    .badge-status--warning {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    [data-theme="dark"] .badge-status--warning {
+      background: #451a03;
+      color: #fcd34d;
+    }
+
+    .badge-status--info {
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+    [data-theme="dark"] .badge-status--info {
+      background: #1e1b4b;
+      color: #a5b4fc;
+    }
+
+    /* Code Blocks */
+    .code-box {
+      background: var(--code-bg);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin: 16px 0;
+      position: relative;
+      overflow-x: auto;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .code-box pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    /* Timeline Ledger */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin-top: 24px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      left: 11px;
+      width: 2px;
+      background: var(--border-strong);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 32px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -32px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--brand-gold);
+      border: 4px solid var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 2px var(--brand-gold);
+    }
+
+    .timeline-dot--green {
+      background: var(--accent-emerald);
+      box-shadow: 0 0 0 2px var(--accent-emerald);
+    }
+
+    .timeline-dot--purple {
+      background: var(--accent-purple);
+      box-shadow: 0 0 0 2px var(--accent-purple);
+    }
+
+    .timeline-dot--blue {
+      background: var(--accent-blue);
+      box-shadow: 0 0 0 2px var(--accent-blue);
+    }
+
+    .timeline-content {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+    }
+
+    .timeline-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    [data-theme="dark"] .timeline-date {
+      color: #fbbf24;
+    }
+
+    .timeline-heading {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .timeline-body {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .timeline-body ul {
+      margin-top: 8px;
+      padding-left: 20px;
+    }
+
+    .timeline-body li {
+      margin-bottom: 5px;
+    }
+
+    .tag-commit {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.08);
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    [data-theme="dark"] .tag-commit {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Synthesis Stage Boxes */
+    .stages-flex {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .stage-box {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      text-align: center;
+      position: relative;
+    }
+
+    .stage-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(197, 155, 39, 0.12);
+      color: var(--brand-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px auto;
+      font-size: 18px;
+    }
+
+    .stage-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .stage-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Callout Card */
+    .callout-box {
+      background: rgba(197, 155, 39, 0.06);
+      border: 1px solid rgba(197, 155, 39, 0.25);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin: 18px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .callout-box--info {
+      background: rgba(59, 130, 246, 0.06);
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+
+    .callout-box--success {
+      background: rgba(16, 185, 129, 0.06);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .callout-box--danger {
+      background: rgba(239, 68, 68, 0.06);
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .callout-icon {
+      font-size: 18px;
+      margin-top: 2px;
+      color: var(--brand-gold-dark);
+      flex-shrink: 0;
+    }
+    [data-theme="dark"] .callout-icon {
+      color: #fbbf24;
+    }
+    .callout-box--info .callout-icon { color: #3b82f6; }
+    .callout-box--success .callout-icon { color: #10b981; }
+    .callout-box--danger .callout-icon { color: #ef4444; }
+
+    .callout-content {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+    .callout-content strong {
+      color: var(--text-main);
+    }
+
+    /* Footer */
+    .journal-footer {
+      max-width: 1400px;
+      margin: 40px auto 0 auto;
+      padding: 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @media print {
+      .top-nav, .toc-sidebar, .filter-bar, .btn-nav, .journal-footer {
+        display: none !important;
+      }
+      .page-layout {
+        display: block !important;
+        padding: 0 !important;
+      }
+      .journal-section, .journal-hero {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Top Bar -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <a href="javascript:void(0)" onclick="handleGoBack()" class="brand-mark" title="Return to Dashboard">
+        <span class="brand-badge">SBE</span>
+        <span class="brand-divider"></span>
+        <span class="brand-loc">Rayagada</span>
+        <span class="journal-pill">Engineering Journal</span>
+      </a>
+
+      <div class="nav-actions">
+        <button class="btn-nav" id="themeToggle" title="Toggle Dark/Light Mode">
+          <i class="fa-solid fa-moon"></i>
+          <span>Theme</span>
+        </button>
+        <button class="btn-nav" onclick="window.print()" title="Print / Export as PDF">
+          <i class="fa-solid fa-print"></i>
+          <span>Export PDF</span>
+        </button>
+        <button class="btn-nav btn-nav-primary" onclick="handleGoBack()" title="Back to App / Hub">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Back to App / Hub</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <div class="page-layout">
+
+    <!-- Sticky Table of Contents -->
+    <aside class="toc-sidebar">
+      <div class="toc-title">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Index & Navigation</span>
+      </div>
+      <ul class="toc-list">
+        <li><a href="#overview" class="toc-link active"><i class="fa-solid fa-compass"></i> Overview & Metrics</a></li>
+        <li><a href="#two-apps-architecture" class="toc-link"><i class="fa-solid fa-layer-group"></i> Dual App Ecosystem</a></li>
+        <li><a href="#ai-onboarding" class="toc-link"><i class="fa-solid fa-robot"></i> AI Master Commandments</a></li>
+        <li><a href="#golden-rules" class="toc-link"><i class="fa-solid fa-shield-halved"></i> The Golden Rules (Pact)</a></li>
+        <li><a href="#party-tagger-engine" class="toc-link"><i class="fa-solid fa-tags"></i> Party Tagger & Risk Engine</a></li>
+        <li><a href="#sample-room-engine" class="toc-link"><i class="fa-solid fa-box-archive"></i> Sample Room Staging</a></li>
+        <li><a href="#notification-engine" class="toc-link"><i class="fa-solid fa-bell"></i> Push Notification System</a></li>
+        <li><a href="#data-pipeline-tally" class="toc-link"><i class="fa-solid fa-database"></i> Tally Pipeline & Metadata Lock</a></li>
+        <li><a href="#github-sync-engine" class="toc-link"><i class="fa-brands fa-github"></i> Dual-Path GitHub Engine</a></li>
+        <li><a href="#one-touch-engine" class="toc-link"><i class="fa-solid fa-share-nodes"></i> One Touch & Canvas Engine</a></li>
+        <li><a href="#triple-toggle-engine" class="toc-link"><i class="fa-solid fa-sliders"></i> Triple Mode Toggle</a></li>
+        <li><a href="#four-layer-defense" class="toc-link"><i class="fa-solid fa-shield"></i> 4-Layer Defense Engine</a></li>
+        <li><a href="#synthesis-engine" class="toc-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Catalog Card Synthesis</a></li>
+        <li><a href="#dual-cloudinary" class="toc-link"><i class="fa-solid fa-cloud"></i> Dual Cloudinary & Edge CDN</a></li>
+        <li><a href="#matching-cleansing" class="toc-link"><i class="fa-solid fa-filter"></i> Matching & Disinfection</a></li>
+        <li><a href="#brand-tabs-ui" class="toc-link"><i class="fa-solid fa-table-cells-large"></i> Luxury UI & Pill Identity</a></li>
+        <li><a href="#source-archives" class="toc-link"><i class="fa-solid fa-folder-tree"></i> Source Archives & Zips</a></li>
+        <li><a href="#operations-ledger" class="toc-link"><i class="fa-solid fa-clock-rotate-left"></i> Chronological Operations Ledger</a></li>
+        <li><a href="#code-reference" class="toc-link"><i class="fa-solid fa-code"></i> Scripts & Execution Library</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Journal Content -->
+    <main>
+
+      <!-- Hero Header -->
+      <section class="journal-hero" id="overview">
+        <div class="hero-meta">
+          <span class="hero-tag"><i class="fa-solid fa-building"></i> Sri Brundabana Enterprises</span>
+          <span class="hero-tag"><i class="fa-solid fa-map-pin"></i> Rayagada, Odisha</span>
+          <span class="hero-tag"><i class="fa-solid fa-calendar"></i> October 2026</span>
+          <span class="hero-tag"><i class="fa-solid fa-certificate"></i> Production Master Ledger</span>
+        </div>
+        <h1 class="hero-title">Engineering, Image Intelligence & Operations Systems Journal</h1>
+        <p class="hero-desc">
+          The comprehensive architectural blueprint, AI assistant onboarding manual, and chronological engineering ledger for the SBE Footwear Wholesale software ecosystem — encompassing the customer-facing <strong>e-SBE Catalog &amp; Mobile App</strong>, the enterprise <strong>e-SBE Hub Operations Portal</strong>, Tally ERP 9 synchronization pipelines, and multi-cloud image infrastructure.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">2</span>
+            <span class="stat-label">Production Apps Unified</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">5,206</span>
+            <span class="stat-label">Catalog Products Audited</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">1,120+</span>
+            <span class="stat-label">Verified Secondary Cards</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">0</span>
+            <span class="stat-label">Status Card Violators</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">100%</span>
+            <span class="stat-label">AI Mockups Purged</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">1-Click</span>
+            <span class="stat-label">Dual-Path Batch Commits</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search & Filter Bar -->
+      <div class="filter-bar">
+        <i class="fa-solid fa-magnifying-glass" style="color: var(--text-subtle);"></i>
+        <input type="text" id="journalSearch" class="search-input" placeholder="Search rules, apps architecture, commit history, Cloudinary IDs, OCR filters, or scripts...">
+      </div>
+
+      <!-- Section: Dual Application System Architecture -->
+      <section class="journal-section" id="two-apps-architecture">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div>
+              <h2 class="section-title">Dual Application Architecture: e-SBE vs e-SBE Hub</h2>
+              <p class="section-subtitle">System roles, folder organization, Vite code-sharing engine, and functional boundaries</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 20px;">
+          The SBE software infrastructure consists of <strong>two distinct applications</strong> operating off a unified, single source of business truth. Understanding their distinct missions and shared engine is essential for every developer and AI agent working in this repository:
+        </p>
+
+        <div class="apps-matrix">
+          <!-- App 1: e-SBE -->
+          <div class="app-card app-card--esbe">
+            <div class="app-header">
+              <div class="app-name-wrap">
+                <div class="app-badge-icon" style="background: linear-gradient(135deg, #c59b27, #854d0e);">
+                  <i class="fa-solid fa-shoe-prints"></i>
+                </div>
+                <div>
+                  <h3 class="app-title">e-SBE (Client App)</h3>
+                  <span class="app-role">Catalog &bull; Showroom &bull; Quick Ordering</span>
+                </div>
+              </div>
+              <span class="badge-status badge-status--warning">Target: Buyers &amp; Staff</span>
+            </div>
+
+            <div class="app-pills-row">
+              <span class="tag-commit">Dir: frontend/</span>
+              <span class="tag-commit">History: Web (HTML5) / Hash (Android)</span>
+              <span class="tag-commit">Capacitor: com.sbe.app</span>
+            </div>
+
+            <p class="rule-text">
+              High-performance, touch-first digital footwear showroom designed for counter retail clients, wholesale store buyers, and field sales reps.
+            </p>
+
+            <ul class="app-feature-list">
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Triple View Toggle:</strong> Clean (strictly in-stock + verified photo), All (full catalog), and Upload (admin photo workbench).</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>One-Touch WhatsApp Generator:</strong> Composites manufacturer photos with pure black specs extension banners (Date, Name, Size, Color, Qty) and royal gold cover pages.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Natural Aspect Ratio Preservation:</strong> Fits portrait photos cleanly in 4:3 WhatsApp frame with black letterboxing without vertical squashing.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Instant Order Cart:</strong> Incremental carton counter, order staging, and 1-tap WhatsApp quotation exporter.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Offline Cache:</strong> SQLite and LocalStorage delta caching with Cloudinary <code>w_400</code> optimizations.</li>
+            </ul>
+          </div>
+
+          <!-- App 2: e-SBE Hub -->
+          <div class="app-card app-card--hub">
+            <div class="app-header">
+              <div class="app-name-wrap">
+                <div class="app-badge-icon" style="background: linear-gradient(135deg, #8b5cf6, #5b21b6);">
+                  <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <div>
+                  <h3 class="app-title">e-SBE Hub (Operations)</h3>
+                  <span class="app-role">Back-Office &bull; Ledger Analytics &bull; Management</span>
+                </div>
+              </div>
+              <span class="badge-status badge-status--info">Target: Management &amp; Accounts</span>
+            </div>
+
+            <div class="app-pills-row">
+              <span class="tag-commit">Dir: sbe-hub/</span>
+              <span class="tag-commit">History: Hash (WebHashHistory)</span>
+              <span class="tag-commit">Capacitor: com.sbe.hub</span>
+            </div>
+
+            <p class="rule-text">
+              Centralized administrative and financial command center for business owners, finance heads, and warehouse managers.
+            </p>
+
+            <ul class="app-feature-list">
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Party Tagger:</strong> Wholesaler/Retailer classification, Bad Debt 🔴 / Doubtful 🟠 marking, Settled (Not Accounted) 🟡 tracking, and Group/Ledger/Criticality views.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Sample Room Manager:</strong> Showroom physical article tracking with offline-resilient batch staging &amp; commit preview.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Line Debtors Analyzer:</strong> 30/60/90/180/365+ days aging analysis, risk scoring, bad debt deduction, net recoverable balances, and 1-tap WhatsApp payment reminders.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Push Notification Broadcaster:</strong> Broadcast notification center with templates, live phone preview, and native Android status bar alerts via Capacitor.</li>
+              <li><i class="fa-solid fa-circle-check"></i> <strong>Smart Dual-Mode Sync:</strong> On PC: triggers live Tally ODBC/HTTP sync; On Mobile/Remote: flushes caches &amp; pulls fresh GitHub CDN data.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Shared Source Architecture -->
+        <div class="callout-box callout-box--info">
+          <div class="callout-icon"><i class="fa-solid fa-code-branch"></i></div>
+          <div class="callout-content">
+            <strong>The Vite Shared Code Engine (<code>fallbackToFrontend()</code>):</strong>
+            To prevent code drift and duplicate maintenance bugs, <code>sbe-hub/vite.config.js</code> employs an intelligent resolver plugin. When SBE Hub compiles, any import starting with <code>@/</code> is searched in <code>sbe-hub/src/</code> first. If not found, Vite automatically pulls the component, composable, or utility from <code>frontend/src/</code>.
+            <br><em>Core Rule:</em> <strong>All shared business logic and reusable views live in <code>frontend/src/</code>.</strong> SBE Hub only contains app-specific overrides, entry routing, and native wrappers!
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Attribute</th>
+                <th>e-SBE (Client Catalog)</th>
+                <th>e-SBE Hub (Operations)</th>
+                <th>Technical Architecture &amp; Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Primary Directory</strong></td>
+                <td><code>frontend/</code></td>
+                <td><code>sbe-hub/</code></td>
+                <td>Separate build roots with independent package definitions and Capacitor Android wrappers.</td>
+              </tr>
+              <tr>
+                <td><strong>Router History</strong></td>
+                <td><code>createWebHistory</code> (Web) / <code>createWebHashHistory</code> (Android)</td>
+                <td><code>createWebHashHistory</code> (Always)</td>
+                <td>Hub uses hash history for flawless offline file execution, Electron portability, and mobile WebViews.</td>
+              </tr>
+              <tr>
+                <td><strong>Shared Code Mechanism</strong></td>
+                <td>Source of truth (Exports shared modules)</td>
+                <td><code>fallbackToFrontend()</code> plugin in <code>vite.config.js</code></td>
+                <td>Hub dynamically inherits composables, utils, and shared views directly from <code>frontend/src</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Primary Data Store</strong></td>
+                <td><code>stock-data.json</code> (Live inventory)</td>
+                <td><code>ledger-data.json</code> &bull; <code>stock-data.json</code> &bull; <code>notifications.json</code></td>
+                <td>Hub manages both operational inventory and complete Tally financial ledgers.</td>
+              </tr>
+              <tr>
+                <td><strong>Commit Staging</strong></td>
+                <td>Photo Upload batch staging (Session/LocalStorage)</td>
+                <td>Party Tagger staging &bull; Sample Room staging &bull; Notifications push</td>
+                <td>Both apps buffer changes locally; users review diffs in a modal and commit to Git in a single operation.</td>
+              </tr>
+              <tr>
+                <td><strong>Android Package ID</strong></td>
+                <td><code>com.sbe.app</code></td>
+                <td><code>com.sbe.hub</code></td>
+                <td>Two independent apps on Google Play Store sharing identical backend sync infrastructure.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: AI Master Commandments -->
+      <section class="journal-section" id="ai-onboarding">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-robot"></i></div>
+            <div>
+              <h2 class="section-title">AI Master Commandments &amp; Onboarding Rules</h2>
+              <p class="section-subtitle">Strict instructions that every AI assistant and human engineer MUST follow in this repository</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--danger">
+            <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-terminal"></i> Commandment 1</span>
+            <h3 class="rule-title">Android Build: Always Use <code>npm run build:android</code></h3>
+            <p class="rule-text">
+              When building assets for Capacitor Android, <strong>NEVER</strong> run standard <code>npm run build</code>. The standard build sets <code>base: '/sbe/'</code> for GitHub Pages, which will cause a <strong>blank white screen</strong> on Android devices! Always run <code>npm run build:android</code>, which sets <code>base: './'</code>.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--danger">
+            <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-paintbrush"></i> Commandment 2</span>
+            <h3 class="rule-title">CSS Isolation: No Naked Element Selectors</h3>
+            <p class="rule-text">
+              <strong>NEVER</strong> declare global element selectors (such as <code>button { ... }</code>, <code>input { ... }</code>) in <code>frontend/src/style.css</code> or component roots. They bleed uncontrollably into mobile headers, icon buttons, and toolbars, causing unwanted blue fills and broken layouts. Always use scoped styles or explicit class names.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-lock"></i> Commandment 3</span>
+            <h3 class="rule-title">Tally Sync: Never Wipe Custom Metadata</h3>
+            <p class="rule-text">
+              Fresh Tally ledger exports contain only raw accounting balances and transactions. They <strong>lack custom application tags</strong> (<code>partyType</code>, <code>creditStatus</code>, <code>settlementStatus</code>, <code>settlementNote</code>, <code>settledAmount</code>). Any code updating <code>ledger-data.json</code> must merge existing tags in memory before writing to disk.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-code-compare"></i> Commandment 4</span>
+            <h3 class="rule-title">Multi-Repo Mirroring: Keep Git Trees in Sync</h3>
+            <p class="rule-text">
+              The project is mirrored across two local repositories: <code>c:\Projects\sbe</code> and <code>C:\Projects\sriyasync_github\sbe</code>. Whenever making commits and pushing to remote, both repositories must be updated and kept in strict lockstep to prevent diverged heads.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--emerald">
+            <span class="rule-badge rule-badge--emerald"><i class="fa-solid fa-layer-group"></i> Commandment 5</span>
+            <h3 class="rule-title">Batch Commit Pattern: Zero Commit Flooding</h3>
+            <p class="rule-text">
+              Do <strong>NOT</strong> create an individual Git commit or backend write for every single item tagged or photo uploaded. All operations (Party Tagger, Sample Room, Photo Uploads) must buffer changes in a reactive staging store, display a Commit Preview counter, and commit all changes in <strong>one single batch commit</strong>.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--purple">
+            <span class="rule-badge rule-badge--purple"><i class="fa-solid fa-diagram-project"></i> Commandment 6</span>
+            <h3 class="rule-title">Single Source of Truth: Edit in <code>frontend/src</code></h3>
+            <p class="rule-text">
+              Because <code>sbe-hub</code> falls back to <code>frontend/src/</code> via Vite, all shared components, composables, and utility functions should be modified in <code>frontend/src/</code>. Do not duplicate code into <code>sbe-hub/src/</code> unless creating a Hub-exclusive page or override.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-crop-simple"></i> Commandment 7</span>
+            <h3 class="rule-title">Canvas Rendering: Preserve Aspect Ratio</h3>
+            <p class="rule-text">
+              In One-Touch Mode and social card generators, footwear photos come in varying proportions. <strong>NEVER stretch or squeeze image dimensions</strong> to fit fixed canvas boundaries. Always compute proportional scaling and letterbox/center the photo cleanly on the canvas.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--danger">
+            <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-gem"></i> Commandment 8</span>
+            <h3 class="rule-title">Visual Integrity: Zero AI Mockups or Clip-Art</h3>
+            <p class="rule-text">
+              Absolute zero tolerance for AI-generated logos, clip-art shoes, or cartoon banners. Only use authentic manufacturer brand logos extracted from official vector catalogs or high-resolution physical scans (Paragon, Eeken, Action, Cubix, Swastik).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: The Golden Rules (The Pact) -->
+      <section class="journal-section" id="golden-rules">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            <div>
+              <h2 class="section-title">The Golden Rules &amp; Image Architectural Commandments</h2>
+              <p class="section-subtitle">Strict operational guidelines governing image selection, filtering, and customer presentation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--danger">
+            <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-ban"></i> Zero Tolerance</span>
+            <h3 class="rule-title">Rule 1: Strict Negative Content Filter</h3>
+            <p class="rule-text">
+              Under <strong>NO circumstance</strong> may any marketing card include:
+              <br>&bull; <strong>Top Banner Text:</strong> <code>"Sri Brundabana Enterprises"</code>, <code>"SBE Rayagada"</code>, or daily stock dates.
+              <br>&bull; <strong>Bottom Footer Text:</strong> <code>"Qty"</code>, <code>"Qty:"</code>, or isolated carton piece counts.
+              <br><em>Rationale:</em> Wholesale buyers must see manufacturer-authentic promotional assets. Internal warehouse stock story cards reveal confidential counts and look unpolished.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-palette"></i> 4-Stage Pact</span>
+            <h3 class="rule-title">Rule 2: Catalog Card Synthesis</h3>
+            <p class="rule-text">
+              When using raw catalog PDF cutouts, follow the exact 4-stage compositor pipeline:
+              <br>1. Crop out footwear product tightly.
+              <br>2. Remove solid or messy background cleanly.
+              <br>3. Upscale &amp; HD enhance contrast and clarity.
+              <br>4. Composite onto branded wave background with top-right logo, drop shadow, and bottom specs strip.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-tag"></i> Cloud Standard</span>
+            <h3 class="rule-title">Rule 3: Semantic Asset Naming</h3>
+            <p class="rule-text">
+              Never upload cryptic WhatsApp filenames (e.g. <code>IMG-20240807-WA0013.jpg</code>). All Cloudinary assets must be normalized to:
+              <br><code>[BRAND]_[MODEL]_[COLOR].jpg</code>
+              <br>Examples: <code>RELIANCE_XM_9021_NVY.jpg</code>, <code>ACTION_AXEL_BLK_WHT.jpg</code>, <code>CUBIX_50251_GRAP.jpg</code>, <code>EEKEN_2141_BRT.jpg</code>.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--emerald">
+            <span class="rule-badge rule-badge--emerald"><i class="fa-solid fa-arrow-down-short-wide"></i> Priority Hierarchy</span>
+            <h3 class="rule-title">Rule 4: Manufacturer Precedence</h3>
+            <p class="rule-text">
+              Whenever clean manufacturer promotional cards are available in Quick Share / WhatsApp archives (and pass all negative filter checks), they must be <strong>strictly preferred over catalog cropped cutouts</strong>. Real factory cards contain authentic color grading and typography.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--purple">
+            <span class="rule-badge rule-badge--purple"><i class="fa-solid fa-gem"></i> Visual Integrity</span>
+            <h3 class="rule-title">Rule 5: Zero AI-Generated Brand Assets</h3>
+            <p class="rule-text">
+              Absolute purge of AI-designed clip art (shoe-prints, cartoon icons, gradient SVG mockups). Use <strong>only authentic manufacturer brand logos</strong> extracted directly from official physical catalogs or high-res vector scans (Paragon, Eeken, Action, Solea, Paralite, Comfy).
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-shield"></i> Brand Boundary Isolation</span>
+            <h3 class="rule-title">Rule 6: Cross-Brand Matching Prohibition</h3>
+            <p class="rule-text">
+              Models must strictly match within their brand boundary. An Eeken product name ending in <code>MRP1449/-</code> must never match a Paragon <code>EV1449LP</code> slipper. Price tokens (<code>MRP...</code>, <code>RS...</code>, <code>@...</code>) must be stripped before model tokens are evaluated.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Party Tagger & Risk Engine -->
+      <section class="journal-section" id="party-tagger-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-tags"></i></div>
+            <div>
+              <h2 class="section-title">Party Tagger &amp; Risk Analytics Engine</h2>
+              <p class="section-subtitle">Customer classification, Bad Debt flagging, Settled account monitoring, and Criticality aging</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 20px;">
+          Built directly into <strong>e-SBE Hub</strong> (route <code>/party-tagger</code>), this module equips management to segment customers and track default risk across thousands of Tally ledgers without modifying Tally's core chart of accounts:
+        </p>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-users"></i> Classification</span>
+            <h3 class="rule-title">Wholesalers vs Retailers (<code>partyType</code>)</h3>
+            <p class="rule-text">
+              Differentiates wholesale volume buyers from retail counter customers. Essential for margin analysis, targeted price tiering, and specialized promotional broadcasts.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--danger">
+            <span class="rule-badge rule-badge--danger"><i class="fa-solid fa-triangle-exclamation"></i> Credit Risk</span>
+            <h3 class="rule-title">Credit Risk Flagging (<code>creditStatus</code>)</h3>
+            <p class="rule-text">
+              Three operational states: <strong>Normal</strong> (healthy credit), <strong>Doubtful 🟠</strong> (payment delayed/unresponsive), and <strong>Bad Debt 🔴</strong> (written off / uncollectable). Bad debt balances are automatically isolated and deducted in financial dashboards.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-handshake"></i> Settlement</span>
+            <h3 class="rule-title">Settled (Not Accounted) (<code>settlementStatus</code>)</h3>
+            <p class="rule-text">
+              Tracks accounts where a physical settlement or compromise agreement was reached but not yet passed in Tally by the accountant. Captures <code>settledAmount</code> and <code>settlementNote</code>.
+            </p>
+          </div>
+        </div>
+
+        <h3 style="font-size: 16px; font-weight: 800; margin: 24px 0 12px 0;">Tri-Dimensional Exploration Views</h3>
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>View Mode</th>
+                <th>Layout &amp; Structure</th>
+                <th>Operational Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Group View</strong></td>
+                <td>Grouped by Tally Line / Sub-group (e.g. <em>Sundry Debtors - Rayagada Line</em>)</td>
+                <td>Route-wise and salesman-wise party tagging during line collection tours.</td>
+              </tr>
+              <tr>
+                <td><strong>Ledger View</strong></td>
+                <td>Alphabetical A-Z flat listing with instant real-time search</td>
+                <td>Rapid lookup of specific parties by name or location.</td>
+              </tr>
+              <tr>
+                <td><strong>Criticality View</strong></td>
+                <td>Segmented by Aging Buckets: <code>1 Year+ (Critical)</code> &bull; <code>6-9 Months</code> &bull; <code>3-6 Months</code> &bull; <code>&lt;3 Months</code></td>
+                <td>Prioritizing high-risk accounts and flagging historical overdue ledgers as Bad Debt or Doubtful.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout-box callout-box--success">
+          <div class="callout-icon"><i class="fa-solid fa-floppy-disk"></i></div>
+          <div class="callout-content">
+            <strong>Staged Batch Commit Architecture (<code>usePartyTagger.js</code>):</strong>
+            Tagging a party does not trigger an immediate disk write. Changes are buffered in reactive state and saved to <code>localStorage['sbe_staged_party_tags']</code>. A glowing <strong>"Commit Preview (X)"</strong> button appears in the top header. Clicking it opens a review modal displaying exact before/after tag diffs, allowing the user to review all changes and commit everything in a single Git push!
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Sample Room Staging -->
+      <section class="journal-section" id="sample-room-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-box-archive"></i></div>
+            <div>
+              <h2 class="section-title">Sample Room Staging &amp; Physical Tracking</h2>
+              <p class="section-subtitle">Offline-resilient sample showroom auditing and single-click batch commit</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 16px;">
+          The Sample Room view (<code>/sample-room</code>) tracks physical footwear samples displayed in the Rayagada wholesale showroom. Previously, toggling sample status when the local Node server was offline caused immediate network failure alerts.
+        </p>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-clipboard-check"></i> Composable</span>
+            <h3 class="rule-title">Reactive Staging (<code>useSampleRoomTagger.js</code>)</h3>
+            <p class="rule-text">
+              Toggling articles now stages them locally in memory and persists them to <code>localStorage['sbe_staged_sample_room']</code>. Field staff can audit the entire sample room on mobile without needing an active server connection.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--emerald">
+            <span class="rule-badge rule-badge--emerald"><i class="fa-solid fa-cloud-arrow-up"></i> Dual Sync</span>
+            <h3 class="rule-title">Single Batch Commit Preview</h3>
+            <p class="rule-text">
+              The header features a prominent <strong>"Commit Preview (X)"</strong> pill. Clicking it opens <code>SampleRoomCommitPreviewModal.vue</code>, showing staged changes, custom commit messages, and committing via <code>syncDataDualPath()</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Push Notification System -->
+      <section class="journal-section" id="notification-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-bell"></i></div>
+            <div>
+              <h2 class="section-title">Push Notification Engine &amp; Native Capacitor Alerts</h2>
+              <p class="section-subtitle">Broadcast management, scheduled alerts, and native Android status bar delivery</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 20px;">
+          The SBE notification engine allows management to broadcast urgent announcements, new arrival alerts, brand discounts, and festival greetings to all app users without requiring external paid push services:
+        </p>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--purple">
+            <span class="rule-badge rule-badge--purple"><i class="fa-solid fa-paper-plane"></i> Hub Broadcaster</span>
+            <h3 class="rule-title">Notification Sender Tab (<code>/notification-sender</code>)</h3>
+            <p class="rule-text">
+              Equipped with 1-click broadcast templates (<em>New Arrivals, Brand Restock, Festival Greetings, Critical Alerts</em>), target route pickers (<code>/workzone/new-arrivals</code>, <code>/rate-chart</code>, <code>/sample-room</code>), and an interactive mobile phone notification preview.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-database"></i> Storage Format</span>
+            <h3 class="rule-title"><code>notifications.json</code> Broadcast Feed</h3>
+            <p class="rule-text">
+              Broadcasts are appended to <code>assets/notifications.json</code> with structured payloads: <code>id</code>, <code>title</code>, <code>body</code>, <code>targetRoute</code>, <code>timestamp</code>, and <code>priority</code>.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--emerald">
+            <span class="rule-badge rule-badge--emerald"><i class="fa-brands fa-android"></i> Native Push</span>
+            <h3 class="rule-title">Capacitor Local Notifications (<code>@capacitor/local-notifications</code>)</h3>
+            <p class="rule-text">
+              When client apps start up, <code>checkAndNotifyBroadcasts()</code> polls the live notification feed. Unseen broadcast IDs trigger <strong>native Android system notifications</strong> in the device's status bar. Tapping the notification deep-links the user directly to the targeted app screen!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Data Pipeline & Tally Metadata Preservation -->
+      <section class="journal-section" id="data-pipeline-tally">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-database"></i></div>
+            <div>
+              <h2 class="section-title">Data Pipeline &amp; Tally Metadata Preservation Lock</h2>
+              <p class="section-subtitle">Tally XML ODBC integration, dual-path asset disk persistence, and in-memory metadata lock</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 20px;">
+          The local backend (<code>backend/src/server.js</code>) interfaces with Tally Prime and Tally ERP 9 over XML port 9000. It features a critical safeguard: the <strong>In-Memory Metadata Preservation Engine</strong>.
+        </p>
+
+        <div class="callout-box callout-box--danger">
+          <div class="callout-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="callout-content">
+            <strong>The Problem It Solves:</strong>
+            In Tally, custom tags like <code>partyType: 'wholesaler'</code>, <code>creditStatus: 'bad_debt'</code>, or <code>settlementStatus: 'settled_not_accounted'</code> do not exist. Whenever Tally synchronizes, an unshielded export would wipe out all party classifications and settlement notes!
+          </div>
+        </div>
+
+        <div class="callout-box callout-box--success">
+          <div class="callout-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="callout-content">
+            <strong>The Architectural Solution (<code>syncLedgerToFile</code>):</strong>
+            Before writing freshly parsed Tally ledgers to disk, the server reads the current <code>ledger-data.json</code> into memory. It builds a case-insensitive dictionary of all tagged parties keyed by <code>ledgerName.toLowerCase().trim()</code>. When fresh financial figures are parsed, each ledger record is re-attached with its preserved custom tags. Custom party tags and sample room flags are <strong>permanently locked and preserved</strong> against Tally overwrites!
+          </div>
+        </div>
+
+        <h3 style="font-size: 16px; font-weight: 800; margin: 24px 0 12px 0;">Dual-Path Synchronous Disk Writes</h3>
+        <p class="rule-text" style="margin-bottom: 14px;">
+          Whenever a batch update endpoint executes on the backend (e.g. <code>POST /api/ledger/updateBatchMeta</code> or <code>POST /api/updateSampleRoom</code>), it writes synchronously to <strong>both</strong> target folders:
+        </p>
+        <div class="code-box">
+          <div class="code-header">
+            <span>Disk Synchronization Paths</span>
+            <button class="btn-copy" onclick="copyCode(this)"><i class="fa-solid fa-copy"></i> Copy</button>
+          </div>
+          <pre><code>// 1. Primary Frontend Assets Directory:
+frontend/public/assets/ledger-data.json
+frontend/public/assets/stock-data.json
+frontend/public/assets/notifications.json
+
+// 2. Hub Mirror Assets Directory:
+sbe-hub/public/assets/ledger-data.json
+sbe-hub/public/assets/stock-data.json
+sbe-hub/public/assets/notifications.json</code></pre>
+        </div>
+      </section>
+
+      <!-- Section: Dual-Path GitHub Engine -->
+      <section class="journal-section" id="github-sync-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-brands fa-github"></i></div>
+            <div>
+              <h2 class="section-title">Direct Dual-Path GitHub Synchronization Engine</h2>
+              <p class="section-subtitle">Local backend priority with automatic direct GitHub API fallback for remote &amp; mobile users</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rule-text" style="margin-bottom: 16px;">
+          Engineered in <code>frontend/src/utils/githubSync.js</code>, the <code>syncDataDualPath()</code> utility guarantees that updates succeed whether the user is on the warehouse desktop or a mobile phone on a remote sales trip:
+        </p>
+
+        <div class="stages-flex">
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-server"></i></div>
+            <div class="stage-title">Step 1: Local Backend</div>
+            <div class="stage-desc">Attempts local Node server endpoint (e.g. <code>http://localhost:3000/api/...</code>) with a strict 2500ms timeout.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <div class="stage-title">Step 2: GitHub API Fallback</div>
+            <div class="stage-desc">If backend is offline or timed out, falls back to direct GitHub REST API using authenticated Personal Access Token.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+            <div class="stage-title">Step 3: Conflict Resolution</div>
+            <div class="stage-desc">Fetches latest file SHA, base64 encodes data, and automatically retries upon HTTP 409 commit collisions.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stage-title">Step 4: Live Cache Refresh</div>
+            <div class="stage-desc">Flushes local cache and emits reactive updates across UI composables without requiring a page reload.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: One Touch & Canvas Engine -->
+      <section class="journal-section" id="one-touch-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-share-nodes"></i></div>
+            <div>
+              <h2 class="section-title">One Touch Mode &amp; HTML5 Canvas Compositor</h2>
+              <p class="section-subtitle">Natural aspect ratio preservation, pure black bottom extension bars, and royal gold cover synthesis</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-grid">
+          <div class="rule-card rule-card--gold">
+            <span class="rule-badge rule-badge--gold"><i class="fa-solid fa-expand"></i> Aspect Ratio Rule</span>
+            <h3 class="rule-title">Natural Aspect Ratio Preservation (Zero Squashing)</h3>
+            <p class="rule-text">
+              Footwear manufacturer promotional cards often have tall portrait dimensions. Previously, forced scaling stretched or compressed photos unnaturally. The compositor now calculates proportional scaling:
+              <br><code>scale = Math.min(canvasWidth / img.width, canvasHeight / img.height)</code>
+              <br>The photo is centered and letterboxed within a clean 4:3 frame without a single pixel of distortion!
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--blue">
+            <span class="rule-badge rule-badge--blue"><i class="fa-solid fa-rectangle-ad"></i> Specs Banner</span>
+            <h3 class="rule-title">Pure Black Bottom Extension Bar</h3>
+            <p class="rule-text">
+              A solid black extension bar (<code>#000000</code>) rendered at the bottom of every shared image featuring:
+              <br>&bull; <strong>Top Line:</strong> Stock Date &bull; Article Name (bold white)
+              <br>&bull; <strong>Bottom Line:</strong> Size Run &bull; Colorway &bull; Stock Qty (golden accent)
+              <br>Ensures wholesale buyers have full commercial specs without ruining the manufacturer photography.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card--purple">
+            <span class="rule-badge rule-badge--purple"><i class="fa-solid fa-crown"></i> Cover Page</span>
+            <h3 class="rule-title">Royal Minimalist Brand Summary Cover Page</h3>
+            <p class="rule-text">
+              Synthesized dynamically via <code>generateBrandSummaryImage.js</code>: Off-white canvas, gold geometric borders, official manufacturer logo, HD e-SBE logo, and large calendar date/day lockup. Provides an executive summary cover for every WhatsApp bundle.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Triple Mode Toggle -->
+      <section class="journal-section" id="triple-toggle-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-sliders"></i></div>
+            <div>
+              <h2 class="section-title">Clean / All / Upload Mode Triple Toggle Engine</h2>
+              <p class="section-subtitle">Strict in-stock filtering, missing image workbench, and admin session batching</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Target Audience</th>
+                <th>Filtering &amp; Display Logic</th>
+                <th>Key Capabilities</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Clean Mode (Default)</strong></td>
+                <td>Wholesale Buyers &amp; Retail Clients</td>
+                <td>Strictly shows items with <strong>Stock &gt; 0</strong> AND a <strong>verified valid photo</strong>. Articles with missing or broken cloud images are hidden.</td>
+                <td>Presents a pristine, catalog-quality digital showroom without blank cards or missing stock.</td>
+              </tr>
+              <tr>
+                <td><strong>All Mode</strong></td>
+                <td>Warehouse Staff &amp; Salesmen</td>
+                <td>Displays the full active inventory including articles that do not yet have photos.</td>
+                <td>Allows checking inventory numbers for unphotographed incoming consignments.</td>
+              </tr>
+              <tr>
+                <td><strong>Upload Mode</strong></td>
+                <td>Admin &amp; Photography Team (Protected)</td>
+                <td>Filters specifically for <strong>items missing photos</strong> (Stock &gt; 0, no image), sorted by arrival recency and stock quantity.</td>
+                <td>Camera snap / photo selector, instant Cloudinary upload, session batch staging, and 1-click Git push.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: 4-Layer Defense Engine -->
+      <section class="journal-section" id="four-layer-defense">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <h2 class="section-title">The 4-Layer Defense Engine</h2>
+              <p class="section-subtitle">Multi-stage image verification pipeline executing in <code>process_all_quick_share.py</code></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="stages-flex">
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+            <div class="stage-title">Layer 1: Aspect Ratio</div>
+            <div class="stage-desc">Rejects full-screen phone screenshots (<code>ratio &lt; 0.58</code>). Saves hundreds of OCR cycles on non-product images.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
+            <div class="stage-title">Layer 2: Visual Strip Scan</div>
+            <div class="stage-desc">Samples top 8% and bottom 8% pixels. Rejects images with solid black status banner overlays (<code>brightness &lt; 35</code>).</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-font"></i></div>
+            <div class="stage-title">Layer 3: Fuzzy OCR Rejection</div>
+            <div class="stage-desc">Scans for dealer names (<em>Rayagada, Brundabana, SBE</em>) with Levenshtein typo tolerances and WhatsApp date stamps.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div class="stage-title">Layer 4: Footer Qty Scanner</div>
+            <div class="stage-desc">Examines bottom 15% for inventory count badges (<code>"Qty: 12"</code>, <code>"Qty 48"</code>), preserving manufacturer purity.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Catalog Card Synthesis -->
+      <section class="journal-section" id="synthesis-engine">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div>
+              <h2 class="section-title">Catalog Card Synthesis Engine</h2>
+              <p class="section-subtitle">Automated promotional asset compositor matching master template (<code>Core-1136.png</code>)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="stages-flex">
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-crop"></i></div>
+            <div class="stage-title">Stage 1: Precision Crop</div>
+            <div class="stage-desc">Extracts footwear product bounding box from high-res 300 DPI master catalog PDF pages.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-eraser"></i></div>
+            <div class="stage-title">Stage 2: Background Purge</div>
+            <div class="stage-desc">Isolates footwear product cleanly with feathered transparent contours.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-wand-magic"></i></div>
+            <div class="stage-title">Stage 3: HD Enhancement</div>
+            <div class="stage-desc">Upscales 2x, balances contrast, sharpens textures, and color-corrects sole rubber.</div>
+          </div>
+
+          <div class="stage-box">
+            <div class="stage-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="stage-title">Stage 4: Compositor</div>
+            <div class="stage-desc">Layers product onto luxury wave background with official logo, soft shadow, and specs strip.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Dual Cloudinary & Edge Failover -->
+      <section class="journal-section" id="dual-cloudinary">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-cloud"></i></div>
+            <div>
+              <h2 class="section-title">Dual Cloudinary Architecture &amp; Cloudflare Edge CDN</h2>
+              <p class="section-subtitle">Multi-tenant cloud storage, automatic failover health monitoring, and WebP compression</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Tier</th>
+                <th>Provider / Account</th>
+                <th>Cloud Name / Upload Preset</th>
+                <th>Status &amp; Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Primary Storage</strong></td>
+                <td>Cloudinary (Primary)</td>
+                <td>Cloud: <code>dc3afck84</code> &bull; Preset: <code>ml_default</code></td>
+                <td><span class="badge-status badge-status--success"><i class="fa-solid fa-check"></i> Active</span> Primary catalog image repository</td>
+              </tr>
+              <tr>
+                <td><strong>Secondary Storage</strong></td>
+                <td>Cloudinary (Backup &amp; New Uploads)</td>
+                <td>Cloud: <code>dieqsg5tr</code> &bull; Preset: <code>e-sbe-pics</code></td>
+                <td><span class="badge-status badge-status--success"><i class="fa-solid fa-check"></i> Active</span> High-res verified manufacturer cards &amp; uploads</td>
+              </tr>
+              <tr>
+                <td><strong>Global Edge Proxy</strong></td>
+                <td>Cloudflare Cache (wsrv.nl)</td>
+                <td>Endpoint: <code>//images.weserv.nl/?url=...&amp;output=webp&amp;q=85</code></td>
+                <td><span class="badge-status badge-status--success"><i class="fa-solid fa-bolt"></i> Accelerated</span> Instant WebP compression &amp; zero-cost CDN</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Matching Engine & Database Disinfection -->
+      <section class="journal-section" id="matching-cleansing">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-filter"></i></div>
+            <div>
+              <h2 class="section-title">Matching Engine &amp; Database Disinfection</h2>
+              <p class="section-subtitle">Brand boundary isolation, pseudo-model token purging, and colorway desynchronization fixes</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout-box callout-box--info">
+          <div class="callout-icon"><i class="fa-solid fa-stethoscope"></i></div>
+          <div class="callout-content">
+            <strong>The 31-Record Forensic Colorway Cleansing:</strong>
+            Multi-variant articles (e.g. <em>Cubix C-60612, E-21584, E-24511</em>) previously had swapped colorway cards due to over-permissive OCR text fallbacks. We engineered <code>fix_color_mismatches.py</code>, auditing all 5,206 catalog products across both <code>frontend/</code> and <code>sbe-hub/</code> production databases, executing 62 total record corrections.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Brand Tabs & Luxury Typographic Identity -->
+      <section class="journal-section" id="brand-tabs-ui">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-table-cells-large"></i></div>
+            <div>
+              <h2 class="section-title">Brand Tabs &amp; Luxury Typographic Identity</h2>
+              <p class="section-subtitle">Pill-in-pill brand lockups, authentic vector badges, and Swiss typography</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Brand Tab</th>
+                <th>Chassis Architecture</th>
+                <th>Asset Origin &amp; Visual Specs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Paragon Gents / Ladies</strong></td>
+                <td>Superimposed Pill-in-Pill</td>
+                <td>Circular red Paragon emblem superimposing an outer chassis with tracked uppercase Swiss typography.</td>
+              </tr>
+              <tr>
+                <td><strong>Eeken, Action, Cubix, Swastik</strong></td>
+                <td>3:1 Edge-to-Edge Filled Pill</td>
+                <td>Official manufacturer vector logos rendered edge-to-edge inside high-contrast capsules.</td>
+              </tr>
+              <tr>
+                <td><strong>P-Toes &amp; Gumboot</strong></td>
+                <td>Industrial Heavy-Duty Badges</td>
+                <td>Direct 300 DPI vector catalog extraction for P-Toes; rugged industrial styling for Gumboot.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Source Archives -->
+      <section class="journal-section" id="source-archives">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-folder-tree"></i></div>
+            <div>
+              <h2 class="section-title">Source Archives &amp; Catalog Repositories</h2>
+              <p class="section-subtitle">Master zip archives and photography repositories cataloged in the codebase</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Archive File</th>
+                <th>File Count</th>
+                <th>Contents &amp; Brand Focus</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>QUICK SHARE.zip</code></td>
+                <td>3,296 photos</td>
+                <td>Paragon, Action, Eeken, Cubix manufacturer WhatsApp marketing cards.</td>
+              </tr>
+              <tr>
+                <td><code>LOOSE FOOTWEAR PHOTO GALLERY.zip</code></td>
+                <td>4,133 photos</td>
+                <td>Loose footwear articles, Swastik lines, local footwear manufacturers.</td>
+              </tr>
+              <tr>
+                <td><code>PICTURES.zip</code></td>
+                <td>583 assets</td>
+                <td>Official manufacturer catalog pages, high-res brand logos, Core Paragon assets.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Chronological Operations Ledger -->
+      <section class="journal-section" id="operations-ledger">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+              <h2 class="section-title">Chronological Operations Ledger</h2>
+              <p class="section-subtitle">Complete commit-by-commit timeline detailing problems diagnosed, root causes, and production solutions</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline">
+          <!-- Oct 08, 2026: SBE Hub Master Engineering Journal, Party Tagger & Notifications -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--green"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-10-08 IST &bull; Production Milestone</div>
+              <h4 class="timeline-heading">SBE Hub Engineering Journal Restoration, Party Tagger Risk Engine &amp; Push Broadcaster</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Engineering Journal in SBE Hub:</strong> Resolved route omission in <code>sbe-hub/src/router.js</code> and missing public asset files. Embedded responsive header with Back to Hub navigation and fullscreen new-tab trigger. Rebuilt journal as the central AI Master Guide and architecture ledger.</li>
+                  <li><strong>Party Tagger Module (<code>/party-tagger</code>):</strong> Built enterprise party classification system: Wholesalers vs Retailers (<code>partyType</code>), Credit Risk (<code>creditStatus</code>: Normal, Bad Debt 🔴, Doubtful 🟠), and Settled Not Accounted (<code>settlementStatus</code>, <code>settlementNote</code>, <code>settledAmount</code>). Provided Group View, Ledger View, and Criticality Aging buckets (&gt;1 Year, 6-9M, 3-6M, &lt;3M).</li>
+                  <li><strong>Staged Batch Commits:</strong> Implemented session and LocalStorage buffering across Party Tagger, Sample Room, and Photo Uploader, allowing users to stage hundreds of updates and push in a single Git commit.</li>
+                  <li><strong>Tally Sync In-Memory Metadata Preservation:</strong> Updated <code>syncLedgerToFile()</code> in <code>backend/src/server.js</code> to extract and preserve custom party tags across Tally sync cycles so accountants never wipe operational tags.</li>
+                  <li><strong>Notification Broadcaster (<code>/notification-sender</code>):</strong> Built broadcast notification center with phone preview, template selector, dual-path sync, and native Capacitor local push integration on mobile.</li>
+                  <li><strong>Smart Dual-Mode Sync Button:</strong> Enhanced SBE Hub header sync to trigger live Tally ODBC/HTTP sync on PC, and remote GitHub CDN refresh on mobile.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Oct 07, 2026: One Touch Natural Aspect Ratio & Image Fixes -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--blue"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-10-07 IST &bull; Commits <span class="tag-commit">2241a4c</span>, <span class="tag-commit">26660c9</span>, <span class="tag-commit">705d1e4</span></div>
+              <h4 class="timeline-heading">Natural Aspect Ratio Preservation in One Touch Mode &amp; Catalog Disinfection</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Aspect Ratio Fix (<code>2241a4c</code>):</strong> Eliminated unnatural vertical squashing on tall portrait footwear photos in One Touch mode. Compositor now centers and letterboxes images within standard 4:3 frame without distortion.</li>
+                  <li><strong>Eeken 16104 Image Fix (<code>26660c9</code>):</strong> Corrected primary image mapping for Eeken 16104 to official HD dealer poster (MRP 549/529) and eliminated false MRP 649 card reference.</li>
+                  <li><strong>Bulk Photo Uploads (<code>705d1e4</code>, <code>bd6d9c2</code>):</strong> Uploaded verified manufacturer images across Fencer 604, Cubix L-74552/31033, Magnet Ladies Chin Chin, Alina, and Ashu Razia loose lines.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Oct 06, 2026: Clean View Strict Filter & Canvas Performance -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-10-06 IST &bull; Commits <span class="tag-commit">413cbbf</span>, <span class="tag-commit">ae72ba4</span>, <span class="tag-commit">3379a43</span></div>
+              <h4 class="timeline-heading">Clean View Strict Cloud Filter &amp; One Touch Canvas Performance</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Strict Clean View (<code>413cbbf</code>):</strong> Enhanced clean view filter to actively exclude products with missing, unreachable, or broken cloud image URLs from the customer-facing showroom.</li>
+                  <li><strong>Canvas Direct Rendering (<code>3379a43</code>):</strong> Refactored One Touch image generator to use direct HTML5 Canvas rendering, accelerating photo pack creation and preventing mobile memory spikes.</li>
+                  <li><strong>Swastik &amp; Vertex Uploads (<code>54ad878</code>, <code>39f65ac</code>):</strong> Uploaded verified photos for 95+ articles across Swastik Kids Spin, Sandoz, Eeken 2182, and Vertex Plus 6104.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Oct 05, 2026: CI Build Suppression & Session Photo Batching -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-10-05 IST &bull; Commits <span class="tag-commit">b99b31d</span>, <span class="tag-commit">575a27b</span>, <span class="tag-commit">e271b47</span></div>
+              <h4 class="timeline-heading">CI Build Suppression, Photo Session Batching &amp; Brand Logo Update</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>CI Suppression (<code>b99b31d</code>):</strong> Configured negative path filters in GitHub Actions to bypass Play Store and APK builds on routine photo uploads.</li>
+                  <li><strong>Photo Session Batching (<code>575a27b</code>):</strong> Replaced single-photo auto-commits with session staging and batch commit preview, significantly reducing Git history clutter.</li>
+                  <li><strong>Cropped e-SBE Logo (<code>e271b47</code>):</strong> Integrated cropped high-resolution e-SBE brand emblem across application assets and balanced cover page geometry.</li>
+                  <li><strong>Upload Queue Filter (<code>9cd18c0</code>):</strong> Filtered out zero-stock items from the admin upload workbench.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Oct 04, 2026: Triple Mode Toggle & WhatsApp Bottom Specs Bar -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--purple"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-10-04 IST &bull; Commits <span class="tag-commit">8d94031</span>, <span class="tag-commit">d2837c7</span>, <span class="tag-commit">4d465e4</span></div>
+              <h4 class="timeline-heading">Triple Clean/Upload Mode Toggle &amp; WhatsApp Bottom Specs Bar</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Triple Toggle (<code>8d94031</code>, <code>d2837c7</code>):</strong> Introduced Clean, All, and Upload modes in <code>BrandLanding.vue</code> with admin password protection for photo management.</li>
+                  <li><strong>Bottom Extension Bar (<code>4d465e4</code>):</strong> Implemented pure black extension banner at bottom of shared photos displaying Date, Article Name, Size, Color, and Qty.</li>
+                  <li><strong>Royal Minimalist Cover Page (<code>27a108e</code>):</strong> Created white-gold brand summary cover page with manufacturer logo, SBE crest, and prominent calendar lockup.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sept 24 - 27, 2026: SBE Hub Standalone App & Analyzer Remake -->
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot--purple"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-24 to 2026-09-27 IST &bull; Commits <span class="tag-commit">e4dafc5</span>, <span class="tag-commit">078db35</span>, <span class="tag-commit">d30e497</span></div>
+              <h4 class="timeline-heading">SBE Hub Standalone App, Shared Vite Resolver &amp; Aging Analyzer Remake</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Standalone SBE Hub (<code>e4dafc5</code>, <code>078db35</code>):</strong> Launched dedicated administrative portal sharing code with <code>frontend/</code> via custom <code>fallbackToFrontend()</code> plugin.</li>
+                  <li><strong>Line Debtors Analyzer Remake (<code>d30e497</code>):</strong> Redesigned financial analyzer with 30/60/90 days aging breakdown, risk KPIs, and 1-tap WhatsApp payment reminder generation.</li>
+                  <li><strong>Google Play Alpha Track (<code>1361c2d</code>, <code>d4915de</code>):</strong> Configured release signing keystore, target SDK 35, and automated Google Play publishing pipelines for both apps.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sept 23, 2026: Multi-Agent Extraction & Luxury Typography -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-23 IST &bull; Commits <span class="tag-commit">0c61877</span>, <span class="tag-commit">365633d</span></div>
+              <h4 class="timeline-heading">Purge of AI SVG Mockups, Swiss Typography &amp; 31 Colorway Corrections</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Purge of AI Mockups (<code>0c61877</code>):</strong> Deleted generic AI-generated SVG logos and replaced them with authentic manufacturer vector badges.</li>
+                  <li><strong>Luxury Typography (<code>365633d</code>):</strong> Introduced clean Swiss typographic identity and removed redundant secondary filter bars.</li>
+                  <li><strong>Database Cleansing:</strong> Executed <code>fix_color_mismatches.py</code> across both production catalogs, correcting 62 total records.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sept 20, 2026: Dual Cloudinary & Edge Proxy -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date"><i class="fa-solid fa-circle-check"></i> 2026-09-20 IST &bull; Architecture Milestone</div>
+              <h4 class="timeline-heading">Dual Cloudinary Failover &amp; Cloudflare Edge CDN Integration</h4>
+              <div class="timeline-body">
+                <ul>
+                  <li><strong>Secondary Cloudinary Account:</strong> Integrated <code>dieqsg5tr</code> with preset <code>e-sbe-pics</code> and automatic failover handling in <code>cloudStatus.js</code>.</li>
+                  <li><strong>Cloudflare Edge Proxy:</strong> Routed image requests through <code>images.weserv.nl</code> for on-the-fly WebP conversion and zero-latency caching.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Scripts & Execution Library -->
+      <section class="journal-section" id="code-reference">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon"><i class="fa-solid fa-code"></i></div>
+            <div>
+              <h2 class="section-title">Scripts &amp; Automation Library</h2>
+              <p class="section-subtitle">Key scripts and automation utilities created in <code>frontend/scripts/</code> and <code>backend/</code></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Script</th>
+                <th>Language / Tech</th>
+                <th>Purpose &amp; Capabilities</th>
+                <th>Execution Command</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>server.js</code></td>
+                <td>Node.js (Express)</td>
+                <td>Tally XML ODBC sync, in-memory metadata preservation lock, dual-path asset disk updates, background Git commits</td>
+                <td><code>node backend/src/server.js</code></td>
+              </tr>
+              <tr>
+                <td><code>githubSync.js</code></td>
+                <td>JavaScript (ESM)</td>
+                <td>Client-side dual-path sync engine: local backend first, direct GitHub REST API fallback with 409 conflict handling</td>
+                <td><em>Imported in Composables</em></td>
+              </tr>
+              <tr>
+                <td><code>process_all_quick_share.py</code></td>
+                <td>Python (Pillow, OCR)</td>
+                <td>4-layer defense filter, OCR brand extraction, semantic renaming, and direct Cloudinary upload</td>
+                <td><code>python frontend/scripts/process_all_quick_share.py</code></td>
+              </tr>
+              <tr>
+                <td><code>fix_color_mismatches.py</code></td>
+                <td>Python</td>
+                <td>Precision colorway audit &amp; desynchronization fixer: corrects multi-variant swapped images across catalog databases</td>
+                <td><code>python frontend/scripts/fix_color_mismatches.py</code></td>
+              </tr>
+              <tr>
+                <td><code>generate_catalog_card.py</code></td>
+                <td>Python (Pillow)</td>
+                <td>4-stage promotional card synthesizer: crop, background removal, HD enhance, wave layout with logo and specs</td>
+                <td><code>python frontend/scripts/generate_catalog_card.py --help</code></td>
+              </tr>
+              <tr>
+                <td><code>cleanse_mismatched_images.py</code></td>
+                <td>Python</td>
+                <td>Full database audit: verifies brand boundaries, purges pseudo-model tokens, validates image URLs</td>
+                <td><code>python frontend/scripts/cleanse_mismatched_images.py</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Page Footer -->
+  <footer class="journal-footer">
+    <div class="footer-left">
+      <span style="font-weight: 800; color: var(--text-main);">Sri Brundabana Enterprises</span>
+      <span>&bull;</span>
+      <span>Technical Engineering &amp; Operations Journal</span>
+      <span>&bull;</span>
+      <span>Rayagada, Odisha</span>
+    </div>
+    <div>
+      <span>Authoritative Architecture Ledger &bull; Maintained by Antigravity Agent</span>
+    </div>
+  </footer>
+
+  <script>
+    // Universal Back Navigation Handler
+    function handleGoBack() {
+      if (window.parent && window.parent !== window) {
+        try {
+          if (window.parent.location.hash) {
+            window.parent.location.hash = '#/';
+            return;
+          }
+        } catch (e) {
+          // Cross-origin fallback
+        }
+      }
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '../';
+      }
+    }
+
+    // Dark/Light Mode Toggle
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let currentTheme = localStorage.getItem('sbe-journal-theme') || (prefersDark ? 'dark' : 'light');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('sbe-journal-theme', theme);
+      const icon = themeToggleBtn.querySelector('i');
+      if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun';
+      } else {
+        icon.className = 'fa-solid fa-moon';
+      }
+    }
+
+    applyTheme(currentTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(currentTheme);
+    });
+
+    // Copy Code Block Handler
+    function copyCode(btn) {
+      const codeBlock = btn.closest('.code-box').querySelector('pre code');
+      if (!codeBlock) return;
+      navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+        }, 2000);
+      });
+    }
+
+    // Live Search Filter
+    const searchInput = document.getElementById('journalSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const sections = document.querySelectorAll('.journal-section');
+        sections.forEach(sec => {
+          if (!term) {
+            sec.style.display = '';
+            return;
+          }
+          const text = sec.innerText.toLowerCase();
+          if (text.includes(term)) {
+            sec.style.display = '';
+          } else {
+            sec.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Scrollspy for Table of Contents
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const sections = document.querySelectorAll('section[id]');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          tocLinks.forEach(link => {
+            if (link.getAttribute('href') === `#${id}`) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(sec => observer.observe(sec));
+  </script>
+</body>
+</html>
