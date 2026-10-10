@@ -1184,13 +1184,13 @@
                 <i class="fa-solid fa-check-circle text-lg"></i>
               </div>
 
-              <!-- Gear icon for sub-brand picker -->
+              <!-- Gear icon for sub-brand picker / settings -->
               <button
-                v-if="group.brands.length > 1"
+                v-if="group.brands.length > 1 || group.isNewArrival"
                 @click.stop="group.showBrandPicker = !group.showBrandPicker"
                 class="w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ml-1 cursor-pointer"
                 :class="group.showBrandPicker ? 'bg-violet-200 text-violet-800' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-                :title="'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
+                :title="group.isNewArrival ? 'Configure timeframe' : 'Configure sub-brands (' + group.activeBrands.length + '/' + group.brands.length + ')'"
               >
                 <i class="fa-solid fa-gear text-xs"></i>
               </button>
@@ -1233,33 +1233,44 @@
             </div>
           </div>
 
-          <!-- Sub-brand Picker -->
+          <!-- Sub-brand Picker / Settings -->
           <div
             v-if="group.showBrandPicker"
             class="px-4 pb-3 border-t border-violet-100 bg-violet-50/30"
           >
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 pt-2">Sub-brands</p>
-            <div class="flex flex-wrap gap-2">
-              <label
-                v-for="brand in group.brands"
-                :key="brand"
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl cursor-pointer transition-all text-xs font-semibold border"
-                :class="group.activeBrands.includes(brand)
-                  ? 'bg-violet-100 border-violet-300 text-violet-800'
-                  : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
-              >
-                <input
-                  type="checkbox"
-                  :checked="group.activeBrands.includes(brand)"
-                  @change="toggleSubBrand(idx, brand)"
-                  class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
-                />
-                {{ brand }}
-              </label>
-            </div>
-            <p class="text-[10px] text-slate-400 mt-1.5">
-              {{ group.activeBrands.length }} of {{ group.brands.length }} selected
-            </p>
+            <template v-if="group.isNewArrival">
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 pt-2">Timeframe</p>
+              <div class="flex flex-wrap gap-2">
+                <label v-for="days in [30, 45, 60]" :key="days" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl cursor-pointer transition-all text-xs font-semibold border" :class="group.newArrivalDays === days ? 'bg-violet-100 border-violet-300 text-violet-800' : 'bg-slate-50 border-slate-200 text-slate-400'">
+                  <input type="radio" v-model="group.newArrivalDays" :value="days" class="hidden" />
+                  Latest {{ days }} Days
+                </label>
+              </div>
+            </template>
+            <template v-else>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 pt-2">Sub-brands</p>
+              <div class="flex flex-wrap gap-2">
+                <label
+                  v-for="brand in group.brands"
+                  :key="brand"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl cursor-pointer transition-all text-xs font-semibold border"
+                  :class="group.activeBrands.includes(brand)
+                    ? 'bg-violet-100 border-violet-300 text-violet-800'
+                    : 'bg-slate-50 border-slate-200 text-slate-400 line-through'"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="group.activeBrands.includes(brand)"
+                    @change="toggleSubBrand(idx, brand)"
+                    class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+                  />
+                  {{ brand }}
+                </label>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1.5">
+                {{ group.activeBrands.length }} of {{ group.brands.length }} selected
+              </p>
+            </template>
           </div>
 
           <!-- Accordion Dropdown -->
@@ -1455,6 +1466,7 @@ const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL
 const OLD_STOCK_SEPARATOR_URL = 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790151882/e-sbe/Old_stock_ends_here_oc3rh7.png';
 
 const ONE_TOUCH_GROUPS = [
+  { label: 'New Arrival', isNewArrival: true, brands: [], icon: '✨', defaultMinQty: 1, newArrivalDays: 60 },
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
   { label: 'Kids', isKids: true, brands: [], icon: '🧒', defaultMinQty: 10 },
@@ -1534,6 +1546,7 @@ const oneTouchGroups = ref(
     minQty: g.defaultMinQty,
     maxQty: '',
     activeBrands: [...g.brands],
+    newArrivalDays: g.newArrivalDays || 60,
     showBrandPicker: false,
     isExpanded: false,
     status: 'idle',
@@ -2932,6 +2945,24 @@ const prepareOneTouch = async () => {
             if (product.quantity < effectiveMinQty) continue;
             if (effectiveMaxQty > 0 && product.quantity > effectiveMaxQty) continue;
             targetProducts.push({ product, group: fg });
+          }
+        }
+      } else if (group.isNewArrival) {
+        const thresholdDate = new Date();
+        thresholdDate.setDate(thresholdDate.getDate() - (group.newArrivalDays || 60));
+        for (const fg of data) {
+          if (fg.groupName === '_META_DATA_' || !fg.products) continue;
+          for (const product of fg.products) {
+            const hasImg = product.imageUrl || product.secondaryImageUrl;
+            if (oneTouchOnlyWithPhotos.value && !hasImg) continue;
+            if (product.quantity < effectiveMinQty) continue;
+            if (effectiveMaxQty > 0 && product.quantity > effectiveMaxQty) continue;
+            if (!product.firstSeenAt) continue;
+            
+            const itemDate = new Date(product.firstSeenAt);
+            if (itemDate >= thresholdDate) {
+              targetProducts.push({ product, group: fg });
+            }
           }
         }
       } else {
