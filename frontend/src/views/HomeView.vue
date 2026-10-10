@@ -265,6 +265,22 @@ const links = [
     gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
   },
   {
+    path: '/sample-room',
+    label: 'Sample Room',
+    desc: 'Track physical samples',
+    icon: 'fa-box-open',
+    colorKey: 'teal',
+    gradient: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
+  },
+  {
+    path: '/stock-trend',
+    label: 'Stock Trends',
+    desc: 'Movement & reorder insights',
+    icon: 'fa-chart-line',
+    colorKey: 'amber',
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+  },
+  {
     path: '/order-maker',
     label: 'Order Maker',
     desc: 'Rapid 1-screen photo ordering',
