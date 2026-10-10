@@ -1128,6 +1128,28 @@
         </div>
       </div>
 
+      <!-- Sort By Setting -->
+      <div class="px-3 sm:px-6 py-3 bg-white border-b border-slate-200/80 flex-shrink-0 shadow-sm z-10 relative">
+        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Sort Items By</label>
+        <div class="flex gap-1.5 bg-slate-100/50 p-1 rounded-xl border border-slate-200/60">
+          <label class="flex-1 text-center py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold cursor-pointer transition-all select-none"
+                 :class="oneTouchSortMode === 'default' ? 'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-200/50'">
+            <input type="radio" v-model="oneTouchSortMode" value="default" class="hidden" />
+            <i class="fa-solid fa-layer-group mr-1 opacity-60"></i> Brand Default
+          </label>
+          <label class="flex-1 text-center py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold cursor-pointer transition-all select-none"
+                 :class="oneTouchSortMode === 'qtyDesc' ? 'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-200/50'">
+            <input type="radio" v-model="oneTouchSortMode" value="qtyDesc" class="hidden" />
+            <i class="fa-solid fa-arrow-down-9-1 mr-1 opacity-60"></i> Qty (High to Low)
+          </label>
+          <label class="flex-1 text-center py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold cursor-pointer transition-all select-none"
+                 :class="oneTouchSortMode === 'newest' ? 'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-200/50'">
+            <input type="radio" v-model="oneTouchSortMode" value="newest" class="hidden" />
+            <i class="fa-solid fa-sparkles mr-1 opacity-60"></i> New Arrivals
+          </label>
+        </div>
+      </div>
+
       <!-- Group List -->
       <div class="flex-1 overflow-y-auto px-3 sm:px-6 py-3 space-y-2 custom-scrollbar">
         <div
@@ -1554,6 +1576,7 @@ const oneTouchGroups = ref(
   }))
 );
 const oneTouchOnlyWithPhotos = ref(true);
+const oneTouchSortMode = ref('default'); // 'default', 'qtyDesc', 'newest'
 const oneTouchShareMode = ref('image'); // 'image' (default) or 'pdf'
 const oneTouchMinQtyEnabled = ref(true);
 const oneTouchLowStockMode = ref(false);
@@ -2979,6 +3002,17 @@ const prepareOneTouch = async () => {
             targetProducts.push({ product, group: fg });
           }
         }
+      }
+
+      // Apply global sort option
+      if (oneTouchSortMode.value === 'qtyDesc') {
+        targetProducts.sort((a, b) => b.product.quantity - a.product.quantity);
+      } else if (oneTouchSortMode.value === 'newest') {
+        targetProducts.sort((a, b) => {
+          const dateA = a.product.firstSeenAt ? new Date(a.product.firstSeenAt).getTime() : 0;
+          const dateB = b.product.firstSeenAt ? new Date(b.product.firstSeenAt).getTime() : 0;
+          return dateB - dateA;
+        });
       }
 
       if (targetProducts.length === 0) {
