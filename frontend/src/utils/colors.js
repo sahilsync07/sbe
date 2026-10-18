@@ -37,10 +37,23 @@ export const COLOR_MAP = {
     'DARK GREY': { color: '#4b5563', label: 'Dark Grey' },
     'DGY': { color: '#4b5563', label: 'Dark Grey' },
     'MOUSE': { color: '#78716c', label: 'Mouse' },
+    'WOOD GREY': { color: '#64748b', label: 'Wood Grey' },
+    'WOOD GRAY': { color: '#64748b', label: 'Wood Grey' },
+    'WOOD-GREY': { color: '#64748b', label: 'Wood Grey' },
+    'WOOD-GRAY': { color: '#64748b', label: 'Wood Grey' },
+    'WOOD.GREY': { color: '#64748b', label: 'Wood Grey' },
+    'W.GRY': { color: '#64748b', label: 'Wood Grey' },
+    'WGRY': { color: '#64748b', label: 'Wood Grey' },
 
     // BLUES
     'BLU': { color: '#3b82f6', label: 'Blue' },
     'BLUE': { color: '#3b82f6', label: 'Blue' },
+    'JBL': { color: '#3b5998', label: 'Jeans Blue' },
+    'JEANS BLUE': { color: '#3b5998', label: 'Jeans Blue' },
+    'JEANS-BLUE': { color: '#3b5998', label: 'Jeans Blue' },
+    'JEANS.BLUE': { color: '#3b5998', label: 'Jeans Blue' },
+    'JEANS': { color: '#3b5998', label: 'Jeans Blue' },
+    'J.BLU': { color: '#3b5998', label: 'Jeans Blue' },
     'NAVY': { color: '#1e3a8a', label: 'Navy' },
     'NVY': { color: '#1e3a8a', label: 'Navy' },
     'NV': { color: '#1e3a8a', label: 'Navy' },
@@ -251,7 +264,9 @@ const MULTI_WORD_COLORS = [
     'FOREST GREEN', 'ROYAL BLUE', 'PEACOCK BLUE', 'DEEP CYAN',
     'LIGHT GREY', 'DARK GREY', 'LIGHT PINK', 'BABY PINK',
     'SAGE GREEN', 'OLIVE GREEN', 'NAVY BLUE', 'MILITARY GREEN',
-    'TEAL BLUE', 'F GREEN'
+    'TEAL BLUE', 'F GREEN',
+    'WOOD GREY', 'WOOD GRAY', 'WOOD-GREY', 'WOOD-GRAY', 'WOOD.GREY',
+    'JEANS BLUE', 'JEANS-BLUE', 'JEANS.BLUE'
 ];
 
 /**

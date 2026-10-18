@@ -1,7 +1,8 @@
 
 import { ref, computed } from 'vue';
 import { BRAND_LISTS, DEFAULT_MIN_DATE, NEW_ARRIVAL_MONTHS } from '../utils/constants';
-import { getProductImage } from '../utils/formatters';
+import { getProductImage, isNewArrival } from '../utils/formatters';
+import { extractColor } from '../utils/colors';
 import { useAppStore } from '../stores/appStore';
 import { storeToRefs } from 'pinia';
 
@@ -84,11 +85,21 @@ export function useProductFilter(stockData, config) {
             filtered = filtered.map(group => ({
                 ...group,
                 products: group.products
-                    .filter(p => !getProductImage(p) && Number(p.quantity) > 0)
+                    .filter(p => {
+                        if (!!getProductImage(p) || Number(p.quantity) <= 0) return false;
+                        const isRecent = isNewArrival(p);
+                        const hasColor = Boolean(extractColor(p.productName));
+                        const isOld = Boolean((p.lastPurchasedAt || p.firstSeenAt) && !isRecent);
+                        if (isOld && !hasColor) return false;
+                        return true;
+                    })
                     .sort((a, b) => {
+                        const qtyA = Number(a.quantity) || 0;
+                        const qtyB = Number(b.quantity) || 0;
+                        if (qtyB !== qtyA) return qtyB - qtyA;
                         const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
                         const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
-                        return dateB - dateA || (Number(b.quantity) || 0) - (Number(a.quantity) || 0);
+                        return dateB - dateA;
                     })
             })).filter(group => group.products.length > 0);
         }

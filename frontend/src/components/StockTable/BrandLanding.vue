@@ -782,7 +782,7 @@
                 </span>
               </div>
               <p class="text-xs text-slate-500 font-medium mt-0.5">
-                Sorted from most recent to least recent. Tap any camera icon to snap or upload a photo.
+                Sorted by highest stock to lowest stock (recent arrivals & colored styles). Tap any camera icon to snap or upload a photo.
               </p>
             </div>
           </div>
@@ -2031,11 +2031,15 @@ const uploadModeProducts = computed(() => {
       const isStaged = stagedSet.has(norm);
       const hasImg = hasProductImage(p);
       if ((!hasImg || isStaged) && Number(p.quantity) > 0) {
-        list.push({ 
-          ...p, 
-          groupName: p.groupName || group.groupName,
-          imageUrl: getProductCardImage(p)
-        });
+        const isRecent = isNewArrival(p);
+        const hasColor = Boolean(extractColor(p.productName));
+        if (isStaged || isRecent || hasColor) {
+          list.push({ 
+            ...p, 
+            groupName: p.groupName || group.groupName,
+            imageUrl: getProductCardImage(p)
+          });
+        }
       }
     }
   }
@@ -2047,9 +2051,16 @@ const uploadModeProducts = computed(() => {
     if (aStaged && !bStaged) return -1;
     if (!aStaged && bStaged) return 1;
 
+    // Highest stock to lowest stock
+    const qtyA = Number(a.quantity) || 0;
+    const qtyB = Number(b.quantity) || 0;
+    if (qtyB !== qtyA) {
+      return qtyB - qtyA;
+    }
+
     const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
     const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
-    return dateB - dateA || (Number(b.quantity) || 0) - (Number(a.quantity) || 0);
+    return dateB - dateA;
   });
 });
 
@@ -2229,6 +2240,9 @@ const getActiveTabProducts = () => {
       if (!hasProductImage(p) || Number(p.quantity) < 4) return false;
     } else if (cleanView.value === 'upload') {
       if (hasProductImage(p) || Number(p.quantity) <= 0) return false;
+      const isRecent = isNewArrival(p);
+      const hasColor = Boolean(extractColor(p.productName));
+      if (!isRecent && !hasColor) return false;
     }
     if (inStockOnly.value && Number(p.quantity) <= 0) return false;
     if (maxPriceFilter.value) {
@@ -2238,9 +2252,12 @@ const getActiveTabProducts = () => {
     return true;
   }).sort((a, b) => {
     if (cleanView.value === 'upload') {
+      const qtyA = Number(a.quantity) || 0;
+      const qtyB = Number(b.quantity) || 0;
+      if (qtyB !== qtyA) return qtyB - qtyA;
       const dateA = new Date(a.lastPurchasedAt || a.firstSeenAt || a.imageUploadedAt || 0).getTime();
       const dateB = new Date(b.lastPurchasedAt || b.firstSeenAt || b.imageUploadedAt || 0).getTime();
-      return dateB - dateA || (Number(b.quantity) || 0) - (Number(a.quantity) || 0);
+      return dateB - dateA;
     }
     return 0;
   });
