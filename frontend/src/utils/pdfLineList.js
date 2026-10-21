@@ -227,22 +227,34 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         let creditCell = d.credit;
 
         if (style === 'detailed') {
-          // Bills column: list each bill, then bold total
+          // Bills column: list each bill individually (Total drawn separately via didDrawCell)
           if (d.billEntries.length > 0) {
             const lines = d.billEntries.map(b => {
               const label = b.date || b.type;
-              return `${label}: \u20B9${Math.round(b.amount)}`;
+              return `\u25B8 ${label}:  \u20B9${Math.round(b.amount).toLocaleString('en-IN')}`;
             });
-            debitCell = lines.join('\n') + '\n' + `Total: \u20B9${Math.round(d.periodDr)}`;
+            if (d.billEntries.length === 1) {
+              // Single bill — just show the amount cleanly, no total needed
+              debitCell = `\u20B9 ${Math.round(d.periodDr).toLocaleString('en-IN')}`;
+            } else {
+              // Multiple bills — list each, total drawn by didDrawCell
+              debitCell = lines.join('\n');
+            }
           }
 
-          // Payments column: list each payment, then bold total
+          // Payments column: list each payment individually (Total drawn separately via didDrawCell)
           if (d.paymentEntries.length > 0) {
             const lines = d.paymentEntries.map(p => {
               const label = p.date || p.type;
-              return `${label}: \u20B9${Math.round(p.amount)}`;
+              return `\u25C2 ${label}:  \u20B9${Math.round(p.amount).toLocaleString('en-IN')}`;
             });
-            creditCell = lines.join('\n') + '\n' + `Total: \u20B9${Math.round(d.periodCr)}`;
+            if (d.paymentEntries.length === 1) {
+              // Single payment — just show the amount cleanly
+              creditCell = `\u20B9 ${Math.round(d.periodCr).toLocaleString('en-IN')}`;
+            } else {
+              // Multiple payments — list each, total drawn by didDrawCell
+              creditCell = lines.join('\n');
+            }
           }
         }
 
@@ -311,11 +323,28 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
               data.cell.styles.cellPadding = { top: 1.5, right: 3, bottom: 7, left: 3 };
             }
           }
-          // In detailed mode, bills/payments cells need extra vertical padding for multi-line
+          // In detailed mode, bills/payments cells need generous bottom padding for bold total line
           if (style === 'detailed' && data.section === 'body') {
-            if (data.column.dataKey === 'debit' || data.column.dataKey === 'credit') {
-              data.cell.styles.cellPadding = { top: 2, right: 3, bottom: 2, left: 3 };
+            const rowData = tableRows[data.row.index];
+            if (data.column.dataKey === 'debit') {
               data.cell.styles.valign = 'top';
+              data.cell.styles.textColor = [30, 30, 30];
+              if (rowData && rowData._billCount > 1) {
+                // Extra bottom space reserved for the bold total drawn by didDrawCell
+                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 14, left: 3 };
+              } else {
+                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 3, left: 3 };
+              }
+            }
+            if (data.column.dataKey === 'credit') {
+              data.cell.styles.valign = 'top';
+              data.cell.styles.textColor = [0, 100, 0]; // Dark green for payments to distinguish from bills
+              if (rowData && rowData._paymentCount > 1) {
+                // Extra bottom space reserved for the bold total drawn by didDrawCell
+                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 14, left: 3 };
+              } else {
+                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 3, left: 3 };
+              }
             }
           }
         },
@@ -363,28 +392,39 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
             if (!rowData) return;
 
             if (data.column.dataKey === 'debit' && rowData._billCount > 1) {
-              // Draw bold total line at the bottom of the cell
               const totalText = `Total: \u20B9${Math.round(rowData._periodDr).toLocaleString('en-IN')}`;
+              // Thin separator line above total
+              const sepY = data.cell.y + data.cell.height - 13;
+              doc.setDrawColor(160, 160, 160);
+              doc.setLineWidth(0.3);
+              doc.line(data.cell.x + 3, sepY, data.cell.x + data.cell.width - 3, sepY);
+              // Bold total text
               doc.setFont("Roboto", "bold");
-              doc.setFontSize(7);
+              doc.setFontSize(7.5);
               doc.setTextColor(0, 0, 0);
               doc.text(
                 totalText,
                 data.cell.x + data.cell.width - 3,
-                data.cell.y + data.cell.height - 2.5,
+                data.cell.y + data.cell.height - 4,
                 { align: "right" }
               );
             }
 
             if (data.column.dataKey === 'credit' && rowData._paymentCount > 1) {
               const totalText = `Total: \u20B9${Math.round(rowData._periodCr).toLocaleString('en-IN')}`;
+              // Thin separator line above total
+              const sepY = data.cell.y + data.cell.height - 13;
+              doc.setDrawColor(0, 130, 0);
+              doc.setLineWidth(0.3);
+              doc.line(data.cell.x + 3, sepY, data.cell.x + data.cell.width - 3, sepY);
+              // Bold total text in green to match payment entries
               doc.setFont("Roboto", "bold");
-              doc.setFontSize(7);
-              doc.setTextColor(0, 0, 0);
+              doc.setFontSize(7.5);
+              doc.setTextColor(0, 100, 0);
               doc.text(
                 totalText,
                 data.cell.x + data.cell.width - 3,
-                data.cell.y + data.cell.height - 2.5,
+                data.cell.y + data.cell.height - 4,
                 { align: "right" }
               );
             }
