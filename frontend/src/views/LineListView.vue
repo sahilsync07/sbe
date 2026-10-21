@@ -97,6 +97,10 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { generateLineListPDF } from '../utils/pdfLineList';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { toast } from 'vue3-toastify';
 
 const router = useRouter();
 
@@ -178,10 +182,54 @@ const handlePrint = async () => {
       return;
     }
     
-    const success = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value);
-    
-    if (!success) {
-      alert("Failed to generate PDF. Check console for details.");
+    if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === 'android') {
+      const pdfDataUri = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { returnBase64: true });
+      if (!pdfDataUri) throw new Error('Failed to generate PDF');
+
+      const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
+      const fileName = `LineList_${Date.now()}.pdf`;
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Cache
+      });
+
+      await Share.share({
+        title: 'Line List PDF',
+        text: `Line List (${selectedLines.value.join(', ')})`,
+        files: [savedFile.uri]
+      });
+      toast.success('Line List PDF ready to share!', { autoClose: 2500 });
+    } else {
+      if (typeof navigator !== 'undefined' && navigator.canShare && typeof navigator.share === 'function') {
+        try {
+          const pdfBlob = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { returnBlob: true });
+          if (pdfBlob) {
+            const file = new File([pdfBlob], `LineList_${Date.now()}.pdf`, { type: 'application/pdf' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: 'Line List PDF',
+                files: [file]
+              });
+              toast.success('Line List PDF shared!', { autoClose: 2500 });
+              return;
+            }
+          }
+        } catch (shareErr) {
+          if (shareErr.name !== 'AbortError') {
+            console.warn('Web Share fallback to direct download:', shareErr);
+          } else {
+            return;
+          }
+        }
+      }
+
+      const success = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value);
+      if (success) {
+        toast.success('Line List PDF downloaded!', { autoClose: 2500 });
+      } else {
+        alert('Failed to generate PDF. Check console for details.');
+      }
     }
   } catch (err) {
     alert("Error: " + err.message);

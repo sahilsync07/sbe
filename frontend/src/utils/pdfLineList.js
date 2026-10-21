@@ -45,7 +45,7 @@ const parsePartyName = (raw) => {
   };
 };
 
-export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData) => {
+export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData, options = {}) => {
   return new Promise((resolve) => {
     try {
       const periodData = [];
@@ -303,6 +303,15 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData)
           doc.text("Page " + doc.internal.getNumberOfPages(), pw - mR, pageH - 14, { align: "right" });
         }
       });
+
+      if (options.returnBase64) {
+        resolve(doc.output('datauristring'));
+        return;
+      }
+      if (options.returnBlob) {
+        resolve(doc.output('blob'));
+        return;
+      }
 
       doc.save(`LineList_${new Date().getTime()}.pdf`);
       resolve(true);
