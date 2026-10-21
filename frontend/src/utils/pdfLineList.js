@@ -31,6 +31,7 @@ const toTitleCase = (str) => {
     .replace(/(?:^|\s|\(|\/|-)\S/g, (match) => match.toUpperCase());
 };
 
+
 /**
  * Parses a party name string. Text before comma = name, text after comma = city.
  * e.g., "HARI F/W, B.CUTTACK" → { name: "Hari F/W", city: "B.Cuttack" }
@@ -45,7 +46,36 @@ const parsePartyName = (raw) => {
   };
 };
 
+/**
+ * Format a currency value for PDF display.
+ */
+const fmtINR = (val) => {
+  if (Math.abs(val) < 0.5) return "-";
+  return `\u20B9 ${Math.round(Math.abs(val)).toLocaleString('en-IN')}`;
+};
+
+const formatBalance = (val) => {
+  if (Math.abs(val) < 0.5) return "-";
+  const amt = Math.round(Math.abs(val));
+  // val < 0 is Debit (they owe us), so positive. val > 0 is Credit (we owe them), so negative.
+  return val < 0 ? `\u20B9 ${amt}` : `-\u20B9 ${amt}`;
+};
+
+/**
+ * Generates Line List PDF.
+ * 
+ * @param {string[]} selectedLines - Array of line/group names to include.
+ * @param {Date|null} fromDate - Start date filter (inclusive).
+ * @param {Date|null} toDate - End date filter (inclusive).
+ * @param {Array} ledgerData - Full ledger data array.
+ * @param {Object} options
+ * @param {boolean} options.returnBase64 - Return as data URI string.
+ * @param {boolean} options.returnBlob - Return as Blob.
+ * @param {'classic'|'detailed'} options.style - 'classic' = combined totals (old), 'detailed' = itemized bills/payments (new).
+ */
 export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData, options = {}) => {
+  const style = options.style || 'classic';
+
   return new Promise((resolve) => {
     try {
       const periodData = [];
@@ -63,13 +93,16 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           let periodCr = 0;
           let periodDr = 0;
 
+          // Collect individual bills (Dr) and payments (Cr) within the date range
+          const billEntries = [];   // individual Dr entries in range
+          const paymentEntries = []; // individual Cr entries in range
+
           for (const entry of ledger.entries) {
             const entryDate = parseLedgerDate(entry.date);
             entryDate.setHours(0, 0, 0, 0);
 
             if (fromDate && entryDate < fromDate) {
               // Adjust opening balance for transactions prior to 'from date'
-              // Negative raw balance = Debit (Receivable)
               if (entry.drCr === 'Dr') {
                 openingBalanceRaw -= entry.amount;
               } else if (entry.drCr === 'Cr') {
@@ -79,8 +112,20 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
               // Transactions within the period
               if (entry.drCr === 'Dr') {
                 periodDr += entry.amount;
+                billEntries.push({
+                  date: entry.date,
+                  voucherNo: entry.voucherNo || '',
+                  type: entry.type || 'Invoice',
+                  amount: entry.amount
+                });
               } else if (entry.drCr === 'Cr') {
                 periodCr += entry.amount;
+                paymentEntries.push({
+                  date: entry.date,
+                  voucherNo: entry.voucherNo || '',
+                  type: entry.type || 'Payment',
+                  amount: entry.amount
+                });
               }
             }
           }
@@ -93,20 +138,18 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
             continue;
           }
 
-          const formatBalance = (val) => {
-            if (Math.abs(val) < 0.5) return "-";
-            const amt = Math.round(Math.abs(val));
-            // val < 0 is Debit (they owe us), so positive. val > 0 is Credit (we owe them), so negative.
-            return val < 0 ? `\u20B9 ${amt}` : `-\u20B9 ${amt}`;
-          };
-
           periodData.push({
             partyName: ledger.ledgerName,
             lineName: line,
             opening: formatBalance(openingBalanceRaw),
             credit: periodCr >= 0.5 ? `\u20B9 ${Math.round(periodCr)}` : "-",
             debit: periodDr >= 0.5 ? `\u20B9 ${Math.round(periodDr)}` : "-",
-            closing: formatBalance(closingBalanceRaw)
+            closing: formatBalance(closingBalanceRaw),
+            // Detailed mode data
+            billEntries,
+            paymentEntries,
+            periodDr,
+            periodCr
           });
         }
       }
@@ -178,12 +221,43 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
 
       const tableRows = periodData.map(d => {
         const parsed = parsePartyName(d.partyName);
+
+        // For detailed mode, build multi-line cell content for bills and payments
+        let debitCell = d.debit;
+        let creditCell = d.credit;
+
+        if (style === 'detailed') {
+          // Bills column: list each bill, then bold total
+          if (d.billEntries.length > 0) {
+            const lines = d.billEntries.map(b => {
+              const label = b.date || b.type;
+              return `${label}: \u20B9${Math.round(b.amount)}`;
+            });
+            debitCell = lines.join('\n') + '\n' + `Total: \u20B9${Math.round(d.periodDr)}`;
+          }
+
+          // Payments column: list each payment, then bold total
+          if (d.paymentEntries.length > 0) {
+            const lines = d.paymentEntries.map(p => {
+              const label = p.date || p.type;
+              return `${label}: \u20B9${Math.round(p.amount)}`;
+            });
+            creditCell = lines.join('\n') + '\n' + `Total: \u20B9${Math.round(d.periodCr)}`;
+          }
+        }
+
         return {
           ...d,
           partyName: parsed.name,
           _city: parsed.city,
+          debit: debitCell,
+          credit: creditCell,
           cash: "",
-          upi: ""
+          upi: "",
+          _billCount: d.billEntries.length,
+          _paymentCount: d.paymentEntries.length,
+          _periodDr: d.periodDr,
+          _periodCr: d.periodCr
         };
       });
 
@@ -212,11 +286,11 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         columnStyles: {
           partyName: { cellWidth: 168, fontStyle: 'bold', textColor: [0, 0, 0], fontSize: 8.5 },
           opening: { halign: 'right', cellWidth: 49.5 },
-          debit: { halign: 'right', cellWidth: 40.5 },
-          credit: { halign: 'right', cellWidth: 45 },
+          debit: { halign: 'right', cellWidth: style === 'detailed' ? 56 : 40.5, fontSize: style === 'detailed' ? 6.5 : 8, valign: 'top' },
+          credit: { halign: 'right', cellWidth: style === 'detailed' ? 60 : 45, fontSize: style === 'detailed' ? 6.5 : 8, valign: 'top' },
           closing: { halign: 'right', cellWidth: 54, fontStyle: 'bold', textColor: [0, 0, 0] },
-          cash: { cellWidth: 79 },
-          upi: { cellWidth: 79 }
+          cash: { cellWidth: style === 'detailed' ? 63 : 79 },
+          upi: { cellWidth: style === 'detailed' ? 63 : 79 }
         },
         alternateRowStyles: {
           fillColor: [232, 232, 232]
@@ -235,6 +309,13 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
             if (rowData && rowData._city) {
               // Minimal extra room for the city sub-line
               data.cell.styles.cellPadding = { top: 1.5, right: 3, bottom: 7, left: 3 };
+            }
+          }
+          // In detailed mode, bills/payments cells need extra vertical padding for multi-line
+          if (style === 'detailed' && data.section === 'body') {
+            if (data.column.dataKey === 'debit' || data.column.dataKey === 'credit') {
+              data.cell.styles.cellPadding = { top: 2, right: 3, bottom: 2, left: 3 };
+              data.cell.styles.valign = 'top';
             }
           }
         },
@@ -276,6 +357,39 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
              }
           }
 
+          // In detailed mode, render the total line in bold at the bottom of bills/payments cells
+          if (style === 'detailed' && data.section === 'body') {
+            const rowData = tableRows[data.row.index];
+            if (!rowData) return;
+
+            if (data.column.dataKey === 'debit' && rowData._billCount > 1) {
+              // Draw bold total line at the bottom of the cell
+              const totalText = `Total: \u20B9${Math.round(rowData._periodDr).toLocaleString('en-IN')}`;
+              doc.setFont("Roboto", "bold");
+              doc.setFontSize(7);
+              doc.setTextColor(0, 0, 0);
+              doc.text(
+                totalText,
+                data.cell.x + data.cell.width - 3,
+                data.cell.y + data.cell.height - 2.5,
+                { align: "right" }
+              );
+            }
+
+            if (data.column.dataKey === 'credit' && rowData._paymentCount > 1) {
+              const totalText = `Total: \u20B9${Math.round(rowData._periodCr).toLocaleString('en-IN')}`;
+              doc.setFont("Roboto", "bold");
+              doc.setFontSize(7);
+              doc.setTextColor(0, 0, 0);
+              doc.text(
+                totalText,
+                data.cell.x + data.cell.width - 3,
+                data.cell.y + data.cell.height - 2.5,
+                { align: "right" }
+              );
+            }
+          }
+
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
@@ -300,7 +414,8 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           doc.setFontSize(6.5);
           doc.setTextColor(140, 140, 140);
           doc.text("Sri Brundabana Enterprises", mL, pageH - 14);
-          doc.text("Page " + doc.internal.getNumberOfPages(), pw - mR, pageH - 14, { align: "right" });
+          const styleLabel = style === 'detailed' ? ' • Detailed' : '';
+          doc.text("Page " + doc.internal.getNumberOfPages() + styleLabel, pw - mR, pageH - 14, { align: "right" });
         }
       });
 
@@ -313,7 +428,7 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         return;
       }
 
-      doc.save(`LineList_${new Date().getTime()}.pdf`);
+      doc.save(`LineList_${style === 'detailed' ? 'Detailed_' : ''}${new Date().getTime()}.pdf`);
       resolve(true);
     } catch (e) {
       console.error("PDF Gen Error:", e);
