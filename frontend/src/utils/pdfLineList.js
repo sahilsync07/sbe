@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { robotoRegularBase64, robotoBoldBase64 } from './fonts';
+import { robotoRegularBase64, robotoBoldBase64 } from './fonts.js';
 
 /**
  * Parses a ledger date string (e.g., "25-Apr-26") into a Date object.
@@ -168,9 +168,9 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
       const pw = doc.internal.pageSize.getWidth();
       const mL = 40, mR = 40;
 
-      // ── Meta line: Line Name • Company • Date (single compact row, no big title) ──
+      // ── Meta line: Two-tier layout to prevent collision on long line names ──
       let lineText = selectedLines.join("  \u2022  ");
-      if (lineText.length > 40) lineText = lineText.substring(0, 37) + "...";
+      if (lineText.length > 55) lineText = lineText.substring(0, 52) + "...";
 
       let dateText = "All Time";
       if (fromDate && toDate) {
@@ -181,32 +181,25 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           dateText = `Until ${toDate.toLocaleDateString('en-IN')}`;
       }
 
-      const metaY = 24;
-
-      // Line name – bold and prominent
-      doc.setFont("Roboto", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.text(lineText, mL, metaY);
-
-      // Company name – centered, same style
+      // Tier 1: Centered company name (prominent, executive)
       doc.setFont("Roboto", "bold");
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
-      doc.text("Sri Brundabana Enterprises, Rayagada.", pw / 2, metaY, { align: "center" });
+      doc.text("Sri Brundabana Enterprises, Rayagada.", pw / 2, 20, { align: "center" });
 
-      // Date – bold, right-aligned
+      // Tier 2: Line name (left) & Period (right)
       doc.setFont("Roboto", "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setTextColor(0, 0, 0);
-      doc.text(dateText, pw - mR, metaY, { align: "right" });
+      doc.text(`Line: ${lineText}`, mL, 32);
+      doc.text(`Period: ${dateText}`, pw - mR, 32, { align: "right" });
 
-      // Thin hairline separator
-      doc.setDrawColor(160, 160, 160);
+      // Thin crisp hairline separator
+      doc.setDrawColor(120, 120, 120);
       doc.setLineWidth(0.5);
-      doc.line(mL, metaY + 5, pw - mR, metaY + 5);
+      doc.line(mL, 37, pw - mR, 37);
 
-      const tableStartY = metaY + 10;
+      const tableStartY = 41;
 
       // ── Table ─────────────────────────────────────────────
       const tableColumns = [
@@ -219,6 +212,27 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         { header: "UPI", dataKey: "upi" }
       ];
 
+      // Helpers for entry classification and clean dates (B&W print friendly)
+      const cleanDateStr = (dateStr) => {
+        if (!dateStr) return '';
+        return dateStr.replace(/-\d{2,4}$/, ''); // Strip year (e.g. 17-Oct-26 -> 17-Oct)
+      };
+
+      const isCreditNote = (entry) => {
+        const t = (entry.type || '').toLowerCase();
+        return t.includes('credit') || t.includes('cr note') || t.includes('c/n');
+      };
+
+      const isDebitNote = (entry) => {
+        const t = (entry.type || '').toLowerCase();
+        return t.includes('debit') || t.includes('dr note') || t.includes('d/n');
+      };
+
+      const isJournal = (entry) => {
+        const t = (entry.type || '').toLowerCase();
+        return t.includes('journal') || t.includes('jrn');
+      };
+
       const tableRows = periodData.map(d => {
         const parsed = parsePartyName(d.partyName);
 
@@ -227,32 +241,44 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         let creditCell = d.credit;
 
         if (style === 'detailed') {
-          // Bills column: list each bill individually (Total drawn separately via didDrawCell)
+          // Bills column: list each bill individually (Total drawn cleanly via didDrawCell)
           if (d.billEntries.length > 0) {
-            const lines = d.billEntries.map(b => {
-              const label = b.date || b.type;
-              return `\u25B8 ${label}:  \u20B9${Math.round(b.amount).toLocaleString('en-IN')}`;
-            });
             if (d.billEntries.length === 1) {
-              // Single bill — just show the amount cleanly, no total needed
-              debitCell = `\u20B9 ${Math.round(d.periodDr).toLocaleString('en-IN')}`;
+              const b = d.billEntries[0];
+              const tag = isDebitNote(b) ? '[DN] ' : '';
+              const dStr = cleanDateStr(b.date);
+              debitCell = dStr ? `${tag}${dStr}: \u20B9${Math.round(b.amount).toLocaleString('en-IN')}` : `\u20B9 ${Math.round(d.periodDr).toLocaleString('en-IN')}`;
             } else {
-              // Multiple bills — list each, total drawn by didDrawCell
+              const lines = d.billEntries.map(b => {
+                const tag = isDebitNote(b) ? '[DN] ' : '';
+                const dStr = cleanDateStr(b.date) || b.type;
+                return `${tag}${dStr}: \u20B9${Math.round(b.amount).toLocaleString('en-IN')}`;
+              });
+              // Append blank line to reserve height for bold total rendered in didDrawCell
+              lines.push('');
               debitCell = lines.join('\n');
             }
           }
 
-          // Payments column: list each payment individually (Total drawn separately via didDrawCell)
+          // Payments column: distinguish Credit Notes [CN] from payments in B&W print
           if (d.paymentEntries.length > 0) {
-            const lines = d.paymentEntries.map(p => {
-              const label = p.date || p.type;
-              return `\u25C2 ${label}:  \u20B9${Math.round(p.amount).toLocaleString('en-IN')}`;
-            });
             if (d.paymentEntries.length === 1) {
-              // Single payment — just show the amount cleanly
-              creditCell = `\u20B9 ${Math.round(d.periodCr).toLocaleString('en-IN')}`;
+              const p = d.paymentEntries[0];
+              const dStr = cleanDateStr(p.date);
+              if (isCreditNote(p)) {
+                // If single transaction is a Credit Note, explicitly tag it so it's not mistaken for payment
+                creditCell = dStr ? `[CN] ${dStr}: \u20B9${Math.round(p.amount).toLocaleString('en-IN')}` : `[CN] \u20B9${Math.round(p.amount).toLocaleString('en-IN')}`;
+              } else {
+                creditCell = dStr ? `${dStr}: \u20B9${Math.round(p.amount).toLocaleString('en-IN')}` : `\u20B9 ${Math.round(d.periodCr).toLocaleString('en-IN')}`;
+              }
             } else {
-              // Multiple payments — list each, total drawn by didDrawCell
+              const lines = d.paymentEntries.map(p => {
+                const tag = isCreditNote(p) ? '[CN] ' : (isJournal(p) ? '[JRN] ' : '');
+                const dStr = cleanDateStr(p.date) || p.type;
+                return `${tag}${dStr}: \u20B9${Math.round(p.amount).toLocaleString('en-IN')}`;
+              });
+              // Append blank line to reserve height for bold total rendered in didDrawCell
+              lines.push('');
               creditCell = lines.join('\n');
             }
           }
@@ -280,71 +306,52 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         theme: 'grid',
         styles: {
           fontSize: 8,
-          cellPadding: { top: 1.5, right: 3, bottom: 1.5, left: 3 },
+          cellPadding: { top: 2, right: 2.5, bottom: 2, left: 2.5 },
           valign: 'middle',
           font: 'Roboto',
           textColor: [0, 0, 0],
-          lineColor: [190, 190, 190],
+          lineColor: [120, 120, 120],
           lineWidth: 0.4
         },
         headStyles: {
-          fillColor: [225, 225, 225],
+          fillColor: [230, 230, 230],
           textColor: [0, 0, 0],
           fontStyle: 'bold',
           halign: 'center',
           fontSize: 8,
-          cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }
+          cellPadding: { top: 2, right: 2.5, bottom: 2, left: 2.5 }
         },
         columnStyles: {
-          partyName: { cellWidth: 168, fontStyle: 'bold', textColor: [0, 0, 0], fontSize: 8.5 },
-          opening: { halign: 'right', cellWidth: 49.5 },
-          debit: { halign: 'right', cellWidth: style === 'detailed' ? 56 : 40.5, fontSize: style === 'detailed' ? 6.5 : 8, valign: 'top' },
-          credit: { halign: 'right', cellWidth: style === 'detailed' ? 60 : 45, fontSize: style === 'detailed' ? 6.5 : 8, valign: 'top' },
-          closing: { halign: 'right', cellWidth: 54, fontStyle: 'bold', textColor: [0, 0, 0] },
+          partyName: { cellWidth: style === 'detailed' ? 154 : 168, fontStyle: 'bold', textColor: [0, 0, 0], fontSize: 8.5 },
+          opening: { halign: 'right', cellWidth: style === 'detailed' ? 48 : 49.5 },
+          debit: { halign: 'right', cellWidth: style === 'detailed' ? 64 : 40.5, fontSize: style === 'detailed' ? 6 : 8, valign: 'top' },
+          credit: { halign: 'right', cellWidth: style === 'detailed' ? 68 : 45, fontSize: style === 'detailed' ? 6 : 8, valign: 'top' },
+          closing: { halign: 'right', cellWidth: style === 'detailed' ? 52 : 54, fontStyle: 'bold', textColor: [0, 0, 0] },
           cash: { cellWidth: style === 'detailed' ? 63 : 79 },
           upi: { cellWidth: style === 'detailed' ? 63 : 79 }
         },
         alternateRowStyles: {
-          fillColor: [232, 232, 232]
+          fillColor: [248, 248, 248]
         },
         margin: { left: mL, right: mR },
         didParseCell: function (data) {
           if (data.section === 'head') {
-             // Multi-line header styles
-              if (data.column.dataKey === 'opening' || data.column.dataKey === 'debit' || data.column.dataKey === 'credit' || data.column.dataKey === 'closing') {
+              if (['opening', 'debit', 'credit', 'closing'].includes(data.column.dataKey)) {
                  data.cell.styles.fontSize = 8;
-                 data.cell.styles.cellPadding = { top: 2, right: 3, bottom: 2, left: 3 };
+                 data.cell.styles.cellPadding = { top: 2, right: 2.5, bottom: 2, left: 2.5 };
               }
           }
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
-              // Minimal extra room for the city sub-line
-              data.cell.styles.cellPadding = { top: 1.5, right: 3, bottom: 7, left: 3 };
+              // Extra space at bottom of cell for city sub-line
+              data.cell.styles.cellPadding = { top: 2, right: 2.5, bottom: 8, left: 2.5 };
             }
           }
-          // In detailed mode, bills/payments cells need generous bottom padding for bold total line
           if (style === 'detailed' && data.section === 'body') {
-            const rowData = tableRows[data.row.index];
-            if (data.column.dataKey === 'debit') {
+            if (data.column.dataKey === 'debit' || data.column.dataKey === 'credit') {
               data.cell.styles.valign = 'top';
-              data.cell.styles.textColor = [30, 30, 30];
-              if (rowData && rowData._billCount > 1) {
-                // Extra bottom space reserved for the bold total drawn by didDrawCell
-                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 14, left: 3 };
-              } else {
-                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 3, left: 3 };
-              }
-            }
-            if (data.column.dataKey === 'credit') {
-              data.cell.styles.valign = 'top';
-              data.cell.styles.textColor = [0, 100, 0]; // Dark green for payments to distinguish from bills
-              if (rowData && rowData._paymentCount > 1) {
-                // Extra bottom space reserved for the bold total drawn by didDrawCell
-                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 14, left: 3 };
-              } else {
-                data.cell.styles.cellPadding = { top: 3, right: 3, bottom: 3, left: 3 };
-              }
+              data.cell.styles.textColor = [0, 0, 0]; // Pure black for B&W printing
             }
           }
         },
@@ -354,11 +361,11 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
              const key = data.column.dataKey;
              if (['opening', 'debit', 'credit', 'closing'].includes(key)) {
                 // Clear the cell background
-                doc.setFillColor(225, 225, 225);
+                doc.setFillColor(230, 230, 230);
                 doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                 
-                // Draw borders
-                doc.setDrawColor(190, 190, 190);
+                // Draw crisp border
+                doc.setDrawColor(120, 120, 120);
                 doc.setLineWidth(0.4);
                 doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'S');
 
@@ -393,38 +400,38 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
 
             if (data.column.dataKey === 'debit' && rowData._billCount > 1) {
               const totalText = `Total: \u20B9${Math.round(rowData._periodDr).toLocaleString('en-IN')}`;
-              // Thin separator line above total
-              const sepY = data.cell.y + data.cell.height - 13;
-              doc.setDrawColor(160, 160, 160);
-              doc.setLineWidth(0.3);
-              doc.line(data.cell.x + 3, sepY, data.cell.x + data.cell.width - 3, sepY);
-              // Bold total text
+              // Thin separator line above total in reserved bottom slot
+              const sepY = data.cell.y + data.cell.height - 9.5;
+              doc.setDrawColor(120, 120, 120);
+              doc.setLineWidth(0.4);
+              doc.line(data.cell.x + 2, sepY, data.cell.x + data.cell.width - 2, sepY);
+              // Bold total text (pure black for B&W print)
               doc.setFont("Roboto", "bold");
-              doc.setFontSize(7.5);
+              doc.setFontSize(6.5);
               doc.setTextColor(0, 0, 0);
               doc.text(
                 totalText,
-                data.cell.x + data.cell.width - 3,
-                data.cell.y + data.cell.height - 4,
+                data.cell.x + data.cell.width - 2.5,
+                data.cell.y + data.cell.height - 2.5,
                 { align: "right" }
               );
             }
 
             if (data.column.dataKey === 'credit' && rowData._paymentCount > 1) {
               const totalText = `Total: \u20B9${Math.round(rowData._periodCr).toLocaleString('en-IN')}`;
-              // Thin separator line above total
-              const sepY = data.cell.y + data.cell.height - 13;
-              doc.setDrawColor(0, 130, 0);
-              doc.setLineWidth(0.3);
-              doc.line(data.cell.x + 3, sepY, data.cell.x + data.cell.width - 3, sepY);
-              // Bold total text in green to match payment entries
+              // Thin separator line above total in reserved bottom slot
+              const sepY = data.cell.y + data.cell.height - 9.5;
+              doc.setDrawColor(120, 120, 120);
+              doc.setLineWidth(0.4);
+              doc.line(data.cell.x + 2, sepY, data.cell.x + data.cell.width - 2, sepY);
+              // Bold total text (pure black for B&W print)
               doc.setFont("Roboto", "bold");
-              doc.setFontSize(7.5);
-              doc.setTextColor(0, 100, 0);
+              doc.setFontSize(6.5);
+              doc.setTextColor(0, 0, 0);
               doc.text(
                 totalText,
-                data.cell.x + data.cell.width - 3,
-                data.cell.y + data.cell.height - 4,
+                data.cell.x + data.cell.width - 2.5,
+                data.cell.y + data.cell.height - 2.5,
                 { align: "right" }
               );
             }
@@ -433,13 +440,13 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
             if (rowData && rowData._city) {
-              doc.setFont('helvetica', 'italic');
-              doc.setFontSize(5.5);
-              doc.setTextColor(100, 100, 100);
+              doc.setFont('Roboto', 'normal');
+              doc.setFontSize(6);
+              doc.setTextColor(80, 80, 80);
               doc.text(
                 rowData._city,
-                data.cell.x + 3,
-                data.cell.y + data.cell.height - 1.5
+                data.cell.x + 2.5,
+                data.cell.y + data.cell.height - 2.5
               );
               // Restore
               doc.setFont('Roboto', 'bold');
