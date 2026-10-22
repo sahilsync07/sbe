@@ -1887,7 +1887,7 @@ const boxGroupNames = [
   'Mini F/w', 'ADDA', 'ADDOXY', 'AIRFAX', 'HITWAY', 'PARIS', 'TEUZ', 'VAISHNO PLASTIC',
   'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR', 'NEXGEN FOOTWEAR',
   'Kohinoor', 'UAM FOOTWEAR', 'BROCKKIE', 'Barun', 'VENUS', 'LEO', 'BRIZ FOOTWEAR',
-  'Brij Footwear', 'Ruban F/w', 'SOLA', 'ZYF TEX', 'ORTHO', 'UXO', 'NX KIDS SANDEL', 'GLAMIUM',
+  'Brij Footwear', 'Ruban F/w', 'SOLA', 'ZYF TEX', 'ZYFTEX', 'ZYF-TEX', 'ORTHO', 'UXO', 'NX KIDS SANDEL', 'GLAMIUM',
   'Avon International (WOODS)', 'KHADIM', '4WAY SPORT', 'Durolite'
 ];
 

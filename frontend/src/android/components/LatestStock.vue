@@ -184,7 +184,7 @@ const GROUPS = [
     folder: 'Box Packing',
     brands: ['ADDA', 'ADDOXY', 'AIRFAX', 'Hitway', 'Paris', 'TEUZ', 'VAISHNO PLASTIC',
       'AGRA', 'R R POLYPLAST', 'AIRSON', 'AMBIKA FOOTWEAR', 'GOKUL FOOTWEAR',
-      'NEXGEN FOOTWEAR', 'KOHINOOR', 'UAM FOOTWEAR', 'BROCKKIE'],
+      'NEXGEN FOOTWEAR', 'KOHINOOR', 'UAM FOOTWEAR', 'BROCKKIE', 'ZYF TEX'],
     onlyWithPhotos: true, minQty: 4, icon: '📥'
   },
   { folder: 'Solea Disc 40 Percent Offer', brands: ['SOLEA DISC 40% OFFER'], onlyWithPhotos: true, minQty: 0, icon: '🏷️' },

@@ -64,6 +64,8 @@ export const BRAND_LISTS = {
         'AIRFAX',
         'HITWAY',
         'ZYF TEX',
+        'ZYFTEX',
+        'ZYF-TEX',
         'Paris',
         'TEUZ',
         'VAISHNO PLASTIC',
