@@ -303,6 +303,7 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         columns: tableColumns,
         body: tableRows,
         startY: tableStartY,
+        rowPageBreak: 'avoid',
         theme: 'grid',
         styles: {
           fontSize: 8,
@@ -398,7 +399,10 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
             const rowData = tableRows[data.row.index];
             if (!rowData) return;
 
-            if (data.column.dataKey === 'debit' && rowData._billCount > 1) {
+            // Only draw total if cell has the reserved empty slot at the end (safeguard against partial split cells)
+            const hasReservedSlot = Array.isArray(data.cell.text) && data.cell.text[data.cell.text.length - 1] === '';
+
+            if (data.column.dataKey === 'debit' && rowData._billCount > 1 && hasReservedSlot) {
               const totalText = `Total: \u20B9${Math.round(rowData._periodDr).toLocaleString('en-IN')}`;
               // Thin separator line above total in reserved bottom slot
               const sepY = data.cell.y + data.cell.height - 9.5;
@@ -417,7 +421,7 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
               );
             }
 
-            if (data.column.dataKey === 'credit' && rowData._paymentCount > 1) {
+            if (data.column.dataKey === 'credit' && rowData._paymentCount > 1 && hasReservedSlot) {
               const totalText = `Total: \u20B9${Math.round(rowData._periodCr).toLocaleString('en-IN')}`;
               // Thin separator line above total in reserved bottom slot
               const sepY = data.cell.y + data.cell.height - 9.5;
