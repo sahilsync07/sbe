@@ -1141,7 +1141,7 @@
 
         <!-- Each Big Brand Gallery -->
         <div
-          v-for="brand in bigBrandCards"
+          v-for="brand in visibleFeaturedBrands"
           :key="brand.id"
           class="bg-white rounded-3xl p-3.5 sm:p-5 border border-slate-200/80 shadow-sm"
         >
@@ -1160,7 +1160,7 @@
                   {{ brand.label }}
                 </h3>
                 <span class="text-[11px] text-slate-400 font-medium">
-                  {{ getCount(brand.groupNames) }} items available
+                  {{ getFeaturedBrandProducts(brand.groupNames).length }} items available
                 </span>
               </div>
             </div>
@@ -1177,7 +1177,7 @@
           <div class="overflow-x-auto no-scrollbar -mx-1 px-1">
             <div class="flex items-stretch gap-3 min-w-max pb-1">
               <div
-                v-for="product in getBrandProducts(brand.groupNames).slice(0, 10)"
+                v-for="product in getFeaturedBrandProducts(brand.groupNames).slice(0, 10)"
                 :key="'brand-p-'+product.productName"
                 class="w-[125px] sm:w-[150px] flex flex-col bg-slate-50/70 rounded-2xl border border-slate-200/60 overflow-hidden relative group/bcard hover:bg-white hover:shadow-md transition-all"
               >
@@ -2118,6 +2118,15 @@ const getBrandProducts = (groupNames) => {
   return products;
 };
 
+// Featured brand showcase: only products with active photos and healthy stock (>= 4 pairs)
+const getFeaturedBrandProducts = (groupNames) => {
+  return getBrandProducts(groupNames).filter(p => {
+    const hasImg = Boolean(getProductCardImage(p) || p.imageUrl);
+    const qty = Number(p.quantity) || 0;
+    return hasImg && qty >= 4;
+  });
+};
+
 const getAllKidsProducts = () => {
   let products = [];
   if (!stockData.value) return products;
@@ -2613,6 +2622,10 @@ const bigBrandCards = [
   { id: 'Reliance', label: 'Reliance', groupNames: ['RELIANCE FOOTWEAR'], logo: RelianceLogo },
   { id: 'EEKEN', label: 'Eeken', groupNames: ['EEKEN'], logo: EekenLogo },
 ];
+
+const visibleFeaturedBrands = computed(() => {
+  return bigBrandCards.filter(b => getFeaturedBrandProducts(b.groupNames).length > 0);
+});
 
 const midBrandCards = [
   { id: 'TEUZ', label: 'Teuz', groupNames: ['TEUZ'], logo: TeuzLogo },

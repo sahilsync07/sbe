@@ -957,8 +957,9 @@ export function useStockData(isLocal) {
         console.log(`[Batch Photos CDN] ✓ Successfully committed ${uploadItems.length} photos to sbe-photos in 1 commit: ${newCommitData.sha}`);
 
         const cdnMap = new Map();
+        const shortSha = newCommitData.sha ? newCommitData.sha.slice(0, 7) : 'main';
         treeEntries.forEach(entry => {
-            cdnMap.set(entry.publicId, `https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@main/${entry.path}`);
+            cdnMap.set(entry.publicId, `https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@${shortSha}/${entry.path}`);
         });
 
         return {
@@ -1208,6 +1209,13 @@ export function useStockData(isLocal) {
             }
 
             delete imageFiles.value[productName];
+
+            // Invalidate local Web CacheStorage so deleted image doesn't linger
+            if (typeof window !== 'undefined' && 'caches' in window && existingImageUrl) {
+                try {
+                    caches.open('sbe-images-v1').then(cache => cache.delete(existingImageUrl)).catch(() => {});
+                } catch (e) {}
+            }
 
             // 2. Stage deletion into pendingUploads session queue (BATCH COMMITS)
             addPendingUpload({
