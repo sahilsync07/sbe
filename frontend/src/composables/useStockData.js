@@ -149,7 +149,7 @@ export function generateProductPublicId(productName) {
             clean = clean.replace(new RegExp('(?:\\b|[\\/\\-_])' + t + '(?:\\b|[\\/\\-_])', 'gi'), ' '); 
         });
     }
-    clean = clean.replace(/((?:RS|MRP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
+    clean = clean.replace(/((?:RS|MRPP|MRP|MP|@))[\.\s]*(\d+(\.\d+)?)/gi, '');
     clean = clean.replace(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/g, ' ');
     clean = clean.replace(/\(\s*\)/g, '');
     clean = clean.replace(/[\/\-\_\.\,\:\&]+/g, ' ');
