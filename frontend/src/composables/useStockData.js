@@ -139,6 +139,10 @@ export function generateProductPublicId(productName) {
         colorSlug = colorInfo.text.replace(/[^A-Za-z0-9]/g, '_').toUpperCase();
     }
 
+    // Extract size group (e.g. 6X10, 11X1, 2X5, 6X11) so distinct size groups don't collide
+    const sizeMatch = productName.match(/(?:^|[\s\(])(\d{1,2})\s*[xX*]\s*(\d{1,2})(?:[\s\)]|$)/i);
+    const sizeSlug = sizeMatch ? `${sizeMatch[1]}X${sizeMatch[2]}`.toUpperCase() : '';
+
     let clean = productName;
     if (colorInfo && colorInfo.originalTokens) {
         colorInfo.originalTokens.forEach(t => { 
@@ -152,6 +156,7 @@ export function generateProductPublicId(productName) {
 
     const articleSlug = clean.trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_]/g, '').toUpperCase();
     const parts = [articleSlug];
+    if (sizeSlug) parts.push(sizeSlug);
     if (colorSlug) parts.push(colorSlug.replace(/[^A-Za-z0-9_]/g, ''));
     const slug = parts.filter(Boolean).join('_').replace(/_+/g, '_').replace(/^_|_$/g, '');
     return slug || `PRODUCT_${Date.now()}`;
@@ -1456,6 +1461,34 @@ export function useStockData(isLocal) {
                     finalUrl
                 });
             });
+
+            // 4b. Preserve existing photos from in-memory catalog if remote returned a stale snapshot
+            if (stockData.value && Array.isArray(stockData.value)) {
+                const localImageMap = new Map();
+                stockData.value.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        if (p.imageUrl) {
+                            localImageMap.set((p.productName || '').trim().toLowerCase(), {
+                                imageUrl: p.imageUrl,
+                                secondaryImageUrl: p.secondaryImageUrl || p.imageUrl,
+                                imageUploadedAt: p.imageUploadedAt
+                            });
+                        }
+                    });
+                });
+                fullCatalog.forEach(group => {
+                    (group.products || []).forEach(p => {
+                        const norm = (p.productName || '').trim().toLowerCase();
+                        const staged = pendingMap.get(norm);
+                        if (!p.imageUrl && (!staged || staged.status !== 'deleted') && localImageMap.has(norm)) {
+                            const local = localImageMap.get(norm);
+                            p.imageUrl = local.imageUrl;
+                            p.secondaryImageUrl = local.secondaryImageUrl;
+                            if (local.imageUploadedAt) p.imageUploadedAt = local.imageUploadedAt;
+                        }
+                    });
+                });
+            }
 
             const nowIso = new Date().toISOString();
             fullCatalog.forEach(group => {
