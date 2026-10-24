@@ -46,10 +46,15 @@
         </div>
 
         <!-- Banner Info -->
-        <div class="px-5 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2 text-xs text-slate-600">
-          <i class="fa-solid fa-cloud-arrow-up text-emerald-600 text-xs shrink-0"></i>
-          <span class="leading-relaxed">
-            Photos are saved to Cloudinary. Ready to push all <strong>{{ pendingUploads.length }}</strong> changes to GitHub in a single commit.
+        <div class="px-5 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-2 text-xs text-slate-600">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up text-emerald-600 text-xs shrink-0"></i>
+            <span class="leading-relaxed">
+              Photos uploaded. Ready to push all <strong>{{ pendingUploads.length }}</strong> changes to GitHub.
+            </span>
+          </div>
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 shrink-0">
+            <i class="fa-solid fa-shield-halved text-[10px]"></i> Pulls latest first
           </span>
         </div>
 

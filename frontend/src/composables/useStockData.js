@@ -1432,15 +1432,38 @@ export function useStockData(isLocal) {
                 }
             }
 
-            // 3. Fetch freshest remote stock data to avoid conflicts
+            // 3. Fetch absolute freshest remote stock data directly from GitHub API (0ms Fastly CDN lag)
             let fullCatalog = null;
-            try {
-                const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
-                if (res.ok) {
-                    fullCatalog = await res.json();
+            if (token) {
+                try {
+                    const owner = import.meta.env.VITE_GITHUB_OWNER || 'sahilsync07';
+                    const repo = import.meta.env.VITE_GITHUB_REPO || 'sbe';
+                    const branch = import.meta.env.VITE_GITHUB_BRANCH || 'main';
+                    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/frontend/public/assets/stock-data.json?ref=${branch}&_t=${Date.now()}`;
+                    const res = await fetch(apiUrl, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/vnd.github.v3.raw',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        },
+                    });
+                    if (res.ok) {
+                        const text = await res.text();
+                        fullCatalog = JSON.parse(text);
+                    }
+                } catch (e) {
+                    console.warn('[Sync] Direct GitHub API fetch failed, trying fallback:', e.message);
                 }
-            } catch (e) {
-                console.warn('[Sync] Could not fetch remote catalog, falling back to local memory:', e.message);
+            }
+            if (!fullCatalog) {
+                try {
+                    const res = await fetch(`${REMOTE_DATA_URL}?_t=${Date.now()}`);
+                    if (res.ok) {
+                        fullCatalog = await res.json();
+                    }
+                } catch (e) {
+                    console.warn('[Sync] Could not fetch remote catalog, falling back to local memory:', e.message);
+                }
             }
             if (!fullCatalog || !Array.isArray(fullCatalog) || fullCatalog.length === 0) {
                 fullCatalog = stockData.value;

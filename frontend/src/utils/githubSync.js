@@ -27,6 +27,52 @@ export const promptForToken = async (reason = 'missing') => {
 };
 
 /**
+ * Fetches the absolute freshest file content directly from GitHub REST API (bypassing Fastly/CDN caches)
+ */
+export async function fetchFreshestFileFromGitHub(filePath, tokenOverride = null) {
+  const token = tokenOverride || getGitHubToken();
+  const owner = import.meta.env.VITE_GITHUB_OWNER || 'sahilsync07';
+  const repo = import.meta.env.VITE_GITHUB_REPO || 'sbe';
+  const branch = import.meta.env.VITE_GITHUB_BRANCH || 'main';
+
+  // 1. Direct real-time fetch from GitHub Contents API with raw accept header (0ms CDN lag)
+  if (token) {
+    try {
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}&_t=${Date.now()}`;
+      const res = await fetch(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3.raw',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      });
+      if (res.ok) {
+        const text = await res.text();
+        return JSON.parse(text);
+      }
+    } catch (apiErr) {
+      console.warn(`[GitHubSync] Real-time GitHub API fetch failed for ${filePath}:`, apiErr.message);
+    }
+  }
+
+  // 2. Fallback to raw.githubusercontent with random cache-buster and no-store
+  try {
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/${filePath}?_t=${Date.now()}`;
+    const res = await fetch(rawUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (rawErr) {
+    console.warn(`[GitHubSync] Raw fallback fetch failed for ${filePath}:`, rawErr.message);
+  }
+
+  return null;
+}
+
+/**
  * Direct commit to GitHub repository via GitHub REST API with auto-retry on 409 SHA conflict
  */
 export async function commitFileToGitHub(

@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import { toast } from 'vue3-toastify';
 import { useLedgerData } from './useLedgerData';
-import { syncDataDualPath } from '@/utils/githubSync';
+import { syncDataDualPath, fetchFreshestFileFromGitHub } from '@/utils/githubSync';
 
 const STAGED_STORAGE_KEY = 'sbe_staged_party_tags';
 const stagedParties = ref({});
@@ -151,17 +151,8 @@ export function usePartyTagger() {
         };
       });
 
-      // 2. Fetch freshest ledger-data.json
-      let fullLedgerCatalog = null;
-      try {
-        const REMOTE_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/ledger-data.json';
-        const res = await fetch(`${REMOTE_URL}?_t=${Date.now()}`);
-        if (res.ok) {
-          fullLedgerCatalog = await res.json();
-        }
-      } catch (e) {
-        console.warn('[PartyTagger] Remote ledger fetch failed, using memory:', e);
-      }
+      // 2. Fetch absolute freshest ledger-data.json directly from GitHub API (0ms CDN lag, prevents overwrite)
+      let fullLedgerCatalog = await fetchFreshestFileFromGitHub('frontend/public/assets/ledger-data.json');
 
       if (!fullLedgerCatalog || !Array.isArray(fullLedgerCatalog)) {
         fullLedgerCatalog = JSON.parse(JSON.stringify(ledgerData.value));

@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import { toast } from 'vue3-toastify';
 import { useAppStore } from '@/stores/appStore';
-import { syncDataDualPath } from '@/utils/githubSync';
+import { syncDataDualPath, fetchFreshestFileFromGitHub } from '@/utils/githubSync';
 
 const STORAGE_KEY = 'sbe_staged_sample_room';
 const stagedSampleRoom = ref({});
@@ -121,18 +121,38 @@ export function useSampleRoomTagger() {
         updatesMap[item.productName] = item.inSampleRoom;
       });
 
-      // 1. Fetch freshest catalog
-      let fullCatalog = null;
-      try {
-        const REMOTE_URL = 'https://raw.githubusercontent.com/sahilsync07/sbe/refs/heads/main/frontend/public/assets/stock-data.json';
-        const res = await fetch(`${REMOTE_URL}?_t=${Date.now()}`);
-        if (res.ok) fullCatalog = await res.json();
-      } catch (e) {
-        console.warn('[SampleRoomTagger] Remote stock fetch failed, using memory:', e);
-      }
+      // 1. Fetch absolute freshest catalog directly from GitHub API (0ms CDN lag, prevents overwrite)
+      let fullCatalog = await fetchFreshestFileFromGitHub('frontend/public/assets/stock-data.json');
 
       if (!fullCatalog || !Array.isArray(fullCatalog)) {
         fullCatalog = JSON.parse(JSON.stringify(appStore.stockData));
+      }
+
+      // Preserve photos from local memory if remote returned stale nulls
+      if (appStore.stockData && Array.isArray(appStore.stockData)) {
+        const localPhotoMap = new Map();
+        appStore.stockData.forEach((group) => {
+          (group.products || []).forEach((p) => {
+            if (p.imageUrl) {
+              localPhotoMap.set((p.productName || '').trim().toLowerCase(), {
+                imageUrl: p.imageUrl,
+                secondaryImageUrl: p.secondaryImageUrl || p.imageUrl,
+                imageUploadedAt: p.imageUploadedAt,
+              });
+            }
+          });
+        });
+        fullCatalog.forEach((group) => {
+          (group.products || []).forEach((p) => {
+            const key = (p.productName || '').trim().toLowerCase();
+            if (!p.imageUrl && localPhotoMap.has(key)) {
+              const local = localPhotoMap.get(key);
+              p.imageUrl = local.imageUrl;
+              p.secondaryImageUrl = local.secondaryImageUrl;
+              if (local.imageUploadedAt) p.imageUploadedAt = local.imageUploadedAt;
+            }
+          });
+        });
       }
 
       // 2. Apply updates

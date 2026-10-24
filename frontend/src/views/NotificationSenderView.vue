@@ -223,7 +223,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import axios from 'axios';
-import { syncDataDualPath } from '@/utils/githubSync';
+import { syncDataDualPath, fetchFreshestFileFromGitHub } from '@/utils/githubSync';
 
 const router = useRouter();
 
@@ -352,7 +352,13 @@ const handleSendBroadcast = async () => {
       timestamp: new Date().toISOString(),
     };
 
-    const updatedList = [newBroadcast, ...pastNotifications.value];
+    // Pull absolute freshest notifications list from GitHub API to avoid wiping concurrent broadcasts
+    let remoteList = await fetchFreshestFileFromGitHub('frontend/public/assets/notifications.json');
+    if (!remoteList || !Array.isArray(remoteList)) {
+      remoteList = pastNotifications.value || [];
+    }
+
+    const updatedList = [newBroadcast, ...remoteList.filter((n) => n.id !== newBroadcast.id)];
     const jsonString = JSON.stringify(updatedList, null, 2);
     const commitMessage = `Broadcast notification: "${newBroadcast.title}"`;
 
@@ -381,7 +387,13 @@ const handleSendBroadcast = async () => {
 const deleteNotification = async (id) => {
   if (!confirm('Are you sure you want to remove this broadcast?')) return;
 
-  const updatedList = pastNotifications.value.filter((n) => n.id !== id);
+  // Pull absolute freshest notifications list from GitHub API before removing
+  let remoteList = await fetchFreshestFileFromGitHub('frontend/public/assets/notifications.json');
+  if (!remoteList || !Array.isArray(remoteList)) {
+    remoteList = pastNotifications.value || [];
+  }
+
+  const updatedList = remoteList.filter((n) => n.id !== id);
   const jsonString = JSON.stringify(updatedList, null, 2);
   const commitMessage = `Remove broadcast notification ID ${id}`;
 
