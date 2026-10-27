@@ -204,10 +204,8 @@ export function useAnalyzerData() {
 
         // Mutually Exclusive Primary Bucket Allocation
         let primaryBucket = '0_30';
-        if (b_1y_plus > 100) {
-          primaryBucket = '1y_plus';
-        } else if (b_9m > 100) {
-          primaryBucket = '9m';
+        if (b_1y_plus > 100 || b_9m > 100) {
+          primaryBucket = '180plus';
         } else if (b_6m > 100) {
           primaryBucket = '90_180';
         } else if (b_3m > 100) {

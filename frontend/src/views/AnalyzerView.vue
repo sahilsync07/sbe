@@ -44,6 +44,16 @@
             </button>
           </div>
 
+          <!-- Refresh Button -->
+          <button
+            type="button"
+            @click="handleRefresh"
+            class="h-10 w-10 rounded-2xl bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 text-slate-600 hover:text-slate-900 flex items-center justify-center shadow-xs transition-all cursor-pointer"
+            title="Refresh Ledger Data"
+          >
+            <i class="fa-solid fa-rotate text-xs" :class="{ 'animate-spin': isRefreshing }"></i>
+          </button>
+
           <!-- Sort Button -->
           <div class="relative">
             <button
@@ -677,8 +687,21 @@ const sendWhatsAppReminderWithPDF = async (party) => {
   }
 };
 
+const isRefreshing = ref(false);
+const handleRefresh = async () => {
+  isRefreshing.value = true;
+  try {
+    await loadLedgerData(true);
+    toast.success('Ledger data refreshed!');
+  } catch (e) {
+    toast.error('Failed to refresh ledger data');
+  } finally {
+    isRefreshing.value = false;
+  }
+};
+
 onMounted(async () => {
-  await loadLedgerData();
+  await loadLedgerData(true);
 });
 </script>
 
