@@ -59,6 +59,7 @@ export function useAnalyzerData() {
 
   // ─── Strictly Allowed Line Debtors Groups (From Line List + Rayagada Local) ──
   const ALLOWED_LINE_GROUPS_SET = new Set([
+    'ANDRA LINE PARVATHIPURAM',
     'BALIMELA,CHITROKUNDA,MALKANGIRI',
     'Bissam Cuttack',
     'DURGI-KD-THERUBALI-JK LINE',
