@@ -754,8 +754,13 @@
       <!-- Empty State -->
       <div v-else class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
         <i class="fa-solid fa-box-open text-4xl text-slate-300 mb-2"></i>
-        <p class="text-sm font-bold text-slate-600">No products found in this category</p>
-        <button @click="selectTab('All')" class="mt-3 px-4 py-2 bg-[#18181b] text-white text-xs font-bold rounded-xl">
+        <p class="text-sm font-bold text-slate-600">
+          {{ cleanView === 'upload' ? 'All in-stock products in this category already have photos!' : 'No products found in this category' }}
+        </p>
+        <button v-if="cleanView === 'upload'" @click="appStore.setCleanView('clean')" class="mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all">
+          Switch to Storefront View
+        </button>
+        <button v-else @click="selectTab('All')" class="mt-3 px-4 py-2 bg-[#18181b] text-white text-xs font-bold rounded-xl">
           Back to All Products
         </button>
       </div>
@@ -2239,6 +2244,8 @@ const getActiveTabProducts = () => {
     products = getBrandProducts(['Walkaholic']);
   } else if (tab === 'XPANIA' || tab === 'Xpania') {
     products = getBrandProducts(['Xpania']);
+  } else if (tab === 'TEUZ' || tab === 'Teuz') {
+    products = getBrandProducts(['TEUZ']);
   } else {
     products = getBrandProducts([tab]);
   }
