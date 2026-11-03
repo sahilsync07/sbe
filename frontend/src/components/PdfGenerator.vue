@@ -1481,6 +1481,7 @@ import { fetchCachedImageAsBase64 } from '../utils/nativeCache';
 import { getOptimizedImageUrl, getCleanProductName, parseCatalogSpecs } from '../utils/formatters';
 import { generateBrandSummaryImage } from '../utils/generateBrandSummaryImage.js';
 import { isKidsProduct } from '../utils/kidsUtils.js';
+import { groupSchoolProducts, formatSchoolVariantsSummary } from '../utils/schoolUtils.js';
 
 const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) ? import.meta.env.BASE_URL : '/';
 
@@ -1492,6 +1493,8 @@ const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
   { label: 'Kids', isKids: true, brands: [], icon: '🧒', defaultMinQty: 10 },
+  { label: 'Paragon School', brands: ['School'], icon: '🏫', defaultMinQty: 1, isSchool: true, schoolCategory: 'Paragon' },
+  { label: 'Durolite School', brands: ['SCHOOL SHOE DUROLITE'], icon: '🎒', defaultMinQty: 1, isSchool: true, schoolCategory: 'Durolite' },
   { label: 'Eeken', brands: ['EEKEN'], icon: '🏃', defaultMinQty: 10 },
   { label: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], icon: '👟', defaultMinQty: 10 },
   { label: 'Florex', brands: ['Florex (Swastik)'], icon: '🌸', defaultMinQty: 10 },
@@ -2364,7 +2367,7 @@ const openOneTouchModal = () => {
 };
 
 // --- PDF Mode: Generate a single multi-page PDF with sleek sides and royal cover page ---
-const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue, groupLabel = '', isKids = false) => {
+const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyValue, maxQtyValue, groupLabel = '', isKids = false, isSchool = false) => {
   const data = stockData.value;
   let targetProducts = [];
 
@@ -2378,6 +2381,36 @@ const generateOneTouchPdfBlob = async (targetBrands, onlyWithPhotosFlag, minQtyV
         if (product.quantity < minQtyValue) continue;
         if (maxQtyValue > 0 && product.quantity > maxQtyValue) continue;
         targetProducts.push({ product, group });
+      }
+    }
+  } else if (isSchool || targetBrands.some(b => ['school', 'school shoe durolite'].includes(b.toLowerCase()))) {
+    const filteredGroups = data.filter((group) => {
+      return targetBrands.some((tb) => tb.toLowerCase() === group.groupName.toLowerCase());
+    });
+    if (filteredGroups.length === 0) return { blob: null, pageCount: 0 };
+    const rawSchool = [];
+    for (const group of filteredGroups) {
+      for (const product of group.products) {
+        rawSchool.push(product);
+      }
+    }
+    const schoolModels = groupSchoolProducts(rawSchool);
+    for (const m of schoolModels) {
+      if (onlyWithPhotosFlag && !m.imageUrl) continue;
+      if (m.totalStock < minQtyValue) continue;
+      if (maxQtyValue > 0 && m.totalStock > maxQtyValue) continue;
+      const repProduct = m.variants.find(v => v.product?.imageUrl || v.product?.secondaryImageUrl)?.product || m.variants[0]?.product;
+      if (repProduct) {
+        targetProducts.push({
+          product: {
+            ...repProduct,
+            productName: `${m.name} (${m.color})`,
+            quantity: m.totalStock,
+            imageUrl: m.imageUrl
+          },
+          group: { groupName: m.groupName },
+          schoolModel: m
+        });
       }
     }
   } else {
@@ -2662,7 +2695,7 @@ const loadProductImageElement = async (product) => {
   });
 };
 
-const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
+const renderProductShareImageDirect = (product, group, dateStr, imgElement, customSpecsStr = null, customTitle = null, customQtyStr = null) => {
   const PAGE_W = 1080;
   const BAR_H = 135;
   const MAX_PHOTO_H = 1920; // Full 9:16 vertical standard (1080x1920)
@@ -2757,7 +2790,7 @@ const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
     if (sm) sizeVal = sm[1].replace('*', 'X').replace(/\s+/g, '');
   }
 
-  articleName = (articleName || product.productName).toUpperCase().trim();
+  articleName = (customTitle || articleName || product.productName).toUpperCase().trim();
   if (sizeVal) sizeVal = sizeVal.toUpperCase().trim();
   if (colorVal) colorVal = colorVal.toUpperCase().trim();
 
@@ -2766,7 +2799,7 @@ const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
 
   // ROW 1: ITEM NAME (left) & QTY (right)
   const row1Y = finalHeight + 52;
-  const qtyStr = `QTY: ${product.quantity} ${Number(product.quantity) === 1 ? 'PAIR' : 'PAIRS'}`;
+  const qtyStr = customQtyStr || `QTY: ${product.quantity} ${Number(product.quantity) === 1 ? 'PAIR' : 'PAIRS'}`;
 
   ctx.textAlign = 'right';
   ctx.textBaseline = 'alphabetic';
@@ -2797,11 +2830,14 @@ const renderProductShareImageDirect = (product, group, dateStr, imgElement) => {
   ctx.fillText(dateTag, rightX, row2Y);
   const dateWidth = ctx.measureText(dateTag).width;
 
-  const specItems = [];
-  if (sizeVal) specItems.push(`SIZE: ${sizeVal}`);
-  if (colorVal) specItems.push(`COLOR: ${colorVal}`);
-  if (mrpVal) specItems.push(`MRP: ${mrpVal}`);
-  const specsStr = specItems.join('   •   ');
+  let specsStr = customSpecsStr || '';
+  if (!specsStr) {
+    const specItems = [];
+    if (sizeVal) specItems.push(`SIZE: ${sizeVal}`);
+    if (colorVal) specItems.push(`COLOR: ${colorVal}`);
+    if (mrpVal) specItems.push(`MRP: ${mrpVal}`);
+    specsStr = specItems.join('   •   ');
+  }
 
   if (specsStr) {
     const maxSpecsW = PAGE_W - padX * 2 - dateWidth - 30;
@@ -2988,6 +3024,37 @@ const prepareOneTouch = async () => {
             }
           }
         }
+      } else if (group.isSchool) {
+        const filteredGroups = data.filter((g) => {
+          return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
+        });
+        const rawSchoolProducts = [];
+        for (const fg of filteredGroups) {
+          if (fg.products) {
+            for (const p of fg.products) {
+              rawSchoolProducts.push(p);
+            }
+          }
+        }
+        const schoolModels = groupSchoolProducts(rawSchoolProducts);
+        for (const m of schoolModels) {
+          if (oneTouchOnlyWithPhotos.value && !m.imageUrl) continue;
+          if (m.totalStock < effectiveMinQty) continue;
+          if (effectiveMaxQty > 0 && m.totalStock > effectiveMaxQty) continue;
+          const repProduct = m.variants.find(v => v.product?.imageUrl || v.product?.secondaryImageUrl)?.product || m.variants[0]?.product;
+          if (repProduct) {
+            targetProducts.push({
+              product: {
+                ...repProduct,
+                productName: `${m.name} (${m.color})`,
+                quantity: m.totalStock,
+                imageUrl: m.imageUrl
+              },
+              group: { groupName: m.groupName },
+              schoolModel: m
+            });
+          }
+        }
       } else {
         const filteredGroups = data.filter((g) => {
           return group.activeBrands.some((tb) => tb.toLowerCase() === g.groupName.toLowerCase());
@@ -3109,7 +3176,16 @@ const prepareOneTouch = async () => {
           }
 
           // 3. Render directly onto HTML5 Canvas
-          const b64 = renderProductShareImageDirect(product, prodGroup, dateStr, imgElement);
+          let customSpecs = null;
+          let customTitle = null;
+          let customQty = null;
+          if (targetProducts[i].schoolModel) {
+            const sm = targetProducts[i].schoolModel;
+            customTitle = `${sm.name} (${sm.color})`.toUpperCase();
+            customQty = `QTY: ${sm.totalStock} PAIRS`;
+            customSpecs = formatSchoolVariantsSummary(sm.variants);
+          }
+          const b64 = renderProductShareImageDirect(product, prodGroup, dateStr, imgElement, customSpecs, customTitle, customQty);
           if (!b64) continue;
 
           generatedImageCount++;

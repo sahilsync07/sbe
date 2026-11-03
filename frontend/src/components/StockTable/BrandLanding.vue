@@ -582,7 +582,7 @@
             {{ getActiveTabLabel() }}
           </span>
           <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black shrink-0">
-            {{ activeTab === 'ParagonCore' ? paragonCoreList.length + ' Core Models' : displayedTabProducts.length + ' items' }}
+            {{ activeTab === 'ParagonCore' ? paragonCoreList.length + ' Core Models' : (activeTab === 'School' ? displayedTabProducts.length + ' School Models' : displayedTabProducts.length + ' items') }}
           </span>
         </div>
         <button
@@ -594,12 +594,65 @@
         </button>
       </div>
 
+      <!-- School Sub-Categories Switcher Pills (All / Paragon School / Durolite School) -->
+      <div v-if="activeTab === 'School'" class="flex items-center gap-2 mb-3.5 overflow-x-auto no-scrollbar py-1">
+        <button
+          type="button"
+          @click="schoolCategory = 'all'"
+          class="px-3.5 py-1.5 rounded-full text-xs font-black tracking-wide uppercase transition-all duration-200 border flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs active:scale-95"
+          :class="schoolCategory === 'all'
+            ? 'bg-amber-500 text-white border-amber-600 shadow-sm ring-2 ring-amber-400/25'
+            : 'bg-white text-slate-700 border-slate-200 hover:border-amber-300 hover:bg-slate-50'"
+        >
+          <i class="fa-solid fa-graduation-cap text-xs"></i>
+          <span>All School Shoes</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="schoolCategory === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'">
+            {{ schoolStats.all }}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          @click="schoolCategory = 'paragon'"
+          class="px-3.5 py-1.5 rounded-full text-xs font-black tracking-wide uppercase transition-all duration-200 border flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs active:scale-95"
+          :class="schoolCategory === 'paragon'
+            ? 'bg-red-600 text-white border-red-700 shadow-sm ring-2 ring-red-400/25'
+            : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-slate-50'"
+        >
+          <i class="fa-solid fa-school text-xs"></i>
+          <span>Paragon School</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="schoolCategory === 'paragon' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'">
+            {{ schoolStats.paragon }}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          @click="schoolCategory = 'durolite'"
+          class="px-3.5 py-1.5 rounded-full text-xs font-black tracking-wide uppercase transition-all duration-200 border flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs active:scale-95"
+          :class="schoolCategory === 'durolite'
+            ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/25'
+            : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:bg-slate-50'"
+        >
+          <i class="fa-solid fa-shield text-xs"></i>
+          <span>Durolite School</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="schoolCategory === 'durolite' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'">
+            {{ schoolStats.durolite }}
+          </span>
+        </button>
+      </div>
+
       <!-- Consolidated Product Grid: Core models unified into single size-selector cards; others as individual cards -->
       <div v-if="displayedTabProducts.length > 0">
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 pb-6">
-          <template v-for="product in visibleTabProducts" :key="product.isCore ? product.id : product.productName">
+          <template v-for="product in visibleTabProducts" :key="product.isSchoolWide ? product.id : (product.isCore ? product.id : product.productName)">
+          <SchoolWideCard
+            v-if="product.isSchoolWide"
+            :model="product"
+            @open-image-popup="$emit('open-image-popup', $event)"
+          />
           <ParagonCoreCard
-            v-if="product.isCore"
+            v-else-if="product.isCore"
             :core="product.core"
             @open-image-popup="$emit('open-image-popup', $event)"
           />
@@ -1519,6 +1572,7 @@ import SlideshowCard from './SlideshowCard.vue';
 import { isNewArrival, getOptimizedImageUrl, formatProductName, getProductImage, parseCatalogSpecs, getCleanProductName } from '../../utils/formatters';
 import { extractColor } from '../../utils/colors';
 import { isKidsProduct } from '../../utils/kidsUtils';
+import { groupSchoolProducts } from '../../utils/schoolUtils';
 
 import { useAdmin } from '../../composables/useAdmin';
 import { useStockData } from '../../composables/useStockData';
@@ -1530,6 +1584,7 @@ import { storeToRefs } from 'pinia';
 
 const CachedImage = defineAsyncComponent(() => import('./CachedImage.vue'));
 const ParagonCoreCard = defineAsyncComponent(() => import('./ParagonCoreCard.vue'));
+const SchoolWideCard = defineAsyncComponent(() => import('./SchoolWideCard.vue'));
 const CatalogHeroCarousel = defineAsyncComponent(() => import('./CatalogHeroCarousel.vue'));
 const CommitPreviewModal = defineAsyncComponent(() => import('./CommitPreviewModal.vue'));
 
@@ -1538,6 +1593,20 @@ const baseUrl = import.meta.env.BASE_URL || '/';
 const route = useRoute();
 const router = useRouter();
 
+const schoolCategory = ref('all'); // 'all' | 'paragon' | 'durolite'
+const allSchoolModels = computed(() => {
+  if (!stockData.value) return [];
+  const raw = getBrandProducts(['School', 'SCHOOL SHOE DUROLITE']);
+  return groupSchoolProducts(raw);
+});
+const schoolStats = computed(() => {
+  const list = allSchoolModels.value;
+  return {
+    all: list.length,
+    paragon: list.filter(m => m.category.includes('Paragon')).length,
+    durolite: list.filter(m => m.category.includes('Durolite')).length
+  };
+});
 const appStore = useAppStore();
 const cartStore = useCartStore();
 const { cleanView, searchQuery, lastSyncTime } = storeToRefs(appStore);
@@ -2486,6 +2555,25 @@ const displayedTabProducts = computed(() => {
   if (activeTab.value === 'ParagonCore') {
     return paragonCoreList.value.map(core => ({ isCore: true, id: 'core_' + core.id, core }));
   }
+  if (activeTab.value === 'School') {
+    let raw = [];
+    if (schoolCategory.value === 'paragon') {
+      raw = getBrandProducts(['School']);
+    } else if (schoolCategory.value === 'durolite') {
+      raw = getBrandProducts(['SCHOOL SHOE DUROLITE']);
+    } else {
+      raw = getBrandProducts(['School', 'SCHOOL SHOE DUROLITE']);
+    }
+    let models = groupSchoolProducts(raw);
+    return models.filter(m => {
+      if ((cleanView.value === 'clean' || cleanView.value === true) && m.totalStock <= 0) return false;
+      if (inStockOnly.value && m.totalStock <= 0) return false;
+      if (cleanView.value === 'upload') {
+        if (m.imageUrl || m.totalStock <= 0) return false;
+      }
+      return true;
+    });
+  }
   return consolidateProducts(filteredTabProducts.value);
 });
 
@@ -2521,7 +2609,7 @@ useIntersectionObserver(searchLoadMoreRef, ([{ isIntersecting }]) => {
 }, { threshold: 0.1 });
 
 // Reset display limit when switching tabs, searching, or toggling filters
-watch([activeTab, searchQuery, inStockOnly, maxPriceFilter, cleanView], () => {
+watch([activeTab, searchQuery, inStockOnly, maxPriceFilter, cleanView, schoolCategory], () => {
   displayLimit.value = 40;
 });
 

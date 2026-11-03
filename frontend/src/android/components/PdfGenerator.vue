@@ -1458,6 +1458,8 @@ const ONE_TOUCH_GROUPS = [
   { label: 'Paragon', brands: ['Max', 'PARAGON GENTS', 'Escoute'], icon: '👞', defaultMinQty: 10 },
   { label: 'Paragon Ladies', brands: ['PARAGON LADIES'], icon: '👠', defaultMinQty: 10 },
   { label: 'Kids', isKids: true, brands: [], icon: '🧒', defaultMinQty: 10 },
+  { label: 'Paragon School', brands: ['School'], icon: '🏫', defaultMinQty: 1, isSchool: true, schoolCategory: 'Paragon' },
+  { label: 'Durolite School', brands: ['SCHOOL SHOE DUROLITE'], icon: '🎒', defaultMinQty: 1, isSchool: true, schoolCategory: 'Durolite' },
   { label: 'Eeken', brands: ['EEKEN'], icon: '🏃', defaultMinQty: 10 },
   { label: 'Cubix', brands: ['CUBIX', 'CUBIX 2'], icon: '👟', defaultMinQty: 10 },
   { label: 'Florex', brands: ['Florex (Swastik)'], icon: '🌸', defaultMinQty: 10 },
