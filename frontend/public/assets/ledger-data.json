@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-11-10T14:55:43.725Z",
+    "lastSync": "2026-11-11T05:56:38.202Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 11173315.82,
-        "closingBalance": 10920900.72,
+        "closingBalance": 10920151.17,
         "entries": []
       }
     ]
@@ -39662,7 +39662,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -3568308.18,
+        "closingBalance": -3571260.18,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -43156,6 +43156,20 @@
             "type": "Tax Invoice",
             "amount": 628.56,
             "drCr": "Cr"
+          },
+          {
+            "date": "10-Nov-26",
+            "voucherNo": 504,
+            "type": "Purchase",
+            "amount": 342.24,
+            "drCr": "Dr"
+          },
+          {
+            "date": "10-Nov-26",
+            "voucherNo": 505,
+            "type": "Purchase",
+            "amount": 2609.76,
+            "drCr": "Dr"
           }
         ]
       },
@@ -87103,7 +87117,7 @@
       {
         "ledgerName": "Paragon Polymer Products Pvt.Ltd(Kerala)",
         "openingBalance": 1703048,
-        "closingBalance": 340779,
+        "closingBalance": 402771,
         "entries": [
           {
             "date": "8-Apr-26",
@@ -87453,6 +87467,20 @@
             "voucherNo": 486,
             "type": "Purchase",
             "amount": 87708,
+            "drCr": "Cr"
+          },
+          {
+            "date": "10-Nov-26",
+            "voucherNo": 504,
+            "type": "Purchase",
+            "amount": 7187,
+            "drCr": "Cr"
+          },
+          {
+            "date": "10-Nov-26",
+            "voucherNo": 505,
+            "type": "Purchase",
+            "amount": 54805,
             "drCr": "Cr"
           }
         ]
@@ -93899,7 +93927,7 @@
       {
         "ledgerName": "PURCHASE@GST",
         "openingBalance": 0,
-        "closingBalance": -33873879.71,
+        "closingBalance": -33932919.71,
         "entries": []
       },
       {
@@ -96657,6 +96685,20 @@
             "type": "Purchase",
             "amount": 0.3,
             "drCr": "Cr"
+          },
+          {
+            "date": "10-Nov-26",
+            "voucherNo": 504,
+            "type": "Purchase",
+            "amount": 0.01,
+            "drCr": "Cr"
+          },
+          {
+            "date": "10-Nov-26",
+            "voucherNo": 505,
+            "type": "Purchase",
+            "amount": 0.01,
+            "drCr": "Dr"
           }
         ]
       }
