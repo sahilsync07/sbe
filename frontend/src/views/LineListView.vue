@@ -21,6 +21,10 @@
                 </span>
               </div>
               <p class="text-[11px] sm:text-xs text-slate-400 font-semibold mt-0.5">Print debtor balances by area with itemized bills</p>
+              <div v-if="ledgerLastUpdatedFormatted" class="mt-1 flex items-center gap-1.5 text-[10px] sm:text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60 w-fit">
+                <i class="fa-solid fa-cloud-arrow-down text-[10px] text-emerald-600"></i>
+                <span>Ledger data updated: {{ ledgerLastUpdatedFormatted }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -199,12 +203,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { generateLineListPDF } from '../utils/pdfLineList';
+import { generateLineListPDF, getLineListFileName, formatLedgerLastUpdated } from '../utils/pdfLineList';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
 import { toast } from 'vue3-toastify';
 
 const router = useRouter();
@@ -214,6 +217,7 @@ const error = ref(null);
 const isGenerating = ref(false);
 
 const ledgerData = ref([]);
+const ledgerLastSync = ref(null);
 const availableLines = ref([]);
 const selectedLines = ref([]);
 
@@ -248,6 +252,11 @@ onMounted(async () => {
     }
     
     ledgerData.value = data;
+
+    const meta = data.find(g => g && (g.groupName === '_META_DATA_' || g.group === '_META_DATA_'));
+    if (meta && meta.lastSync) {
+      ledgerLastSync.value = new Date(meta.lastSync);
+    }
     
     // Filter out standard tally groups to leave only area/line groups
     availableLines.value = data
@@ -261,6 +270,11 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+});
+
+const ledgerLastUpdatedFormatted = computed(() => {
+  if (!ledgerLastSync.value) return null;
+  return formatLedgerLastUpdated(ledgerLastSync.value);
 });
 
 const toggleSelectAll = () => {
@@ -288,56 +302,40 @@ const handlePrint = async () => {
       return;
     }
 
-    const pdfOptions = { style: pdfStyle.value };
+    const isAll = selectedLines.value.length === availableLines.value.length;
+    const fileName = getLineListFileName(selectedLines.value, from, to, pdfStyle.value, isAll);
+    const pdfOptions = {
+      style: pdfStyle.value,
+      fileName,
+      lastUpdated: ledgerLastSync.value
+    };
     
-    if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === 'android') {
-      const pdfDataUri = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { ...pdfOptions, returnBase64: true });
-      if (!pdfDataUri) throw new Error('Failed to generate PDF');
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const pdfDataUri = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { ...pdfOptions, returnBase64: true });
+        if (!pdfDataUri) throw new Error('Failed to generate PDF');
 
-      const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
-      const fileName = `LineList_${pdfStyle.value === 'detailed' ? 'Detailed_' : ''}${Date.now()}.pdf`;
-      const savedFile = await Filesystem.writeFile({
-        path: fileName,
-        data: base64Data,
-        directory: Directory.Cache
-      });
+        const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Documents,
+          recursive: true
+        });
 
-      await Share.share({
-        title: 'Line List PDF',
-        text: `Line List (${selectedLines.value.join(', ')}) - ${pdfStyle.value === 'detailed' ? 'Detailed' : 'Classic'}`,
-        files: [savedFile.uri]
-      });
-      toast.success('Line List PDF ready to share!', { autoClose: 2500 });
+        toast.success(`PDF saved to Documents: ${fileName}`, { autoClose: 3500 });
+        return;
+      } catch (fsErr) {
+        console.warn('Native Filesystem save failed, falling back to direct browser download:', fsErr);
+      }
+    }
+
+    // Direct browser download without opening any Share dialog
+    const success = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, pdfOptions);
+    if (success) {
+      toast.success(`Line List PDF downloaded (${fileName})`, { autoClose: 3000 });
     } else {
-      if (typeof navigator !== 'undefined' && navigator.canShare && typeof navigator.share === 'function') {
-        try {
-          const pdfBlob = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { ...pdfOptions, returnBlob: true });
-          if (pdfBlob) {
-            const file = new File([pdfBlob], `LineList_${Date.now()}.pdf`, { type: 'application/pdf' });
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: 'Line List PDF',
-                files: [file]
-              });
-              toast.success('Line List PDF shared!', { autoClose: 2500 });
-              return;
-            }
-          }
-        } catch (shareErr) {
-          if (shareErr.name !== 'AbortError') {
-            console.warn('Web Share fallback to direct download:', shareErr);
-          } else {
-            return;
-          }
-        }
-      }
-
-      const success = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, pdfOptions);
-      if (success) {
-        toast.success(`Line List PDF (${pdfStyle.value === 'detailed' ? 'Detailed' : 'Classic'}) downloaded!`, { autoClose: 2500 });
-      } else {
-        alert('Failed to generate PDF. Check console for details.');
-      }
+      alert('Failed to generate PDF. Check console for details.');
     }
   } catch (err) {
     alert("Error: " + err.message);

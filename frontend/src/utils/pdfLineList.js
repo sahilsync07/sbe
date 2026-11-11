@@ -21,6 +21,71 @@ export const parseLedgerDate = (dateStr) => {
 };
 
 /**
+ * Formats a lastSync timestamp from ledger-data.json into a human-readable string.
+ * e.g., "2026-11-03T14:47:05.064Z" -> "03-Nov-2026, 08:17 PM"
+ */
+export const formatLedgerLastUpdated = (lastSync) => {
+  if (!lastSync) return '';
+  const d = new Date(lastSync);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+  return `${day}-${month}-${year}, ${timeStr}`;
+};
+
+/**
+ * Generates standardized filename based on selected lines, date range, and style.
+ * e.g., "LineList_Detailed_ANDRA_LINE_PARVATHIPURAM_01Apr2026_to_31Oct2026.pdf"
+ */
+export const getLineListFileName = (selectedLines, fromDate, toDate, style = 'classic', isAll = false) => {
+  // 1. Line Part
+  let linePart = 'All_Lines';
+  if (Array.isArray(selectedLines) && selectedLines.length > 0 && !isAll) {
+    if (selectedLines.length === 1) {
+      linePart = selectedLines[0]
+        .replace(/[^a-zA-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    } else if (selectedLines.length <= 3) {
+      linePart = selectedLines
+        .map(l => l.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, ''))
+        .join('_');
+    } else {
+      linePart = `${selectedLines.length}_Lines`;
+    }
+  }
+
+  // 2. Date Range Part
+  const fmtDate = (d) => {
+    if (!d || isNaN(d.getTime())) return '';
+    const day = String(d.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day}${month}${year}`;
+  };
+
+  let datePart = 'All_Time';
+  if (fromDate && toDate) {
+    datePart = `${fmtDate(fromDate)}_to_${fmtDate(toDate)}`;
+  } else if (fromDate) {
+    datePart = `From_${fmtDate(fromDate)}`;
+  } else if (toDate) {
+    datePart = `UpTo_${fmtDate(toDate)}`;
+  }
+
+  const stylePrefix = style === 'detailed' ? 'Detailed_' : '';
+  return `LineList_${stylePrefix}${linePart}_${datePart}.pdf`;
+};
+
+/**
  * Converts a string to Title Case (Camel Casing for display).
  * e.g., "ABDUL HAZI (PALAK BEGAM)" → "Abdul Hazi (Palak Begam)"
  */
@@ -168,7 +233,19 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
       const pw = doc.internal.pageSize.getWidth();
       const mL = 40, mR = 40;
 
-      // ── Meta line: Two-tier layout to prevent collision on long line names ──
+      // ── Meta line: Multi-tier layout with Last Updated timestamp ──
+      // Extract last updated date from options or ledgerData metadata (_META_DATA_)
+      let lastUpdatedDate = null;
+      if (options.lastUpdated) {
+        lastUpdatedDate = new Date(options.lastUpdated);
+      } else if (Array.isArray(ledgerData)) {
+        const meta = ledgerData.find(g => g && (g.groupName === '_META_DATA_' || g.group === '_META_DATA_'));
+        if (meta && meta.lastSync) {
+          lastUpdatedDate = new Date(meta.lastSync);
+        }
+      }
+      const lastUpdatedText = lastUpdatedDate ? formatLedgerLastUpdated(lastUpdatedDate) : '';
+
       let lineText = selectedLines.join("  \u2022  ");
       if (lineText.length > 55) lineText = lineText.substring(0, 52) + "...";
 
@@ -185,21 +262,29 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
       doc.setFont("Roboto", "bold");
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
-      doc.text("Sri Brundabana Enterprises, Rayagada.", pw / 2, 20, { align: "center" });
+      doc.text("Sri Brundabana Enterprises, Rayagada.", pw / 2, 17, { align: "center" });
 
-      // Tier 2: Line name (left) & Period (right)
+      // Tier 2: Last Updated timestamp from ledger-data.json
+      if (lastUpdatedText) {
+        doc.setFont("Roboto", "normal");
+        doc.setFontSize(7.5);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Last Updated on: ${lastUpdatedText}`, pw / 2, 26, { align: "center" });
+      }
+
+      // Tier 3: Line name (left) & Period (right)
       doc.setFont("Roboto", "bold");
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(0, 0, 0);
-      doc.text(`Line: ${lineText}`, mL, 32);
-      doc.text(`Period: ${dateText}`, pw - mR, 32, { align: "right" });
+      doc.text(`Line: ${lineText}`, mL, 37);
+      doc.text(`Period: ${dateText}`, pw - mR, 37, { align: "right" });
 
       // Thin crisp hairline separator
       doc.setDrawColor(120, 120, 120);
       doc.setLineWidth(0.5);
-      doc.line(mL, 37, pw - mR, 37);
+      doc.line(mL, 41, pw - mR, 41);
 
-      const tableStartY = 41;
+      const tableStartY = 45;
 
       // ── Table ─────────────────────────────────────────────
       const tableColumns = [
@@ -460,11 +545,12 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           }
         },
         didDrawPage: function (data) {
-          // Footer: page number right, company stamp left
+          // Footer: page number right, company stamp + last updated left
           const pageH = doc.internal.pageSize.getHeight();
           doc.setFontSize(6.5);
           doc.setTextColor(140, 140, 140);
-          doc.text("Sri Brundabana Enterprises", mL, pageH - 14);
+          const updatedStamp = lastUpdatedText ? ` • Updated: ${lastUpdatedText}` : '';
+          doc.text(`Sri Brundabana Enterprises${updatedStamp}`, mL, pageH - 14);
           const styleLabel = style === 'detailed' ? ' • Detailed' : '';
           doc.text("Page " + doc.internal.getNumberOfPages() + styleLabel, pw - mR, pageH - 14, { align: "right" });
         }
@@ -479,7 +565,8 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
         return;
       }
 
-      doc.save(`LineList_${style === 'detailed' ? 'Detailed_' : ''}${new Date().getTime()}.pdf`);
+      const fileName = options.fileName || getLineListFileName(selectedLines, fromDate, toDate, style);
+      doc.save(fileName);
       resolve(true);
     } catch (e) {
       console.error("PDF Gen Error:", e);
