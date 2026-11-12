@@ -1,17 +1,17 @@
 [
   {
-    "groupName": "_META_DATA_",
-    "lastSync": "2026-11-11T14:53:08.100Z",
-    "ledgers": []
-  },
-  {
     "groupName": "&#4; Primary",
     "ledgers": [
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 11173315.82,
         "closingBalance": 11042710.4,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -22,7 +22,12 @@
         "ledgerName": "Ajarudin,Parvathipuram",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "AYAPA FOOWEAR, MAKUVA",
@@ -470,7 +475,12 @@
             "amount": 97020,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "DEV FOOTWEAR, JIMIRIPETA",
@@ -595,7 +605,12 @@
         "ledgerName": "GANESH FOOTWEAR & GENERAL STORE , PARVATHIPURAM",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "GANTA SATYAM NAIDU, KOMARADA",
@@ -1434,19 +1449,34 @@
             "amount": 6991,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "N Kavatha, Parvathipuram",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "P Rabindra Kumar, Kuner",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "P.Ravi , Kereda",
@@ -2529,7 +2559,12 @@
             "amount": 101816,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SRI ADITYA METRO SHOE, PARVATHIPURAM",
@@ -2703,7 +2738,12 @@
         "ledgerName": "SRI SAI FOOTWEAR, SOMPETA",
         "openingBalance": -632,
         "closingBalance": -632,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SRI SHARVANI FOOTWEAR , VISAKHAPATNAM",
@@ -2927,7 +2967,12 @@
             "amount": 300000,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Sri Surya Footwear & General Stores, Parvatipuram",
@@ -3011,7 +3056,12 @@
             "amount": 720,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "TRINATH PANSHOP,JANJABATI",
@@ -3317,7 +3367,12 @@
             "amount": 1500,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "ABHI FOOTEAR, PENDRIPANI",
@@ -3428,19 +3483,34 @@
         "ledgerName": "ALOK BOOT HOUSE,KORUKONDA",
         "openingBalance": -17478,
         "closingBalance": -17478,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "AMRIT ISSUE, CHITROKUNDA",
         "openingBalance": -16524,
         "closingBalance": -16524,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Anata Mandinga, Damanganda",
         "openingBalance": -3,
         "closingBalance": -3,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "ANKIT FOOTWEAR, MV-88",
@@ -3607,7 +3677,12 @@
         "ledgerName": "Antarjyami Patro, Kumliput",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "APPA RAO, GOVINDPALI",
@@ -3697,7 +3772,12 @@
         "ledgerName": "ARIHANT ENTERPRISES, JEYPORE",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "ASISH FOOTWEAR, POTERU",
@@ -3759,7 +3839,12 @@
         "ledgerName": "Aurobindo Nayak, Jeypore",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BABULA PATRO, CHITROKUNDA",
@@ -3926,19 +4011,34 @@
         "ledgerName": "BARMAN & SON'S F/W, KALIMELA",
         "openingBalance": -86,
         "closingBalance": -86,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BIBHUTI BADIYA, MATHILI",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Bidhan Mallick, Mv-7",
         "openingBalance": -214,
         "closingBalance": -214,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "B. LOKESWAR RAO, CHITROKUNDA",
@@ -4294,7 +4394,12 @@
         "ledgerName": "DEVRAJ  & SONS (SONEJA)",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "D.RAMAKRISHNA,CHITRAKUNDA",
@@ -4481,7 +4586,12 @@
         "ledgerName": "Foot Fashion, Baipariguda",
         "openingBalance": -18302,
         "closingBalance": -18302,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "GOKUL MANDAL, MV-79",
@@ -4499,7 +4609,12 @@
         "ledgerName": "GUDU F/W, GOBINDAPALI",
         "openingBalance": -8,
         "closingBalance": -8,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "HARI PRADHAN, KHAIRAPUT",
@@ -4644,13 +4759,23 @@
         "ledgerName": "J Kadaraka,Mathalput(Damajodi)",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Kalipuja Pal, Mv - 79, Malkangiri",
         "openingBalance": -22044,
         "closingBalance": -22044,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "KANKAN KUMAR MONDAL, KALIMELA",
@@ -4803,13 +4928,23 @@
         "ledgerName": "KISHORE FOOTWEAR, KALIMELA",
         "openingBalance": -4757,
         "closingBalance": -4757,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "doubtful",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "KRISHNA F/W, CHITRAKUNDA",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "LITU BISOI DASMANTHPUR",
@@ -4947,43 +5082,78 @@
         "ledgerName": "Maa Damaldei, Khairaput(Ajay Kumar Sahu)",
         "openingBalance": -351,
         "closingBalance": -351,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Malik Boot House, Balimela",
         "openingBalance": -10381,
         "closingBalance": -10381,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MANAS FOOTWEAR, KALIMELA",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MANIK DAY, KHATAMETA",
         "openingBalance": -13,
         "closingBalance": -13,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "doubtful",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "M Ashok,Tangiliguda",
         "openingBalance": -10,
         "closingBalance": -10,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Midul Day, Khatameta",
         "openingBalance": -125,
         "closingBalance": -125,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Milan Footwear, Pangam",
         "openingBalance": -2116,
         "closingBalance": -2116,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Mithun Sardar, Kalimela",
@@ -5121,13 +5291,23 @@
         "ledgerName": "M/S UPENDRA BARMAN, KALIMELA",
         "openingBalance": 32,
         "closingBalance": 32,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Muna F/w, Khairput",
         "openingBalance": -388,
         "closingBalance": -388,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "NALINI BIWAS , M.P.V-81",
@@ -5272,31 +5452,56 @@
         "ledgerName": "NILANCHAL MOHANTY, KUDUMULUGUMMA",
         "openingBalance": -2342,
         "closingBalance": -2342,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "NIRMAL HOWLADAL, MV-79",
         "openingBalance": -2045,
         "closingBalance": -2045,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "N STEPS, BOIPARIGUDA",
         "openingBalance": -4964,
         "closingBalance": -4964,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Pradeep Mandal, Pendripani",
         "openingBalance": -6231,
         "closingBalance": -6231,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "PREMANDA KHANA,PANGAM",
         "openingBalance": -10710,
         "closingBalance": -10710,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "PRINCE STORE, CHITRAKUNDA",
@@ -5589,13 +5794,23 @@
         "ledgerName": "Priyanshi Collection, Digapur",
         "openingBalance": -3027,
         "closingBalance": -3027,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Puja Mahanty, Boipariguda",
         "openingBalance": -1631,
         "closingBalance": -1631,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "RAHUL F/W, KALIMELA",
@@ -6007,13 +6222,23 @@
         "ledgerName": "Rockteach Engineer Laxmipur",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "ROSHON BISWAS , MV-79",
         "openingBalance": -2954,
         "closingBalance": -2954,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SAHIL BHAI FOOTWEAR, GOVINDPALI",
@@ -6180,7 +6405,12 @@
         "ledgerName": "Sai Shankar Fancy Store, Bandhugaon",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SANJAY F/W, POTTERU",
@@ -6298,7 +6528,12 @@
         "ledgerName": "Sanjib Mandal, Karukonda",
         "openingBalance": -416,
         "closingBalance": -416,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SANTI ROY CHOUDHURY, KHAIRPUT",
@@ -6556,7 +6791,12 @@
         "ledgerName": "SIBU SAHA, MV-17",
         "openingBalance": -1453,
         "closingBalance": -1453,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SMART BOOT HOUSE, MALKANGIRI",
@@ -6568,7 +6808,12 @@
         "ledgerName": "SRI GOPAL FOOTWEAR, BALIMELA",
         "openingBalance": -53234,
         "closingBalance": -53234,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SRI RAMA RAJU ENTERPRISES, CHITRAKUNDA",
@@ -6924,13 +7169,23 @@
         "ledgerName": "Suresh Baral, Kudumuluguma",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Suresh Nayak,Baipariguda",
         "openingBalance": -2,
         "closingBalance": -2,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SWASTIK F/W, KALIMELA",
@@ -7079,7 +7334,12 @@
         "ledgerName": "Andhara Bank Current A/C",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "HERO FINCORP LTD",
@@ -8143,25 +8403,45 @@
             "amount": 499889,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Indusind Bank",
         "openingBalance": -7825650,
         "closingBalance": -7825650,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Indusind Bank Charges",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "INDUSLND BANK (PROSSESSING)",
         "openingBalance": -21600,
         "closingBalance": -21600,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -8172,7 +8452,12 @@
         "ledgerName": "ANDHRA BANK CC A/C(N0-0724)",
         "openingBalance": 2041961.5,
         "closingBalance": 2041961.5,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SBI(ADB)-CC A/C",
@@ -16880,7 +17165,12 @@
             "amount": 32000,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -16891,7 +17181,12 @@
         "ledgerName": "Siba Chichuan, Hajaridanga",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "normal",
+        "settlementStatus": "settled_unaccounted",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -16902,19 +17197,34 @@
         "ledgerName": "Capital Introduce",
         "openingBalance": 2500000,
         "closingBalance": 2500000,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Drawings",
         "openingBalance": -240,
         "closingBalance": -240,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "S. Lokanatha",
         "openingBalance": -1160000,
         "closingBalance": -1160000,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -26075,13 +26385,23 @@
             "amount": 1500,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "CASH SALARY",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -26092,7 +26412,12 @@
         "ledgerName": "TCS",
         "openingBalance": -142939.98,
         "closingBalance": -142939.98,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -26146,7 +26471,12 @@
             "amount": 59,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Bank Debit & Credit",
@@ -26209,7 +26539,12 @@
             "amount": 42918,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Bank Interest",
@@ -26258,7 +26593,12 @@
             "amount": 48054,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BANK LOAN 70 LAKHS",
@@ -26419,7 +26759,12 @@
             "amount": 40000,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "JANA SAMRTHNA RELIF",
@@ -26454,7 +26799,12 @@
             "amount": 16414,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Transport Charges(Services)",
@@ -27091,7 +27441,12 @@
             "amount": 1278,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -27476,13 +27831,23 @@
         "ledgerName": "JAYANT TULO, THERUBALI",
         "openingBalance": -1029,
         "closingBalance": -1029,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "JITU KAUSHALY, THERUBALI",
         "openingBalance": -2070,
         "closingBalance": -2070,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Kanya Lal",
@@ -27506,13 +27871,23 @@
         "ledgerName": "Maa Agni Ganga F/w Therubali ( Sujeet Saha )",
         "openingBalance": -419,
         "closingBalance": -419,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAA MAJHIGOURI SPORTS & F/W, KOLNARA",
         "openingBalance": -280,
         "closingBalance": -280,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAA MANGALA GENERAL STORE, DURGI",
@@ -39102,13 +39477,23 @@
             "amount": 122.71,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "FUNCTION HALL",
         "openingBalance": 0,
         "closingBalance": 0,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "IGST",
@@ -42622,13 +43007,23 @@
             "amount": 2609.76,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Sales Tax Returen Charges",
         "openingBalance": -20000,
         "closingBalance": -20000,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SGST @",
@@ -52988,7 +53383,12 @@
             "amount": 122.71,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -52999,7 +53399,12 @@
         "ledgerName": "C.C. TV",
         "openingBalance": -10000,
         "closingBalance": -10000,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Computer Accessories",
@@ -53034,7 +53439,12 @@
             "amount": 50,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Electrical Accessories",
@@ -53048,25 +53458,45 @@
             "amount": 200,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Furniture & Fixtures",
         "openingBalance": -132930,
         "closingBalance": -132930,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Invetor",
         "openingBalance": -25500,
         "closingBalance": -25500,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "J G P Bhavani",
         "openingBalance": -43880,
         "closingBalance": -43880,
-        "entries": []
+        "entries": [],
+        "partyType": "wholesaler",
+        "creditStatus": "normal",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -53077,19 +53507,34 @@
         "ledgerName": "Abhimanyu Behera, Dambasara",
         "openingBalance": -3457,
         "closingBalance": -3457,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "doubtful",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "A. SUDHAKAR NILAMANI, GUMUDA",
         "openingBalance": -3954,
         "closingBalance": -3954,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BANSADHARA F/W, GUNUPUR",
         "openingBalance": -4214,
         "closingBalance": -4214,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "B.CH. KHADANGA, GUMUDA",
@@ -53148,7 +53593,12 @@
         "ledgerName": "CHANDRA F/W, GUNUPUR",
         "openingBalance": -5968,
         "closingBalance": -5968,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "D. MADHABA RAO, GUDARI",
@@ -53932,7 +54382,12 @@
         "ledgerName": "K. GURUNATH, DAMBUSORA",
         "openingBalance": -1213,
         "closingBalance": -1213,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Khadanga Xerox Gumuda",
@@ -53944,7 +54399,12 @@
         "ledgerName": "KISHOR NAYAK, MUKUNDPUR",
         "openingBalance": -4526,
         "closingBalance": -4526,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Konark Patro, Ramanaguda",
@@ -53956,13 +54416,23 @@
         "ledgerName": "K . VISU F/W, UKUMBA",
         "openingBalance": -1618,
         "closingBalance": -1618,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "LAXMI F/W, GUMUDA( DEVI PRASAD PANIGRAHI)",
         "openingBalance": -12891,
         "closingBalance": -12891,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "LINGARAJ PANDA, GUNUPUR",
@@ -54080,7 +54550,12 @@
         "ledgerName": "L . K . RAO , GUDIABANDHA",
         "openingBalance": -2620,
         "closingBalance": -2620,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAA MAJHI GOURI, GUDARI",
@@ -54226,7 +54701,12 @@
         "ledgerName": "MAA MANGALA F/W, GUMUDA",
         "openingBalance": -552,
         "closingBalance": -552,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAA TARINI F/W, PADAMPUR",
@@ -54902,7 +55382,12 @@
         "ledgerName": "RAJU TAILOR, CHALKHAMBA",
         "openingBalance": -2619,
         "closingBalance": -2619,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Ramakrishna F/w & General Stores,Battili",
@@ -55093,7 +55578,12 @@
         "ledgerName": "RANJIT TULO, KENDUGUDA",
         "openingBalance": -3054,
         "closingBalance": -3054,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "RENUKA SHOE MART, GUNUPUR",
@@ -55333,7 +55823,12 @@
             "amount": 100,
             "drCr": "Dr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Saiteja Footwear, Dambosara",
@@ -55533,7 +56028,12 @@
         "ledgerName": "SATYASAI FOOTWEAR, PADAMPUR",
         "openingBalance": -1784,
         "closingBalance": -1784,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SHIVASISH MALL, PADAMPUR",
@@ -55545,13 +56045,23 @@
         "ledgerName": "SIMADRI KALPANA(S. GOURI), GUNUPUR",
         "openingBalance": -14286,
         "closingBalance": -14286,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SIVA SHOES & GIFT, PADAMPUR",
         "openingBalance": -24677,
         "closingBalance": -24677,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "S.J. F/W, KHAMBARIGUDA",
@@ -55680,7 +56190,12 @@
         "ledgerName": "S.S. F/W, PADAMPUR",
         "openingBalance": -3323,
         "closingBalance": -3323,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "STYLE F/W(MATHURA SAHU), PADAMPUR",
@@ -56090,7 +56605,12 @@
         "ledgerName": "T APPA RAO, GUNUPUR",
         "openingBalance": -1845,
         "closingBalance": -1845,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "T Dharma Rao, Gumuda",
@@ -56108,13 +56628,23 @@
         "ledgerName": "TUNA PAN SHOP, GUMUDA",
         "openingBalance": -2149,
         "closingBalance": -2149,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "TUTU F/W, GUMUDA",
         "openingBalance": -5044,
         "closingBalance": -5044,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "VIJAY DURGA FOOTWEAR, GUNUPUR",
@@ -56259,7 +56789,12 @@
         "ledgerName": "V. SARBESWER RAO, JALTAR",
         "openingBalance": -1523,
         "closingBalance": -1523,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -76311,7 +76846,12 @@
         "ledgerName": "MAA BANGARAMA F/W, JK",
         "openingBalance": -1255,
         "closingBalance": -1255,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAA MAJHIGOURI F/W(SHYAMALA), JK",
@@ -77392,7 +77932,12 @@
         "ledgerName": "PRATAP F/W, RAYAGADA",
         "openingBalance": -65681,
         "closingBalance": -65681,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "R.K F/W- JK",
@@ -77627,7 +78172,12 @@
         "ledgerName": "Sairam Footwear, Jk",
         "openingBalance": -1515,
         "closingBalance": -1515,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Santoshi Panda, Jk(Panda F/w)",
@@ -77639,7 +78189,12 @@
         "ledgerName": "SIVA F/W(P.MANAMADHA RAO),JK",
         "openingBalance": -1591,
         "closingBalance": -1591,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "S.K FOOTWEAR(SANJAY PANDA), JK",
@@ -81345,7 +81900,12 @@
         "ledgerName": "Babula F/w, Chalanguda(Kpt)",
         "openingBalance": -7968,
         "closingBalance": -7968,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BALARAM SAHU,NARAYANPATNA",
@@ -81658,7 +82218,12 @@
         "ledgerName": "G. GURUNATHA , NARAYANPATNA",
         "openingBalance": -13478,
         "closingBalance": -13478,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "GOURANGA BISOI",
@@ -81670,7 +82235,12 @@
         "ledgerName": "GOUTAM FOTWEAR, LAXMIPUR",
         "openingBalance": -2471,
         "closingBalance": -2471,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "GOVINDA REDDY, BALDA",
@@ -82509,7 +83079,12 @@
         "ledgerName": "New Genration Footpoint, Umerkote",
         "openingBalance": -13419,
         "closingBalance": -13419,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Niranjan Bisai",
@@ -82584,7 +83159,12 @@
         "ledgerName": "P. K Mohapatra, Doraguda",
         "openingBalance": -2103,
         "closingBalance": -2103,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "PRAKSH MOHAPATRA, POTANGI",
@@ -82785,19 +83365,34 @@
         "ledgerName": "PUSPA FANCY, KUNDURA",
         "openingBalance": -1781,
         "closingBalance": -1781,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Rajesh Traders,Similiguda",
         "openingBalance": -4997,
         "closingBalance": -4997,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Raju Fotwear, Koraput",
         "openingBalance": -1664,
         "closingBalance": -1664,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "RAMAKRISHNA ,LAXMIPUR",
@@ -82996,7 +83591,12 @@
         "ledgerName": "ROYAL FOOWEAR, JEYPORE",
         "openingBalance": -2098,
         "closingBalance": -2098,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "RUPA LAXMI FOOTWEAR, NANDAPUR",
@@ -83224,13 +83824,23 @@
         "ledgerName": "Sing Footwear (Siba Shankara), Koraput",
         "openingBalance": -16367,
         "closingBalance": -16367,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Suraj Kumar Mandal, Kundura",
         "openingBalance": -2955,
         "closingBalance": -2955,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SUSHANTH BALA, KHUMBHARIPUT",
@@ -83768,7 +84378,12 @@
         "ledgerName": "A TO Z F/W, B.CUTTACK",
         "openingBalance": -10565,
         "closingBalance": -10565,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BIHARI F/W, MUNUGUDA",
@@ -83786,7 +84401,12 @@
         "ledgerName": "GANESH F/W, THERUBALI",
         "openingBalance": -1909,
         "closingBalance": -1909,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "GIRIDHARI JAL, CHATIKONA",
@@ -83988,7 +84608,12 @@
         "ledgerName": "Hari Durga, Chatikona",
         "openingBalance": -7025,
         "closingBalance": -7025,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "HARI F/W, B.CUTTACK",
@@ -84081,7 +84706,12 @@
         "ledgerName": "MAA BHAIRABI SHOE CENTER , MUNIGUDA",
         "openingBalance": -25360,
         "closingBalance": -25360,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAMA FOOTWEAR, MUNIGUDA",
@@ -84309,7 +84939,12 @@
         "ledgerName": "PIKU SPORTS, AMBADOLA",
         "openingBalance": -8558,
         "closingBalance": -8558,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "RAJA F/W, MUNIGUDA",
@@ -84843,7 +85478,12 @@
         "ledgerName": "SUBASH DAS, CHATIKONA",
         "openingBalance": -19257,
         "closingBalance": -19257,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
@@ -86980,7 +87620,12 @@
         "ledgerName": "Arun F/w, Chandragiri",
         "openingBalance": -13998,
         "closingBalance": -13998,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Ayyappa F/W",
@@ -86992,13 +87637,23 @@
         "ledgerName": "Bajrangi F/w, Nuagaon(Rinku)",
         "openingBalance": -24005,
         "closingBalance": -24005,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Balaji Footwear, Kasinagar",
         "openingBalance": -28286,
         "closingBalance": -28286,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Banmali Patro,Ramanaguda",
@@ -87034,7 +87689,12 @@
         "ledgerName": "Chandra Kariya , Laxmipur Jeerango",
         "openingBalance": -1660,
         "closingBalance": -1660,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Dr. V. L. N Raju",
@@ -87052,19 +87712,34 @@
         "ledgerName": "Gagana Mishra Chandragiri",
         "openingBalance": -17159,
         "closingBalance": -17159,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "G. Kiran Kumar, K. Sitapur",
         "openingBalance": -1237,
         "closingBalance": -1237,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "G.Ravi Kumar ( K.Sitapur )",
         "openingBalance": -1091,
         "closingBalance": -1091,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Harichandra Gouda,Ramogiri",
@@ -87088,7 +87763,12 @@
         "ledgerName": "JAVILI LADIES CORNER , HADABHANGI",
         "openingBalance": -15879,
         "closingBalance": -15879,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Jay Maa Durga F/w Raigada",
@@ -87106,13 +87786,23 @@
         "ledgerName": "Jitu F/w( Minu Gouda) R.Udaygiri",
         "openingBalance": -19479,
         "closingBalance": -19479,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "JOYTI SWAMI, KASINAGAR",
         "openingBalance": -6594,
         "closingBalance": -6594,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Kailash Naik, Ukkamba",
@@ -87124,7 +87814,12 @@
         "ledgerName": "Kanha F/w R.Udaygiri",
         "openingBalance": -3621,
         "closingBalance": -3621,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Kishore Chandra Patro",
@@ -87148,13 +87843,23 @@
         "ledgerName": "Krishna F/w Khajuripada",
         "openingBalance": -5456.1,
         "closingBalance": -5456.1,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "K. SANJIB RAO LADIES CORNER, HAHUBHANGI",
         "openingBalance": -1289,
         "closingBalance": -1289,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "K Santosh",
@@ -87178,7 +87883,12 @@
         "ledgerName": "LAXMI BHAWANI F/W, PKD",
         "openingBalance": -1471,
         "closingBalance": -1471,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "LAXMI GANAPATI LADIES CORNER, KASINAGER",
@@ -87196,13 +87906,23 @@
         "ledgerName": "MAA TARINI LADIES CORNER, KASINAGAR",
         "openingBalance": -1220,
         "closingBalance": -1220,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Mahalaxmi Bookstore,Geerango(Suriyam)",
         "openingBalance": -12841,
         "closingBalance": -12841,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAHALAXMI LADIES CORNER, BALDA",
@@ -87354,7 +88074,12 @@
         "ledgerName": "M Gopal Rao,Jangalpadu",
         "openingBalance": -3136,
         "closingBalance": -3136,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MIRZA STORE, PKD",
@@ -87366,7 +88091,12 @@
         "ledgerName": "M KOTESWAR RAO, HADUBHANGI.",
         "openingBalance": -1085,
         "closingBalance": -1085,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MOHAN SAHU, P.K.D",
@@ -87378,7 +88108,12 @@
         "ledgerName": "M Rama Rao, Hadubhangi",
         "openingBalance": -6412,
         "closingBalance": -6412,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "NILAMANI DURGA FOOTWERA, KASINAGAR",
@@ -87503,7 +88238,12 @@
         "ledgerName": "Nilanchal Gouda Raigodo",
         "openingBalance": -7751,
         "closingBalance": -7751,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "N K Behera",
@@ -87515,7 +88255,12 @@
         "ledgerName": "Parvati F/w R.Udaygiri (Ramnarayan)",
         "openingBalance": -2127,
         "closingBalance": -2127,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "P. CHANDRASEKHAR RAO, KASINAGAR",
@@ -87575,7 +88320,12 @@
         "ledgerName": "Rajendra  Gouda, Raigada",
         "openingBalance": -8513,
         "closingBalance": -8513,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Rajesh General Store",
@@ -87587,7 +88337,12 @@
         "ledgerName": "RAJU F/W , PKD",
         "openingBalance": -13000,
         "closingBalance": -13000,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "R.SATYANARAYAN, KASINAGAR",
@@ -87605,13 +88360,23 @@
         "ledgerName": "Sai Sports, R.Udaygiri",
         "openingBalance": -4936,
         "closingBalance": -4936,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Sai  Suman Footwear, Mohana",
         "openingBalance": -17108,
         "closingBalance": -17108,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "S Gouri",
@@ -87629,7 +88394,12 @@
         "ledgerName": "Simanchal Bijuli Chandiput",
         "openingBalance": -2551,
         "closingBalance": -2551,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SINDHU FOOTWEAR, KASINAGAR",
@@ -87907,7 +88677,12 @@
         "ledgerName": "Somanath Mahapatra, Cheligada",
         "openingBalance": -2537,
         "closingBalance": -2537,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SRI GANESH PADUKALAYA, PARALAKHEMUNDI",
@@ -87919,7 +88694,12 @@
         "ledgerName": "Srinivas Store (Papu),Geerango",
         "openingBalance": -4899,
         "closingBalance": -4899,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "S S Enterprises(Sakalabattula Santosh),Pkd",
@@ -87943,13 +88723,23 @@
         "ledgerName": "Surendra Sahu, Khajuripada",
         "openingBalance": -8035,
         "closingBalance": -8035,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Suriyam Bhuyan,Jeerango",
         "openingBalance": -5147,
         "closingBalance": -5147,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "TADELA APPA RAO, GUNUPUR",
@@ -87973,7 +88763,12 @@
         "ledgerName": "Trinath Gouda,Ramgiri",
         "openingBalance": -323,
         "closingBalance": -323,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "TUNA GOUDA, RAMAGIRI",
@@ -88029,19 +88824,34 @@
             "amount": 3000,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Tutu Kandagari, Jeerango",
         "openingBalance": -6737,
         "closingBalance": -6737,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Uma Foot Wear,Pkd",
         "openingBalance": -7243,
         "closingBalance": -7243,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "VIJAY LAXMI LADIES CORNER, HADUBHANGI",
@@ -88151,7 +88961,12 @@
         "ledgerName": "XLENT FOOT PRINTS, PKD.",
         "openingBalance": -30,
         "closingBalance": -30,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Y S L ENTERPRISES (BATA SHOP),PKD",
@@ -91849,7 +92664,12 @@
         "ledgerName": "BALAJI SHOES STORE, PHULBANI",
         "openingBalance": -62702,
         "closingBalance": -62702,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "DAS FOOTWEAR, K NUAGAON",
@@ -92571,7 +93391,12 @@
         "ledgerName": "Padma Footwear, Dengaostha",
         "openingBalance": -5544,
         "closingBalance": -5544,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "PRADHAN F/W, PHULBANI",
@@ -92962,7 +93787,12 @@
         "ledgerName": "Sohan Footwear,Shankarakhol",
         "openingBalance": -61734,
         "closingBalance": -61734,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "SOM SUDIN FOOTWEAR, PHULBANI",
@@ -118860,13 +119690,23 @@
         "ledgerName": "B. KUMAR, TIKIRI",
         "openingBalance": -3973,
         "closingBalance": -3973,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "BOMBAY F/W, TIKIRI",
         "openingBalance": -520,
         "closingBalance": -520,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "B RAJU PATTNAIK,CHAMPAJODI",
@@ -119027,7 +119867,12 @@
             "amount": 500,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "CHANCHALA FOOTWEAR, BADAMARIBHATA",
@@ -119250,7 +120095,12 @@
             "amount": 2576,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "DELHI FOOTWEAR, MUNIGUDA",
@@ -119974,7 +120824,12 @@
         "ledgerName": "KHIROD NAYAK, KASIPUR",
         "openingBalance": -2133,
         "closingBalance": -2133,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Krunshno Gouda, Derokona(Kasipur)",
@@ -120004,7 +120859,12 @@
         "ledgerName": "LUNA CHOUDHURY, TIKIRI",
         "openingBalance": -6046,
         "closingBalance": -6046,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "MAA MANGALA CLOTH STORE,TOTAGUDA",
@@ -120032,7 +120892,12 @@
             "amount": 1067,
             "drCr": "Cr"
           }
-        ]
+        ],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "Maha Laxmi Store, Kasipur",
@@ -120146,7 +121011,12 @@
         "ledgerName": "MITHUN SAHU, TIKIRI",
         "openingBalance": -9250,
         "closingBalance": -9250,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "doubtful",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       },
       {
         "ledgerName": "NARASINGH NAYAK, TIKIRI",
@@ -121127,7 +121997,12 @@
         "ledgerName": "TOSIL NAIK, KASIPUR(TALAJHIR)",
         "openingBalance": -8853,
         "closingBalance": -8853,
-        "entries": []
+        "entries": [],
+        "partyType": "retailer",
+        "creditStatus": "bad_debt",
+        "settlementStatus": "normal",
+        "settlementNote": "",
+        "settledAmount": 0
       }
     ]
   },
