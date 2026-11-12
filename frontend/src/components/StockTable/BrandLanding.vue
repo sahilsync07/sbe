@@ -2103,7 +2103,7 @@ const uploadModeProducts = computed(() => {
     for (const p of group.products) {
       const norm = (p.productName || '').trim().toLowerCase();
       const isStaged = stagedSet.has(norm);
-      const hasImg = hasProductImage(p);
+      const hasImg = hasProductImage(p) || isCoreCovered(p, group.groupName);
       if ((!hasImg || isStaged) && Number(p.quantity) > 0) {
         const isRecent = isNewArrival(p);
         const hasColor = Boolean(extractColor(p.productName));
@@ -2321,10 +2321,12 @@ const getActiveTabProducts = () => {
 
   // Apply In Stock & Price Filters
   return products.filter(p => {
+    const pGroup = productToGroupMap.value.get(p.productName) || p.groupName || tab;
+    const hasImg = hasProductImage(p) || isCoreCovered(p, pGroup);
     if (cleanView.value === 'clean' || cleanView.value === true) {
-      if (!hasProductImage(p) || Number(p.quantity) < 4) return false;
+      if (!hasImg || Number(p.quantity) < 4) return false;
     } else if (cleanView.value === 'upload') {
-      if (hasProductImage(p) || Number(p.quantity) <= 0) return false;
+      if (hasImg || Number(p.quantity) <= 0) return false;
       const isRecent = isNewArrival(p);
       const hasColor = Boolean(extractColor(p.productName));
       if (!isRecent && !hasColor) return false;
@@ -2419,8 +2421,18 @@ const paragonCoreDefinitions = [
   { id: '16049_blk', name: 'Paralite 16049 BLK', category: 'Men Light PU Black', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png', fallbackSrc: `${baseUrl}assets/core/Core-16049-BLK.png`, match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && (!p.productName.toUpperCase().includes('RYB')) },
   { id: '16049_ryb', name: 'Paralite 16049 RYB', category: 'Men Light PU Royal Blue', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-RYB.png', fallbackSrc: `${baseUrl}assets/core/Core-16049-RYB.png`, match: (p, g) => /\b16049\b/.test(p.productName) && !isBoys(p, g) && p.productName.toUpperCase().includes('RYB') },
   { id: '16049_boys', name: 'P-Toes 16049 Boys', category: 'Boys Footwear', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png', fallbackSrc: `${baseUrl}assets/core/Core-16049-BLK.png`, match: (p, g) => /\b16049\b/.test(p.productName) && isBoys(p, g) },
+  { id: '1721_gny', name: 'Paralite 1721 GNY', category: 'Men Grey-Navy PU Slipper', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1793638013/e-sbe/PARALITE_1721_6X9_GNY.jpg', fallbackSrc: null, match: (p, g) => /\b1721\b/.test(p.productName) && !isBoys(p, g) && !/stimulus/i.test(g || p.productName) && p.productName.toUpperCase().includes('GNY') },
+  { id: '1721_tqn', name: 'Paralite 1721 TQN', category: 'Men Turquoise-Navy PU Slipper', img: 'https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@e98ab3e/photos/PARALITE_1721_6X9_TQN.jpg', fallbackSrc: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1793680547/e-sbe/PARALITE_1721_6X10_TQN.jpg', match: (p, g) => /\b1721\b/.test(p.productName) && !isBoys(p, g) && !/stimulus/i.test(g || p.productName) && p.productName.toUpperCase().includes('TQN') },
+  { id: '1721_grd', name: 'Paralite 1721 GRD', category: 'Men Grey-Red PU Slipper', img: 'https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@e98ab3e/photos/PARALITE_1721_GRD_6X10.jpg', fallbackSrc: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790184532/e-sbe/paragon/PG_Paralite_1721_Grey-Red_photo_244_31-08-2024_17-56-12.jpg', match: (p, g) => /\b1721\b/.test(p.productName) && !isBoys(p, g) && !/stimulus/i.test(g || p.productName) && !p.productName.toUpperCase().includes('GNY') && !p.productName.toUpperCase().includes('TQN') },
+  { id: '1721_boys', name: 'P-Toes 1721 Boys', category: 'Boys Footwear', img: 'https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@2c56c08/photos/P_TOES_1721_2X5_TQN.jpg', fallbackSrc: null, match: (p, g) => /\b1721\b/.test(p.productName) && isBoys(p, g) && !/stimulus/i.test(g || p.productName) },
   { id: 'cushion', name: 'Paragon Cushion Hawai', category: 'Classic Daily Hawai', img: 'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143994/e-sbe/Core-cushion.png', fallbackSrc: `${baseUrl}assets/core/Core-cushion.png`, match: (p, g) => /cushion/i.test(p.productName) && !/1136|1210/.test(p.productName) }
 ];
+
+// Core models already share a curated image across MRP/size revisions, so skip Upload prompts
+function isCoreCovered(p, groupName) {
+  if (!p || isCopyDuplicate(groupName, p.productName)) return false;
+  return paragonCoreDefinitions.some(def => Boolean(def.img) && def.match(p, groupName));
+}
 
 function standardizeCoreSize(name) {
   const m = name.match(/\(\s*(\d+\s*[\*xX\-]\s*\d+)\s*\)/i) ||
@@ -2458,7 +2470,7 @@ function buildCoreObject(def, matchedProducts) {
     }
     sizeGroups[size].totalQty += (Number(p.quantity) || 0);
     sizeGroups[size].products.push(p);
-    if (Number(p.quantity) > 0 && (!sizeGroups[size].primaryProduct || Number(sizeGroups[size].primaryProduct.quantity) <= 0)) {
+    if (Number(p.quantity) > 0 && (!sizeGroups[size].primaryProduct || Number(sizeGroups[size].primaryProduct.quantity) <= 0 || Number(p.quantity) > (Number(sizeGroups[size].primaryProduct.quantity) || 0))) {
       sizeGroups[size].primaryProduct = p;
       if (price > 0) sizeGroups[size].price = price;
     }
@@ -2656,6 +2668,9 @@ const localCarousals = {
     'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143992/e-sbe/Core-16048-MIG.png',
     'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-BLK.png',
     'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143993/e-sbe/Core-16049-RYB.png',
+    'https://res.cloudinary.com/dieqsg5tr/image/upload/v1793638013/e-sbe/PARALITE_1721_6X9_GNY.jpg',
+    'https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@e98ab3e/photos/PARALITE_1721_6X9_TQN.jpg',
+    'https://cdn.jsdelivr.net/gh/sahilsync07/sbe-photos@e98ab3e/photos/PARALITE_1721_GRD_6X10.jpg',
     'https://res.cloudinary.com/dieqsg5tr/image/upload/v1790143994/e-sbe/Core-cushion.png'
   ],
   'EEKEN': [
