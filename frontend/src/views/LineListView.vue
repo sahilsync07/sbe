@@ -67,7 +67,9 @@
                 </div>
               </div>
               <p class="mt-2.5 text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                <i class="fa-solid fa-circle-info text-slate-300"></i> Leaving dates empty prints all-time balances.
+                <i class="fa-solid fa-circle-info text-slate-300"></i>
+                <span v-if="pdfStyle === 'extra_detailed' && !fromDate">Set a <strong>From</strong> date to break down pending unpaid bills in Old Balance (otherwise only total opening is shown).</span>
+                <span v-else>Leaving dates empty prints all-time balances.</span>
               </p>
             </div>
 
@@ -77,7 +79,7 @@
                 <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-sm"><i class="fa-solid fa-palette"></i></span>
                 PDF Style
               </h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <!-- Classic Style -->
                 <button @click="pdfStyle = 'classic'"
                   class="group relative p-4 rounded-2xl border-2 transition-all duration-200 text-left cursor-pointer"
@@ -128,7 +130,33 @@
                   <div v-if="pdfStyle === 'detailed'" class="absolute top-3 right-3">
                     <i class="fa-solid fa-circle-check text-emerald-300"></i>
                   </div>
-                  <span v-if="pdfStyle !== 'detailed'" class="absolute top-3 right-3 px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-700 text-[9px] font-black uppercase">
+                </button>
+
+                <!-- Extra Detailed Line List -->
+                <button @click="pdfStyle = 'extra_detailed'"
+                  class="group relative p-4 rounded-2xl border-2 transition-all duration-200 text-left cursor-pointer"
+                  :class="pdfStyle === 'extra_detailed'
+                    ? 'border-amber-600 bg-gradient-to-br from-amber-600 to-orange-700 text-white shadow-lg shadow-amber-600/25'
+                    : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-sm text-slate-700'">
+                  <div class="flex items-center gap-3 mb-2">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm"
+                      :class="pdfStyle === 'extra_detailed' ? 'bg-white/15 text-white' : 'bg-amber-100 text-amber-600'">
+                      <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-black">Extra Detailed Line List</div>
+                      <div class="text-[10px] font-semibold" :class="pdfStyle === 'extra_detailed' ? 'text-amber-100' : 'text-slate-400'">
+                        Opening pending bills + Bad debts last
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-[11px] leading-relaxed" :class="pdfStyle === 'extra_detailed' ? 'text-amber-100' : 'text-slate-500'">
+                    Shows unpaid opening bills (* on half-paid bills) & pushes Bad Debt parties to the end.
+                  </p>
+                  <div v-if="pdfStyle === 'extra_detailed'" class="absolute top-3 right-3">
+                    <i class="fa-solid fa-circle-check text-emerald-200"></i>
+                  </div>
+                  <span v-if="pdfStyle !== 'extra_detailed'" class="absolute top-3 right-3 px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[9px] font-black uppercase">
                     New
                   </span>
                 </button>
@@ -181,9 +209,11 @@
                   <span class="text-slate-500 font-semibold">lines selected</span>
                 </div>
                 <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold"
-                  :class="pdfStyle === 'detailed' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'">
-                  <i :class="pdfStyle === 'detailed' ? 'fa-solid fa-receipt' : 'fa-solid fa-table-list'" class="text-[10px]"></i>
-                  {{ pdfStyle === 'detailed' ? 'Detailed' : 'Classic' }} Mode
+                  :class="pdfStyle === 'extra_detailed'
+                    ? 'bg-amber-100 text-amber-800'
+                    : (pdfStyle === 'detailed' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600')">
+                  <i :class="pdfStyle === 'extra_detailed' ? 'fa-solid fa-layer-group' : (pdfStyle === 'detailed' ? 'fa-solid fa-receipt' : 'fa-solid fa-table-list')" class="text-[10px]"></i>
+                  {{ pdfStyle === 'extra_detailed' ? 'Extra Detailed Line List' : (pdfStyle === 'detailed' ? 'Detailed' : 'Classic') }} Mode
                 </div>
               </div>
               <button @click="handlePrint" :disabled="isGenerating || selectedLines.length === 0"

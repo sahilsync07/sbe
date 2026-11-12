@@ -81,7 +81,7 @@ export const getLineListFileName = (selectedLines, fromDate, toDate, style = 'cl
     datePart = `UpTo_${fmtDate(toDate)}`;
   }
 
-  const stylePrefix = style === 'detailed' ? 'Detailed_' : '';
+  const stylePrefix = style === 'extra_detailed' ? 'ExtraDetailed_' : (style === 'detailed' ? 'Detailed_' : '');
   return `LineList_${stylePrefix}${linePart}_${datePart}.pdf`;
 };
 
@@ -136,10 +136,23 @@ const formatBalance = (val) => {
  * @param {Object} options
  * @param {boolean} options.returnBase64 - Return as data URI string.
  * @param {boolean} options.returnBlob - Return as Blob.
- * @param {'classic'|'detailed'} options.style - 'classic' = combined totals (old), 'detailed' = itemized bills/payments (new).
+ * @param {'classic'|'detailed'|'extra_detailed'} options.style - 'classic' = combined totals, 'detailed' = itemized bills/payments, 'extra_detailed' = itemized opening bills (FIFO) + bad debts sorted last.
  */
 export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData, options = {}) => {
   const style = options.style || 'classic';
+  const isItemized = style === 'detailed' || style === 'extra_detailed';
+  const isExtraDetailed = style === 'extra_detailed';
+
+  // Read any staged (not-yet-committed) Party Tagger statuses so bad debt marks apply immediately
+  let stagedTags = options.stagedPartyTags || null;
+  if (!stagedTags && typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+    try {
+      const raw = window.localStorage.getItem('sbe_staged_party_tags');
+      if (raw) stagedTags = JSON.parse(raw);
+    } catch (e) {
+      stagedTags = null;
+    }
+  }
 
   return new Promise((resolve) => {
     try {
@@ -158,11 +171,14 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           let periodCr = 0;
           let periodDr = 0;
 
+          // Collect pre-period bills (Dr before fromDate) for Extra Detailed FIFO opening breakdown
+          const preDrEntries = [];
           // Collect individual bills (Dr) and payments (Cr) within the date range
           const billEntries = [];   // individual Dr entries in range
           const paymentEntries = []; // individual Cr entries in range
 
-          for (const entry of ledger.entries) {
+          for (let idx = 0; idx < (ledger.entries || []).length; idx++) {
+            const entry = ledger.entries[idx];
             const entryDate = parseLedgerDate(entry.date);
             entryDate.setHours(0, 0, 0, 0);
 
@@ -170,6 +186,14 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
               // Adjust opening balance for transactions prior to 'from date'
               if (entry.drCr === 'Dr') {
                 openingBalanceRaw -= entry.amount;
+                preDrEntries.push({
+                  date: entry.date,
+                  voucherNo: entry.voucherNo || '',
+                  type: entry.type || 'Invoice',
+                  amount: entry.amount || 0,
+                  _parsedDate: entryDate,
+                  _idx: idx
+                });
               } else if (entry.drCr === 'Cr') {
                 openingBalanceRaw += entry.amount;
               }
@@ -203,6 +227,45 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
             continue;
           }
 
+          // FIFO allocation for Extra Detailed Opening Balance: only unpaid/partially paid bills adding up to openingDebt
+          const openingDebt = openingBalanceRaw < 0 ? Math.abs(openingBalanceRaw) : 0;
+          const openingBills = [];
+          if (isExtraDetailed && openingDebt >= 0.5 && preDrEntries.length > 0) {
+            // Walk newest pre-period bills backward until full openingDebt is accounted for
+            const sortedPre = [...preDrEntries].sort((a, b) => (b._parsedDate - a._parsedDate) || (b._idx - a._idx));
+            let remaining = openingDebt;
+            for (const inv of sortedPre) {
+              if (remaining < 0.5) break;
+              const invAmt = inv.amount || 0;
+              if (invAmt < 0.5) continue;
+              const pendingAmt = Math.min(remaining, invAmt);
+              openingBills.push({
+                date: inv.date,
+                type: inv.type,
+                amount: pendingAmt,
+                fullAmount: invAmt,
+                isPartial: pendingAmt < invAmt - 0.5,
+                isPrior: false
+              });
+              remaining -= pendingAmt;
+            }
+            if (remaining >= 0.5) {
+              openingBills.push({
+                date: 'Prior Bal',
+                type: 'Prior',
+                amount: remaining,
+                fullAmount: remaining,
+                isPartial: false,
+                isPrior: true
+              });
+            }
+            openingBills.reverse(); // Display chronologically (oldest to newest)
+          }
+
+          const ledgerKey = (ledger.ledgerName || '').trim().toLowerCase();
+          const effCreditStatus = stagedTags?.[ledgerKey]?.creditStatus ?? ledger.creditStatus ?? 'normal';
+          const isBadDebt = effCreditStatus === 'bad_debt';
+
           periodData.push({
             partyName: ledger.ledgerName,
             lineName: line,
@@ -210,17 +273,25 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
             credit: periodCr >= 0.5 ? `\u20B9 ${Math.round(periodCr)}` : "-",
             debit: periodDr >= 0.5 ? `\u20B9 ${Math.round(periodDr)}` : "-",
             closing: formatBalance(closingBalanceRaw),
-            // Detailed mode data
+            // Detailed / Extra Detailed mode data
             billEntries,
             paymentEntries,
             periodDr,
-            periodCr
+            periodCr,
+            openingBills,
+            openingDebt,
+            isBadDebt
           });
         }
       }
 
-      // Sort alphabetically by party name
-      periodData.sort((a, b) => a.partyName.localeCompare(b.partyName));
+      // Sort alphabetically by party name; in Extra Detailed mode, push Bad Debt parties to the end
+      periodData.sort((a, b) => {
+        if (isExtraDetailed && a.isBadDebt !== b.isBadDebt) {
+          return a.isBadDebt ? 1 : -1;
+        }
+        return a.partyName.localeCompare(b.partyName);
+      });
 
       // Build PDF
       const doc = new jsPDF('p', 'pt', 'a4');
@@ -321,11 +392,33 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
       const tableRows = periodData.map(d => {
         const parsed = parsePartyName(d.partyName);
 
-        // For detailed mode, build multi-line cell content for bills and payments
+        // For detailed / extra_detailed modes, build multi-line cell content
+        let openingCell = d.opening;
         let debitCell = d.debit;
         let creditCell = d.credit;
 
-        if (style === 'detailed') {
+        if (isExtraDetailed && d.openingBills.length > 0) {
+          const formatOpeningBillLine = (b) => {
+            if (b.isPrior) {
+              return `Prior Bal: \u20B9${Math.round(b.amount).toLocaleString('en-IN')}`;
+            }
+            const tag = isDebitNote(b) ? '[DN] ' : '';
+            const star = b.isPartial ? '*' : '';
+            const dStr = cleanDateStr(b.date) || b.type;
+            return `${tag}${dStr}${star}: \u20B9${Math.round(b.amount).toLocaleString('en-IN')}`;
+          };
+
+          if (d.openingBills.length === 1) {
+            openingCell = formatOpeningBillLine(d.openingBills[0]);
+          } else {
+            const lines = d.openingBills.map(formatOpeningBillLine);
+            // Reserve space for bold total rendered in didDrawCell
+            lines.push('');
+            openingCell = lines.join('\n');
+          }
+        }
+
+        if (isItemized) {
           // Bills column: list each bill individually (Total drawn cleanly via didDrawCell)
           if (d.billEntries.length > 0) {
             if (d.billEntries.length === 1) {
@@ -373,16 +466,36 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           ...d,
           partyName: parsed.name,
           _city: parsed.city,
+          opening: openingCell,
           debit: debitCell,
           credit: creditCell,
           cash: "",
           upi: "",
+          _openingBillCount: d.openingBills.length,
+          _openingDebt: d.openingDebt,
           _billCount: d.billEntries.length,
           _paymentCount: d.paymentEntries.length,
           _periodDr: d.periodDr,
           _periodCr: d.periodCr
         };
       });
+
+      const drawCellTotal = (data, totalAmount) => {
+        const totalText = `Total: \u20B9${Math.round(totalAmount).toLocaleString('en-IN')}`;
+        const sepY = data.cell.y + data.cell.height - 9.5;
+        doc.setDrawColor(120, 120, 120);
+        doc.setLineWidth(0.4);
+        doc.line(data.cell.x + 2, sepY, data.cell.x + data.cell.width - 2, sepY);
+        doc.setFont("Roboto", "bold");
+        doc.setFontSize(6.5);
+        doc.setTextColor(0, 0, 0);
+        doc.text(
+          totalText,
+          data.cell.x + data.cell.width - 2.5,
+          data.cell.y + data.cell.height - 2.5,
+          { align: "right" }
+        );
+      };
 
       autoTable(doc, {
         columns: tableColumns,
@@ -408,13 +521,13 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           cellPadding: { top: 2, right: 2.5, bottom: 2, left: 2.5 }
         },
         columnStyles: {
-          partyName: { cellWidth: style === 'detailed' ? 154 : 168, fontStyle: 'bold', textColor: [0, 0, 0], fontSize: 8.5 },
-          opening: { halign: 'right', cellWidth: style === 'detailed' ? 48 : 49.5 },
-          debit: { halign: 'right', cellWidth: style === 'detailed' ? 64 : 40.5, fontSize: style === 'detailed' ? 6 : 8, valign: 'top' },
-          credit: { halign: 'right', cellWidth: style === 'detailed' ? 68 : 45, fontSize: style === 'detailed' ? 6 : 8, valign: 'top' },
-          closing: { halign: 'right', cellWidth: style === 'detailed' ? 52 : 54, fontStyle: 'bold', textColor: [0, 0, 0] },
-          cash: { cellWidth: style === 'detailed' ? 63 : 79 },
-          upi: { cellWidth: style === 'detailed' ? 63 : 79 }
+          partyName: { cellWidth: isExtraDetailed ? 148 : (isItemized ? 154 : 168), fontStyle: 'bold', textColor: [0, 0, 0], fontSize: 8.5 },
+          opening: { halign: 'right', cellWidth: isExtraDetailed ? 64 : (isItemized ? 48 : 49.5) },
+          debit: { halign: 'right', cellWidth: isItemized ? 64 : 40.5, fontSize: isItemized ? 6 : 8, valign: 'top' },
+          credit: { halign: 'right', cellWidth: isExtraDetailed ? 66 : (isItemized ? 68 : 45), fontSize: isItemized ? 6 : 8, valign: 'top' },
+          closing: { halign: 'right', cellWidth: isItemized ? 52 : 54, fontStyle: 'bold', textColor: [0, 0, 0] },
+          cash: { cellWidth: isExtraDetailed ? 59 : (isItemized ? 63 : 79) },
+          upi: { cellWidth: isExtraDetailed ? 59 : (isItemized ? 63 : 79) }
         },
         alternateRowStyles: {
           fillColor: [248, 248, 248]
@@ -429,12 +542,23 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           }
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
-            if (rowData && rowData._city) {
-              // Extra space at bottom of cell for city sub-line
+            if (rowData && (rowData._city || (isExtraDetailed && rowData.isBadDebt))) {
+              // Extra space at bottom of cell for city and/or bad debt tag sub-line
               data.cell.styles.cellPadding = { top: 2, right: 2.5, bottom: 8, left: 2.5 };
             }
           }
-          if (style === 'detailed' && data.section === 'body') {
+          if (isItemized && data.section === 'body') {
+            const rowData = tableRows[data.row.index];
+            if (isExtraDetailed && data.column.dataKey === 'opening') {
+              if (rowData && rowData._openingBillCount > 0) {
+                data.cell.styles.fontSize = 6;
+                data.cell.styles.valign = 'top';
+              } else {
+                data.cell.styles.fontSize = 8;
+                data.cell.styles.valign = 'middle';
+              }
+              data.cell.styles.textColor = [0, 0, 0];
+            }
             if (data.column.dataKey === 'debit' || data.column.dataKey === 'credit') {
               data.cell.styles.valign = 'top';
               data.cell.styles.textColor = [0, 0, 0]; // Pure black for B&W printing
@@ -479,61 +603,38 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
              }
           }
 
-          // In detailed mode, render the total line in bold at the bottom of bills/payments cells
-          if (style === 'detailed' && data.section === 'body') {
+          // In detailed / extra_detailed modes, render the bold total line at bottom of itemized cells
+          if (isItemized && data.section === 'body') {
             const rowData = tableRows[data.row.index];
             if (!rowData) return;
 
             // Only draw total if cell has the reserved empty slot at the end (safeguard against partial split cells)
             const hasReservedSlot = Array.isArray(data.cell.text) && data.cell.text[data.cell.text.length - 1] === '';
 
+            if (isExtraDetailed && data.column.dataKey === 'opening' && rowData._openingBillCount > 1 && hasReservedSlot) {
+              drawCellTotal(data, rowData._openingDebt);
+            }
+
             if (data.column.dataKey === 'debit' && rowData._billCount > 1 && hasReservedSlot) {
-              const totalText = `Total: \u20B9${Math.round(rowData._periodDr).toLocaleString('en-IN')}`;
-              // Thin separator line above total in reserved bottom slot
-              const sepY = data.cell.y + data.cell.height - 9.5;
-              doc.setDrawColor(120, 120, 120);
-              doc.setLineWidth(0.4);
-              doc.line(data.cell.x + 2, sepY, data.cell.x + data.cell.width - 2, sepY);
-              // Bold total text (pure black for B&W print)
-              doc.setFont("Roboto", "bold");
-              doc.setFontSize(6.5);
-              doc.setTextColor(0, 0, 0);
-              doc.text(
-                totalText,
-                data.cell.x + data.cell.width - 2.5,
-                data.cell.y + data.cell.height - 2.5,
-                { align: "right" }
-              );
+              drawCellTotal(data, rowData._periodDr);
             }
 
             if (data.column.dataKey === 'credit' && rowData._paymentCount > 1 && hasReservedSlot) {
-              const totalText = `Total: \u20B9${Math.round(rowData._periodCr).toLocaleString('en-IN')}`;
-              // Thin separator line above total in reserved bottom slot
-              const sepY = data.cell.y + data.cell.height - 9.5;
-              doc.setDrawColor(120, 120, 120);
-              doc.setLineWidth(0.4);
-              doc.line(data.cell.x + 2, sepY, data.cell.x + data.cell.width - 2, sepY);
-              // Bold total text (pure black for B&W print)
-              doc.setFont("Roboto", "bold");
-              doc.setFontSize(6.5);
-              doc.setTextColor(0, 0, 0);
-              doc.text(
-                totalText,
-                data.cell.x + data.cell.width - 2.5,
-                data.cell.y + data.cell.height - 2.5,
-                { align: "right" }
-              );
+              drawCellTotal(data, rowData._periodCr);
             }
           }
 
           if (data.section === 'body' && data.column.dataKey === 'partyName') {
             const rowData = tableRows[data.row.index];
-            if (rowData && rowData._city) {
+            if (rowData && (rowData._city || (isExtraDetailed && rowData.isBadDebt))) {
+              const subParts = [];
+              if (rowData._city) subParts.push(rowData._city);
+              if (isExtraDetailed && rowData.isBadDebt) subParts.push('[BAD DEBT]');
               doc.setFont('Roboto', 'normal');
               doc.setFontSize(6);
               doc.setTextColor(80, 80, 80);
               doc.text(
-                rowData._city,
+                subParts.join('  •  '),
                 data.cell.x + 2.5,
                 data.cell.y + data.cell.height - 2.5
               );
@@ -551,7 +652,9 @@ export const generateLineListPDF = (selectedLines, fromDate, toDate, ledgerData,
           doc.setTextColor(140, 140, 140);
           const updatedStamp = lastUpdatedText ? ` • Updated: ${lastUpdatedText}` : '';
           doc.text(`Sri Brundabana Enterprises${updatedStamp}`, mL, pageH - 14);
-          const styleLabel = style === 'detailed' ? ' • Detailed' : '';
+          const styleLabel = isExtraDetailed
+            ? ' • Extra Detailed (*Partial Pending)'
+            : (style === 'detailed' ? ' • Detailed' : '');
           doc.text("Page " + doc.internal.getNumberOfPages() + styleLabel, pw - mR, pageH - 14, { align: "right" });
         }
       });
