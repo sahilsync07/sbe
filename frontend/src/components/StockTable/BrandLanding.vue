@@ -1,12 +1,12 @@
 <template>
-  <div class="brand-landing pb-16 sm:pb-20 text-slate-900 font-sans w-full max-w-full overflow-x-hidden">
+  <div class="brand-landing pb-28 sm:pb-32 text-slate-900 font-sans w-full max-w-full overflow-x-hidden">
     
     <!-- ══════════════════════════════════════════════════════════
-         1. UNIVERSAL COMMAND HEADER: Omni-Search & Actions
+         1. TOP BAR: Brand Title ("SBE Rayagada") & Action Buttons
          ══════════════════════════════════════════════════════════ -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100/80 px-2.5 sm:px-6 pb-2 transition-all w-full max-w-full overflow-hidden" style="padding-top: max(0.625rem, env(safe-area-inset-top, 0.625rem));">
-      <!-- Top Branding, Omni-Search & Action Buttons Row -->
-      <div class="flex items-center justify-between gap-2 sm:gap-4 w-full">
+      <!-- Top Branding & Action Buttons Row -->
+      <div class="flex items-center justify-between gap-2 w-full">
         <!-- Left: e-SBE Brand Logo -->
         <div 
           class="flex items-center select-none cursor-pointer group py-0.5 shrink-0" 
@@ -16,115 +16,9 @@
           <img 
             :src="`${baseUrl}assets/logos/e-sbe-new-logo.png`" 
             alt="e-SBE Logo" 
-            class="h-8 sm:h-10 w-auto max-w-[130px] sm:max-w-[160px] object-contain group-hover:scale-105 transition-transform duration-200" 
+            class="h-8 sm:h-10 w-auto max-w-[140px] sm:max-w-[170px] object-contain group-hover:scale-105 transition-transform duration-200" 
             @error="$event.target.src = `${baseUrl}e-sbe-new-logo.png`"
           />
-        </div>
-
-        <!-- Center: Integrated Omni-Search (Tablets, iPads, Laptops, Fold 8 Unfolded) -->
-        <div class="hidden md:flex flex-1 max-w-md lg:max-w-xl mx-2 relative" ref="searchContainerRef">
-          <div class="w-full flex items-center gap-2 bg-slate-100/90 hover:bg-slate-50 focus-within:bg-white rounded-full border border-slate-200/90 shadow-2xs px-3.5 py-1.5 focus-within:border-[#c59b27] focus-within:ring-2 focus-within:ring-amber-500/15 transition-all">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs shrink-0"></i>
-            <input
-              ref="searchInputRef"
-              v-model="localQuery"
-              @focus="showDropdown = true"
-              @keydown.enter="handleSearchSubmit(localQuery)"
-              type="text"
-              placeholder="Search 2,900+ products, brands, models..."
-              class="flex-1 min-w-0 bg-transparent text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
-            />
-            <button
-              v-if="localQuery"
-              @click="clearSearch"
-              class="w-5 h-5 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
-              title="Clear search"
-            >
-              <i class="fa-solid fa-xmark text-[11px]"></i>
-            </button>
-            <div class="hidden lg:flex items-center gap-1 text-[9px] font-mono font-bold text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded-md shadow-2xs">
-              <span>↵</span>
-            </div>
-          </div>
-
-          <!-- Desktop Autocomplete Dropdown (Expands DOWNWARD) -->
-          <transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="opacity-0 -translate-y-2"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 -translate-y-2"
-          >
-            <div
-              v-if="showDropdown && localQuery.trim().length > 0"
-              class="absolute top-full left-0 right-0 mt-2 bg-white/98 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50 max-h-[60vh] flex flex-col"
-            >
-              <!-- Dropdown Header: Query submit option -->
-              <div class="p-2 border-b border-slate-100 bg-slate-50/70">
-                <button
-                  @click="handleSearchSubmit(localQuery)"
-                  class="w-full text-left px-3 py-2 rounded-xl bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-900 transition-colors flex items-center justify-between group border border-slate-200/60 shadow-xs"
-                >
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
-                      <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                    </div>
-                    <div class="truncate">
-                      <span class="text-xs font-bold">Search for "</span>
-                      <span class="text-xs font-black text-amber-600">{{ localQuery.trim() }}</span>
-                      <span class="text-xs font-bold">"</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 group-hover:text-amber-700 shrink-0">
-                    <span>View results</span>
-                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                  </div>
-                </button>
-              </div>
-
-              <!-- Product Suggestions List -->
-              <div class="overflow-y-auto p-1.5 divide-y divide-slate-100/80">
-                <button
-                  v-for="product in searchSuggestions"
-                  :key="product.productName"
-                  @click="handleProductSelect(product)"
-                  class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
-                >
-                  <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
-                    <img v-if="getProductCardImage(product)" :src="getOptimizedImageUrl(getProductCardImage(product))" class="w-full h-full object-cover" />
-                    <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
-                      <i class="fa-solid fa-box text-sm"></i>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-xs sm:text-sm font-bold text-slate-800 truncate group-hover/item:text-[#c59b27] transition-colors">
-                      {{ getCleanProductName(product.productName) }}
-                    </div>
-                    <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
-                      <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full" :style="{ background: getProductColor(product.productName).gradient || getProductColor(product.productName).hex }"></span>
-                        <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
-                      </span>
-                      <span v-if="getProductSize(product.productName)" class="font-semibold text-slate-600">
-                        {{ getProductSize(product.productName) }}
-                      </span>
-                      <span class="font-black text-slate-900">
-                        ₹{{ getPriceInfo(product.productName).price }}
-                      </span>
-                      <span :class="product.quantity > 0 ? 'text-emerald-600' : 'text-rose-500'" class="font-bold">
-                        {{ product.quantity > 0 ? `${product.quantity} pairs` : 'Out of Stock' }}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-
-                <div v-if="searchSuggestions.length === 0" class="px-4 py-6 text-center text-slate-400 text-xs">
-                  No specific items matching "{{ localQuery.trim() }}"
-                </div>
-              </div>
-            </div>
-          </transition>
         </div>
 
         <!-- Right: Action Buttons (Clean View, Sync, Admin, Commit Preview / Cart) -->
@@ -249,108 +143,6 @@
             <i class="fa-solid fa-bag-shopping text-xs sm:text-sm text-amber-400"></i>
           </button>
         </div>
-      </div>
-
-      <!-- Mobile / Fold 8 Cover Screen: Omni-Search Row -->
-      <div class="md:hidden mt-2 w-full relative" ref="mobileSearchContainerRef">
-        <div class="w-full flex items-center gap-2 bg-slate-100/90 focus-within:bg-white rounded-full border border-slate-200/90 shadow-2xs px-3 py-1.5 focus-within:border-[#c59b27] focus-within:ring-2 focus-within:ring-amber-500/15 transition-all">
-          <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs shrink-0"></i>
-          <input
-            v-model="localQuery"
-            @focus="showDropdown = true"
-            @keydown.enter="handleSearchSubmit(localQuery)"
-            type="text"
-            placeholder="Search 2,900+ products, brands..."
-            class="flex-1 min-w-0 bg-transparent text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
-          />
-          <button
-            v-if="localQuery"
-            @click="clearSearch"
-            class="w-5 h-5 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
-            title="Clear search"
-          >
-            <i class="fa-solid fa-xmark text-[11px]"></i>
-          </button>
-        </div>
-
-        <!-- Mobile Autocomplete Dropdown (Expands DOWNWARD) -->
-        <transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="opacity-0 -translate-y-2"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="opacity-100 translate-y-0"
-          leave-to-class="opacity-0 -translate-y-2"
-        >
-          <div
-            v-if="showDropdown && localQuery.trim().length > 0"
-            class="absolute top-full left-0 right-0 mt-1.5 bg-white/98 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50 max-h-[55vh] flex flex-col"
-          >
-            <!-- Dropdown Header: Query submit option -->
-            <div class="p-2 border-b border-slate-100 bg-slate-50/70">
-              <button
-                @click="handleSearchSubmit(localQuery)"
-                class="w-full text-left px-3 py-2 rounded-xl bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-900 transition-colors flex items-center justify-between group border border-slate-200/60 shadow-xs"
-              >
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
-                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                  </div>
-                  <div class="truncate">
-                    <span class="text-xs font-bold">Search for "</span>
-                    <span class="text-xs font-black text-amber-600">{{ localQuery.trim() }}</span>
-                    <span class="text-xs font-bold">"</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 group-hover:text-amber-700 shrink-0">
-                  <span>View results</span>
-                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </div>
-              </button>
-            </div>
-
-            <!-- Product Suggestions List -->
-            <div class="overflow-y-auto p-1.5 divide-y divide-slate-100/80">
-              <button
-                v-for="product in searchSuggestions"
-                :key="product.productName"
-                @click="handleProductSelect(product)"
-                class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
-              >
-                <div class="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
-                  <img v-if="getProductCardImage(product)" :src="getOptimizedImageUrl(getProductCardImage(product))" class="w-full h-full object-cover" />
-                  <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
-                    <i class="fa-solid fa-box text-sm"></i>
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="text-xs font-bold text-slate-800 truncate group-hover/item:text-[#c59b27] transition-colors">
-                    {{ getCleanProductName(product.productName) }}
-                  </div>
-                  <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500">
-                    <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
-                      <span class="w-2 h-2 rounded-full" :style="{ background: getProductColor(product.productName).gradient || getProductColor(product.productName).hex }"></span>
-                      <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
-                    </span>
-                    <span v-if="getProductSize(product.productName)" class="font-semibold text-slate-600">
-                      {{ getProductSize(product.productName) }}
-                    </span>
-                    <span class="font-black text-slate-900">
-                      ₹{{ getPriceInfo(product.productName).price }}
-                    </span>
-                    <span :class="product.quantity > 0 ? 'text-emerald-600' : 'text-rose-500'" class="font-bold">
-                      {{ product.quantity > 0 ? `${product.quantity} pairs` : 'Out of Stock' }}
-                    </span>
-                  </div>
-                </div>
-              </button>
-
-              <div v-if="searchSuggestions.length === 0" class="px-4 py-6 text-center text-slate-400 text-xs">
-                No specific items matching "{{ localQuery.trim() }}"
-              </div>
-            </div>
-          </div>
-        </transition>
       </div>
 
       <!-- ══════════════════════════════════════════════════════════
@@ -1179,164 +971,41 @@
 
       <!-- Standard Storefront Showcase (when cleanView !== 'upload') -->
       <template v-else>
-        <!-- ══════════════════════════════════════════════════════════
-             3. ADAPTIVE BENTO HERO SHOWCASE (Fold 8, Tablets, Laptops)
-             ══════════════════════════════════════════════════════════ -->
-        <section class="mt-3 sm:mt-4 px-2.5 sm:px-6 max-w-7xl mx-auto">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch">
-            <!-- Left / Main Stage (7 cols on lg, full on mobile/tablet): Catalog Coverpages Carousel -->
-            <div class="lg:col-span-7 xl:col-span-8 flex flex-col justify-center">
-              <CatalogHeroCarousel 
-                @select-tab="selectTab"
-              />
-            </div>
+        <!-- ROTATING HERO CAROUSEL: Sub-Brand Catalog Coverpages -->
+        <div class="mt-3 sm:mt-4 px-3 sm:px-6">
+          <CatalogHeroCarousel 
+            @select-tab="selectTab"
+          />
+        </div>
 
-            <!-- Right Column (5 cols on lg, flex row on tablet, stacked on mobile): Commercial Highlights -->
-            <div class="lg:col-span-5 xl:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 sm:gap-3.5 justify-between">
-              <!-- Tile A: Paragon 40% Clearance Hero Tile -->
-              <div 
-                @click="selectTab('ParagonDiscount')"
-                class="flex-1 rounded-2xl sm:rounded-3xl p-4 sm:p-5 bg-gradient-to-br from-red-600 via-rose-700 to-red-900 text-white cursor-pointer relative overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border border-red-500/50 group/clearance flex flex-col justify-between"
-              >
-                <!-- Ambient Glow -->
-                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl pointer-events-none"></div>
-
-                <!-- Header: Badge & Logo -->
-                <div class="flex items-center justify-between gap-2 relative z-10">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[10px] font-black uppercase tracking-wider border border-white/25">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>
-                    Flash Clearance
-                  </span>
-                  <div class="h-6 sm:h-7 w-16 sm:w-20 bg-white rounded-lg p-1 flex items-center justify-center shrink-0 shadow-xs">
-                    <CachedImage :src="ParagonLogo" alt="Paragon" class="h-full w-auto object-contain" />
-                  </div>
-                </div>
-
-                <!-- Middle Content -->
-                <div class="my-3 relative z-10">
-                  <div class="flex items-baseline gap-2">
-                    <span class="text-3xl sm:text-4xl font-black font-['Clash_Display'] tracking-tight text-white">40% OFF</span>
-                    <span class="text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wider">Paragon Stock</span>
-                  </div>
-                  <p class="text-xs text-red-100/90 font-medium mt-0.5 line-clamp-1">
-                    Special wholesale discount on selected genuine articles
-                  </p>
-                </div>
-
-                <!-- Footer Action -->
-                <div class="pt-2 border-t border-white/15 flex items-center justify-between text-xs font-bold text-amber-300 group-hover/clearance:text-white relative z-10">
-                  <span class="text-[11px] font-extrabold uppercase tracking-wide">Explore 40% Off Deals</span>
-                  <i class="fa-solid fa-arrow-right text-[11px] group-hover/clearance:translate-x-1 transition-transform"></i>
-                </div>
-              </div>
-
-              <!-- Tile B: Wholesale Duo Split (Box Packing & Loose Bulk) -->
-              <div class="flex-1 grid grid-cols-2 gap-2.5 sm:gap-3">
-                <!-- Box Packing Micro-Tile -->
-                <div
-                  @click="selectTab('BoxPacking')"
-                  class="rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 bg-[#18181b] hover:bg-black text-white cursor-pointer relative overflow-hidden shadow-md hover:shadow-lg transition-all border border-slate-800 flex flex-col justify-between group/box"
-                >
-                  <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[8.5px] font-black uppercase tracking-wider">
-                      Premium
-                    </span>
-                    <i class="fa-solid fa-box text-amber-400 text-sm group-hover/box:scale-110 transition-transform"></i>
-                  </div>
-                  <div class="mt-2.5">
-                    <div class="text-xs sm:text-sm font-black font-['Clash_Display'] text-white uppercase tracking-tight">Box Packing</div>
-                    <div class="text-[10px] text-slate-400 font-semibold">{{ getCount(boxGroupNames) }} Articles</div>
-                  </div>
-                  <div class="mt-2 text-[10px] font-bold text-amber-400 flex items-center gap-1">
-                    <span>Explore</span>
-                    <i class="fa-solid fa-arrow-right text-[8px] group-hover/box:translate-x-0.5 transition-transform"></i>
-                  </div>
-                </div>
-
-                <!-- Loose Packing Micro-Tile -->
-                <div
-                  @click="selectTab('LoosePacking')"
-                  class="rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-850 text-white cursor-pointer relative overflow-hidden shadow-md hover:shadow-lg transition-all border border-slate-700/80 flex flex-col justify-between group/loose"
-                >
-                  <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[8.5px] font-black uppercase tracking-wider">
-                      Economy
-                    </span>
-                    <i class="fa-solid fa-bag-shopping text-purple-300 text-sm group-hover/loose:scale-110 transition-transform"></i>
-                  </div>
-                  <div class="mt-2.5">
-                    <div class="text-xs sm:text-sm font-black font-['Clash_Display'] text-white uppercase tracking-tight">Loose Bulk</div>
-                    <div class="text-[10px] text-slate-400 font-semibold">{{ getCount(looseGroupNames) }} Articles</div>
-                  </div>
-                  <div class="mt-2 text-[10px] font-bold text-purple-300 flex items-center gap-1">
-                    <span>Explore</span>
-                    <i class="fa-solid fa-arrow-right text-[8px] group-hover/loose:translate-x-0.5 transition-transform"></i>
-                  </div>
-                </div>
-              </div>
+      <!-- 4. PARAGON 40% DISCOUNT STRIP: Eye-Catching Marquee -->
+      <div class="mt-4 sm:mt-5 px-3 sm:px-6">
+        <div 
+          class="w-full h-14 sm:h-16 rounded-2xl overflow-hidden relative cursor-pointer bg-gradient-to-r from-red-600 via-red-700 to-red-600 shadow-md flex items-center group transition-transform duration-300 hover:scale-[1.01]"
+          @click="selectTab('ParagonDiscount')"
+        >
+          <!-- Logo Section -->
+          <div class="w-20 sm:w-28 h-full bg-white flex items-center justify-center rounded-r-2xl border-r-2 border-red-800 z-10 shadow-md px-2 shrink-0">
+            <CachedImage
+              :src="ParagonLogo"
+              alt="Paragon"
+              class="h-2/3 w-auto object-contain"
+              transformations="w_200,c_fit"
+            />
+          </div>
+          
+          <!-- Moving Marquee Text -->
+          <div class="flex-1 h-full overflow-hidden flex items-center relative">
+            <div class="marquee-content text-white font-black font-['Clash_Display'] text-sm sm:text-lg tracking-wider uppercase drop-shadow-md flex whitespace-nowrap">
+              <span class="mx-3">🌟 40% DISCOUNT ON SELECTED ARTICLES - TAP HERE 🌟</span>
+              <span class="mx-3">🌟 40% DISCOUNT ON SELECTED ARTICLES - TAP HERE 🌟</span>
             </div>
           </div>
-        </section>
-
-        <!-- ══════════════════════════════════════════════════════════
-             4. WHOLESALE PILL NAVIGATION & LIVE METRICS BAR
-             ══════════════════════════════════════════════════════════ -->
-        <section class="mt-3.5 sm:mt-5 px-2.5 sm:px-6 max-w-7xl mx-auto">
-          <div class="bg-gradient-to-r from-amber-50/70 via-slate-50 to-amber-50/50 rounded-2xl p-2.5 sm:p-3 border border-amber-200/60 shadow-2xs flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
-            <!-- Left Info Pills -->
-            <div class="flex items-center gap-2 sm:gap-4 shrink-0 text-xs font-bold text-slate-700">
-              <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="font-black text-slate-900">2,900+</span>
-                <span class="text-slate-500 hidden sm:inline">Wholesale Articles</span>
-                <span class="text-slate-500 sm:hidden">Articles</span>
-              </div>
-              <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200/80 shadow-2xs text-slate-600">
-                <i class="fa-solid fa-shield-check text-amber-500 text-xs"></i>
-                <span>Direct Tally Live Inventory</span>
-              </div>
-              <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200/80 shadow-2xs text-slate-600">
-                <i class="fa-solid fa-truck-fast text-sky-500 text-xs"></i>
-                <span>Daily Rayagada Dispatch</span>
-              </div>
-            </div>
-
-            <!-- Right: Quick Segment Jump Chips -->
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <button
-                @click="selectTab('School')"
-                class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-100/60 border border-slate-200 hover:border-amber-400 text-slate-800 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-2xs flex items-center gap-1"
-                title="School Shoes Catalog"
-              >
-                <span>🎒 School</span>
-              </button>
-              <button
-                @click="selectTab('Kids')"
-                class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-100/60 border border-slate-200 hover:border-amber-400 text-slate-800 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-2xs flex items-center gap-1"
-                title="Kids Footwear"
-              >
-                <span>🧸 Kids</span>
-              </button>
-              <button
-                @click="selectTab('PARAGON GENTS')"
-                class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-100/60 border border-slate-200 hover:border-amber-400 text-slate-800 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-2xs flex items-center gap-1"
-                title="Paragon Gents"
-              >
-                <span>👑 Gents</span>
-              </button>
-              <button
-                @click="selectTab('PARAGON LADIES')"
-                class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-100/60 border border-slate-200 hover:border-amber-400 text-slate-800 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-2xs flex items-center gap-1"
-                title="Paragon Ladies"
-              >
-                <span>👠 Ladies</span>
-              </button>
-            </div>
-          </div>
-        </section>
+        </div>
+      </div>
 
       <!-- 5. NEW ARRIVALS: Horizontal Product Stack -->
-      <section class="mt-6 px-2.5 sm:px-6 max-w-7xl mx-auto overflow-hidden">
+      <section class="mt-6 px-3 sm:px-6 overflow-hidden">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <span class="text-base sm:text-xl font-black font-['Clash_Display'] holographic-text uppercase">
@@ -1520,7 +1189,7 @@
 
 
       <!-- 7. CURATED BRAND SHOWCASES WITH PRODUCTS BELOW -->
-      <section class="mt-8 px-2.5 sm:px-6 max-w-7xl mx-auto space-y-6">
+      <section class="mt-8 px-3 sm:px-6 space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-extrabold uppercase tracking-widest text-slate-400">
             FEATURED BRAND SHOWCASES
@@ -1671,28 +1340,28 @@
         </div>
       </section>
 
-      <!-- 8. WHOLESALE CATEGORY MATRIX (4 Pillars of Footwear) -->
-      <section class="mt-8 px-2.5 sm:px-6 max-w-7xl mx-auto">
+      <!-- 8. GENERAL PACKING: Bento/Masonry Design -->
+      <section class="mt-8 px-3 sm:px-6">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-xs font-extrabold uppercase tracking-widest text-slate-400">
-            WHOLESALE CATEGORIES
+            GENERAL PACKING
           </h2>
-          <span class="text-[11px] font-bold text-amber-700">4 Core Segments</span>
+          <span class="text-[11px] font-bold text-amber-700">Bulk & Pairs</span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <!-- 1. Box Packing Card -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <!-- Box Packing Card -->
           <div
             @click="selectTab('BoxPacking')"
-            class="rounded-3xl p-5 bg-[#18181b] text-white cursor-pointer relative overflow-hidden group shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-slate-800 flex flex-col justify-between"
+            class="rounded-3xl p-5 bg-[#18181b] text-white cursor-pointer relative overflow-hidden group shadow-md hover:shadow-xl transition-all"
           >
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
             <div class="relative z-10 flex items-start justify-between">
               <div>
                 <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider border border-amber-500/30">
                   Premium
                 </span>
-                <h3 class="text-xl sm:text-2xl font-black font-['Clash_Display'] mt-2 uppercase leading-none text-white">
+                <h3 class="text-2xl font-black font-['Clash_Display'] mt-2 uppercase leading-none text-white">
                   Box Packing
                 </h3>
                 <p class="text-xs text-slate-400 mt-1 font-medium">{{ getCount(boxGroupNames) }} Products Available</p>
@@ -1701,24 +1370,24 @@
                 <i class="fa-solid fa-box"></i>
               </div>
             </div>
-            <div class="mt-4 flex items-center gap-2 text-amber-400 text-xs font-bold relative z-10">
+            <div class="mt-4 flex items-center gap-2 text-amber-400 text-xs font-bold">
               <span>Explore Box Packing</span>
               <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
             </div>
           </div>
 
-          <!-- 2. Loose Packing Card -->
+          <!-- Loose Packing Card -->
           <div
             @click="selectTab('LoosePacking')"
-            class="rounded-3xl p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white cursor-pointer relative overflow-hidden group shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-slate-700/80 flex flex-col justify-between"
+            class="rounded-3xl p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white cursor-pointer relative overflow-hidden group shadow-md hover:shadow-xl transition-all"
           >
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
             <div class="relative z-10 flex items-start justify-between">
               <div>
                 <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-black uppercase tracking-wider border border-purple-500/30">
-                  Economy Bulk
+                  Economy
                 </span>
-                <h3 class="text-xl sm:text-2xl font-black font-['Clash_Display'] mt-2 uppercase leading-none text-white">
+                <h3 class="text-2xl font-black font-['Clash_Display'] mt-2 uppercase leading-none text-white">
                   Loose Packing
                 </h3>
                 <p class="text-xs text-slate-400 mt-1 font-medium">{{ getCount(looseGroupNames) }} Products Available</p>
@@ -1727,60 +1396,8 @@
                 <i class="fa-solid fa-bag-shopping"></i>
               </div>
             </div>
-            <div class="mt-4 flex items-center gap-2 text-purple-300 text-xs font-bold relative z-10">
-              <span>Explore Loose Bulk</span>
-              <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
-            </div>
-          </div>
-
-          <!-- 3. School Shoes Card -->
-          <div
-            @click="selectTab('School')"
-            class="rounded-3xl p-5 bg-gradient-to-br from-blue-950 via-slate-900 to-indigo-950 text-white cursor-pointer relative overflow-hidden group shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-blue-900/60 flex flex-col justify-between"
-          >
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-sky-500/10 rounded-full blur-2xl"></div>
-            <div class="relative z-10 flex items-start justify-between">
-              <div>
-                <span class="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-[10px] font-black uppercase tracking-wider border border-sky-500/30">
-                  Academic
-                </span>
-                <h3 class="text-xl sm:text-2xl font-black font-['Clash_Display'] mt-2 uppercase leading-none text-white">
-                  School Shoes
-                </h3>
-                <p class="text-xs text-slate-400 mt-1 font-medium">Paragon & Durolite Black/White</p>
-              </div>
-              <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sky-400 text-lg group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-graduation-cap"></i>
-              </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2 text-sky-400 text-xs font-bold relative z-10">
-              <span>Explore School Shoes</span>
-              <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
-            </div>
-          </div>
-
-          <!-- 4. Kids & Juniors Card -->
-          <div
-            @click="selectTab('Kids')"
-            class="rounded-3xl p-5 bg-gradient-to-br from-amber-950/80 via-slate-900 to-stone-900 text-white cursor-pointer relative overflow-hidden group shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-amber-900/50 flex flex-col justify-between"
-          >
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl"></div>
-            <div class="relative z-10 flex items-start justify-between">
-              <div>
-                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">
-                  Junior Sizes
-                </span>
-                <h3 class="text-xl sm:text-2xl font-black font-['Clash_Display'] mt-2 uppercase leading-none text-white">
-                  Kids Footwear
-                </h3>
-                <p class="text-xs text-slate-400 mt-1 font-medium">All brands small sizes (11x13 to 2x5)</p>
-              </div>
-              <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-emerald-400 text-lg group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-child-reaching"></i>
-              </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold relative z-10">
-              <span>Explore Kids Footwear</span>
+            <div class="mt-4 flex items-center gap-2 text-purple-400 text-xs font-bold">
+              <span>Explore Loose Packing</span>
               <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
             </div>
           </div>
@@ -1788,7 +1405,7 @@
       </section>
 
       <!-- 9. MID BRANDS SECTION -->
-      <section class="mt-8 px-2.5 sm:px-6 max-w-7xl mx-auto">
+      <section class="mt-8 px-3 sm:px-6">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-xs font-extrabold uppercase tracking-widest text-slate-400">
             MORE BRANDS
@@ -1810,7 +1427,7 @@
       </section>
 
       <!-- 10. EXPLORE ALL CTA -->
-      <div class="mt-10 mb-8 px-4 max-w-7xl mx-auto flex justify-center">
+      <div class="mt-10 mb-8 px-4 flex justify-center">
         <button 
           @click="selectTab('BrowseAll')"
           class="group relative inline-flex items-center justify-center px-8 py-4 bg-[#18181b] text-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:bg-black active:scale-98 transition-all duration-300 w-full sm:w-auto"
@@ -1825,6 +1442,117 @@
       </div>
     </template>
   </template>
+
+    <!-- ══════════════════════════════════════════════════════════
+         BOTTOM BAR: Fixed Search Bar & Autocomplete
+         ══════════════════════════════════════════════════════════ -->
+    <div 
+      class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-3 py-2 sm:px-6 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] transition-all"
+      style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));"
+      ref="searchContainerRef"
+    >
+      <div class="max-w-2xl mx-auto relative">
+        <!-- Search Input Bar -->
+        <div class="flex items-center gap-2 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 shadow-sm p-1 pl-3.5 focus-within:border-[#c59b27] focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
+          <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm shrink-0"></i>
+          <input
+            v-model="localQuery"
+            @focus="showDropdown = true"
+            @keydown.enter="handleSearchSubmit(localQuery)"
+            type="text"
+            placeholder="Search 2,900+ products, brands, models..."
+            class="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none py-1.5"
+          />
+          <button
+            v-if="localQuery"
+            @click="clearSearch"
+            class="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 shrink-0"
+            title="Clear search"
+          >
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Autocomplete Dropdown (Expands UPWARD) -->
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 translate-y-2"
+        >
+          <div
+            v-if="showDropdown && localQuery.trim().length > 0"
+            class="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50 max-h-[55vh] flex flex-col"
+          >
+            <!-- Dropdown Header: Query submit option -->
+            <div class="p-2 border-b border-slate-100 bg-slate-50/70">
+              <button
+                @click="handleSearchSubmit(localQuery)"
+                class="w-full text-left px-3 py-2 rounded-xl bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-900 transition-colors flex items-center justify-between group border border-slate-200/60 shadow-xs"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                  </div>
+                  <div class="truncate">
+                    <span class="text-xs font-bold">Search for "</span>
+                    <span class="text-xs font-black text-amber-600">{{ localQuery.trim() }}</span>
+                    <span class="text-xs font-bold">"</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 group-hover:text-amber-700 shrink-0">
+                  <span>View results</span>
+                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </div>
+              </button>
+            </div>
+
+            <!-- Product Suggestions List -->
+            <div class="overflow-y-auto p-1.5 divide-y divide-slate-100/80">
+              <button
+                v-for="product in searchSuggestions"
+                :key="product.productName"
+                @click="handleProductSelect(product)"
+                class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3 group/item"
+              >
+                <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/60">
+                  <img v-if="getProductCardImage(product)" :src="getOptimizedImageUrl(getProductCardImage(product))" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-box text-sm"></i>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-slate-800 truncate group-hover/item:text-[#c59b27] transition-colors">
+                    {{ getCleanProductName(product.productName) }}
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+                    <span v-if="getProductColor(product.productName)" class="flex items-center gap-1">
+                      <span class="w-2 h-2 rounded-full" :style="{ background: getProductColor(product.productName).gradient || getProductColor(product.productName).hex }"></span>
+                      <span class="capitalize">{{ getProductColor(product.productName).text }}</span>
+                    </span>
+                    <span v-if="getProductSize(product.productName)" class="font-semibold text-slate-600">
+                      {{ getProductSize(product.productName) }}
+                    </span>
+                    <span class="font-black text-slate-900">
+                      ₹{{ getPriceInfo(product.productName).price }}
+                    </span>
+                    <span :class="product.quantity > 0 ? 'text-emerald-600' : 'text-rose-500'" class="font-bold">
+                      {{ product.quantity > 0 ? `${product.quantity} pairs` : 'Out of Stock' }}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              <div v-if="searchSuggestions.length === 0" class="px-4 py-6 text-center text-slate-400 text-xs">
+                No specific items matching "{{ localQuery.trim() }}"
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
+    </div>
 
     <!-- Commit Preview Modal -->
     <CommitPreviewModal
@@ -1992,8 +1720,6 @@ const maxPriceFilter = ref(null);
 const localQuery = ref(searchQuery.value || '');
 const showDropdown = ref(false);
 const searchContainerRef = ref(null);
-const mobileSearchContainerRef = ref(null);
-const searchInputRef = ref(null);
 const selectedItem = ref(null);
 
 watch(() => route.query, (query) => {
@@ -2077,33 +1803,18 @@ const loopScroll = (time) => {
   animationFrameId = requestAnimationFrame(loopScroll);
 };
 
-const handleGlobalKeydown = (e) => {
-  if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-    e.preventDefault();
-    if (searchInputRef.value) searchInputRef.value.focus();
-    showDropdown.value = true;
-  } else if (e.key === 'Escape') {
-    showDropdown.value = false;
-    if (searchInputRef.value) searchInputRef.value.blur();
-  }
-};
-
 onMounted(() => {
   animationFrameId = requestAnimationFrame(loopScroll);
   document.addEventListener('click', handleClickOutside);
-  window.addEventListener('keydown', handleGlobalKeydown);
 });
 
 onUnmounted(() => {
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
   document.removeEventListener('click', handleClickOutside);
-  window.removeEventListener('keydown', handleGlobalKeydown);
 });
 
 const handleClickOutside = (e) => {
-  const inDesktop = searchContainerRef.value && searchContainerRef.value.contains(e.target);
-  const inMobile = mobileSearchContainerRef.value && mobileSearchContainerRef.value.contains(e.target);
-  if (!inDesktop && !inMobile) {
+  if (searchContainerRef.value && !searchContainerRef.value.contains(e.target)) {
     showDropdown.value = false;
   }
 };
