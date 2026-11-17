@@ -50,10 +50,46 @@
           <div class="bg-white/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs border border-slate-200/80 backdrop-blur-sm space-y-5">
             <!-- Date Range -->
             <div>
-              <h2 class="text-xs font-black text-slate-700 mb-3 uppercase tracking-wider flex items-center gap-2">
-                <span class="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center text-sm"><i class="fa-regular fa-calendar"></i></span>
-                Date Range
-              </h2>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
+                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center text-sm"><i class="fa-regular fa-calendar"></i></span>
+                  Date Range
+                </h2>
+                <!-- Quick Range Presets -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button type="button" @click="setQuickRange(0)"
+                    class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border"
+                    :class="!fromDate && !toDate
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'">
+                    All Time
+                  </button>
+                  <button type="button" @click="setQuickRange(8)"
+                    class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5"
+                    :class="isPresetActive(8)
+                      ? 'bg-violet-600 border-violet-600 text-white shadow-xs shadow-violet-600/20'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200 hover:bg-violet-50/50 hover:text-violet-700'">
+                    <i v-if="isPresetActive(8)" class="fa-solid fa-check text-[10px]"></i>
+                    Last 8 Days
+                  </button>
+                  <button type="button" @click="setQuickRange(16)"
+                    class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5"
+                    :class="isPresetActive(16)
+                      ? 'bg-violet-600 border-violet-600 text-white shadow-xs shadow-violet-600/20'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200 hover:bg-violet-50/50 hover:text-violet-700'">
+                    <i v-if="isPresetActive(16)" class="fa-solid fa-check text-[10px]"></i>
+                    Last 16 Days
+                  </button>
+                  <button type="button" @click="setQuickRange(32)"
+                    class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5"
+                    :class="isPresetActive(32)
+                      ? 'bg-violet-600 border-violet-600 text-white shadow-xs shadow-violet-600/20'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200 hover:bg-violet-50/50 hover:text-violet-700'">
+                    <i v-if="isPresetActive(32)" class="fa-solid fa-check text-[10px]"></i>
+                    Last 32 Days
+                  </button>
+                </div>
+              </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-[11px] font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wider">From</label>
@@ -254,6 +290,35 @@ const selectedLines = ref([]);
 const fromDate = ref('');
 const toDate = ref('');
 const pdfStyle = ref('classic'); // 'classic' | 'detailed'
+
+const formatDateLocal = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const setQuickRange = (days) => {
+  if (!days) {
+    fromDate.value = '';
+    toDate.value = '';
+    return;
+  }
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - days);
+
+  toDate.value = formatDateLocal(end);
+  fromDate.value = formatDateLocal(start);
+};
+
+const isPresetActive = (days) => {
+  if (!fromDate.value || !toDate.value) return false;
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - days);
+  return toDate.value === formatDateLocal(end) && fromDate.value === formatDateLocal(start);
+};
 
 // Standard Tally system groups to exclude from "Lines"
 const SYSTEM_GROUPS = [
