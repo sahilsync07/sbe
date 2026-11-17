@@ -202,35 +202,58 @@
 
           <!-- ═══ Lines Selection Card ═══ -->
           <div class="bg-white/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs border border-slate-200/80 backdrop-blur-sm">
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2.5">
               <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
                 <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm"><i class="fa-solid fa-map-location-dot"></i></span>
                 Select Lines
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 normal-case">
-                  {{ selectedLines.length }}/{{ availableLines.length }}
+                  {{ selectedLines.length }}/{{ displayedLines.length }}
                 </span>
               </h2>
-              <button @click="toggleSelectAll"
-                class="text-xs font-bold px-3.5 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer"
-                :class="selectedLines.length === availableLines.length
-                  ? 'bg-slate-900 text-white shadow-xs hover:bg-slate-800'
-                  : 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200/60'">
-                {{ selectedLines.length === availableLines.length ? 'Deselect All' : 'Select All' }}
-              </button>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Eye button to toggle hidden lines -->
+                <button @click="showHiddenLines = !showHiddenLines"
+                  type="button"
+                  class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 border"
+                  :class="showHiddenLines
+                    ? 'bg-amber-500 border-amber-500 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50/50'"
+                  :title="showHiddenLines ? 'Hide inactive / empty lines' : 'Show hidden / inactive lines'">
+                  <i :class="showHiddenLines ? 'fa-solid fa-eye-slash text-xs' : 'fa-solid fa-eye text-xs'"></i>
+                  <span>{{ showHiddenLines ? 'Hide Inactive' : `Show Hidden (${hiddenLinesCount})` }}</span>
+                </button>
+
+                <!-- Select All / Deselect All -->
+                <button @click="toggleSelectAll"
+                  class="text-xs font-bold px-3.5 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+                  :class="isAllDisplayedSelected
+                    ? 'bg-slate-900 text-white shadow-xs hover:bg-slate-800'
+                    : 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200/60'">
+                  {{ isAllDisplayedSelected ? 'Deselect All' : 'Select All' }}
+                </button>
+              </div>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <label v-for="line in availableLines" :key="line" 
-                class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all hover:shadow-xs active:scale-[0.99]"
+              <label v-for="line in displayedLines" :key="line" 
+                class="flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all hover:shadow-xs active:scale-[0.99]"
                 :class="selectedLines.includes(line)
                   ? 'border-violet-400 bg-violet-50/60 shadow-xs'
                   : 'border-slate-200/80 hover:border-slate-300 bg-white'">
-                <div class="relative flex items-center">
-                  <input type="checkbox" :value="line" v-model="selectedLines"
-                    class="w-4 h-4 rounded-md text-violet-600 focus:ring-violet-500 border-slate-300 transition-all" />
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="relative flex items-center">
+                    <input type="checkbox" :value="line" v-model="selectedLines"
+                      class="w-4 h-4 rounded-md text-violet-600 focus:ring-violet-500 border-slate-300 transition-all" />
+                  </div>
+                  <span class="text-sm font-semibold truncate" :title="line"
+                    :class="selectedLines.includes(line) ? 'text-violet-900' : 'text-slate-600'">{{ line }}</span>
                 </div>
-                <span class="text-sm font-semibold truncate" :title="line"
-                  :class="selectedLines.includes(line) ? 'text-violet-900' : 'text-slate-600'">{{ line }}</span>
+                <span v-if="isLineDefaultHidden(line)"
+                  class="shrink-0 ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-400 border border-slate-200/60"
+                  title="Hidden by default">
+                  Hidden
+                </span>
               </label>
             </div>
           </div>
@@ -252,14 +275,29 @@
                   {{ pdfStyle === 'extra_detailed' ? 'Extra Detailed Line List' : (pdfStyle === 'detailed' ? 'Detailed' : 'Classic') }} Mode
                 </div>
               </div>
-              <button @click="handlePrint" :disabled="isGenerating || selectedLines.length === 0"
-                class="w-full sm:w-auto px-7 py-3 rounded-xl font-black text-white shadow-md transition-all flex items-center justify-center gap-2.5 text-sm"
-                :class="selectedLines.length === 0
-                  ? 'bg-slate-300 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 cursor-pointer shadow-violet-600/25'">
-                <i class="fa-solid" :class="isGenerating ? 'fa-spinner fa-spin' : 'fa-print'"></i>
-                {{ isGenerating ? 'Generating PDF…' : 'Print Line List' }}
-              </button>
+
+              <!-- Two Action Buttons: Download PDF & Share PDF -->
+              <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                <!-- Download PDF Button -->
+                <button @click="handleDownload" :disabled="isGenerating || selectedLines.length === 0"
+                  class="flex-1 sm:flex-initial px-5 sm:px-6 py-3 rounded-xl font-black text-white shadow-md transition-all flex items-center justify-center gap-2 text-sm"
+                  :class="selectedLines.length === 0
+                    ? 'bg-slate-300 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 cursor-pointer shadow-violet-600/25'">
+                  <i class="fa-solid" :class="isDownloading ? 'fa-spinner fa-spin' : 'fa-download'"></i>
+                  <span>{{ isDownloading ? 'Downloading…' : 'Download PDF' }}</span>
+                </button>
+
+                <!-- Share PDF Button -->
+                <button @click="handleShare" :disabled="isGenerating || selectedLines.length === 0"
+                  class="flex-1 sm:flex-initial px-5 sm:px-6 py-3 rounded-xl font-black text-white shadow-md transition-all flex items-center justify-center gap-2 text-sm"
+                  :class="selectedLines.length === 0
+                    ? 'bg-slate-300 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 cursor-pointer shadow-emerald-600/25'">
+                  <i class="fa-solid" :class="isSharing ? 'fa-spinner fa-spin' : 'fa-share-nodes'"></i>
+                  <span>{{ isSharing ? 'Sharing…' : 'Share PDF' }}</span>
+                </button>
+              </div>
             </div>
           </div>
         </template>
@@ -274,18 +312,23 @@ import { useRouter } from 'vue-router';
 import { generateLineListPDF, getLineListFileName, formatLedgerLastUpdated } from '../utils/pdfLineList';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { toast } from 'vue3-toastify';
 
 const router = useRouter();
 
 const loading = ref(true);
 const error = ref(null);
-const isGenerating = ref(false);
+const isDownloading = ref(false);
+const isSharing = ref(false);
+const isGenerating = computed(() => isDownloading.value || isSharing.value);
 
 const ledgerData = ref([]);
 const ledgerLastSync = ref(null);
 const availableLines = ref([]);
 const selectedLines = ref([]);
+const showHiddenLines = ref(false);
 
 const fromDate = ref('');
 const toDate = ref('');
@@ -372,39 +415,140 @@ const ledgerLastUpdatedFormatted = computed(() => {
   return formatLedgerLastUpdated(ledgerLastSync.value);
 });
 
+const DEFAULT_HIDDEN_NAMES = [
+  'wholesale party',
+  'jeypur',
+  'jeypore',
+  'bissam cuttack',
+  'gunupur line',
+  'srikakulam line',
+  'rayagada local',
+  'paragon',
+  'kotpeta line',
+  'kotapeta line'
+];
+
+const isLineDefaultHidden = (lineName) => {
+  if (!lineName) return false;
+  const lower = lineName.toLowerCase().trim();
+
+  // Match specific user-requested lines
+  if (DEFAULT_HIDDEN_NAMES.some(h => lower === h || (h.includes(' ') && lower.includes(h)))) {
+    return true;
+  }
+  if (
+    lower.includes('wholesale') ||
+    lower === 'jeypur' ||
+    lower === 'jeypore' ||
+    lower.includes('jeypore') ||
+    lower.includes('jeypur') ||
+    lower === 'paragon' ||
+    lower.includes('srikakulam') ||
+    lower.includes('kotpeta') ||
+    lower.includes('kotapeta') ||
+    lower === 'rayagada local' ||
+    lower === 'gunupur line' ||
+    lower === 'bissam cuttack'
+  ) {
+    return true;
+  }
+
+  // Check if line is empty (0 ledgers, or 0 entries and 0 balance)
+  const group = ledgerData.value.find(g => g && g.groupName === lineName);
+  if (group) {
+    const ledgers = group.ledgers || [];
+    if (ledgers.length === 0) return true;
+    const hasAnyBalance = ledgers.some(l => Math.abs(l.closingBalance || 0) > 0.01);
+    const hasAnyEntries = ledgers.some(l => (l.entries || []).length > 0);
+    if (!hasAnyBalance && !hasAnyEntries) return true;
+  }
+
+  return false;
+};
+
+const displayedLines = computed(() => {
+  if (showHiddenLines.value) {
+    return availableLines.value;
+  }
+  return availableLines.value.filter(line => !isLineDefaultHidden(line));
+});
+
+const hiddenLinesCount = computed(() => {
+  return availableLines.value.filter(line => isLineDefaultHidden(line)).length;
+});
+
+const isAllDisplayedSelected = computed(() => {
+  if (displayedLines.value.length === 0) return false;
+  return displayedLines.value.every(line => selectedLines.value.includes(line));
+});
+
 const toggleSelectAll = () => {
-  if (selectedLines.value.length === availableLines.value.length) {
-    selectedLines.value = [];
+  const current = displayedLines.value;
+  if (isAllDisplayedSelected.value) {
+    selectedLines.value = selectedLines.value.filter(line => !current.includes(line));
   } else {
-    selectedLines.value = [...availableLines.value];
+    const merged = new Set([...selectedLines.value, ...current]);
+    selectedLines.value = Array.from(merged);
   }
 };
 
-const handlePrint = async () => {
-  if (selectedLines.value.length === 0) return;
-  
-  isGenerating.value = true;
+const triggerDownloadNotification = async (fileName) => {
+  if (!Capacitor.isNativePlatform()) return;
   try {
-    const from = fromDate.value ? new Date(fromDate.value) : null;
-    const to = toDate.value ? new Date(toDate.value) : null;
-    
-    // Validate dates
-    if (from && isNaN(from.getTime())) throw new Error("Invalid From Date");
-    if (to && isNaN(to.getTime())) throw new Error("Invalid To Date");
-    if (from && to && from > to) {
-      alert("From Date cannot be later than To Date.");
-      isGenerating.value = false;
-      return;
+    const permStatus = await LocalNotifications.checkPermissions();
+    if (permStatus.display !== 'granted') {
+      const req = await LocalNotifications.requestPermissions();
+      if (req.display !== 'granted') return;
     }
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: Math.floor(Date.now() % 100000000),
+          title: 'Line List PDF Downloaded',
+          body: `${fileName} saved to Documents`,
+          sound: null,
+          autoCancel: true,
+          extra: { type: 'pdf_download', fileName }
+        }
+      ]
+    });
+  } catch (err) {
+    console.warn('[LineList] Local notification error:', err);
+  }
+};
 
-    const isAll = selectedLines.value.length === availableLines.value.length;
-    const fileName = getLineListFileName(selectedLines.value, from, to, pdfStyle.value, isAll);
-    const pdfOptions = {
-      style: pdfStyle.value,
-      fileName,
-      lastUpdated: ledgerLastSync.value
-    };
-    
+const preparePDFData = () => {
+  if (selectedLines.value.length === 0) return null;
+  const from = fromDate.value ? new Date(fromDate.value) : null;
+  const to = toDate.value ? new Date(toDate.value) : null;
+
+  // Validate dates
+  if (from && isNaN(from.getTime())) throw new Error("Invalid From Date");
+  if (to && isNaN(to.getTime())) throw new Error("Invalid To Date");
+  if (from && to && from > to) {
+    alert("From Date cannot be later than To Date.");
+    return null;
+  }
+
+  const isAll = selectedLines.value.length === availableLines.value.length;
+  const fileName = getLineListFileName(selectedLines.value, from, to, pdfStyle.value, isAll);
+  const pdfOptions = {
+    style: pdfStyle.value,
+    fileName,
+    lastUpdated: ledgerLastSync.value
+  };
+
+  return { from, to, fileName, pdfOptions };
+};
+
+const handleDownload = async () => {
+  if (selectedLines.value.length === 0) return;
+  isDownloading.value = true;
+  try {
+    const prepared = preparePDFData();
+    if (!prepared) return;
+    const { from, to, fileName, pdfOptions } = prepared;
+
     if (Capacitor.isNativePlatform()) {
       try {
         const pdfDataUri = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { ...pdfOptions, returnBase64: true });
@@ -419,25 +563,88 @@ const handlePrint = async () => {
         });
 
         toast.success(`PDF saved to Documents: ${fileName}`, { autoClose: 3500 });
+        await triggerDownloadNotification(fileName);
         return;
       } catch (fsErr) {
         console.warn('Native Filesystem save failed, falling back to direct browser download:', fsErr);
       }
     }
 
-    // Direct browser download without opening any Share dialog
+    // Direct browser download
     const success = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, pdfOptions);
     if (success) {
       toast.success(`Line List PDF downloaded (${fileName})`, { autoClose: 3000 });
+      await triggerDownloadNotification(fileName);
     } else {
       alert('Failed to generate PDF. Check console for details.');
     }
   } catch (err) {
     alert("Error: " + err.message);
   } finally {
-    isGenerating.value = false;
+    isDownloading.value = false;
   }
 };
+
+const handleShare = async () => {
+  if (selectedLines.value.length === 0) return;
+  isSharing.value = true;
+  try {
+    const prepared = preparePDFData();
+    if (!prepared) return;
+    const { from, to, fileName, pdfOptions } = prepared;
+
+    if (Capacitor.isNativePlatform()) {
+      const pdfDataUri = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { ...pdfOptions, returnBase64: true });
+      if (!pdfDataUri) throw new Error('Failed to generate PDF');
+
+      const base64Data = pdfDataUri.includes(',') ? pdfDataUri.split(',')[1] : pdfDataUri;
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Cache,
+        recursive: true
+      });
+
+      await Share.share({
+        title: fileName,
+        files: [savedFile.uri],
+        dialogTitle: 'Share Line List PDF'
+      });
+      return;
+    }
+
+    // Web fallback: Web Share API if available
+    if (navigator.share) {
+      const blob = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, { ...pdfOptions, returnBlob: true });
+      if (blob) {
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: fileName
+          });
+          return;
+        }
+      }
+    }
+
+    // Web fallback when share is unsupported: download with notice
+    const success = await generateLineListPDF(selectedLines.value, from, to, ledgerData.value, pdfOptions);
+    if (success) {
+      toast.info(`Sharing not supported on this browser. PDF downloaded (${fileName})`, { autoClose: 3500 });
+    }
+  } catch (err) {
+    if (err && err.message && err.message.toLowerCase().includes('canceled')) {
+      return;
+    }
+    console.error('Share error:', err);
+    alert("Error: " + err.message);
+  } finally {
+    isSharing.value = false;
+  }
+};
+
+const handlePrint = handleDownload;
 </script>
 
 <style scoped>
