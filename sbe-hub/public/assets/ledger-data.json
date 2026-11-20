@@ -1,7 +1,7 @@
 [
   {
     "groupName": "_META_DATA_",
-    "lastSync": "2026-11-20T14:07:55.188Z",
+    "lastSync": "2026-11-20T14:57:45.958Z",
     "ledgers": []
   },
   {
@@ -10,7 +10,7 @@
       {
         "ledgerName": "Profit & Loss A/c",
         "openingBalance": 11242613.82,
-        "closingBalance": 11301885.36,
+        "closingBalance": 11301256.88,
         "entries": [],
         "partyType": "wholesaler",
         "creditStatus": "normal",
@@ -7489,7 +7489,7 @@
       {
         "ledgerName": "HERO FINCORP LTD",
         "openingBalance": 1206598.77,
-        "closingBalance": 3408152.91,
+        "closingBalance": 4129779.91,
         "entries": [
           {
             "date": "4-Apr-26",
@@ -8785,6 +8785,13 @@
             "type": "Payment",
             "amount": 200000,
             "drCr": "Dr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 415,
+            "type": "Journal",
+            "amount": 721627,
+            "drCr": "Cr"
           }
         ],
         "partyType": "wholesaler",
@@ -27856,7 +27863,7 @@
       {
         "ledgerName": "Transport Charges(Services)",
         "openingBalance": -1551231,
-        "closingBalance": -1805007,
+        "closingBalance": -1814477,
         "entries": [
           {
             "date": "20-Apr-26",
@@ -28493,6 +28500,27 @@
             "voucherNo": 509,
             "type": "Purchase",
             "amount": 1450,
+            "drCr": "Dr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 515,
+            "type": "Purchase",
+            "amount": 1880,
+            "drCr": "Dr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 516,
+            "type": "Purchase",
+            "amount": 3840,
+            "drCr": "Dr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 517,
+            "type": "Purchase",
+            "amount": 3750,
             "drCr": "Dr"
           }
         ],
@@ -41098,7 +41126,7 @@
       {
         "ledgerName": "IGST",
         "openingBalance": -2922967.52,
-        "closingBalance": -3548225.91,
+        "closingBalance": -3553821.39,
         "entries": [
           {
             "date": "2-Apr-26",
@@ -44697,6 +44725,13 @@
             "type": "Tax Invoice",
             "amount": 37126.44,
             "drCr": "Cr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 518,
+            "type": "Purchase",
+            "amount": 5595.48,
+            "drCr": "Dr"
           }
         ],
         "partyType": "wholesaler",
@@ -89163,7 +89198,7 @@
       {
         "ledgerName": "Paragon Polymer Products Pvt Ltd.",
         "openingBalance": 438230.06,
-        "closingBalance": 1750004.21,
+        "closingBalance": 1028377.21,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -89843,6 +89878,13 @@
             "type": "Purchase",
             "amount": 779655,
             "drCr": "Cr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 415,
+            "type": "Journal",
+            "amount": 721627,
+            "drCr": "Dr"
           }
         ]
       },
@@ -97724,13 +97766,13 @@
       {
         "ledgerName": "PURCHASE@GST",
         "openingBalance": 0,
-        "closingBalance": -35162991.56,
+        "closingBalance": -35274901.16,
         "entries": []
       },
       {
         "ledgerName": "ROUND OFF",
         "openingBalance": 0,
-        "closingBalance": 1.68,
+        "closingBalance": 1.76,
         "entries": [
           {
             "date": "6-Apr-26",
@@ -100552,6 +100594,13 @@
             "type": "Purchase",
             "amount": 0.04,
             "drCr": "Dr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 518,
+            "type": "Purchase",
+            "amount": 0.08,
+            "drCr": "Cr"
           }
         ]
       }
@@ -118186,7 +118235,7 @@
       {
         "ledgerName": "A R C Limited",
         "openingBalance": 24273,
-        "closingBalance": 3198,
+        "closingBalance": 12668,
         "entries": [
           {
             "date": "12-Apr-26",
@@ -118935,6 +118984,27 @@
             "voucherNo": 509,
             "type": "Purchase",
             "amount": 1450,
+            "drCr": "Cr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 515,
+            "type": "Purchase",
+            "amount": 1880,
+            "drCr": "Cr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 516,
+            "type": "Purchase",
+            "amount": 3840,
+            "drCr": "Cr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 517,
+            "type": "Purchase",
+            "amount": 3750,
             "drCr": "Cr"
           }
         ]
@@ -122398,7 +122468,7 @@
       {
         "ledgerName": "TEUZ FOOTWAER INDUTRIES , BAHADURGARH",
         "openingBalance": 41975,
-        "closingBalance": 168733,
+        "closingBalance": 286238,
         "entries": [
           {
             "date": "27-Apr-26",
@@ -122454,6 +122524,13 @@
             "voucherNo": 453,
             "type": "Purchase",
             "amount": 102253,
+            "drCr": "Cr"
+          },
+          {
+            "date": "20-Nov-26",
+            "voucherNo": 518,
+            "type": "Purchase",
+            "amount": 117505,
             "drCr": "Cr"
           }
         ]
